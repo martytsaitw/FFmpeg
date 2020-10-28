@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
     }
     fmt_ctx->pb = avio_ctx;
 
-    ret = avformat_open_input(&fmt_ctx, NULL, NULL, NULL);
+    ret = avformat_open_input_ijk(&fmt_ctx, NULL, NULL, NULL);
     if (ret < 0) {
         fprintf(stderr, "Could not open input\n");
         goto end;

@@ -502,7 +502,7 @@ static int handle_file(struct Tracks *tracks, const char *file, int split,
     char errbuf[50], *ptr;
     struct Track *track;
 
-    err = avformat_open_input(&ctx, file, NULL, NULL);
+    err = avformat_open_input_ijk(&ctx, file, NULL, NULL);
     if (err < 0) {
         av_strerror(err, errbuf, sizeof(errbuf));
         fprintf(stderr, "Unable to open %s: %s\n", file, errbuf);

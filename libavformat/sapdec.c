@@ -164,7 +164,7 @@ static int sap_read_header(AVFormatContext *s)
     if ((ret = ff_copy_whiteblacklists(sap->sdp_ctx, s)) < 0)
         goto fail;
 
-    ret = avformat_open_input(&sap->sdp_ctx, "temp.sdp", infmt, NULL);
+    ret = avformat_open_input_ijk(&sap->sdp_ctx, "temp.sdp", infmt, NULL);
     if (ret < 0)
         goto fail;
     if (sap->sdp_ctx->ctx_flags & AVFMTCTX_NOHEADER)

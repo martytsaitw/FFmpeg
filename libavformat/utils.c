@@ -538,7 +538,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
 }
 
 
-int avformat_open_input(AVFormatContext **ps, const char *filename,
+int avformat_open_input_ijk(AVFormatContext **ps, const char *filename,
                         AVInputFormat *fmt, AVDictionary **options)
 {
     AVFormatContext *s = *ps;
@@ -6178,7 +6178,7 @@ AVCodecContext * create_audio_decoder_from_codecpar (AVCodecParameters * codecpa
     return avctx;
 }
 
-// must be called after avformat_open_input
+// must be called after avformat_open_input_ijk
 int av_try_find_stream_info(AVFormatContext *ic, AVDictionary **options) {
     FF_DISABLE_DEPRECATION_WARNINGS
     int ret = 0;

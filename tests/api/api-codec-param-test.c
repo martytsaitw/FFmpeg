@@ -169,7 +169,7 @@ static int open_and_probe_video_streams(AVFormatContext **fmt_ctx, const char *f
 {
     int ret = 0;
 
-    ret = avformat_open_input(fmt_ctx, filename, NULL, NULL);
+    ret = avformat_open_input_ijk(fmt_ctx, filename, NULL, NULL);
     if (ret < 0) {
         av_log(NULL, AV_LOG_ERROR, "Failed to open input '%s'", filename);
         goto end;

@@ -2182,7 +2182,7 @@ lavd 54.4.100 / 54.0.0, lavfi 3.5.0
   Add av_printf_format().
 
 2011-06-16 - 2905e3f / 05e84c9, 2905e3f / 25de595 - lavf 53.4.0 / 53.2.0 - avformat.h
-  Add avformat_open_input and avformat_write_header().
+  Add avformat_open_input_ijk and avformat_write_header().
   Deprecate av_open_input_stream, av_open_input_file,
   AVFormatParameters and av_write_header.
 

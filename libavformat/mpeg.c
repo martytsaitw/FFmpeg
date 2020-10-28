@@ -755,7 +755,7 @@ static int vobsub_read_header(AVFormatContext *s)
     if ((ret = ff_copy_whiteblacklists(vobsub->sub_ctx, s)) < 0)
         goto end;
 
-    ret = avformat_open_input(&vobsub->sub_ctx, vobsub->sub_name, iformat, NULL);
+    ret = avformat_open_input_ijk(&vobsub->sub_ctx, vobsub->sub_name, iformat, NULL);
     if (ret < 0) {
         av_log(s, AV_LOG_ERROR, "Unable to open %s as MPEG subtitles\n", vobsub->sub_name);
         goto end;

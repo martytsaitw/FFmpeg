@@ -44,7 +44,7 @@ int main (int argc, char **argv)
         return 1;
     }
 
-    if ((ret = avformat_open_input(&fmt_ctx, argv[1], NULL, NULL)))
+    if ((ret = avformat_open_input_ijk(&fmt_ctx, argv[1], NULL, NULL)))
         return ret;
 
     while ((tag = av_dict_get(fmt_ctx->metadata, "", tag, AV_DICT_IGNORE_SUFFIX)))

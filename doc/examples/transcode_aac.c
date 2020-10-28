@@ -64,7 +64,7 @@ static int open_input_file(const char *filename,
     int error;
 
     /* Open the input file to read from it. */
-    if ((error = avformat_open_input(input_format_context, filename, NULL,
+    if ((error = avformat_open_input_ijk(input_format_context, filename, NULL,
                                      NULL)) < 0) {
         fprintf(stderr, "Could not open input file '%s' (error '%s')\n",
                 filename, av_err2str(error));

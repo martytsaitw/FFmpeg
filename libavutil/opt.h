@@ -594,7 +594,7 @@ int av_opt_eval_q     (void *obj, const AVOption *o, const char *val, AVRational
  *
  * @note Options found with AV_OPT_SEARCH_CHILDREN flag may not be settable
  * directly with av_opt_set(). Use special calls which take an options
- * AVDictionary (e.g. avformat_open_input()) to set options found with this
+ * AVDictionary (e.g. avformat_open_input_ijk()) to set options found with this
  * flag.
  */
 const AVOption *av_opt_find(void *obj, const char *name, const char *unit,

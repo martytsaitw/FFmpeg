@@ -46,7 +46,7 @@ static int video_decode_example(const char *input_filename)
     int result;
     int end_of_stream = 0;
 
-    result = avformat_open_input(&fmt_ctx, input_filename, NULL, NULL);
+    result = avformat_open_input_ijk(&fmt_ctx, input_filename, NULL, NULL);
     if (result < 0) {
         av_log(NULL, AV_LOG_ERROR, "Can't open file\n");
         return result;

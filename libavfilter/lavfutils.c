@@ -38,7 +38,7 @@ int ff_load_image(uint8_t *data[4], int linesize[4],
     av_init_packet(&pkt);
 
     iformat = av_find_input_format("image2pipe");
-    if ((ret = avformat_open_input(&format_ctx, filename, iformat, NULL)) < 0) {
+    if ((ret = avformat_open_input_ijk(&format_ctx, filename, iformat, NULL)) < 0) {
         av_log(log_ctx, AV_LOG_ERROR,
                "Failed to open input file '%s'\n", filename);
         return ret;

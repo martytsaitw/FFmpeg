@@ -2061,7 +2061,7 @@ static int reopen_demux_for_component(AVFormatContext *s, struct representation 
     pls->ctx->io_open  = nested_io_open;
 
     // provide additional information from mpd if available
-    ret = avformat_open_input(&pls->ctx, "", in_fmt, &in_fmt_opts); //pls->init_section->url
+    ret = avformat_open_input_ijk(&pls->ctx, "", in_fmt, &in_fmt_opts); //pls->init_section->url
     av_dict_free(&in_fmt_opts);
     if (ret < 0)
         goto fail;

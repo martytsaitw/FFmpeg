@@ -136,7 +136,7 @@ int ff_wms_parse_sdp_a_line(AVFormatContext *s, const char *p)
             return ret;
         }
 
-        ret = avformat_open_input(&rt->asf_ctx, "", iformat, &opts);
+        ret = avformat_open_input_ijk(&rt->asf_ctx, "", iformat, &opts);
         av_dict_free(&opts);
         if (ret < 0) {
             av_free(pb.buffer);
