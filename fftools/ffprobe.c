@@ -2887,7 +2887,7 @@ static int open_input_file(InputFile *ifile, const char *filename)
             continue;
         }
 
-        codec = avcodec_find_decoder(stream->codecpar->codec_id);
+        codec = avcodec_find_decoder_ijk(stream->codecpar->codec_id);
         if (!codec) {
             av_log(NULL, AV_LOG_WARNING,
                     "Unsupported codec with id %d for input stream %d\n",

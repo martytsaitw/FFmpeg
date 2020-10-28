@@ -380,7 +380,7 @@ static av_cold int init_subtitles(AVFilterContext *ctx)
     ass_set_fonts(ass->renderer, NULL, NULL, 1, NULL, 1);
 
     /* Open decoder */
-    dec = avcodec_find_decoder(st->codecpar->codec_id);
+    dec = avcodec_find_decoder_ijk(st->codecpar->codec_id);
     if (!dec) {
         av_log(ctx, AV_LOG_ERROR, "Failed to find subtitle codec %s\n",
                avcodec_get_name(st->codecpar->codec_id));

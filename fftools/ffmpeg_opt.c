@@ -661,7 +661,7 @@ static AVCodec *find_codec_or_die(const char *name, enum AVMediaType type, int e
 
     if (!codec && (desc = avcodec_descriptor_get_by_name(name))) {
         codec = encoder ? avcodec_find_encoder(desc->id) :
-                          avcodec_find_decoder(desc->id);
+                          avcodec_find_decoder_ijk(desc->id);
         if (codec)
             av_log(NULL, AV_LOG_VERBOSE, "Matched %s '%s' for codec '%s'.\n",
                    codec_string, codec->name, desc->name);
@@ -688,7 +688,7 @@ static AVCodec *choose_decoder(OptionsContext *o, AVFormatContext *s, AVStream *
         st->codecpar->codec_id = codec->id;
         return codec;
     } else
-        return avcodec_find_decoder(st->codecpar->codec_id);
+        return avcodec_find_decoder_ijk(st->codecpar->codec_id);
 }
 
 /* Add all the streams from the given input file to the global
@@ -772,7 +772,7 @@ static void add_input_streams(OptionsContext *o, AVFormatContext *ic)
         switch (par->codec_type) {
         case AVMEDIA_TYPE_VIDEO:
             if(!ist->dec)
-                ist->dec = avcodec_find_decoder(par->codec_id);
+                ist->dec = avcodec_find_decoder_ijk(par->codec_id);
 #if FF_API_LOWRES
             if (st->codec->lowres) {
                 ist->dec_ctx->lowres = st->codec->lowres;
@@ -873,7 +873,7 @@ static void add_input_streams(OptionsContext *o, AVFormatContext *ic)
         case AVMEDIA_TYPE_SUBTITLE: {
             char *canvas_size = NULL;
             if(!ist->dec)
-                ist->dec = avcodec_find_decoder(par->codec_id);
+                ist->dec = avcodec_find_decoder_ijk(par->codec_id);
             MATCH_PER_STREAM_OPT(fix_sub_duration, i, ist->fix_sub_duration, ic, st);
             MATCH_PER_STREAM_OPT(canvas_sizes, str, canvas_size, ic, st);
             if (canvas_size &&

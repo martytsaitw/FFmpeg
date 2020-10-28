@@ -859,7 +859,7 @@ AVCodec *avcodec_find_encoder(enum AVCodecID id)
     return find_codec(id, av_codec_is_encoder);
 }
 
-AVCodec *avcodec_find_decoder(enum AVCodecID id)
+AVCodec *avcodec_find_decoder_ijk(enum AVCodecID id)
 {
     return find_codec(id, av_codec_is_decoder);
 }

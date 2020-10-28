@@ -89,7 +89,7 @@ static int open_input_file(const char *filename,
     }
 
     /* Find a decoder for the audio stream. */
-    if (!(input_codec = avcodec_find_decoder((*input_format_context)->streams[0]->codecpar->codec_id))) {
+    if (!(input_codec = avcodec_find_decoder_ijk((*input_format_context)->streams[0]->codecpar->codec_id))) {
         fprintf(stderr, "Could not find input codec\n");
         avformat_close_input(input_format_context);
         return AVERROR_EXIT;

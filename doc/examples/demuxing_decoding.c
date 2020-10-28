@@ -164,7 +164,7 @@ static int open_codec_context(int *stream_idx,
         st = fmt_ctx->streams[stream_index];
 
         /* find decoder for the stream */
-        dec = avcodec_find_decoder(st->codecpar->codec_id);
+        dec = avcodec_find_decoder_ijk(st->codecpar->codec_id);
         if (!dec) {
             fprintf(stderr, "Failed to find %s codec\n",
                     av_get_media_type_string(type));

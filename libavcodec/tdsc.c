@@ -115,7 +115,7 @@ static av_cold int tdsc_init(AVCodecContext *avctx)
         return AVERROR(ENOMEM);
 
     /* Prepare everything needed for JPEG decoding */
-    codec = avcodec_find_decoder(AV_CODEC_ID_MJPEG);
+    codec = avcodec_find_decoder_ijk(AV_CODEC_ID_MJPEG);
     if (!codec)
         return AVERROR_BUG;
     ctx->jpeg_avctx = avcodec_alloc_context3(codec);

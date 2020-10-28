@@ -118,7 +118,7 @@ static av_cold int smvjpeg_decode_init(AVCodecContext *avctx)
         ret = AVERROR_INVALIDDATA;
     }
 
-    codec = avcodec_find_decoder(AV_CODEC_ID_MJPEG);
+    codec = avcodec_find_decoder_ijk(AV_CODEC_ID_MJPEG);
     if (!codec) {
         av_log(avctx, AV_LOG_ERROR, "MJPEG codec not found\n");
         smvjpeg_decode_end(avctx);

@@ -50,7 +50,7 @@ int ff_load_image(uint8_t *data[4], int linesize[4],
     }
 
     par = format_ctx->streams[0]->codecpar;
-    codec = avcodec_find_decoder(par->codec_id);
+    codec = avcodec_find_decoder_ijk(par->codec_id);
     if (!codec) {
         av_log(log_ctx, AV_LOG_ERROR, "Failed to find codec\n");
         ret = AVERROR(EINVAL);

@@ -206,7 +206,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
         break;
     }
 
-    return avcodec_find_decoder(codec_id);
+    return avcodec_find_decoder_ijk(codec_id);
 }
 
 static const AVCodec *find_probe_decoder(AVFormatContext *s, const AVStream *st, enum AVCodecID codec_id)
@@ -5931,7 +5931,7 @@ AVCodecContext * create_video_decoder_from_codecpar (AVCodecParameters * codecpa
         return NULL;
     
     //Init Video Stream
-    if ((codec = avcodec_find_decoder(codecpar->codec_id)) == NULL)
+    if ((codec = avcodec_find_decoder_ijk(codecpar->codec_id)) == NULL)
         return NULL;
     
     if ((avctx = avcodec_alloc_context3(codec)) == NULL)
@@ -6124,7 +6124,7 @@ AVCodecContext * create_audio_decoder_from_codecpar (AVCodecParameters * codecpa
         return NULL;
     
     //Init Audio Stream
-    if ((codec = avcodec_find_decoder(codecpar->codec_id)) == NULL)
+    if ((codec = avcodec_find_decoder_ijk(codecpar->codec_id)) == NULL)
         return NULL;
     
     if ((avctx = avcodec_alloc_context3(codec)) == NULL)

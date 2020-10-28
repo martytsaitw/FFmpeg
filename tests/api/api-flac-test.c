@@ -251,7 +251,7 @@ int main(void)
         return 1;
     }
 
-    dec = avcodec_find_decoder(AV_CODEC_ID_FLAC);
+    dec = avcodec_find_decoder_ijk(AV_CODEC_ID_FLAC);
     if (!dec) {
         av_log(NULL, AV_LOG_ERROR, "Can't find decoder\n");
         return 1;

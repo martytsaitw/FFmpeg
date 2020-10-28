@@ -158,7 +158,7 @@ static int open_stream(void *log, MovieStream *st)
     AVCodec *codec;
     int ret;
 
-    codec = avcodec_find_decoder(st->st->codecpar->codec_id);
+    codec = avcodec_find_decoder_ijk(st->st->codecpar->codec_id);
     if (!codec) {
         av_log(log, AV_LOG_ERROR, "Failed to find any codec\n");
         return AVERROR(EINVAL);

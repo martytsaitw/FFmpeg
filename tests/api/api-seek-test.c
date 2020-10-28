@@ -217,7 +217,7 @@ static int seek_test(const char *input_filename, const char *start, const char *
 
     origin_par = fmt_ctx->streams[video_stream]->codecpar;
 
-    codec = avcodec_find_decoder(origin_par->codec_id);
+    codec = avcodec_find_decoder_ijk(origin_par->codec_id);
     if (!codec) {
         av_log(NULL, AV_LOG_ERROR, "Can't find decoder\n");
         result = AVERROR_DECODER_NOT_FOUND;
