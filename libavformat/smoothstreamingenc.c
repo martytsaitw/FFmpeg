@@ -331,7 +331,7 @@ static int ism_write_header(AVFormatContext *s)
             goto fail;
         }
 
-        ctx = avformat_alloc_context();
+        ctx = avformat_alloc_context_ijk();
         if (!ctx || ff_copy_whiteblacklists(ctx, s) < 0) {
             ret = AVERROR(ENOMEM);
             goto fail;

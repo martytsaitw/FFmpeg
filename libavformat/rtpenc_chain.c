@@ -41,7 +41,7 @@ int ff_rtp_chain_mux_open(AVFormatContext **out, AVFormatContext *s,
     }
 
     /* Allocate an AVFormatContext for each output stream */
-    rtpctx = avformat_alloc_context();
+    rtpctx = avformat_alloc_context_ijk();
     if (!rtpctx) {
         ret = AVERROR(ENOMEM);
         goto fail;

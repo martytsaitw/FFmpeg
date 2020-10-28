@@ -52,8 +52,8 @@
  * which exports all information about the file being read or written. As with
  * most Libavformat structures, its size is not part of public ABI, so it cannot be
  * allocated on stack or directly with av_malloc(). To create an
- * AVFormatContext, use avformat_alloc_context() (some functions, like
- * avformat_open_input() might do that for you).
+ * AVFormatContext, use avformat_alloc_context_ijk() (some functions, like
+ * avformat_open_input_ijk() might do that for you).
  *
  * Most importantly an AVFormatContext contains:
  * @li the @ref AVFormatContext.iformat "input" or @ref AVFormatContext.oformat
@@ -97,17 +97,17 @@
  * Demuxers read a media file and split it into chunks of data (@em packets). A
  * @ref AVPacket "packet" contains one or more encoded frames which belongs to a
  * single elementary stream. In the lavf API this process is represented by the
- * avformat_open_input() function for opening a file, av_read_frame() for
- * reading a single packet and finally avformat_close_input(), which does the
+ * avformat_open_input_ijk() function for opening a file, av_read_frame() for
+ * reading a single packet and finally avformat_close_input_ijk(), which does the
  * cleanup.
  *
  * @section lavf_decoding_open Opening a media file
  * The minimum information required to open a file is its URL, which
- * is passed to avformat_open_input(), as in the following code:
+ * is passed to avformat_open_input_ijk(), as in the following code:
  * @code
  * const char    *url = "file:in.mp3";
  * AVFormatContext *s = NULL;
- * int ret = avformat_open_input(&s, url, NULL, NULL);
+ * int ret = avformat_open_input_ijk(&s, url, NULL, NULL);
  * if (ret < 0)
  *     abort();
  * @endcode
@@ -119,23 +119,23 @@
  * frames to find missing information.
  *
  * In some cases you might want to preallocate an AVFormatContext yourself with
- * avformat_alloc_context() and do some tweaking on it before passing it to
- * avformat_open_input(). One such case is when you want to use custom functions
+ * avformat_alloc_context_ijk() and do some tweaking on it before passing it to
+ * avformat_open_input_ijk(). One such case is when you want to use custom functions
  * for reading input data instead of lavf internal I/O layer.
  * To do that, create your own AVIOContext with avio_alloc_context(), passing
  * your reading callbacks to it. Then set the @em pb field of your
  * AVFormatContext to newly created AVIOContext.
  *
  * Since the format of the opened file is in general not known until after
- * avformat_open_input() has returned, it is not possible to set demuxer private
+ * avformat_open_input_ijk() has returned, it is not possible to set demuxer private
  * options on a preallocated context. Instead, the options should be passed to
- * avformat_open_input() wrapped in an AVDictionary:
+ * avformat_open_input_ijk() wrapped in an AVDictionary:
  * @code
  * AVDictionary *options = NULL;
  * av_dict_set(&options, "video_size", "640x480", 0);
  * av_dict_set(&options, "pixel_format", "rgb24", 0);
  *
- * if (avformat_open_input(&s, url, NULL, &options) < 0)
+ * if (avformat_open_input_ijk(&s, url, NULL, &options) < 0)
  *     abort();
  * av_dict_free(&options);
  * @endcode
@@ -156,7 +156,7 @@
  * @endcode
  *
  * After you have finished reading the file, you must close it with
- * avformat_close_input(). It will free everything associated with the file.
+ * avformat_close_input_ijk(). It will free everything associated with the file.
  *
  * @section lavf_decoding_read Reading from an opened file
  * Reading data from an opened AVFormatContext is done by repeatedly calling
@@ -195,7 +195,7 @@
  * packets and av_write_trailer() for finalizing the file.
  *
  * At the beginning of the muxing process, the caller must first call
- * avformat_alloc_context() to create a muxing context. The caller then sets up
+ * avformat_alloc_context_ijk() to create a muxing context. The caller then sets up
  * the muxer by filling the various fields in this context:
  *
  * - The @ref AVFormatContext.oformat "oformat" field must be set to select the
@@ -1330,7 +1330,7 @@ typedef struct AVFormatInternal AVFormatInternal;
  * Removal, reordering and changes to existing fields require a major
  * version bump.
  * sizeof(AVFormatContext) must not be used outside libav*, use
- * avformat_alloc_context() to create an AVFormatContext.
+ * avformat_alloc_context_ijk() to create an AVFormatContext.
  *
  * Fields can be accessed through AVOptions (av_opt*),
  * the name string used matches the associated command line parameter name and
@@ -1340,7 +1340,7 @@ typedef struct AVFormatInternal AVFormatInternal;
  */
 typedef struct AVFormatContext {
     /**
-     * A class for logging and @ref avoptions. Set by avformat_alloc_context().
+     * A class for logging and @ref avoptions. Set by avformat_alloc_context_ijk().
      * Exports (de)muxer private options if they exist.
      */
     const AVClass *av_class;
@@ -1348,7 +1348,7 @@ typedef struct AVFormatContext {
     /**
      * The input container format.
      *
-     * Demuxing only, set by avformat_open_input().
+     * Demuxing only, set by avformat_open_input_ijk().
      */
     struct AVInputFormat *iformat;
 
@@ -1364,15 +1364,15 @@ typedef struct AVFormatContext {
      * if and only if iformat/oformat.priv_class is not NULL.
      *
      * - muxing: set by avformat_write_header()
-     * - demuxing: set by avformat_open_input()
+     * - demuxing: set by avformat_open_input_ijk()
      */
     void *priv_data;
 
     /**
      * I/O context.
      *
-     * - demuxing: either set by the user before avformat_open_input() (then
-     *             the user must close it manually) or set by avformat_open_input().
+     * - demuxing: either set by the user before avformat_open_input_ijk() (then
+     *             the user must close it manually) or set by avformat_open_input_ijk().
      * - muxing: set by the user before avformat_write_header(). The caller must
      *           take care of closing / freeing the IO context.
      *
@@ -1399,7 +1399,7 @@ typedef struct AVFormatContext {
      * A list of all streams in the file. New streams are created with
      * avformat_new_stream().
      *
-     * - demuxing: streams are created by libavformat in avformat_open_input().
+     * - demuxing: streams are created by libavformat in avformat_open_input_ijk().
      *             If AVFMTCTX_NOHEADER is set in ctx_flags, then new streams may also
      *             appear in av_read_frame().
      * - muxing: streams are created by the user before avformat_write_header().
@@ -1412,7 +1412,7 @@ typedef struct AVFormatContext {
     /**
      * input or output filename
      *
-     * - demuxing: set by avformat_open_input()
+     * - demuxing: set by avformat_open_input_ijk()
      * - muxing: may be set by the caller before avformat_write_header()
      *
      * @deprecated Use url instead.
@@ -1425,8 +1425,8 @@ typedef struct AVFormatContext {
      * input or output URL. Unlike the old filename field, this field has no
      * length restriction.
      *
-     * - demuxing: set by avformat_open_input(), initialized to an empty
-     *             string if url parameter was NULL in avformat_open_input().
+     * - demuxing: set by avformat_open_input_ijk(), initialized to an empty
+     *             string if url parameter was NULL in avformat_open_input_ijk().
      * - muxing: may be set by the caller before calling avformat_write_header()
      *           (or avformat_init_output() if that is called first) to a string
      *           which is freeable by av_free(). Set to an empty string if it
@@ -1467,7 +1467,7 @@ typedef struct AVFormatContext {
 
     /**
      * Flags modifying the (de)muxer behaviour. A combination of AVFMT_FLAG_*.
-     * Set by the user before avformat_open_input() / avformat_write_header().
+     * Set by the user before avformat_open_input_ijk() / avformat_write_header().
      */
     int flags;
 #define AVFMT_FLAG_GENPTS       0x0001 ///< Generate missing pts even if it requires parsing future frames.
@@ -1500,7 +1500,7 @@ typedef struct AVFormatContext {
     /**
      * Maximum size of the data read from input for determining
      * the input container format.
-     * Demuxing only, set by the caller before avformat_open_input().
+     * Demuxing only, set by the caller before avformat_open_input_ijk().
      */
     int64_t probesize;
 
@@ -1571,7 +1571,7 @@ typedef struct AVFormatContext {
     /**
      * Metadata that applies to the whole file.
      *
-     * - demuxing: set by libavformat in avformat_open_input()
+     * - demuxing: set by libavformat in avformat_open_input_ijk()
      * - muxing: may be set by the caller before avformat_write_header()
      *
      * Freed by libavformat in avformat_free_context().
@@ -1601,14 +1601,14 @@ typedef struct AVFormatContext {
     /**
      * Error recognition; higher values will detect more errors but may
      * misdetect some more or less valid parts as errors.
-     * Demuxing only, set by the caller before avformat_open_input().
+     * Demuxing only, set by the caller before avformat_open_input_ijk().
      */
     int error_recognition;
 
     /**
      * Custom interrupt callbacks for the I/O layer.
      *
-     * demuxing: set by the user before avformat_open_input().
+     * demuxing: set by the user before avformat_open_input_ijk().
      * muxing: set by the user before avformat_write_header()
      * (mainly useful for AVFMT_NOFILE formats). The callback
      * should also be passed to avio_open2() if it's used to
@@ -1902,7 +1902,7 @@ typedef struct AVFormatContext {
      * A callback for opening new IO streams.
      *
      * Whenever a muxer or a demuxer needs to open an IO stream (typically from
-     * avformat_open_input() for demuxers, but for certain formats can happen at
+     * avformat_open_input_ijk() for demuxers, but for certain formats can happen at
      * other times as well), it will call this callback to obtain an IO context.
      *
      * @param s the format context
@@ -2124,7 +2124,7 @@ const AVInputFormat *av_demuxer_iterate(void **opaque);
  * avformat_free_context() can be used to free the context and everything
  * allocated by the framework within it.
  */
-AVFormatContext *avformat_alloc_context(void);
+AVFormatContext *avformat_alloc_context_ijk(void);
 
 /**
  * Free an AVFormatContext and all its streams.
@@ -2294,9 +2294,9 @@ int av_probe_input_buffer(AVIOContext *pb, AVInputFormat **fmt,
 
 /**
  * Open an input stream and read the header. The codecs are not opened.
- * The stream must be closed with avformat_close_input().
+ * The stream must be closed with avformat_close_input_ijk().
  *
- * @param ps Pointer to user-supplied AVFormatContext (allocated by avformat_alloc_context).
+ * @param ps Pointer to user-supplied AVFormatContext (allocated by avformat_alloc_context_ijk).
  *           May be a pointer to NULL, in which case an AVFormatContext is allocated by this
  *           function and written into ps.
  *           Note that a user-supplied AVFormatContext will be freed on failure.
@@ -2311,7 +2311,7 @@ int av_probe_input_buffer(AVIOContext *pb, AVInputFormat **fmt,
  *
  * @note If you want to use custom IO, preallocate the format context and set its pb field.
  */
-int avformat_open_input(AVFormatContext **ps, const char *url, AVInputFormat *fmt, AVDictionary **options);
+int avformat_open_input_ijk(AVFormatContext **ps, const char *url, AVInputFormat *fmt, AVDictionary **options);
 
 attribute_deprecated
 int av_demuxer_open(AVFormatContext *ic);
@@ -2393,7 +2393,7 @@ int av_find_best_stream(AVFormatContext *ic,
  * information possible for decoding.
  *
  * If pkt->buf is NULL, then the packet is valid until the next
- * av_read_frame() or until avformat_close_input(). Otherwise the packet
+ * av_read_frame() or until avformat_close_input_ijk(). Otherwise the packet
  * is valid indefinitely. In both cases the packet must be freed with
  * av_packet_unref when it is no longer needed. For video, the packet contains
  * exactly one frame. For audio, it contains an integer number of frames if each
@@ -2491,7 +2491,7 @@ int av_read_pause(AVFormatContext *s);
  * Close an opened input AVFormatContext. Free it and all its contents
  * and set *s to NULL.
  */
-void avformat_close_input(AVFormatContext **s);
+void avformat_close_input_ijk(AVFormatContext **s);
 /**
  * @}
  */
@@ -2513,7 +2513,7 @@ void avformat_close_input(AVFormatContext **s);
  * Allocate the stream private data and write the stream header to
  * an output media file.
  *
- * @param s Media file handle, must be allocated with avformat_alloc_context().
+ * @param s Media file handle, must be allocated with avformat_alloc_context_ijk().
  *          Its oformat field must be set to the desired output format;
  *          Its pb field must be set to an already opened AVIOContext.
  * @param options  An AVDictionary filled with AVFormatContext and muxer-private options.
@@ -2535,7 +2535,7 @@ int avformat_write_header(AVFormatContext *s, AVDictionary **options);
  * before actually writing the header.
  * If using this function, do not pass the same options to avformat_write_header.
  *
- * @param s Media file handle, must be allocated with avformat_alloc_context().
+ * @param s Media file handle, must be allocated with avformat_alloc_context_ijk().
  *          Its oformat field must be set to the desired output format;
  *          Its pb field must be set to an already opened AVIOContext.
  * @param options  An AVDictionary filled with AVFormatContext and muxer-private options.

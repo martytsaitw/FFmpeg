@@ -156,7 +156,7 @@ int main(int argc, char **argv)
     }
 
     /* open the input file */
-    ret = avformat_open_input(&input_ctx, argv[1], NULL, NULL);
+    ret = avformat_open_input_ijk(&input_ctx, argv[1], NULL, NULL);
     if (ret < 0) {
         fprintf(stderr, "Cannot open input file '%s': ", argv[1]);
         goto finish;
@@ -256,7 +256,7 @@ finish:
         fprintf(stderr, "%s\n", buf);
     }
 
-    avformat_close_input(&input_ctx);
+    avformat_close_input_ijk(&input_ctx);
 
     av_frame_free(&frame);
     av_frame_free(&sw_frame);

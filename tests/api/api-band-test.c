@@ -82,7 +82,7 @@ static int video_decode(const char *input_filename)
 
     draw_horiz_band_called = 0;
 
-    result = avformat_open_input(&fmt_ctx, input_filename, NULL, NULL);
+    result = avformat_open_input_ijk(&fmt_ctx, input_filename, NULL, NULL);
     if (result < 0) {
         av_log(NULL, AV_LOG_ERROR, "Can't open file\n");
         return result;
@@ -199,7 +199,7 @@ static int video_decode(const char *input_filename)
     av_packet_unref(&pkt);
     av_frame_free(&fr);
     avcodec_close(ctx);
-    avformat_close_input(&fmt_ctx);
+    avformat_close_input_ijk(&fmt_ctx);
     avcodec_free_context(&ctx);
     av_freep(&byte_buffer);
     av_freep(&slice_byte_buffer);

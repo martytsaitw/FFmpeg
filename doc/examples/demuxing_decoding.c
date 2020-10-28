@@ -253,7 +253,7 @@ int main (int argc, char **argv)
     audio_dst_filename = argv[3];
 
     /* open input file, and allocate format context */
-    if (avformat_open_input(&fmt_ctx, src_filename, NULL, NULL) < 0) {
+    if (avformat_open_input_ijk(&fmt_ctx, src_filename, NULL, NULL) < 0) {
         fprintf(stderr, "Could not open source file %s\n", src_filename);
         exit(1);
     }
@@ -378,7 +378,7 @@ int main (int argc, char **argv)
 end:
     avcodec_free_context(&video_dec_ctx);
     avcodec_free_context(&audio_dec_ctx);
-    avformat_close_input(&fmt_ctx);
+    avformat_close_input_ijk(&fmt_ctx);
     if (video_dst_file)
         fclose(video_dst_file);
     if (audio_dst_file)

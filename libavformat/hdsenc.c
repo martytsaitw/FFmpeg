@@ -366,7 +366,7 @@ static int hds_write_header(AVFormatContext *s)
 
         if (!os->ctx) {
             os->first_stream = i;
-            ctx = avformat_alloc_context();
+            ctx = avformat_alloc_context_ijk();
             if (!ctx) {
                 ret = AVERROR(ENOMEM);
                 goto fail;

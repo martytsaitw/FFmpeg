@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
     }
 
     /* open the input file */
-    if (avformat_open_input(&input_ctx, argv[2], NULL, NULL) != 0) {
+    if (avformat_open_input_ijk(&input_ctx, argv[2], NULL, NULL) != 0) {
         fprintf(stderr, "Cannot open input file '%s'\n", argv[2]);
         return -1;
     }
@@ -244,7 +244,7 @@ int main(int argc, char *argv[])
     if (output_file)
         fclose(output_file);
     avcodec_free_context(&decoder_ctx);
-    avformat_close_input(&input_ctx);
+    avformat_close_input_ijk(&input_ctx);
     av_buffer_unref(&hw_device_ctx);
 
     return 0;

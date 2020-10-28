@@ -65,7 +65,7 @@ int main(int argc, char **argv)
     argv++;
     argc--;
 
-    if ((ret = avformat_open_input(&avf, filename, NULL, NULL)) < 0) {
+    if ((ret = avformat_open_input_ijk(&avf, filename, NULL, NULL)) < 0) {
         fprintf(stderr, "%s: %s\n", filename, av_err2str(ret));
         return 1;
     }
@@ -98,7 +98,7 @@ int main(int argc, char **argv)
         }
     }
 
-    avformat_close_input(&avf);
+    avformat_close_input_ijk(&avf);
 
     return 0;
 }

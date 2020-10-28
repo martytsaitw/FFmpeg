@@ -57,7 +57,7 @@ static void ts_str(char buffer[60], int64_t ts, AVRational base)
 int main(int argc, char **argv)
 {
     const char *filename;
-    AVFormatContext *ic = avformat_alloc_context();
+    AVFormatContext *ic = avformat_alloc_context_ijk();
     int i, ret, stream_id;
     int j;
     int64_t timestamp;
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 
     filename = argv[1];
 
-    ret = avformat_open_input(&ic, filename, NULL, &format_opts);
+    ret = avformat_open_input_ijk(&ic, filename, NULL, &format_opts);
     av_dict_free(&format_opts);
     if (ret < 0) {
         fprintf(stderr, "cannot open %s\n", filename);
@@ -152,7 +152,7 @@ int main(int argc, char **argv)
         printf("ret:%-10s st:%2d flags:%d  ts:%s\n", ret_str(ret), stream_id, i&1, ts_buf);
     }
 
-    avformat_close_input(&ic);
+    avformat_close_input_ijk(&ic);
 
     return 0;
 }

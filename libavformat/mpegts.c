@@ -521,7 +521,7 @@ static void mpegts_close_filter(MpegTSContext *ts, MpegTSFilter *filter)
         PESContext *pes = filter->u.pes_filter.opaque;
         av_buffer_unref(&pes->buffer);
         /* referenced private data will be freed later in
-         * avformat_close_input */
+         * avformat_close_input_ijk */
         if (!((PESContext *)filter->u.pes_filter.opaque)->st) {
             av_freep(&filter->u.pes_filter.opaque);
         }

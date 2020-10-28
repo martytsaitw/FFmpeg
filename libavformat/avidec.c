@@ -1102,7 +1102,7 @@ static int read_gab2_sub(AVFormatContext *s, AVStream *st, AVPacket *pkt)
         if (strcmp(sub_demuxer->name, "srt") && strcmp(sub_demuxer->name, "ass"))
             goto error;
 
-        if (!(ast->sub_ctx = avformat_alloc_context()))
+        if (!(ast->sub_ctx = avformat_alloc_context_ijk()))
             goto error;
 
         ast->sub_ctx->pb = pb;
@@ -1110,7 +1110,7 @@ static int read_gab2_sub(AVFormatContext *s, AVStream *st, AVPacket *pkt)
         if (ff_copy_whiteblacklists(ast->sub_ctx, s) < 0)
             goto error;
 
-        if (!avformat_open_input(&ast->sub_ctx, "", sub_demuxer, NULL)) {
+        if (!avformat_open_input_ijk(&ast->sub_ctx, "", sub_demuxer, NULL)) {
             if (ast->sub_ctx->nb_streams != 1)
                 goto error;
             ff_read_packet(ast->sub_ctx, &ast->sub_pkt);
@@ -1903,7 +1903,7 @@ static int avi_read_close(AVFormatContext *s)
         if (ast) {
             if (ast->sub_ctx) {
                 av_freep(&ast->sub_ctx->pb);
-                avformat_close_input(&ast->sub_ctx);
+                avformat_close_input_ijk(&ast->sub_ctx);
             }
             av_freep(&ast->sub_buffer);
             av_packet_unref(&ast->sub_pkt);

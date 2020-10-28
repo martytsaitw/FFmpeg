@@ -65,7 +65,7 @@ int main(int argc, char **argv)
     in_filename  = argv[1];
     out_filename = argv[2];
 
-    if ((ret = avformat_open_input(&ifmt_ctx, in_filename, 0, 0)) < 0) {
+    if ((ret = avformat_open_input_ijk(&ifmt_ctx, in_filename, 0, 0)) < 0) {
         fprintf(stderr, "Could not open input file '%s'", in_filename);
         goto end;
     }
@@ -173,7 +173,7 @@ int main(int argc, char **argv)
     av_write_trailer(ofmt_ctx);
 end:
 
-    avformat_close_input(&ifmt_ctx);
+    avformat_close_input_ijk(&ifmt_ctx);
 
     /* close output */
     if (ofmt_ctx && !(ofmt->flags & AVFMT_NOFILE))

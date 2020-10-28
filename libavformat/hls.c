@@ -267,7 +267,7 @@ static void free_playlist_list(HLSContext *c)
         pls->input_next_requested = 0;
         if (pls->ctx) {
             pls->ctx->pb = NULL;
-            avformat_close_input(&pls->ctx);
+            avformat_close_input_ijk(&pls->ctx);
         }
         av_free(pls);
     }
@@ -1933,7 +1933,7 @@ static int hls_read_header(AVFormatContext *s, AVDictionary **options)
         struct playlist *pls = c->playlists[i];
         AVInputFormat *in_fmt = NULL;
 
-        if (!(pls->ctx = avformat_alloc_context())) {
+        if (!(pls->ctx = avformat_alloc_context_ijk())) {
             ret = AVERROR(ENOMEM);
             goto fail;
         }
@@ -1971,8 +1971,8 @@ static int hls_read_header(AVFormatContext *s, AVDictionary **options)
                                     NULL, 0, 0);
         if (ret < 0) {
             /* Free the ctx - it isn't initialized properly at this point,
-             * so avformat_close_input shouldn't be called. If
-             * avformat_open_input fails below, it frees and zeros the
+             * so avformat_close_input_ijk shouldn't be called. If
+             * avformat_open_input_ijk fails below, it frees and zeros the
              * context, so it doesn't need any special treatment like this. */
             av_log(s, AV_LOG_ERROR, "Error when loading first segment '%s'\n", pls->segments[0]->url);
             avformat_free_context(pls->ctx);
@@ -1986,7 +1986,7 @@ static int hls_read_header(AVFormatContext *s, AVDictionary **options)
         if ((ret = ff_copy_whiteblacklists(pls->ctx, s)) < 0)
             goto fail;
 
-        ret = avformat_open_input(&pls->ctx, pls->segments[0]->url, in_fmt, NULL);
+        ret = avformat_open_input_ijk(&pls->ctx, pls->segments[0]->url, in_fmt, NULL);
         if (ret < 0)
             goto fail;
 

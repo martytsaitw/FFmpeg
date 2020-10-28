@@ -188,7 +188,7 @@ static int seek_test(const char *input_filename, const char *start, const char *
     crc_array = NULL;
     pts_array = NULL;
 
-    result = avformat_open_input(&fmt_ctx, input_filename, NULL, NULL);
+    result = avformat_open_input_ijk(&fmt_ctx, input_filename, NULL, NULL);
     if (result < 0) {
         av_log(NULL, AV_LOG_ERROR, "Can't open file\n");
         return result;
@@ -267,7 +267,7 @@ end:
     av_freep(&pts_array);
     av_frame_free(&fr);
     avcodec_close(ctx);
-    avformat_close_input(&fmt_ctx);
+    avformat_close_input_ijk(&fmt_ctx);
     avcodec_free_context(&ctx);
     return result;
 }

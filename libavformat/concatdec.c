@@ -329,7 +329,7 @@ static int open_file(AVFormatContext *avf, unsigned fileno)
     AVDictionaryEntry *t = NULL;
     int fps_flag = 0;
 
-    new_avf = avformat_alloc_context();
+    new_avf = avformat_alloc_context_ijk();
     if (!new_avf)
         return AVERROR(ENOMEM);
 
@@ -367,12 +367,12 @@ static int open_file(AVFormatContext *avf, unsigned fileno)
         }
     }
 
-    ret = avformat_open_input(&new_avf, file->url, NULL, &tmp);
+    ret = avformat_open_input_ijk(&new_avf, file->url, NULL, &tmp);
     av_dict_free(&tmp);
     if (ret < 0 ||
         (ret = !cat->use_new_find_stream_info ? avformat_find_stream_info(new_avf, NULL) : av_try_find_stream_info(new_avf, NULL)) < 0) {
         av_log(avf, AV_LOG_ERROR, "Impossible to open '%s'\n", file->url);
-        avformat_close_input(&new_avf);
+        avformat_close_input_ijk(&new_avf);
         return ret;
     }
 
@@ -380,7 +380,7 @@ static int open_file(AVFormatContext *avf, unsigned fileno)
         return 0;
 
     if (cat->avf)
-        avformat_close_input(&cat->avf);
+        avformat_close_input_ijk(&cat->avf);
 
     avf->bit_rate = new_avf->bit_rate;
     cat->avf      = new_avf;
@@ -424,7 +424,7 @@ static int concat_read_close(AVFormatContext *avf)
         av_dict_free(&cat->files[i].metadata);
     }
     if (cat->avf)
-        avformat_close_input(&cat->avf);
+        avformat_close_input_ijk(&cat->avf);
     av_dict_free(&cat->options);
     av_freep(&cat->files);
     return 0;
@@ -816,13 +816,13 @@ static int concat_seek(AVFormatContext *avf, int stream,
     if ((ret = real_seek(avf, stream, min_ts, ts, max_ts, flags, cur_avf_saved)) < 0) {
         if (cat->cur_file != cur_file_saved) {
             if (cat->avf)
-                avformat_close_input(&cat->avf);
+                avformat_close_input_ijk(&cat->avf);
         }
         cat->avf      = cur_avf_saved;
         cat->cur_file = cur_file_saved;
     } else {
         if (cat->cur_file != cur_file_saved) {
-            avformat_close_input(&cur_avf_saved);
+            avformat_close_input_ijk(&cur_avf_saved);
         }
         cat->eof = 0;
     }

@@ -1003,7 +1003,7 @@ static int open_input_file(OptionsContext *o, const char *filename)
                          strcmp(filename, "/dev/stdin");
 
     /* get default parameters from command line */
-    ic = avformat_alloc_context();
+    ic = avformat_alloc_context_ijk();
     if (!ic) {
         print_error(filename, AVERROR(ENOMEM));
         exit_program(1);
@@ -1066,7 +1066,7 @@ static int open_input_file(OptionsContext *o, const char *filename)
         scan_all_pmts_set = 1;
     }
     /* open the input file with generic avformat function */
-    err = avformat_open_input(&ic, filename, file_iformat, &o->g->format_opts);
+    err = avformat_open_input_ijk(&ic, filename, file_iformat, &o->g->format_opts);
     if (err < 0) {
         print_error(filename, err);
         if (err == AVERROR_PROTOCOL_NOT_FOUND)
@@ -1097,7 +1097,7 @@ static int open_input_file(OptionsContext *o, const char *filename)
         if (ret < 0) {
             av_log(NULL, AV_LOG_FATAL, "%s: could not find codec parameters\n", filename);
             if (ic->nb_streams == 0) {
-                avformat_close_input(&ic);
+                avformat_close_input_ijk(&ic);
                 exit_program(1);
             }
         }

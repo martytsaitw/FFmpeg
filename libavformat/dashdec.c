@@ -367,7 +367,7 @@ static void free_representation(struct representation *pls)
         ff_format_io_close(pls->parent, &pls->input);
     if (pls->ctx) {
         pls->ctx->pb = NULL;
-        avformat_close_input(&pls->ctx);
+        avformat_close_input_ijk(&pls->ctx);
     }
 
 
@@ -2009,7 +2009,7 @@ static void close_demux_for_component(struct representation *pls)
     av_freep(&pls->pb.buffer);
     memset(&pls->pb, 0x00, sizeof(AVIOContext));
     pls->ctx->pb = NULL;
-    avformat_close_input(&pls->ctx);
+    avformat_close_input_ijk(&pls->ctx);
     pls->ctx = NULL;
 }
 
@@ -2024,7 +2024,7 @@ static int reopen_demux_for_component(AVFormatContext *s, struct representation 
     if (pls->ctx) {
         close_demux_for_component(pls);
     }
-    if (!(pls->ctx = avformat_alloc_context())) {
+    if (!(pls->ctx = avformat_alloc_context_ijk())) {
         ret = AVERROR(ENOMEM);
         goto fail;
     }
@@ -2061,7 +2061,7 @@ static int reopen_demux_for_component(AVFormatContext *s, struct representation 
     pls->ctx->io_open  = nested_io_open;
 
     // provide additional information from mpd if available
-    ret = avformat_open_input(&pls->ctx, "", in_fmt, &in_fmt_opts); //pls->init_section->url
+    ret = avformat_open_input_ijk(&pls->ctx, "", in_fmt, &in_fmt_opts); //pls->init_section->url
     av_dict_free(&in_fmt_opts);
     if (ret < 0)
         goto fail;

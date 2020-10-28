@@ -538,7 +538,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
 }
 
 
-int avformat_open_input(AVFormatContext **ps, const char *filename,
+int avformat_open_input_ijk(AVFormatContext **ps, const char *filename,
                         AVInputFormat *fmt, AVDictionary **options)
 {
     AVFormatContext *s = *ps;
@@ -547,10 +547,10 @@ int avformat_open_input(AVFormatContext **ps, const char *filename,
     AVDictionary *tmp2 = NULL;
     ID3v2ExtraMeta *id3v2_extra_meta = NULL;
 
-    if (!s && !(s = avformat_alloc_context()))
+    if (!s && !(s = avformat_alloc_context_ijk()))
         return AVERROR(ENOMEM);
     if (!s->av_class) {
-        av_log(NULL, AV_LOG_ERROR, "Input context has not been properly allocated by avformat_alloc_context() and is not NULL either\n");
+        av_log(NULL, AV_LOG_ERROR, "Input context has not been properly allocated by avformat_alloc_context_ijk() and is not NULL either\n");
         return AVERROR(EINVAL);
     }
     if (fmt)
@@ -4533,7 +4533,7 @@ void avformat_free_context(AVFormatContext *s)
     av_free(s);
 }
 
-void avformat_close_input(AVFormatContext **ps)
+void avformat_close_input_ijk(AVFormatContext **ps)
 {
     AVFormatContext *s;
     AVIOContext *pb;
@@ -6178,7 +6178,7 @@ AVCodecContext * create_audio_decoder_from_codecpar (AVCodecParameters * codecpa
     return avctx;
 }
 
-// must be called after avformat_open_input
+// must be called after avformat_open_input_ijk
 int av_try_find_stream_info(AVFormatContext *ic, AVDictionary **options) {
     FF_DISABLE_DEPRECATION_WARNINGS
     int ret = 0;

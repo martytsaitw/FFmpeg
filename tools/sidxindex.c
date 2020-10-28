@@ -121,7 +121,7 @@ static int handle_file(struct Tracks *tracks, const char *file)
     char errbuf[50], *ptr;
     struct Track *track;
 
-    err = avformat_open_input(&ctx, file, NULL, NULL);
+    err = avformat_open_input_ijk(&ctx, file, NULL, NULL);
     if (err < 0) {
         av_strerror(err, errbuf, sizeof(errbuf));
         fprintf(stderr, "Unable to open %s: %s\n", file, errbuf);
@@ -203,13 +203,13 @@ static int handle_file(struct Tracks *tracks, const char *file)
         tracks->nb_tracks++;
     }
 
-    avformat_close_input(&ctx);
+    avformat_close_input_ijk(&ctx);
 
     err = find_sidx(tracks, orig_tracks, file);
 
 fail:
     if (ctx)
-        avformat_close_input(&ctx);
+        avformat_close_input_ijk(&ctx);
     return err;
 }
 

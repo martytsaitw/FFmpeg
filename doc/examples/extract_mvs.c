@@ -129,7 +129,7 @@ int main(int argc, char **argv)
     }
     src_filename = argv[1];
 
-    if (avformat_open_input(&fmt_ctx, src_filename, NULL, NULL) < 0) {
+    if (avformat_open_input_ijk(&fmt_ctx, src_filename, NULL, NULL) < 0) {
         fprintf(stderr, "Could not open source file %s\n", src_filename);
         exit(1);
     }
@@ -172,7 +172,7 @@ int main(int argc, char **argv)
 
 end:
     avcodec_free_context(&video_dec_ctx);
-    avformat_close_input(&fmt_ctx);
+    avformat_close_input_ijk(&fmt_ctx);
     av_frame_free(&frame);
     return ret < 0;
 }

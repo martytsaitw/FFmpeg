@@ -56,7 +56,7 @@ static int open_input_file(const char *filename)
     unsigned int i;
 
     ifmt_ctx = NULL;
-    if ((ret = avformat_open_input(&ifmt_ctx, filename, NULL, NULL)) < 0) {
+    if ((ret = avformat_open_input_ijk(&ifmt_ctx, filename, NULL, NULL)) < 0) {
         av_log(NULL, AV_LOG_ERROR, "Cannot open input file\n");
         return ret;
     }
@@ -607,7 +607,7 @@ end:
     }
     av_free(filter_ctx);
     av_free(stream_ctx);
-    avformat_close_input(&ifmt_ctx);
+    avformat_close_input_ijk(&ifmt_ctx);
     if (ofmt_ctx && !(ofmt_ctx->oformat->flags & AVFMT_NOFILE))
         avio_closep(&ofmt_ctx->pb);
     avformat_free_context(ofmt_ctx);

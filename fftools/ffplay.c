@@ -1252,7 +1252,7 @@ static void stream_close(VideoState *is)
     if (is->subtitle_stream >= 0)
         stream_component_close(is, is->subtitle_stream);
 
-    avformat_close_input(&is->ic);
+    avformat_close_input_ijk(&is->ic);
 
     packet_queue_destroy(&is->videoq);
     packet_queue_destroy(&is->audioq);
@@ -2747,7 +2747,7 @@ static int read_thread(void *arg)
     is->last_subtitle_stream = is->subtitle_stream = -1;
     is->eof = 0;
 
-    ic = avformat_alloc_context();
+    ic = avformat_alloc_context_ijk();
     if (!ic) {
         av_log(NULL, AV_LOG_FATAL, "Could not allocate context.\n");
         ret = AVERROR(ENOMEM);
@@ -2759,7 +2759,7 @@ static int read_thread(void *arg)
         av_dict_set(&format_opts, "scan_all_pmts", "1", AV_DICT_DONT_OVERWRITE);
         scan_all_pmts_set = 1;
     }
-    err = avformat_open_input(&ic, is->filename, is->iformat, &format_opts);
+    err = avformat_open_input_ijk(&ic, is->filename, is->iformat, &format_opts);
     if (err < 0) {
         print_error(is->filename, err);
         ret = -1;
@@ -3030,7 +3030,7 @@ static int read_thread(void *arg)
     ret = 0;
  fail:
     if (ic && !is->ic)
-        avformat_close_input(&ic);
+        avformat_close_input_ijk(&ic);
 
     if (ret != 0) {
         SDL_Event event;

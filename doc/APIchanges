@@ -1328,7 +1328,7 @@ API changes, most recent first:
   avcodec_close() argument can be NULL.
 
 2013-09-04 - 36cd017a - lavf 55.16.101 - avformat.h
-  avformat_close_input() argument can be NULL and point on NULL.
+  avformat_close_input_ijk() argument can be NULL and point on NULL.
 
 2013-08-29 - e31db62 - lavf 55.15.100 - avformat.h
   Add av_format_get_probe_score().
@@ -1957,7 +1957,7 @@ lavd 54.4.100 / 54.0.0, lavfi 3.5.0
   Deprecate AVFrame.age. The field is unused.
 
 2011-12-12 - 8bc7fe4 / 5266045 - lavf 53.25.0 / 53.17.0
-  Add avformat_close_input().
+  Add avformat_close_input_ijk().
   Deprecate av_close_input_file() and av_close_input_stream().
 
 2011-12-09 - c59b80c / b2890f5 - lavu 51.32.0 / 51.20.0 - audioconvert.h
@@ -2182,7 +2182,7 @@ lavd 54.4.100 / 54.0.0, lavfi 3.5.0
   Add av_printf_format().
 
 2011-06-16 - 2905e3f / 05e84c9, 2905e3f / 25de595 - lavf 53.4.0 / 53.2.0 - avformat.h
-  Add avformat_open_input and avformat_write_header().
+  Add avformat_open_input_ijk and avformat_write_header().
   Deprecate av_open_input_stream, av_open_input_file,
   AVFormatParameters and av_write_header.
 

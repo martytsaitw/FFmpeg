@@ -64,7 +64,7 @@ static int open_input_file(const char *filename,
     int error;
 
     /* Open the input file to read from it. */
-    if ((error = avformat_open_input(input_format_context, filename, NULL,
+    if ((error = avformat_open_input_ijk(input_format_context, filename, NULL,
                                      NULL)) < 0) {
         fprintf(stderr, "Could not open input file '%s' (error '%s')\n",
                 filename, av_err2str(error));
@@ -76,7 +76,7 @@ static int open_input_file(const char *filename,
     if ((error = avformat_find_stream_info(*input_format_context, NULL)) < 0) {
         fprintf(stderr, "Could not open find stream info (error '%s')\n",
                 av_err2str(error));
-        avformat_close_input(input_format_context);
+        avformat_close_input_ijk(input_format_context);
         return error;
     }
 
@@ -84,14 +84,14 @@ static int open_input_file(const char *filename,
     if ((*input_format_context)->nb_streams != 1) {
         fprintf(stderr, "Expected one audio input stream, but found %d\n",
                 (*input_format_context)->nb_streams);
-        avformat_close_input(input_format_context);
+        avformat_close_input_ijk(input_format_context);
         return AVERROR_EXIT;
     }
 
     /* Find a decoder for the audio stream. */
     if (!(input_codec = avcodec_find_decoder_ijk((*input_format_context)->streams[0]->codecpar->codec_id))) {
         fprintf(stderr, "Could not find input codec\n");
-        avformat_close_input(input_format_context);
+        avformat_close_input_ijk(input_format_context);
         return AVERROR_EXIT;
     }
 
@@ -99,14 +99,14 @@ static int open_input_file(const char *filename,
     avctx = avcodec_alloc_context3(input_codec);
     if (!avctx) {
         fprintf(stderr, "Could not allocate a decoding context\n");
-        avformat_close_input(input_format_context);
+        avformat_close_input_ijk(input_format_context);
         return AVERROR(ENOMEM);
     }
 
     /* Initialize the stream parameters with demuxer information. */
     error = avcodec_parameters_to_context(avctx, (*input_format_context)->streams[0]->codecpar);
     if (error < 0) {
-        avformat_close_input(input_format_context);
+        avformat_close_input_ijk(input_format_context);
         avcodec_free_context(&avctx);
         return error;
     }
@@ -116,7 +116,7 @@ static int open_input_file(const char *filename,
         fprintf(stderr, "Could not open input codec (error '%s')\n",
                 av_err2str(error));
         avcodec_free_context(&avctx);
-        avformat_close_input(input_format_context);
+        avformat_close_input_ijk(input_format_context);
         return error;
     }
 
@@ -156,7 +156,7 @@ static int open_output_file(const char *filename,
     }
 
     /* Create a new format context for the output container format. */
-    if (!(*output_format_context = avformat_alloc_context())) {
+    if (!(*output_format_context = avformat_alloc_context_ijk())) {
         fprintf(stderr, "Could not allocate output format context\n");
         return AVERROR(ENOMEM);
     }
@@ -879,7 +879,7 @@ cleanup:
     if (input_codec_context)
         avcodec_free_context(&input_codec_context);
     if (input_format_context)
-        avformat_close_input(&input_format_context);
+        avformat_close_input_ijk(&input_format_context);
 
     return ret;
 }

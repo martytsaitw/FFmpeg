@@ -63,7 +63,7 @@ static int open_input_file(const char *filename)
     AVCodec *decoder = NULL;
     AVStream *video = NULL;
 
-    if ((ret = avformat_open_input(&ifmt_ctx, filename, NULL, NULL)) < 0) {
+    if ((ret = avformat_open_input_ijk(&ifmt_ctx, filename, NULL, NULL)) < 0) {
         fprintf(stderr, "Cannot open input file '%s', Error code: %s\n",
                 filename, av_err2str(ret));
         return ret;
@@ -295,8 +295,8 @@ int main(int argc, char **argv)
     av_write_trailer(ofmt_ctx);
 
 end:
-    avformat_close_input(&ifmt_ctx);
-    avformat_close_input(&ofmt_ctx);
+    avformat_close_input_ijk(&ifmt_ctx);
+    avformat_close_input_ijk(&ofmt_ctx);
     avcodec_free_context(&decoder_ctx);
     avcodec_free_context(&encoder_ctx);
     av_buffer_unref(&hw_device_ctx);

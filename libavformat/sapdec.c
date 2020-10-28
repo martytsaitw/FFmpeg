@@ -53,7 +53,7 @@ static int sap_read_close(AVFormatContext *s)
 {
     struct SAPState *sap = s->priv_data;
     if (sap->sdp_ctx)
-        avformat_close_input(&sap->sdp_ctx);
+        avformat_close_input_ijk(&sap->sdp_ctx);
     if (sap->ann_fd)
         ffurl_close(sap->ann_fd);
     av_freep(&sap->sdp);
@@ -152,7 +152,7 @@ static int sap_read_header(AVFormatContext *s)
     infmt = av_find_input_format("sdp");
     if (!infmt)
         goto fail;
-    sap->sdp_ctx = avformat_alloc_context();
+    sap->sdp_ctx = avformat_alloc_context_ijk();
     if (!sap->sdp_ctx) {
         ret = AVERROR(ENOMEM);
         goto fail;
@@ -164,7 +164,7 @@ static int sap_read_header(AVFormatContext *s)
     if ((ret = ff_copy_whiteblacklists(sap->sdp_ctx, s)) < 0)
         goto fail;
 
-    ret = avformat_open_input(&sap->sdp_ctx, "temp.sdp", infmt, NULL);
+    ret = avformat_open_input_ijk(&sap->sdp_ctx, "temp.sdp", infmt, NULL);
     if (ret < 0)
         goto fail;
     if (sap->sdp_ctx->ctx_flags & AVFMTCTX_NOHEADER)

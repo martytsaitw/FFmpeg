@@ -319,7 +319,7 @@ static av_cold int init_subtitles(AVFilterContext *ctx)
     }
 
     /* Open subtitles file */
-    ret = avformat_open_input(&fmt, ass->filename, NULL, NULL);
+    ret = avformat_open_input_ijk(&fmt, ass->filename, NULL, NULL);
     if (ret < 0) {
         av_log(ctx, AV_LOG_ERROR, "Unable to open %s\n", ass->filename);
         goto end;
@@ -480,7 +480,7 @@ end:
     av_dict_free(&codec_opts);
     avcodec_close(dec_ctx);
     avcodec_free_context(&dec_ctx);
-    avformat_close_input(&fmt);
+    avformat_close_input_ijk(&fmt);
     return ret;
 }
 

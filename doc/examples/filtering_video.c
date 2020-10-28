@@ -54,7 +54,7 @@ static int open_input_file(const char *filename)
     int ret;
     AVCodec *dec;
 
-    if ((ret = avformat_open_input(&fmt_ctx, filename, NULL, NULL)) < 0) {
+    if ((ret = avformat_open_input_ijk(&fmt_ctx, filename, NULL, NULL)) < 0) {
         av_log(NULL, AV_LOG_ERROR, "Cannot open input file\n");
         return ret;
     }
@@ -276,7 +276,7 @@ int main(int argc, char **argv)
 end:
     avfilter_graph_free(&filter_graph);
     avcodec_free_context(&dec_ctx);
-    avformat_close_input(&fmt_ctx);
+    avformat_close_input_ijk(&fmt_ctx);
     av_frame_free(&frame);
     av_frame_free(&filt_frame);
 

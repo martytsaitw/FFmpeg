@@ -527,14 +527,14 @@ static av_cold int rdt_init(AVFormatContext *s, int st_index, PayloadContext *rd
 {
     int ret;
 
-    rdt->rmctx = avformat_alloc_context();
+    rdt->rmctx = avformat_alloc_context_ijk();
     if (!rdt->rmctx)
         return AVERROR(ENOMEM);
 
     if ((ret = ff_copy_whiteblacklists(rdt->rmctx, s)) < 0)
         return ret;
 
-    return avformat_open_input(&rdt->rmctx, "", &ff_rdt_demuxer, NULL);
+    return avformat_open_input_ijk(&rdt->rmctx, "", &ff_rdt_demuxer, NULL);
 }
 
 static void
@@ -548,7 +548,7 @@ rdt_close_context (PayloadContext *rdt)
             av_freep(&rdt->rmst[i]);
         }
     if (rdt->rmctx)
-        avformat_close_input(&rdt->rmctx);
+        avformat_close_input_ijk(&rdt->rmctx);
     av_freep(&rdt->mlti_data);
     av_freep(&rdt->rmst);
 }

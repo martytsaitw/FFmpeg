@@ -117,13 +117,13 @@ int ff_wms_parse_sdp_a_line(AVFormatContext *s, const char *p)
                    "Failed to fix invalid RTSP-MS/ASF min_pktsize\n");
         init_packetizer(&pb, buf, len);
         if (rt->asf_ctx) {
-            avformat_close_input(&rt->asf_ctx);
+            avformat_close_input_ijk(&rt->asf_ctx);
         }
 
         if (!(iformat = av_find_input_format("asf")))
             return AVERROR_DEMUXER_NOT_FOUND;
 
-        rt->asf_ctx = avformat_alloc_context();
+        rt->asf_ctx = avformat_alloc_context_ijk();
         if (!rt->asf_ctx) {
             av_free(buf);
             return AVERROR(ENOMEM);
@@ -136,7 +136,7 @@ int ff_wms_parse_sdp_a_line(AVFormatContext *s, const char *p)
             return ret;
         }
 
-        ret = avformat_open_input(&rt->asf_ctx, "", iformat, &opts);
+        ret = avformat_open_input_ijk(&rt->asf_ctx, "", iformat, &opts);
         av_dict_free(&opts);
         if (ret < 0) {
             av_free(pb.buffer);

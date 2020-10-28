@@ -89,7 +89,7 @@ int main(int argc, char **argv)
     strcat(fntemplate, PKTFILESUFF);
     printf("FNTEMPLATE: '%s'\n", fntemplate);
 
-    err = avformat_open_input(&fctx, argv[1], NULL, NULL);
+    err = avformat_open_input_ijk(&fctx, argv[1], NULL, NULL);
     if (err < 0) {
         fprintf(stderr, "cannot open input: error %d\n", err);
         return 1;
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
             break;
     }
 
-    avformat_close_input(&fctx);
+    avformat_close_input_ijk(&fctx);
 
     while (donotquit)
         av_usleep(60 * 1000000);

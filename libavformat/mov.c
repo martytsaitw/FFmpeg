@@ -2353,7 +2353,7 @@ static int mov_finalize_stsd_codec(MOVContext *c, AVIOContext *pb,
     switch (st->codecpar->codec_id) {
 #if CONFIG_DV_DEMUXER
     case AV_CODEC_ID_DVAUDIO:
-        c->dv_fctx = avformat_alloc_context();
+        c->dv_fctx = avformat_alloc_context_ijk();
         if (!c->dv_fctx) {
             av_log(c->fc, AV_LOG_ERROR, "dv demux context alloc error\n");
             return AVERROR(ENOMEM);

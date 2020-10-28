@@ -790,7 +790,7 @@ void ff_rtsp_close_streams(AVFormatContext *s)
     }
     av_freep(&rt->rtsp_streams);
     if (rt->asf_ctx) {
-        avformat_close_input(&rt->asf_ctx);
+        avformat_close_input_ijk(&rt->asf_ctx);
     }
     if (CONFIG_RTPDEC && rt->ts)
         avpriv_mpegts_parse_close(rt->ts);
