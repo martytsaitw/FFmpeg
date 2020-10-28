@@ -914,7 +914,7 @@ static int mpegts_init(AVFormatContext *s)
         if (st->codecpar->codec_id == AV_CODEC_ID_AAC &&
             st->codecpar->extradata_size > 0) {
             AVStream *ast;
-            ts_st->amux = avformat_alloc_context();
+            ts_st->amux = avformat_alloc_context_ijk();
             if (!ts_st->amux) {
                 ret = AVERROR(ENOMEM);
                 goto fail;

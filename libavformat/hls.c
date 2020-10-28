@@ -1933,7 +1933,7 @@ static int hls_read_header(AVFormatContext *s, AVDictionary **options)
         struct playlist *pls = c->playlists[i];
         AVInputFormat *in_fmt = NULL;
 
-        if (!(pls->ctx = avformat_alloc_context())) {
+        if (!(pls->ctx = avformat_alloc_context_ijk())) {
             ret = AVERROR(ENOMEM);
             goto fail;
         }

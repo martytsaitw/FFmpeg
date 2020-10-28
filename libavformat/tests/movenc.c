@@ -179,7 +179,7 @@ static void init_fps(int bf, int audio_preroll, int fps)
 {
     AVStream *st;
     int iobuf_size = force_iobuf_size ? force_iobuf_size : sizeof(iobuf);
-    ctx = avformat_alloc_context();
+    ctx = avformat_alloc_context_ijk();
     if (!ctx)
         exit(1);
     ctx->oformat = av_guess_format(format, NULL, NULL);

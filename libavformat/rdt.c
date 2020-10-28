@@ -527,7 +527,7 @@ static av_cold int rdt_init(AVFormatContext *s, int st_index, PayloadContext *rd
 {
     int ret;
 
-    rdt->rmctx = avformat_alloc_context();
+    rdt->rmctx = avformat_alloc_context_ijk();
     if (!rdt->rmctx)
         return AVERROR(ENOMEM);
 

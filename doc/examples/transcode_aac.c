@@ -156,7 +156,7 @@ static int open_output_file(const char *filename,
     }
 
     /* Create a new format context for the output container format. */
-    if (!(*output_format_context = avformat_alloc_context())) {
+    if (!(*output_format_context = avformat_alloc_context_ijk())) {
         fprintf(stderr, "Could not allocate output format context\n");
         return AVERROR(ENOMEM);
     }

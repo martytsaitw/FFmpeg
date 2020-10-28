@@ -55,7 +55,7 @@ static int rtp_mpegts_write_header(AVFormatContext *s)
 
     if (!mpegts_format || !rtp_format)
         return AVERROR(ENOSYS);
-    mpegts_ctx = avformat_alloc_context();
+    mpegts_ctx = avformat_alloc_context_ijk();
     if (!mpegts_ctx)
         return AVERROR(ENOMEM);
     mpegts_ctx->oformat   = mpegts_format;
@@ -78,7 +78,7 @@ static int rtp_mpegts_write_header(AVFormatContext *s)
     chain->mpegts_ctx = mpegts_ctx;
     mpegts_ctx = NULL;
 
-    rtp_ctx = avformat_alloc_context();
+    rtp_ctx = avformat_alloc_context_ijk();
     if (!rtp_ctx) {
         ret = AVERROR(ENOMEM);
         goto fail;

@@ -1102,7 +1102,7 @@ static int read_gab2_sub(AVFormatContext *s, AVStream *st, AVPacket *pkt)
         if (strcmp(sub_demuxer->name, "srt") && strcmp(sub_demuxer->name, "ass"))
             goto error;
 
-        if (!(ast->sub_ctx = avformat_alloc_context()))
+        if (!(ast->sub_ctx = avformat_alloc_context_ijk()))
             goto error;
 
         ast->sub_ctx->pb = pb;

@@ -28,7 +28,7 @@ int ff_alloc_input_device_context(AVFormatContext **avctx, AVInputFormat *iforma
     *avctx = NULL;
     if (!iformat && !format)
         return AVERROR(EINVAL);
-    if (!(s = avformat_alloc_context()))
+    if (!(s = avformat_alloc_context_ijk()))
         return AVERROR(ENOMEM);
 
     if (!iformat)

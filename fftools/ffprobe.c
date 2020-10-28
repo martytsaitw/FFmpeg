@@ -2825,7 +2825,7 @@ static int open_input_file(InputFile *ifile, const char *filename)
     AVDictionaryEntry *t;
     int scan_all_pmts_set = 0;
 
-    fmt_ctx = avformat_alloc_context();
+    fmt_ctx = avformat_alloc_context_ijk();
     if (!fmt_ctx) {
         print_error(filename, AVERROR(ENOMEM));
         exit_program(1);

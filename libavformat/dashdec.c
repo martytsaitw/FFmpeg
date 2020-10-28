@@ -2024,7 +2024,7 @@ static int reopen_demux_for_component(AVFormatContext *s, struct representation 
     if (pls->ctx) {
         close_demux_for_component(pls);
     }
-    if (!(pls->ctx = avformat_alloc_context())) {
+    if (!(pls->ctx = avformat_alloc_context_ijk())) {
         ret = AVERROR(ENOMEM);
         goto fail;
     }

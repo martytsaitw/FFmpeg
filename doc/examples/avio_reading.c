@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
     bd.ptr  = buffer;
     bd.size = buffer_size;
 
-    if (!(fmt_ctx = avformat_alloc_context())) {
+    if (!(fmt_ctx = avformat_alloc_context_ijk())) {
         ret = AVERROR(ENOMEM);
         goto end;
     }

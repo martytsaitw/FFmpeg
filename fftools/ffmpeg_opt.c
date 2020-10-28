@@ -1003,7 +1003,7 @@ static int open_input_file(OptionsContext *o, const char *filename)
                          strcmp(filename, "/dev/stdin");
 
     /* get default parameters from command line */
-    ic = avformat_alloc_context();
+    ic = avformat_alloc_context_ijk();
     if (!ic) {
         print_error(filename, AVERROR(ENOMEM));
         exit_program(1);

@@ -57,7 +57,7 @@ static void ts_str(char buffer[60], int64_t ts, AVRational base)
 int main(int argc, char **argv)
 {
     const char *filename;
-    AVFormatContext *ic = avformat_alloc_context();
+    AVFormatContext *ic = avformat_alloc_context_ijk();
     int i, ret, stream_id;
     int j;
     int64_t timestamp;

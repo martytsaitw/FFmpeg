@@ -916,7 +916,7 @@ static int dash_init(AVFormatContext *s)
         dict_copy_entry(&as->metadata, s->streams[i]->metadata, "language");
         dict_copy_entry(&as->metadata, s->streams[i]->metadata, "role");
 
-        ctx = avformat_alloc_context();
+        ctx = avformat_alloc_context_ijk();
         if (!ctx)
             return AVERROR(ENOMEM);
 

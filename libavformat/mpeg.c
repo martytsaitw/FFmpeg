@@ -746,7 +746,7 @@ static int vobsub_read_header(AVFormatContext *s)
         goto end;
     }
 
-    vobsub->sub_ctx = avformat_alloc_context();
+    vobsub->sub_ctx = avformat_alloc_context_ijk();
     if (!vobsub->sub_ctx) {
         ret = AVERROR(ENOMEM);
         goto end;

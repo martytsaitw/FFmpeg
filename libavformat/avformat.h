@@ -52,7 +52,7 @@
  * which exports all information about the file being read or written. As with
  * most Libavformat structures, its size is not part of public ABI, so it cannot be
  * allocated on stack or directly with av_malloc(). To create an
- * AVFormatContext, use avformat_alloc_context() (some functions, like
+ * AVFormatContext, use avformat_alloc_context_ijk() (some functions, like
  * avformat_open_input() might do that for you).
  *
  * Most importantly an AVFormatContext contains:
@@ -119,7 +119,7 @@
  * frames to find missing information.
  *
  * In some cases you might want to preallocate an AVFormatContext yourself with
- * avformat_alloc_context() and do some tweaking on it before passing it to
+ * avformat_alloc_context_ijk() and do some tweaking on it before passing it to
  * avformat_open_input(). One such case is when you want to use custom functions
  * for reading input data instead of lavf internal I/O layer.
  * To do that, create your own AVIOContext with avio_alloc_context(), passing
@@ -195,7 +195,7 @@
  * packets and av_write_trailer() for finalizing the file.
  *
  * At the beginning of the muxing process, the caller must first call
- * avformat_alloc_context() to create a muxing context. The caller then sets up
+ * avformat_alloc_context_ijk() to create a muxing context. The caller then sets up
  * the muxer by filling the various fields in this context:
  *
  * - The @ref AVFormatContext.oformat "oformat" field must be set to select the
@@ -1330,7 +1330,7 @@ typedef struct AVFormatInternal AVFormatInternal;
  * Removal, reordering and changes to existing fields require a major
  * version bump.
  * sizeof(AVFormatContext) must not be used outside libav*, use
- * avformat_alloc_context() to create an AVFormatContext.
+ * avformat_alloc_context_ijk() to create an AVFormatContext.
  *
  * Fields can be accessed through AVOptions (av_opt*),
  * the name string used matches the associated command line parameter name and
@@ -1340,7 +1340,7 @@ typedef struct AVFormatInternal AVFormatInternal;
  */
 typedef struct AVFormatContext {
     /**
-     * A class for logging and @ref avoptions. Set by avformat_alloc_context().
+     * A class for logging and @ref avoptions. Set by avformat_alloc_context_ijk().
      * Exports (de)muxer private options if they exist.
      */
     const AVClass *av_class;
@@ -2124,7 +2124,7 @@ const AVInputFormat *av_demuxer_iterate(void **opaque);
  * avformat_free_context() can be used to free the context and everything
  * allocated by the framework within it.
  */
-AVFormatContext *avformat_alloc_context(void);
+AVFormatContext *avformat_alloc_context_ijk(void);
 
 /**
  * Free an AVFormatContext and all its streams.
@@ -2296,7 +2296,7 @@ int av_probe_input_buffer(AVIOContext *pb, AVInputFormat **fmt,
  * Open an input stream and read the header. The codecs are not opened.
  * The stream must be closed with avformat_close_input().
  *
- * @param ps Pointer to user-supplied AVFormatContext (allocated by avformat_alloc_context).
+ * @param ps Pointer to user-supplied AVFormatContext (allocated by avformat_alloc_context_ijk).
  *           May be a pointer to NULL, in which case an AVFormatContext is allocated by this
  *           function and written into ps.
  *           Note that a user-supplied AVFormatContext will be freed on failure.
@@ -2513,7 +2513,7 @@ void avformat_close_input(AVFormatContext **s);
  * Allocate the stream private data and write the stream header to
  * an output media file.
  *
- * @param s Media file handle, must be allocated with avformat_alloc_context().
+ * @param s Media file handle, must be allocated with avformat_alloc_context_ijk().
  *          Its oformat field must be set to the desired output format;
  *          Its pb field must be set to an already opened AVIOContext.
  * @param options  An AVDictionary filled with AVFormatContext and muxer-private options.
@@ -2535,7 +2535,7 @@ int avformat_write_header(AVFormatContext *s, AVDictionary **options);
  * before actually writing the header.
  * If using this function, do not pass the same options to avformat_write_header.
  *
- * @param s Media file handle, must be allocated with avformat_alloc_context().
+ * @param s Media file handle, must be allocated with avformat_alloc_context_ijk().
  *          Its oformat field must be set to the desired output format;
  *          Its pb field must be set to an already opened AVIOContext.
  * @param options  An AVDictionary filled with AVFormatContext and muxer-private options.

@@ -329,7 +329,7 @@ static int open_file(AVFormatContext *avf, unsigned fileno)
     AVDictionaryEntry *t = NULL;
     int fps_flag = 0;
 
-    new_avf = avformat_alloc_context();
+    new_avf = avformat_alloc_context_ijk();
     if (!new_avf)
         return AVERROR(ENOMEM);
 

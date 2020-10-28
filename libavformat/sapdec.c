@@ -152,7 +152,7 @@ static int sap_read_header(AVFormatContext *s)
     infmt = av_find_input_format("sdp");
     if (!infmt)
         goto fail;
-    sap->sdp_ctx = avformat_alloc_context();
+    sap->sdp_ctx = avformat_alloc_context_ijk();
     if (!sap->sdp_ctx) {
         ret = AVERROR(ENOMEM);
         goto fail;

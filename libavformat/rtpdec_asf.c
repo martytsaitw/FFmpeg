@@ -123,7 +123,7 @@ int ff_wms_parse_sdp_a_line(AVFormatContext *s, const char *p)
         if (!(iformat = av_find_input_format("asf")))
             return AVERROR_DEMUXER_NOT_FOUND;
 
-        rt->asf_ctx = avformat_alloc_context();
+        rt->asf_ctx = avformat_alloc_context_ijk();
         if (!rt->asf_ctx) {
             av_free(buf);
             return AVERROR(ENOMEM);
