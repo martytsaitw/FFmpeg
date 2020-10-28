@@ -2564,7 +2564,7 @@ static int stream_component_open(VideoState *is, int stream_index)
         goto fail;
     avctx->pkt_timebase = ic->streams[stream_index]->time_base;
 
-    codec = avcodec_find_decoder(avctx->codec_id);
+    codec = avcodec_find_decoder_ijk(avctx->codec_id);
 
     switch(avctx->codec_type){
         case AVMEDIA_TYPE_AUDIO   : is->last_audio_stream    = stream_index; forced_codec_name =    audio_codec_name; break;

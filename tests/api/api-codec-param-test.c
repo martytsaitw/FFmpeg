@@ -35,7 +35,7 @@ static int try_decode_video_frame(AVCodecContext *codec_ctx, AVPacket *pkt, int 
     int skip_frame = codec_ctx->skip_frame;
 
     if (!avcodec_is_open(codec_ctx)) {
-        const AVCodec *codec = avcodec_find_decoder(codec_ctx->codec_id);
+        const AVCodec *codec = avcodec_find_decoder_ijk(codec_ctx->codec_id);
 
         ret = avcodec_open2(codec_ctx, codec, NULL);
         if (ret < 0) {

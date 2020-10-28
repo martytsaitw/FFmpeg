@@ -1548,7 +1548,7 @@ int show_codecs(void *optctx, const char *opt, const char *arg)
             continue;
 
         printf(" ");
-        printf(avcodec_find_decoder(desc->id) ? "D" : ".");
+        printf(avcodec_find_decoder_ijk(desc->id) ? "D" : ".");
         printf(avcodec_find_encoder(desc->id) ? "E" : ".");
 
         printf("%c", get_media_type_char(desc->type));
@@ -2064,7 +2064,7 @@ AVDictionary *filter_codec_opts(AVDictionary *opts, enum AVCodecID codec_id,
 
     if (!codec)
         codec            = s->oformat ? avcodec_find_encoder(codec_id)
-                                      : avcodec_find_decoder(codec_id);
+                                      : avcodec_find_decoder_ijk(codec_id);
 
     switch (st->codecpar->codec_type) {
     case AVMEDIA_TYPE_VIDEO:

@@ -701,7 +701,7 @@ int attribute_align_arg avcodec_open2(AVCodecContext *avctx, const AVCodec *code
                "The %s '%s' is experimental but experimental codecs are not enabled, "
                "add '-strict %d' if you want to use it.\n",
                codec_string, codec->name, FF_COMPLIANCE_EXPERIMENTAL);
-        codec2 = av_codec_is_encoder(codec) ? avcodec_find_encoder(codec->id) : avcodec_find_decoder(codec->id);
+        codec2 = av_codec_is_encoder(codec) ? avcodec_find_encoder(codec->id) : avcodec_find_decoder_ijk(codec->id);
         if (!(codec2->capabilities & AV_CODEC_CAP_EXPERIMENTAL))
             av_log(avctx, AV_LOG_ERROR, "Alternatively use the non experimental %s '%s'.\n",
                 codec_string, codec2->name);
@@ -1135,7 +1135,7 @@ const char *avcodec_get_name(enum AVCodecID id)
     if (cd)
         return cd->name;
     av_log(NULL, AV_LOG_WARNING, "Codec 0x%x is not in the full list.\n", id);
-    codec = avcodec_find_decoder(id);
+    codec = avcodec_find_decoder_ijk(id);
     if (codec)
         return codec->name;
     codec = avcodec_find_encoder(id);

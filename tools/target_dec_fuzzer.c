@@ -67,7 +67,7 @@ static AVCodec *AVCodecInitialize(enum AVCodecID codec_id)
 {
     AVCodec *res;
 
-    res = avcodec_find_decoder(codec_id);
+    res = avcodec_find_decoder_ijk(codec_id);
     if (!res)
         error("Failed to find decoder");
     return res;
