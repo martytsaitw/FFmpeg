@@ -153,7 +153,7 @@ int avcodec_get_context_defaults3(AVCodecContext *s, const AVCodec *codec)
 }
 #endif
 
-AVCodecContext *avcodec_alloc_context3(const AVCodec *codec)
+AVCodecContext *avcodec_alloc_context3_ijk(const AVCodec *codec)
 {
     AVCodecContext *avctx= av_malloc(sizeof(AVCodecContext));
 
@@ -291,7 +291,7 @@ fail:
 }
 #endif
 
-const AVClass *avcodec_get_class(void)
+const AVClass *avcodec_get_class_ijk(void)
 {
     return &av_codec_context_class;
 }
@@ -469,8 +469,8 @@ static void test_copy(const AVCodec *c1, const AVCodec *c2)
 {
     AVCodecContext *ctx1, *ctx2;
     printf("%s -> %s\nclosed:\n", c1 ? c1->name : "NULL", c2 ? c2->name : "NULL");
-    ctx1 = avcodec_alloc_context3(c1);
-    ctx2 = avcodec_alloc_context3(c2);
+    ctx1 = avcodec_alloc_context3_ijk(c1);
+    ctx2 = avcodec_alloc_context3_ijk(c2);
     ctx1->width = ctx1->height = 128;
     if (ctx2->codec && ctx2->codec->priv_class && ctx2->codec->priv_data_size) {
         av_opt_set(ctx2->priv_data, "num", "667", 0);

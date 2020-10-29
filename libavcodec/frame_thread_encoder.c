@@ -195,7 +195,7 @@ int ff_frame_thread_encoder_init(AVCodecContext *avctx, AVDictionary *options){
         AVDictionary *tmp = NULL;
         int ret;
         void *tmpv;
-        AVCodecContext *thread_avctx = avcodec_alloc_context3(avctx->codec);
+        AVCodecContext *thread_avctx = avcodec_alloc_context3_ijk(avctx->codec);
         if(!thread_avctx)
             goto fail;
         tmpv = thread_avctx->priv_data;

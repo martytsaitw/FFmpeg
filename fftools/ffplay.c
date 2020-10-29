@@ -2555,11 +2555,11 @@ static int stream_component_open(VideoState *is, int stream_index)
     if (stream_index < 0 || stream_index >= ic->nb_streams)
         return -1;
 
-    avctx = avcodec_alloc_context3(NULL);
+    avctx = avcodec_alloc_context3_ijk(NULL);
     if (!avctx)
         return AVERROR(ENOMEM);
 
-    ret = avcodec_parameters_to_context(avctx, ic->streams[stream_index]->codecpar);
+    ret = avcodec_parameters_to_context_ijk(avctx, ic->streams[stream_index]->codecpar);
     if (ret < 0)
         goto fail;
     avctx->pkt_timebase = ic->streams[stream_index]->time_base;
@@ -3612,7 +3612,7 @@ void show_help_default(const char *opt, const char *arg)
     show_help_options(options, "Main options:", 0, OPT_EXPERT, 0);
     show_help_options(options, "Advanced options:", OPT_EXPERT, 0, 0);
     printf("\n");
-    show_help_children(avcodec_get_class(), AV_OPT_FLAG_DECODING_PARAM);
+    show_help_children(avcodec_get_class_ijk(), AV_OPT_FLAG_DECODING_PARAM);
     show_help_children(avformat_get_class(), AV_OPT_FLAG_DECODING_PARAM);
 #if !CONFIG_AVFILTER
     show_help_children(sws_get_class(), AV_OPT_FLAG_ENCODING_PARAM);

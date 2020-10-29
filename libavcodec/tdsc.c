@@ -118,7 +118,7 @@ static av_cold int tdsc_init(AVCodecContext *avctx)
     codec = avcodec_find_decoder_ijk(AV_CODEC_ID_MJPEG);
     if (!codec)
         return AVERROR_BUG;
-    ctx->jpeg_avctx = avcodec_alloc_context3(codec);
+    ctx->jpeg_avctx = avcodec_alloc_context3_ijk(codec);
     if (!ctx->jpeg_avctx)
         return AVERROR(ENOMEM);
     ctx->jpeg_avctx->flags = avctx->flags;

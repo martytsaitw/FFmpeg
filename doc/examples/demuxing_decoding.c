@@ -172,7 +172,7 @@ static int open_codec_context(int *stream_idx,
         }
 
         /* Allocate a codec context for the decoder */
-        *dec_ctx = avcodec_alloc_context3(dec);
+        *dec_ctx = avcodec_alloc_context3_ijk(dec);
         if (!*dec_ctx) {
             fprintf(stderr, "Failed to allocate the %s codec context\n",
                     av_get_media_type_string(type));
@@ -180,7 +180,7 @@ static int open_codec_context(int *stream_idx,
         }
 
         /* Copy codec parameters from input stream to output codec context */
-        if ((ret = avcodec_parameters_to_context(*dec_ctx, st->codecpar)) < 0) {
+        if ((ret = avcodec_parameters_to_context_ijk(*dec_ctx, st->codecpar)) < 0) {
             fprintf(stderr, "Failed to copy %s codec parameters to decoder context\n",
                     av_get_media_type_string(type));
             return ret;

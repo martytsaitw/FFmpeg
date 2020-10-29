@@ -707,7 +707,7 @@ static void add_input_streams(OptionsContext *o, AVFormatContext *ic)
         char *codec_tag = NULL;
         char *next;
         char *discard_str = NULL;
-        const AVClass *cc = avcodec_get_class();
+        const AVClass *cc = avcodec_get_class_ijk();
         const AVOption *discard_opt = av_opt_find(&cc, "skip_frame", NULL, 0, 0);
 
         if (!ist)
@@ -754,13 +754,13 @@ static void add_input_streams(OptionsContext *o, AVFormatContext *ic)
 
         ist->filter_in_rescale_delta_last = AV_NOPTS_VALUE;
 
-        ist->dec_ctx = avcodec_alloc_context3(ist->dec);
+        ist->dec_ctx = avcodec_alloc_context3_ijk(ist->dec);
         if (!ist->dec_ctx) {
             av_log(NULL, AV_LOG_ERROR, "Error allocating the decoder context.\n");
             exit_program(1);
         }
 
-        ret = avcodec_parameters_to_context(ist->dec_ctx, par);
+        ret = avcodec_parameters_to_context_ijk(ist->dec_ctx, par);
         if (ret < 0) {
             av_log(NULL, AV_LOG_ERROR, "Error initializing the decoder context.\n");
             exit_program(1);
@@ -890,7 +890,7 @@ static void add_input_streams(OptionsContext *o, AVFormatContext *ic)
             abort();
         }
 
-        ret = avcodec_parameters_from_context(par, ist->dec_ctx);
+        ret = avcodec_parameters_from_context_ijk(par, ist->dec_ctx);
         if (ret < 0) {
             av_log(NULL, AV_LOG_ERROR, "Error initializing the decoder context.\n");
             exit_program(1);
@@ -1175,7 +1175,7 @@ static int open_input_file(OptionsContext *o, const char *filename)
 
     e = NULL;
     while ((e = av_dict_get(unused_opts, "", e, AV_DICT_IGNORE_SUFFIX))) {
-        const AVClass *class = avcodec_get_class();
+        const AVClass *class = avcodec_get_class_ijk();
         const AVOption *option = av_opt_find(&class, e->key, NULL, 0,
                                              AV_OPT_SEARCH_CHILDREN | AV_OPT_SEARCH_FAKE_OBJ);
         const AVClass *fclass = avformat_get_class();
@@ -1333,7 +1333,7 @@ static OutputStream *new_output_stream(OptionsContext *o, AVFormatContext *oc, e
         exit_program(1);
     }
 
-    ost->enc_ctx = avcodec_alloc_context3(ost->enc);
+    ost->enc_ctx = avcodec_alloc_context3_ijk(ost->enc);
     if (!ost->enc_ctx) {
         av_log(NULL, AV_LOG_ERROR, "Error allocating the encoding context.\n");
         exit_program(1);
@@ -2350,7 +2350,7 @@ loop_end:
 
     e = NULL;
     while ((e = av_dict_get(unused_opts, "", e, AV_DICT_IGNORE_SUFFIX))) {
-        const AVClass *class = avcodec_get_class();
+        const AVClass *class = avcodec_get_class_ijk();
         const AVOption *option = av_opt_find(&class, e->key, NULL, 0,
                                              AV_OPT_SEARCH_CHILDREN | AV_OPT_SEARCH_FAKE_OBJ);
         const AVClass *fclass = avformat_get_class();
@@ -3152,7 +3152,7 @@ void show_help_default(const char *opt, const char *arg)
 
     if (show_avoptions) {
         int flags = AV_OPT_FLAG_DECODING_PARAM | AV_OPT_FLAG_ENCODING_PARAM;
-        show_help_children(avcodec_get_class(), flags);
+        show_help_children(avcodec_get_class_ijk(), flags);
         show_help_children(avformat_get_class(), flags);
 #if CONFIG_SWSCALE
         show_help_children(sws_get_class(), flags);

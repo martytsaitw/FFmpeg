@@ -486,7 +486,7 @@ int ff_qsv_process_data(AVCodecContext *avctx, QSVContext *q,
     const AVPixFmtDescriptor *desc;
 
     if (!q->avctx_internal) {
-        q->avctx_internal = avcodec_alloc_context3(NULL);
+        q->avctx_internal = avcodec_alloc_context3_ijk(NULL);
         if (!q->avctx_internal)
             return AVERROR(ENOMEM);
 

@@ -519,14 +519,14 @@ static int update_stream_avctx(AVFormatContext *s)
         }
 
         /* update internal codec context, for the parser */
-        ret = avcodec_parameters_to_context(st->internal->avctx, st->codecpar);
+        ret = avcodec_parameters_to_context_ijk(st->internal->avctx, st->codecpar);
         if (ret < 0)
             return ret;
 
 #if FF_API_LAVF_AVCTX
 FF_DISABLE_DEPRECATION_WARNINGS
         /* update deprecated public codec context */
-        ret = avcodec_parameters_to_context(st->codec, st->codecpar);
+        ret = avcodec_parameters_to_context_ijk(st->codec, st->codecpar);
         if (ret < 0)
             return ret;
 FF_ENABLE_DEPRECATION_WARNINGS
@@ -1623,14 +1623,14 @@ static int read_frame_internal(AVFormatContext *s, AVPacket *pkt)
                 st->parser = NULL;
             }
 
-            ret = avcodec_parameters_to_context(st->internal->avctx, st->codecpar);
+            ret = avcodec_parameters_to_context_ijk(st->internal->avctx, st->codecpar);
             if (ret < 0)
                 return ret;
 
 #if FF_API_LAVF_AVCTX
 FF_DISABLE_DEPRECATION_WARNINGS
             /* update deprecated public codec context */
-            ret = avcodec_parameters_to_context(st->codec, st->codecpar);
+            ret = avcodec_parameters_to_context_ijk(st->codec, st->codecpar);
             if (ret < 0)
                 return ret;
 FF_ENABLE_DEPRECATION_WARNINGS
@@ -3737,7 +3737,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
         if (st->codecpar->codec_id != st->internal->orig_codec_id)
             st->internal->orig_codec_id = st->codecpar->codec_id;
 
-        ret = avcodec_parameters_to_context(avctx, st->codecpar);
+        ret = avcodec_parameters_to_context_ijk(avctx, st->codecpar);
         if (ret < 0)
             goto find_stream_info_err;
         if (st->request_probe <= 0)
@@ -3904,7 +3904,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
 
         avctx = st->internal->avctx;
         if (!st->internal->avctx_inited) {
-            ret = avcodec_parameters_to_context(avctx, st->codecpar);
+            ret = avcodec_parameters_to_context_ijk(avctx, st->codecpar);
             if (ret < 0)
                 goto find_stream_info_err;
             st->internal->avctx_inited = 1;
@@ -4178,7 +4178,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
             if (st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO &&
                 st->codecpar->format == AV_SAMPLE_FMT_NONE)
                 st->codecpar->format = st->internal->avctx->sample_fmt;
-            ret = avcodec_parameters_to_context(st->internal->avctx, st->codecpar);
+            ret = avcodec_parameters_to_context_ijk(st->internal->avctx, st->codecpar);
             if (ret < 0)
                 goto find_stream_info_err;
         }
@@ -4203,7 +4203,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
         if (st->internal->avctx_inited) {
             int orig_w = st->codecpar->width;
             int orig_h = st->codecpar->height;
-            ret = avcodec_parameters_from_context(st->codecpar, st->internal->avctx);
+            ret = avcodec_parameters_from_context_ijk(st->codecpar, st->internal->avctx);
             if (ret < 0)
                 goto find_stream_info_err;
 #if FF_API_LOWRES
@@ -4217,7 +4217,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
 
 #if FF_API_LAVF_AVCTX
 FF_DISABLE_DEPRECATION_WARNINGS
-        ret = avcodec_parameters_to_context(st->codec, st->codecpar);
+        ret = avcodec_parameters_to_context_ijk(st->codec, st->codecpar);
         if (ret < 0)
             goto find_stream_info_err;
 
@@ -4588,7 +4588,7 @@ AVStream *avformat_new_stream(AVFormatContext *s, const AVCodec *c)
 
 #if FF_API_LAVF_AVCTX
 FF_DISABLE_DEPRECATION_WARNINGS
-    st->codec = avcodec_alloc_context3(c);
+    st->codec = avcodec_alloc_context3_ijk(c);
     if (!st->codec) {
         av_free(st->info);
         av_free(st);
@@ -4605,7 +4605,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     if (!st->codecpar)
         goto fail;
 
-    st->internal->avctx = avcodec_alloc_context3(NULL);
+    st->internal->avctx = avcodec_alloc_context3_ijk(NULL);
     if (!st->internal->avctx)
         goto fail;
 
@@ -5934,7 +5934,7 @@ AVCodecContext * create_video_decoder_from_codecpar (AVCodecParameters * codecpa
     if ((codec = avcodec_find_decoder_ijk(codecpar->codec_id)) == NULL)
         return NULL;
     
-    if ((avctx = avcodec_alloc_context3(codec)) == NULL)
+    if ((avctx = avcodec_alloc_context3_ijk(codec)) == NULL)
         return NULL;
     
     avctx->extradata_size = codecpar->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE;
@@ -6127,7 +6127,7 @@ AVCodecContext * create_audio_decoder_from_codecpar (AVCodecParameters * codecpa
     if ((codec = avcodec_find_decoder_ijk(codecpar->codec_id)) == NULL)
         return NULL;
     
-    if ((avctx = avcodec_alloc_context3(codec)) == NULL)
+    if ((avctx = avcodec_alloc_context3_ijk(codec)) == NULL)
         return NULL;
     
     avctx->extradata_size = codecpar->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE;
@@ -6288,7 +6288,7 @@ int av_try_find_stream_info(AVFormatContext *ic, AVDictionary **options) {
         st->discard = AVDISCARD_DEFAULT;
         avcodec_copy_context(st->codec,     avctx[i]);
         avcodec_copy_context(st->internal->avctx, avctx[i]);
-        avcodec_parameters_from_context(st->codecpar, avctx[i]);
+        avcodec_parameters_from_context_ijk(st->codecpar, avctx[i]);
         avpriv_set_pts_info(st, st->pts_wrap_bits, st->time_base.num, st->time_base.den);
     }
 

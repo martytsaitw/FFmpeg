@@ -72,13 +72,13 @@ static int video_decode_example(const char *input_filename)
         return -1;
     }
 
-    ctx = avcodec_alloc_context3(codec);
+    ctx = avcodec_alloc_context3_ijk(codec);
     if (!ctx) {
         av_log(NULL, AV_LOG_ERROR, "Can't allocate decoder context\n");
         return AVERROR(ENOMEM);
     }
 
-    result = avcodec_parameters_to_context(ctx, origin_par);
+    result = avcodec_parameters_to_context_ijk(ctx, origin_par);
     if (result) {
         av_log(NULL, AV_LOG_ERROR, "Can't copy decoder context\n");
         return result;

@@ -397,11 +397,11 @@ static av_cold int init_subtitles(AVFilterContext *ctx)
     if (LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57,26,100))
         av_dict_set(&codec_opts, "sub_text_format", "ass", 0);
 
-    dec_ctx = avcodec_alloc_context3(dec);
+    dec_ctx = avcodec_alloc_context3_ijk(dec);
     if (!dec_ctx)
         return AVERROR(ENOMEM);
 
-    ret = avcodec_parameters_to_context(dec_ctx, st->codecpar);
+    ret = avcodec_parameters_to_context_ijk(dec_ctx, st->codecpar);
     if (ret < 0)
         goto end;
 

@@ -111,7 +111,7 @@ static void add_stream(OutputStream *ost, AVFormatContext *oc,
         exit(1);
     }
     ost->st->id = oc->nb_streams-1;
-    c = avcodec_alloc_context3(*codec);
+    c = avcodec_alloc_context3_ijk(*codec);
     if (!c) {
         fprintf(stderr, "Could not alloc an encoding context\n");
         exit(1);
@@ -247,7 +247,7 @@ static void open_audio(AVFormatContext *oc, AVCodec *codec, OutputStream *ost, A
                                        c->sample_rate, nb_samples);
 
     /* copy the stream parameters to the muxer */
-    ret = avcodec_parameters_from_context(ost->st->codecpar, c);
+    ret = avcodec_parameters_from_context_ijk(ost->st->codecpar, c);
     if (ret < 0) {
         fprintf(stderr, "Could not copy the stream parameters\n");
         exit(1);
@@ -429,7 +429,7 @@ static void open_video(AVFormatContext *oc, AVCodec *codec, OutputStream *ost, A
     }
 
     /* copy the stream parameters to the muxer */
-    ret = avcodec_parameters_from_context(ost->st->codecpar, c);
+    ret = avcodec_parameters_from_context_ijk(ost->st->codecpar, c);
     if (ret < 0) {
         fprintf(stderr, "Could not copy the stream parameters\n");
         exit(1);

@@ -58,7 +58,7 @@ static int init_encoder(AVCodec *enc, AVCodecContext **enc_ctx,
     av_get_channel_layout_string(name_buff, NAME_BUFF_SIZE, 0, ch_layout);
     av_log(NULL, AV_LOG_INFO, "channel layout: %s, sample rate: %i\n", name_buff, sample_rate);
 
-    ctx = avcodec_alloc_context3(enc);
+    ctx = avcodec_alloc_context3_ijk(enc);
     if (!ctx) {
         av_log(NULL, AV_LOG_ERROR, "Can't allocate encoder context\n");
         return AVERROR(ENOMEM);
@@ -84,7 +84,7 @@ static int init_decoder(AVCodec *dec, AVCodecContext **dec_ctx,
     AVCodecContext *ctx;
     int result;
 
-    ctx = avcodec_alloc_context3(dec);
+    ctx = avcodec_alloc_context3_ijk(dec);
     if (!ctx) {
         av_log(NULL, AV_LOG_ERROR , "Can't allocate decoder context\n");
         return AVERROR(ENOMEM);

@@ -459,7 +459,7 @@ static av_cold int init_dict(AVFilterContext *ctx, AVDictionary **opts)
     SPPContext *s = ctx->priv;
     int ret;
 
-    s->avctx = avcodec_alloc_context3(NULL);
+    s->avctx = avcodec_alloc_context3_ijk(NULL);
     s->dct = avcodec_dct_alloc();
     if (!s->avctx || !s->dct)
         return AVERROR(ENOMEM);

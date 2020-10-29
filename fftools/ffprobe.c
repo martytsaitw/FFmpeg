@@ -2898,11 +2898,11 @@ static int open_input_file(InputFile *ifile, const char *filename)
             AVDictionary *opts = filter_codec_opts(codec_opts, stream->codecpar->codec_id,
                                                    fmt_ctx, stream, codec);
 
-            ist->dec_ctx = avcodec_alloc_context3(codec);
+            ist->dec_ctx = avcodec_alloc_context3_ijk(codec);
             if (!ist->dec_ctx)
                 exit(1);
 
-            err = avcodec_parameters_to_context(ist->dec_ctx, stream->codecpar);
+            err = avcodec_parameters_to_context_ijk(ist->dec_ctx, stream->codecpar);
             if (err < 0)
                 exit(1);
 
@@ -3276,7 +3276,7 @@ void show_help_default(const char *opt, const char *arg)
     printf("\n");
 
     show_help_children(avformat_get_class(), AV_OPT_FLAG_DECODING_PARAM);
-    show_help_children(avcodec_get_class(), AV_OPT_FLAG_DECODING_PARAM);
+    show_help_children(avcodec_get_class_ijk(), AV_OPT_FLAG_DECODING_PARAM);
 }
 
 /**

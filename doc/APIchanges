@@ -2132,7 +2132,7 @@ lavd 54.4.100 / 54.0.0, lavfi 3.5.0
   Add avcodec_open2(), deprecate avcodec_open().
   NOTE: this was backported to 0.7
 
-  Add avcodec_alloc_context3. Deprecate avcodec_alloc_context() and
+  Add avcodec_alloc_context3_ijk. Deprecate avcodec_alloc_context() and
   avcodec_alloc_context2().
 
 2011-07-01 - b442ca6 - lavf 53.5.0 - avformat.h

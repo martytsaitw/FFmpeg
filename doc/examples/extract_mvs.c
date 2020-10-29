@@ -90,13 +90,13 @@ static int open_codec_context(AVFormatContext *fmt_ctx, enum AVMediaType type)
         int stream_idx = ret;
         st = fmt_ctx->streams[stream_idx];
 
-        dec_ctx = avcodec_alloc_context3(dec);
+        dec_ctx = avcodec_alloc_context3_ijk(dec);
         if (!dec_ctx) {
             fprintf(stderr, "Failed to allocate codec\n");
             return AVERROR(EINVAL);
         }
 
-        ret = avcodec_parameters_to_context(dec_ctx, st->codecpar);
+        ret = avcodec_parameters_to_context_ijk(dec_ctx, st->codecpar);
         if (ret < 0) {
             fprintf(stderr, "Failed to copy codec parameters to codec context\n");
             return ret;

@@ -108,7 +108,7 @@ int av_bitstream_filter_filter(AVBitStreamFilterContext *bsfc,
         if (ret < 0)
             return ret;
 
-        ret = avcodec_parameters_from_context(priv->ctx->par_in, avctx);
+        ret = avcodec_parameters_from_context_ijk(priv->ctx->par_in, avctx);
         if (ret < 0)
             return ret;
 

@@ -96,7 +96,7 @@ static int open_input_file(const char *filename,
     }
 
     /* Allocate a new decoding context. */
-    avctx = avcodec_alloc_context3(input_codec);
+    avctx = avcodec_alloc_context3_ijk(input_codec);
     if (!avctx) {
         fprintf(stderr, "Could not allocate a decoding context\n");
         avformat_close_input(input_format_context);
@@ -104,7 +104,7 @@ static int open_input_file(const char *filename,
     }
 
     /* Initialize the stream parameters with demuxer information. */
-    error = avcodec_parameters_to_context(avctx, (*input_format_context)->streams[0]->codecpar);
+    error = avcodec_parameters_to_context_ijk(avctx, (*input_format_context)->streams[0]->codecpar);
     if (error < 0) {
         avformat_close_input(input_format_context);
         avcodec_free_context(&avctx);
@@ -190,7 +190,7 @@ static int open_output_file(const char *filename,
         goto cleanup;
     }
 
-    avctx = avcodec_alloc_context3(output_codec);
+    avctx = avcodec_alloc_context3_ijk(output_codec);
     if (!avctx) {
         fprintf(stderr, "Could not allocate an encoding context\n");
         error = AVERROR(ENOMEM);
@@ -224,7 +224,7 @@ static int open_output_file(const char *filename,
         goto cleanup;
     }
 
-    error = avcodec_parameters_from_context(stream->codecpar, avctx);
+    error = avcodec_parameters_from_context_ijk(stream->codecpar, avctx);
     if (error < 0) {
         fprintf(stderr, "Could not initialize stream parameters\n");
         goto cleanup;

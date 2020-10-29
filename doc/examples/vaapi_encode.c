@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
         goto close;
     }
 
-    if (!(avctx = avcodec_alloc_context3(codec))) {
+    if (!(avctx = avcodec_alloc_context3_ijk(codec))) {
         err = AVERROR(ENOMEM);
         goto close;
     }

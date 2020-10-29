@@ -114,7 +114,7 @@ static void show_codec_opts(void)
     AVCodec *c = NULL;
 
     printf("@section Generic codec AVOptions\n");
-    show_opts(avcodec_get_class());
+    show_opts(avcodec_get_class_ijk());
 
     printf("@section Codec-specific AVOptions\n");
     while ((c = av_codec_next(c))) {

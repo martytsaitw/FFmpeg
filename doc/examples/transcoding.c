@@ -78,12 +78,12 @@ static int open_input_file(const char *filename)
             av_log(NULL, AV_LOG_ERROR, "Failed to find decoder for stream #%u\n", i);
             return AVERROR_DECODER_NOT_FOUND;
         }
-        codec_ctx = avcodec_alloc_context3(dec);
+        codec_ctx = avcodec_alloc_context3_ijk(dec);
         if (!codec_ctx) {
             av_log(NULL, AV_LOG_ERROR, "Failed to allocate the decoder context for stream #%u\n", i);
             return AVERROR(ENOMEM);
         }
-        ret = avcodec_parameters_to_context(codec_ctx, stream->codecpar);
+        ret = avcodec_parameters_to_context_ijk(codec_ctx, stream->codecpar);
         if (ret < 0) {
             av_log(NULL, AV_LOG_ERROR, "Failed to copy decoder parameters to input decoder context "
                    "for stream #%u\n", i);
@@ -143,7 +143,7 @@ static int open_output_file(const char *filename)
                 av_log(NULL, AV_LOG_FATAL, "Necessary encoder not found\n");
                 return AVERROR_INVALIDDATA;
             }
-            enc_ctx = avcodec_alloc_context3(encoder);
+            enc_ctx = avcodec_alloc_context3_ijk(encoder);
             if (!enc_ctx) {
                 av_log(NULL, AV_LOG_FATAL, "Failed to allocate the encoder context\n");
                 return AVERROR(ENOMEM);
@@ -178,7 +178,7 @@ static int open_output_file(const char *filename)
                 av_log(NULL, AV_LOG_ERROR, "Cannot open video encoder for stream #%u\n", i);
                 return ret;
             }
-            ret = avcodec_parameters_from_context(out_stream->codecpar, enc_ctx);
+            ret = avcodec_parameters_from_context_ijk(out_stream->codecpar, enc_ctx);
             if (ret < 0) {
                 av_log(NULL, AV_LOG_ERROR, "Failed to copy encoder parameters to output stream #%u\n", i);
                 return ret;

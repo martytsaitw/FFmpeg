@@ -160,7 +160,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     case AVMEDIA_TYPE_SUBTITLE: decode_handler = subtitle_handler     ; break;
     }
 
-    AVCodecContext* ctx = avcodec_alloc_context3(NULL);
+    AVCodecContext* ctx = avcodec_alloc_context3_ijk(NULL);
     if (!ctx)
         error("Failed memory allocation");
 

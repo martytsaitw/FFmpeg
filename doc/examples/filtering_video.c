@@ -73,10 +73,10 @@ static int open_input_file(const char *filename)
     video_stream_index = ret;
 
     /* create decoding context */
-    dec_ctx = avcodec_alloc_context3(dec);
+    dec_ctx = avcodec_alloc_context3_ijk(dec);
     if (!dec_ctx)
         return AVERROR(ENOMEM);
-    avcodec_parameters_to_context(dec_ctx, fmt_ctx->streams[video_stream_index]->codecpar);
+    avcodec_parameters_to_context_ijk(dec_ctx, fmt_ctx->streams[video_stream_index]->codecpar);
     av_opt_set_int(dec_ctx, "refcounted_frames", 1, 0);
 
     /* init the video decoder */

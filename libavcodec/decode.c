@@ -231,7 +231,7 @@ static int bsfs_init(AVCodecContext *avctx)
              * but no filters used here should actually need it.
              * So we make up some plausible-looking number (the MPEG 90kHz timebase) */
             s->bsfs[s->nb_bsfs - 1]->time_base_in = (AVRational){ 1, 90000 };
-            ret = avcodec_parameters_from_context(s->bsfs[s->nb_bsfs - 1]->par_in,
+            ret = avcodec_parameters_from_context_ijk(s->bsfs[s->nb_bsfs - 1]->par_in,
                                                   avctx);
         } else {
             s->bsfs[s->nb_bsfs - 1]->time_base_in = s->bsfs[s->nb_bsfs - 2]->time_base_out;

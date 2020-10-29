@@ -548,7 +548,7 @@ int opt_default(void *optctx, const char *opt, const char *arg)
     int consumed = 0;
     char opt_stripped[128];
     const char *p;
-    const AVClass *cc = avcodec_get_class(), *fc = avformat_get_class();
+    const AVClass *cc = avcodec_get_class_ijk(), *fc = avformat_get_class();
 #if CONFIG_AVRESAMPLE
     const AVClass *rc = avresample_get_class();
 #endif
@@ -2060,7 +2060,7 @@ AVDictionary *filter_codec_opts(AVDictionary *opts, enum AVCodecID codec_id,
     int            flags = s->oformat ? AV_OPT_FLAG_ENCODING_PARAM
                                       : AV_OPT_FLAG_DECODING_PARAM;
     char          prefix = 0;
-    const AVClass    *cc = avcodec_get_class();
+    const AVClass    *cc = avcodec_get_class_ijk();
 
     if (!codec)
         codec            = s->oformat ? avcodec_find_encoder(codec_id)

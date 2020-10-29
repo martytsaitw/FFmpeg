@@ -461,11 +461,11 @@ static void dump_stream_format(AVFormatContext *ic, int i,
     AVCodecContext *avctx;
     int ret;
 
-    avctx = avcodec_alloc_context3(NULL);
+    avctx = avcodec_alloc_context3_ijk(NULL);
     if (!avctx)
         return;
 
-    ret = avcodec_parameters_to_context(avctx, st->codecpar);
+    ret = avcodec_parameters_to_context_ijk(avctx, st->codecpar);
     if (ret < 0) {
         avcodec_free_context(&avctx);
         return;

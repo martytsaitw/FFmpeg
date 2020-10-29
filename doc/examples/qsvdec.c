@@ -191,7 +191,7 @@ int main(int argc, char **argv)
         goto finish;
     }
 
-    decoder_ctx = avcodec_alloc_context3(decoder);
+    decoder_ctx = avcodec_alloc_context3_ijk(decoder);
     if (!decoder_ctx) {
         ret = AVERROR(ENOMEM);
         goto finish;

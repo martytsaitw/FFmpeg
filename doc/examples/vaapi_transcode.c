@@ -83,12 +83,12 @@ static int open_input_file(const char *filename)
     }
     video_stream = ret;
 
-    if (!(decoder_ctx = avcodec_alloc_context3(decoder)))
+    if (!(decoder_ctx = avcodec_alloc_context3_ijk(decoder)))
         return AVERROR(ENOMEM);
 
     video = ifmt_ctx->streams[video_stream];
-    if ((ret = avcodec_parameters_to_context(decoder_ctx, video->codecpar)) < 0) {
-        fprintf(stderr, "avcodec_parameters_to_context error. Error code: %s\n",
+    if ((ret = avcodec_parameters_to_context_ijk(decoder_ctx, video->codecpar)) < 0) {
+        fprintf(stderr, "avcodec_parameters_to_context_ijk error. Error code: %s\n",
                 av_err2str(ret));
         return ret;
     }
@@ -197,7 +197,7 @@ static int dec_enc(AVPacket *pkt, AVCodec *enc_codec)
             }
 
             ost->time_base = encoder_ctx->time_base;
-            ret = avcodec_parameters_from_context(ost->codecpar, encoder_ctx);
+            ret = avcodec_parameters_from_context_ijk(ost->codecpar, encoder_ctx);
             if (ret < 0) {
                 fprintf(stderr, "Failed to copy the stream parameters. "
                         "Error code: %s\n", av_err2str(ret));
@@ -259,7 +259,7 @@ int main(int argc, char **argv)
         goto end;
     }
 
-    if (!(encoder_ctx = avcodec_alloc_context3(enc_codec))) {
+    if (!(encoder_ctx = avcodec_alloc_context3_ijk(enc_codec))) {
         ret = AVERROR(ENOMEM);
         goto end;
     }

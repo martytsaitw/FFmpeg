@@ -1442,7 +1442,7 @@ static int estimate_best_b_count(MpegEncContext *s)
         if (!s->input_picture[j])
             break;
 
-        c = avcodec_alloc_context3(NULL);
+        c = avcodec_alloc_context3_ijk(NULL);
         if (!c)
             return AVERROR(ENOMEM);
 

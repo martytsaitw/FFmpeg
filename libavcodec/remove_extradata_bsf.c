@@ -69,11 +69,11 @@ static int remove_extradata_init(AVBSFContext *ctx)
     s->parser = av_parser_init(ctx->par_in->codec_id);
 
     if (s->parser) {
-        s->avctx = avcodec_alloc_context3(NULL);
+        s->avctx = avcodec_alloc_context3_ijk(NULL);
         if (!s->avctx)
             return AVERROR(ENOMEM);
 
-        ret = avcodec_parameters_to_context(s->avctx, ctx->par_in);
+        ret = avcodec_parameters_to_context_ijk(s->avctx, ctx->par_in);
         if (ret < 0)
             return ret;
     }

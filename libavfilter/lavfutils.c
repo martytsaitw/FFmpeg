@@ -57,14 +57,14 @@ int ff_load_image(uint8_t *data[4], int linesize[4],
         goto end;
     }
 
-    codec_ctx = avcodec_alloc_context3(codec);
+    codec_ctx = avcodec_alloc_context3_ijk(codec);
     if (!codec_ctx) {
         av_log(log_ctx, AV_LOG_ERROR, "Failed to alloc video decoder context\n");
         ret = AVERROR(ENOMEM);
         goto end;
     }
 
-    ret = avcodec_parameters_to_context(codec_ctx, par);
+    ret = avcodec_parameters_to_context_ijk(codec_ctx, par);
     if (ret < 0) {
         av_log(log_ctx, AV_LOG_ERROR, "Failed to copy codec parameters to decoder context\n");
         goto end;

@@ -109,7 +109,7 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    c = avcodec_alloc_context3(codec);
+    c = avcodec_alloc_context3_ijk(codec);
     if (!c) {
         fprintf(stderr, "Could not allocate audio codec context\n");
         exit(1);

@@ -1541,7 +1541,7 @@ enum AVFieldOrder {
 typedef struct AVCodecContext {
     /**
      * information on struct for av_log
-     * - set by avcodec_alloc_context3
+     * - set by avcodec_alloc_context3_ijk
      */
     const AVClass *av_class;
     int log_level_offset;
@@ -4122,7 +4122,7 @@ void avcodec_register_all(void);
  *
  * @return An AVCodecContext filled with default values or NULL on failure.
  */
-AVCodecContext *avcodec_alloc_context3(const AVCodec *codec);
+AVCodecContext *avcodec_alloc_context3_ijk(const AVCodec *codec);
 
 /**
  * Free the codec context and everything associated with it and write NULL to
@@ -4145,7 +4145,7 @@ int avcodec_get_context_defaults3(AVCodecContext *s, const AVCodec *codec);
  *
  * @see av_opt_find().
  */
-const AVClass *avcodec_get_class(void);
+const AVClass *avcodec_get_class_ijk(void);
 
 #if FF_API_COPY_CONTEXT
 /**
@@ -4171,14 +4171,14 @@ const AVClass *avcodec_get_subtitle_rect_class(void);
  * can use this AVCodecContext to decode/encode video/audio data.
  *
  * @param dest target codec context, should be initialized with
- *             avcodec_alloc_context3(NULL), but otherwise uninitialized
+ *             avcodec_alloc_context3_ijk(NULL), but otherwise uninitialized
  * @param src source codec context
  * @return AVERROR() on error (e.g. memory allocation error), 0 on success
  *
  * @deprecated The semantics of this function are ill-defined and it should not
  * be used. If you need to transfer the stream parameters from one codec context
  * to another, use an intermediate AVCodecParameters instance and the
- * avcodec_parameters_from_context() / avcodec_parameters_to_context()
+ * avcodec_parameters_from_context_ijk() / avcodec_parameters_to_context_ijk()
  * functions.
  */
 attribute_deprecated
@@ -4213,7 +4213,7 @@ int avcodec_parameters_copy(AVCodecParameters *dst, const AVCodecParameters *src
  *
  * @return >= 0 on success, a negative AVERROR code on failure
  */
-int avcodec_parameters_from_context(AVCodecParameters *par,
+int avcodec_parameters_from_context_ijk(AVCodecParameters *par,
                                     const AVCodecContext *codec);
 
 /**
@@ -4224,12 +4224,12 @@ int avcodec_parameters_from_context(AVCodecParameters *par,
  *
  * @return >= 0 on success, a negative AVERROR code on failure.
  */
-int avcodec_parameters_to_context(AVCodecContext *codec,
+int avcodec_parameters_to_context_ijk(AVCodecContext *codec,
                                   const AVCodecParameters *par);
 
 /**
  * Initialize the AVCodecContext to use the given AVCodec. Prior to using this
- * function the context has to be allocated with avcodec_alloc_context3().
+ * function the context has to be allocated with avcodec_alloc_context3_ijk().
  *
  * The functions avcodec_find_decoder_by_name(), avcodec_find_encoder_by_name(),
  * avcodec_find_decoder_ijk() and avcodec_find_encoder() provide an easy way for
@@ -4247,7 +4247,7 @@ int avcodec_parameters_to_context(AVCodecContext *codec,
  * if (!codec)
  *     exit(1);
  *
- * context = avcodec_alloc_context3(codec);
+ * context = avcodec_alloc_context3_ijk(codec);
  *
  * if (avcodec_open2(context, codec, opts) < 0)
  *     exit(1);
@@ -4255,14 +4255,14 @@ int avcodec_parameters_to_context(AVCodecContext *codec,
  *
  * @param avctx The context to initialize.
  * @param codec The codec to open this context for. If a non-NULL codec has been
- *              previously passed to avcodec_alloc_context3() or
+ *              previously passed to avcodec_alloc_context3_ijk() or
  *              for this context, then this parameter MUST be either NULL or
  *              equal to the previously passed codec.
  * @param options A dictionary filled with AVCodecContext and codec-private options.
  *                On return this object will be filled with options that were not found.
  *
  * @return zero on success, a negative value on error
- * @see avcodec_alloc_context3(), avcodec_find_decoder_ijk(), avcodec_find_encoder(),
+ * @see avcodec_alloc_context3_ijk(), avcodec_find_decoder_ijk(), avcodec_find_encoder(),
  *      av_dict_set(), av_opt_find().
  */
 int avcodec_open2(AVCodecContext *avctx, const AVCodec *codec, AVDictionary **options);
@@ -4272,7 +4272,7 @@ int avcodec_open2(AVCodecContext *avctx, const AVCodec *codec, AVDictionary **op
  * (but not the AVCodecContext itself).
  *
  * Calling this function on an AVCodecContext that hasn't been opened will free
- * the codec-specific data allocated in avcodec_alloc_context3() with a non-NULL
+ * the codec-specific data allocated in avcodec_alloc_context3_ijk() with a non-NULL
  * codec. Subsequent calls will do nothing.
  *
  * @note Do not use this function. Use avcodec_free_context() to destroy a

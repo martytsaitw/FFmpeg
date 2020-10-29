@@ -164,11 +164,11 @@ static int open_stream(void *log, MovieStream *st)
         return AVERROR(EINVAL);
     }
 
-    st->codec_ctx = avcodec_alloc_context3(codec);
+    st->codec_ctx = avcodec_alloc_context3_ijk(codec);
     if (!st->codec_ctx)
         return AVERROR(ENOMEM);
 
-    ret = avcodec_parameters_to_context(st->codec_ctx, st->st->codecpar);
+    ret = avcodec_parameters_to_context_ijk(st->codec_ctx, st->st->codecpar);
     if (ret < 0)
         return ret;
 

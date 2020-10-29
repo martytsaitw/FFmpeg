@@ -87,7 +87,7 @@ AVDCT *avcodec_dct_alloc(void)
 
 int avcodec_dct_init(AVDCT *dsp)
 {
-    AVCodecContext *avctx = avcodec_alloc_context3(NULL);
+    AVCodecContext *avctx = avcodec_alloc_context3_ijk(NULL);
 
     if (!avctx)
         return AVERROR(ENOMEM);

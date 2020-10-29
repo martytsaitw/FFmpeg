@@ -301,7 +301,7 @@ FF_DISABLE_DEPRECATION_WARNINGS
             av_log(s, AV_LOG_WARNING, "Using AVStream.codec to pass codec "
                    "parameters to muxers is deprecated, use AVStream.codecpar "
                    "instead.\n");
-            ret = avcodec_parameters_from_context(st->codecpar, st->codec);
+            ret = avcodec_parameters_from_context_ijk(st->codecpar, st->codec);
             if (ret < 0)
                 goto fail;
         }

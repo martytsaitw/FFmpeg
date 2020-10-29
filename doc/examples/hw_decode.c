@@ -203,11 +203,11 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (!(decoder_ctx = avcodec_alloc_context3(decoder)))
+    if (!(decoder_ctx = avcodec_alloc_context3_ijk(decoder)))
         return AVERROR(ENOMEM);
 
     video = input_ctx->streams[video_stream];
-    if (avcodec_parameters_to_context(decoder_ctx, video->codecpar) < 0)
+    if (avcodec_parameters_to_context_ijk(decoder_ctx, video->codecpar) < 0)
         return -1;
 
     decoder_ctx->get_format  = get_hw_format;

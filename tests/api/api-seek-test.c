@@ -224,14 +224,14 @@ static int seek_test(const char *input_filename, const char *start, const char *
         goto end;
     }
 
-    ctx = avcodec_alloc_context3(codec);
+    ctx = avcodec_alloc_context3_ijk(codec);
     if (!ctx) {
         av_log(NULL, AV_LOG_ERROR, "Can't allocate decoder context\n");
         result = AVERROR(ENOMEM);
         goto end;
     }
 
-    result = avcodec_parameters_to_context(ctx, origin_par);
+    result = avcodec_parameters_to_context_ijk(ctx, origin_par);
     if (result) {
         av_log(NULL, AV_LOG_ERROR, "Can't copy decoder context\n");
         goto end;

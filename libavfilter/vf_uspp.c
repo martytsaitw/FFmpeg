@@ -347,7 +347,7 @@ static int config_input(AVFilterLink *inlink)
         AVDictionary *opts = NULL;
         int ret;
 
-        if (!(uspp->avctx_enc[i] = avcodec_alloc_context3(NULL)))
+        if (!(uspp->avctx_enc[i] = avcodec_alloc_context3_ijk(NULL)))
             return AVERROR(ENOMEM);
 
         avctx_enc = uspp->avctx_enc[i];

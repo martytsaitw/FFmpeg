@@ -112,7 +112,7 @@ static int config_props(AVFilterLink *inlink)
         return AVERROR(EINVAL);
     }
 
-    mcdeint->enc_ctx = avcodec_alloc_context3(enc);
+    mcdeint->enc_ctx = avcodec_alloc_context3_ijk(enc);
     if (!mcdeint->enc_ctx)
         return AVERROR(ENOMEM);
     enc_ctx = mcdeint->enc_ctx;

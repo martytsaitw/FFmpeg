@@ -2018,7 +2018,7 @@ int avcodec_parameters_copy(AVCodecParameters *dst, const AVCodecParameters *src
     return 0;
 }
 
-int avcodec_parameters_from_context(AVCodecParameters *par,
+int avcodec_parameters_from_context_ijk(AVCodecParameters *par,
                                     const AVCodecContext *codec)
 {
     codec_parameters_reset(par);
@@ -2075,7 +2075,7 @@ int avcodec_parameters_from_context(AVCodecParameters *par,
     return 0;
 }
 
-int avcodec_parameters_to_context(AVCodecContext *codec,
+int avcodec_parameters_to_context_ijk(AVCodecContext *codec,
                                   const AVCodecParameters *par)
 {
     codec->codec_type = par->codec_type;

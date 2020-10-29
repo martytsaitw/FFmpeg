@@ -3043,7 +3043,7 @@ static int init_output_stream_streamcopy(OutputStream *ost)
 
     av_assert0(ist && !ost->filter);
 
-    ret = avcodec_parameters_to_context(ost->enc_ctx, ist->st->codecpar);
+    ret = avcodec_parameters_to_context_ijk(ost->enc_ctx, ist->st->codecpar);
     if (ret >= 0)
         ret = av_opt_set_dict(ost->enc_ctx, &ost->encoder_opts);
     if (ret < 0) {
@@ -3051,7 +3051,7 @@ static int init_output_stream_streamcopy(OutputStream *ost)
                "Error setting up codec context options.\n");
         return ret;
     }
-    avcodec_parameters_from_context(par_src, ost->enc_ctx);
+    avcodec_parameters_from_context_ijk(par_src, ost->enc_ctx);
 
     if (!codec_tag) {
         unsigned int codec_tag_tmp;
@@ -3485,7 +3485,7 @@ static int init_output_stream(OutputStream *ost, char *error, int error_len)
             av_log(NULL, AV_LOG_WARNING, "The bitrate parameter is set too low."
                                          " It takes bits/s as argument, not kbits/s\n");
 
-        ret = avcodec_parameters_from_context(ost->st->codecpar, ost->enc_ctx);
+        ret = avcodec_parameters_from_context_ijk(ost->st->codecpar, ost->enc_ctx);
         if (ret < 0) {
             av_log(NULL, AV_LOG_FATAL,
                    "Error initializing the output stream codec context.\n");

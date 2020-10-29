@@ -125,7 +125,7 @@ static av_cold int smvjpeg_decode_init(AVCodecContext *avctx)
         return AVERROR_DECODER_NOT_FOUND;
     }
 
-    s->avctx = avcodec_alloc_context3(codec);
+    s->avctx = avcodec_alloc_context3_ijk(codec);
 
     av_dict_set(&thread_opt, "threads", "1", 0);
     s->avctx->refcounted_frames = 1;

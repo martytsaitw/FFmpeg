@@ -968,7 +968,7 @@ static av_cold int cuvid_decode_init(AVCodecContext *avctx)
         if (ret = av_bsf_alloc(bsf, &ctx->bsf)) {
             goto error;
         }
-        if (((ret = avcodec_parameters_from_context(ctx->bsf->par_in, avctx)) < 0) || ((ret = av_bsf_init(ctx->bsf)) < 0)) {
+        if (((ret = avcodec_parameters_from_context_ijk(ctx->bsf->par_in, avctx)) < 0) || ((ret = av_bsf_init(ctx->bsf)) < 0)) {
             av_bsf_free(&ctx->bsf);
             goto error;
         }
