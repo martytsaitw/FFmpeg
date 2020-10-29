@@ -165,7 +165,7 @@ enum AVDurationEstimationMethod av_fmt_ctx_get_duration_estimation_method(const 
     return ctx->duration_estimation_method;
 }
 
-const AVClass *avformat_get_class(void)
+const AVClass *avformat_get_class_ijk(void)
 {
     return &av_format_context_class;
 }

@@ -71,7 +71,7 @@
  * mechanism. Generic (format-independent) libavformat options are provided by
  * AVFormatContext, they can be examined from a user program by calling
  * av_opt_next() / av_opt_find() on an allocated AVFormatContext (or its AVClass
- * from avformat_get_class()). Private (format-specific) options are provided by
+ * from avformat_get_class_ijk()). Private (format-specific) options are provided by
  * AVFormatContext.priv_data if and only if AVInputFormat.priv_class /
  * AVOutputFormat.priv_class of the corresponding format struct is non-NULL.
  * Further options may be provided by the @ref AVFormatContext.pb "I/O context",
@@ -2138,7 +2138,7 @@ void avformat_free_context(AVFormatContext *s);
  *
  * @see av_opt_find().
  */
-const AVClass *avformat_get_class(void);
+const AVClass *avformat_get_class_ijk(void);
 
 /**
  * Add a new stream to a media file.

@@ -4232,7 +4232,7 @@ int avcodec_parameters_to_context_ijk(AVCodecContext *codec,
  * function the context has to be allocated with avcodec_alloc_context3_ijk().
  *
  * The functions avcodec_find_decoder_by_name(), avcodec_find_encoder_by_name(),
- * avcodec_find_decoder_ijk() and avcodec_find_encoder() provide an easy way for
+ * avcodec_find_decoder_ijk() and avcodec_find_encoder_ijk() provide an easy way for
  * retrieving a codec.
  *
  * @warning This function is not thread safe!
@@ -4262,7 +4262,7 @@ int avcodec_parameters_to_context_ijk(AVCodecContext *codec,
  *                On return this object will be filled with options that were not found.
  *
  * @return zero on success, a negative value on error
- * @see avcodec_alloc_context3_ijk(), avcodec_find_decoder_ijk(), avcodec_find_encoder(),
+ * @see avcodec_alloc_context3_ijk(), avcodec_find_decoder_ijk(), avcodec_find_encoder_ijk(),
  *      av_dict_set(), av_opt_find().
  */
 int avcodec_open2(AVCodecContext *avctx, const AVCodec *codec, AVDictionary **options);
@@ -5316,7 +5316,7 @@ void av_parser_close(AVCodecParserContext *s);
  * @param id AVCodecID of the requested encoder
  * @return An encoder if one was found, NULL otherwise.
  */
-AVCodec *avcodec_find_encoder(enum AVCodecID id);
+AVCodec *avcodec_find_encoder_ijk(enum AVCodecID id);
 
 /**
  * Find a registered encoder with the specified name.

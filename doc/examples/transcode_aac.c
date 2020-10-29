@@ -178,7 +178,7 @@ static int open_output_file(const char *filename,
     }
 
     /* Find the encoder to be used by its name. */
-    if (!(output_codec = avcodec_find_encoder(AV_CODEC_ID_AAC))) {
+    if (!(output_codec = avcodec_find_encoder_ijk(AV_CODEC_ID_AAC))) {
         fprintf(stderr, "Could not find an AAC encoder.\n");
         goto cleanup;
     }

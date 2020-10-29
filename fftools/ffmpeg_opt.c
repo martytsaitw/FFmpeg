@@ -660,7 +660,7 @@ static AVCodec *find_codec_or_die(const char *name, enum AVMediaType type, int e
         avcodec_find_decoder_by_name(name);
 
     if (!codec && (desc = avcodec_descriptor_get_by_name(name))) {
-        codec = encoder ? avcodec_find_encoder(desc->id) :
+        codec = encoder ? avcodec_find_encoder_ijk(desc->id) :
                           avcodec_find_decoder_ijk(desc->id);
         if (codec)
             av_log(NULL, AV_LOG_VERBOSE, "Matched %s '%s' for codec '%s'.\n",
@@ -1178,7 +1178,7 @@ static int open_input_file(OptionsContext *o, const char *filename)
         const AVClass *class = avcodec_get_class_ijk();
         const AVOption *option = av_opt_find(&class, e->key, NULL, 0,
                                              AV_OPT_SEARCH_CHILDREN | AV_OPT_SEARCH_FAKE_OBJ);
-        const AVClass *fclass = avformat_get_class();
+        const AVClass *fclass = avformat_get_class_ijk();
         const AVOption *foption = av_opt_find(&fclass, e->key, NULL, 0,
                                              AV_OPT_SEARCH_CHILDREN | AV_OPT_SEARCH_FAKE_OBJ);
         if (!option || foption)
@@ -1273,7 +1273,7 @@ static int choose_encoder(OptionsContext *o, AVFormatContext *s, OutputStream *o
         if (!codec_name) {
             ost->st->codecpar->codec_id = av_guess_codec(s->oformat, NULL, s->url,
                                                          NULL, ost->st->codecpar->codec_type);
-            ost->enc = avcodec_find_encoder(ost->st->codecpar->codec_id);
+            ost->enc = avcodec_find_encoder_ijk(ost->st->codecpar->codec_id);
             if (!ost->enc) {
                 av_log(NULL, AV_LOG_FATAL, "Automatic encoder selection failed for "
                        "output stream #%d:%d. Default encoder for format %s (codec %s) is "
@@ -2177,14 +2177,14 @@ static int open_output_file(OptionsContext *o, const char *filename)
 
         /* subtitles: pick first */
         MATCH_PER_TYPE_OPT(codec_names, str, subtitle_codec_name, oc, "s");
-        if (!o->subtitle_disable && (avcodec_find_encoder(oc->oformat->subtitle_codec) || subtitle_codec_name)) {
+        if (!o->subtitle_disable && (avcodec_find_encoder_ijk(oc->oformat->subtitle_codec) || subtitle_codec_name)) {
             for (i = 0; i < nb_input_streams; i++)
                 if (input_streams[i]->st->codecpar->codec_type == AVMEDIA_TYPE_SUBTITLE) {
                     AVCodecDescriptor const *input_descriptor =
                         avcodec_descriptor_get(input_streams[i]->st->codecpar->codec_id);
                     AVCodecDescriptor const *output_descriptor = NULL;
                     AVCodec const *output_codec =
-                        avcodec_find_encoder(oc->oformat->subtitle_codec);
+                        avcodec_find_encoder_ijk(oc->oformat->subtitle_codec);
                     int input_props = 0, output_props = 0;
                     if (output_codec)
                         output_descriptor = avcodec_descriptor_get(output_codec->id);
@@ -2353,7 +2353,7 @@ loop_end:
         const AVClass *class = avcodec_get_class_ijk();
         const AVOption *option = av_opt_find(&class, e->key, NULL, 0,
                                              AV_OPT_SEARCH_CHILDREN | AV_OPT_SEARCH_FAKE_OBJ);
-        const AVClass *fclass = avformat_get_class();
+        const AVClass *fclass = avformat_get_class_ijk();
         const AVOption *foption = av_opt_find(&fclass, e->key, NULL, 0,
                                               AV_OPT_SEARCH_CHILDREN | AV_OPT_SEARCH_FAKE_OBJ);
         if (!option || foption)
@@ -3153,7 +3153,7 @@ void show_help_default(const char *opt, const char *arg)
     if (show_avoptions) {
         int flags = AV_OPT_FLAG_DECODING_PARAM | AV_OPT_FLAG_ENCODING_PARAM;
         show_help_children(avcodec_get_class_ijk(), flags);
-        show_help_children(avformat_get_class(), flags);
+        show_help_children(avformat_get_class_ijk(), flags);
 #if CONFIG_SWSCALE
         show_help_children(sws_get_class(), flags);
 #endif

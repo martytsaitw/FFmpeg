@@ -98,7 +98,7 @@ static void add_stream(OutputStream *ost, AVFormatContext *oc,
     int i;
 
     /* find the encoder */
-    *codec = avcodec_find_encoder(codec_id);
+    *codec = avcodec_find_encoder_ijk(codec_id);
     if (!(*codec)) {
         fprintf(stderr, "Could not find encoder for '%s'\n",
                 avcodec_get_name(codec_id));

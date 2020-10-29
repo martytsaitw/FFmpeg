@@ -139,7 +139,7 @@ int main(int argc, char **argv)
     filename = argv[1];
 
     /* find the MP2 encoder */
-    codec = avcodec_find_encoder(AV_CODEC_ID_MP2);
+    codec = avcodec_find_encoder_ijk(AV_CODEC_ID_MP2);
     if (!codec) {
         fprintf(stderr, "Codec not found\n");
         exit(1);

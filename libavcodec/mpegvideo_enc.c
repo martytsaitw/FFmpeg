@@ -1381,7 +1381,7 @@ static int encode_frame(AVCodecContext *c, AVFrame *frame)
 
 static int estimate_best_b_count(MpegEncContext *s)
 {
-    const AVCodec *codec = avcodec_find_encoder(s->avctx->codec_id);
+    const AVCodec *codec = avcodec_find_encoder_ijk(s->avctx->codec_id);
     const int scale = s->brd_scale;
     int width  = s->width  >> scale;
     int height = s->height >> scale;

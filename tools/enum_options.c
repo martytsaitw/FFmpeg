@@ -92,7 +92,7 @@ static void show_format_opts(void)
     AVOutputFormat *oformat = NULL;
 
     printf("@section Generic format AVOptions\n");
-    show_opts(avformat_get_class());
+    show_opts(avformat_get_class_ijk());
 
     printf("@section Format-specific AVOptions\n");
     while ((iformat = av_iformat_next(iformat))) {

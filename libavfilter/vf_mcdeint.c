@@ -107,7 +107,7 @@ static int config_props(AVFilterLink *inlink)
     AVDictionary *opts = NULL;
     int ret;
 
-    if (!(enc = avcodec_find_encoder(AV_CODEC_ID_SNOW))) {
+    if (!(enc = avcodec_find_encoder_ijk(AV_CODEC_ID_SNOW))) {
         av_log(ctx, AV_LOG_ERROR, "Snow encoder is not enabled in libavcodec\n");
         return AVERROR(EINVAL);
     }

@@ -548,7 +548,7 @@ int opt_default(void *optctx, const char *opt, const char *arg)
     int consumed = 0;
     char opt_stripped[128];
     const char *p;
-    const AVClass *cc = avcodec_get_class_ijk(), *fc = avformat_get_class();
+    const AVClass *cc = avcodec_get_class_ijk(), *fc = avformat_get_class_ijk();
 #if CONFIG_AVRESAMPLE
     const AVClass *rc = avresample_get_class();
 #endif
@@ -1549,7 +1549,7 @@ int show_codecs(void *optctx, const char *opt, const char *arg)
 
         printf(" ");
         printf(avcodec_find_decoder_ijk(desc->id) ? "D" : ".");
-        printf(avcodec_find_encoder(desc->id) ? "E" : ".");
+        printf(avcodec_find_encoder_ijk(desc->id) ? "E" : ".");
 
         printf("%c", get_media_type_char(desc->type));
         printf((desc->props & AV_CODEC_PROP_INTRA_ONLY) ? "I" : ".");
@@ -2063,7 +2063,7 @@ AVDictionary *filter_codec_opts(AVDictionary *opts, enum AVCodecID codec_id,
     const AVClass    *cc = avcodec_get_class_ijk();
 
     if (!codec)
-        codec            = s->oformat ? avcodec_find_encoder(codec_id)
+        codec            = s->oformat ? avcodec_find_encoder_ijk(codec_id)
                                       : avcodec_find_decoder_ijk(codec_id);
 
     switch (st->codecpar->codec_type) {
