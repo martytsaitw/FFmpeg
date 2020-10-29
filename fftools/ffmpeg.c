@@ -842,7 +842,7 @@ static void output_packet(OutputFile *of, AVPacket *pkt,
     if (ost->nb_bitstream_filters) {
         int idx;
 
-        ret = av_bsf_send_packet(ost->bsf_ctx[0], eof ? NULL : pkt);
+        ret = av_bsf_send_packet_ijk(ost->bsf_ctx[0], eof ? NULL : pkt);
         if (ret < 0)
             goto finish;
 
@@ -850,7 +850,7 @@ static void output_packet(OutputFile *of, AVPacket *pkt,
         idx = 1;
         while (idx) {
             /* get a packet from the previous filter up the chain */
-            ret = av_bsf_receive_packet(ost->bsf_ctx[idx - 1], pkt);
+            ret = av_bsf_receive_packet_ijk(ost->bsf_ctx[idx - 1], pkt);
             if (ret == AVERROR(EAGAIN)) {
                 ret = 0;
                 idx--;
@@ -862,7 +862,7 @@ static void output_packet(OutputFile *of, AVPacket *pkt,
 
             /* send it to the next filter down the chain or to the muxer */
             if (idx < ost->nb_bitstream_filters) {
-                ret = av_bsf_send_packet(ost->bsf_ctx[idx], eof ? NULL : pkt);
+                ret = av_bsf_send_packet_ijk(ost->bsf_ctx[idx], eof ? NULL : pkt);
                 if (ret < 0)
                     goto finish;
                 idx++;

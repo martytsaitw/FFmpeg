@@ -572,7 +572,7 @@ static int tee_write_packet(AVFormatContext *avf, AVPacket *pkt)
         bsfs = tee->slaves[i].bsfs[s2];
         pkt2.stream_index = s2;
 
-        ret = av_bsf_send_packet(bsfs, &pkt2);
+        ret = av_bsf_send_packet_ijk(bsfs, &pkt2);
         if (ret < 0) {
             av_log(avf, AV_LOG_ERROR, "Error while sending packet to bitstream filter: %s\n",
                    av_err2str(ret));
@@ -582,7 +582,7 @@ static int tee_write_packet(AVFormatContext *avf, AVPacket *pkt)
         }
 
         while(1) {
-            ret = av_bsf_receive_packet(bsfs, &pkt2);
+            ret = av_bsf_receive_packet_ijk(bsfs, &pkt2);
             if (ret == AVERROR(EAGAIN)) {
                 ret = 0;
                 break;

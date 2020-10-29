@@ -3563,7 +3563,7 @@ static int extract_extradata(AVStream *st, AVPacket *pkt)
     if (ret < 0)
         return ret;
 
-    ret = av_bsf_send_packet(i->extract_extradata.bsf, pkt_ref);
+    ret = av_bsf_send_packet_ijk(i->extract_extradata.bsf, pkt_ref);
     if (ret < 0) {
         av_packet_unref_ijk(pkt_ref);
         return ret;
@@ -3573,7 +3573,7 @@ static int extract_extradata(AVStream *st, AVPacket *pkt)
         int extradata_size;
         uint8_t *extradata;
 
-        ret = av_bsf_receive_packet(i->extract_extradata.bsf, pkt_ref);
+        ret = av_bsf_receive_packet_ijk(i->extract_extradata.bsf, pkt_ref);
         if (ret < 0) {
             if (ret != AVERROR(EAGAIN) && ret != AVERROR_EOF)
                 return ret;

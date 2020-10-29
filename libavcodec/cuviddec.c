@@ -388,7 +388,7 @@ static int cuvid_decode_packet(AVCodecContext *avctx, const AVPacket *avpkt)
     AVCUDADeviceContext *device_hwctx = device_ctx->hwctx;
     CUcontext dummy, cuda_ctx = device_hwctx->cuda_ctx;
     CUVIDSOURCEDATAPACKET cupkt;
-    AVPacket filter_packet = { 0 };
+    AVPacket filter_packet_ijk = { 0 };
     AVPacket filtered_packet = { 0 };
     int ret = 0, eret = 0, is_flush = ctx->decoder_flushing;
 
@@ -401,19 +401,19 @@ static int cuvid_decode_packet(AVCodecContext *avctx, const AVPacket *avpkt)
         return AVERROR(EAGAIN);
 
     if (ctx->bsf && avpkt && avpkt->size) {
-        if ((ret = av_packet_ref_ijk(&filter_packet, avpkt)) < 0) {
+        if ((ret = av_packet_ref_ijk(&filter_packet_ijk, avpkt)) < 0) {
             av_log(avctx, AV_LOG_ERROR, "av_packet_ref_ijk failed\n");
             return ret;
         }
 
-        if ((ret = av_bsf_send_packet(ctx->bsf, &filter_packet)) < 0) {
-            av_log(avctx, AV_LOG_ERROR, "av_bsf_send_packet failed\n");
-            av_packet_unref_ijk(&filter_packet);
+        if ((ret = av_bsf_send_packet_ijk(ctx->bsf, &filter_packet_ijk)) < 0) {
+            av_log(avctx, AV_LOG_ERROR, "av_bsf_send_packet_ijk failed\n");
+            av_packet_unref_ijk(&filter_packet_ijk);
             return ret;
         }
 
-        if ((ret = av_bsf_receive_packet(ctx->bsf, &filtered_packet)) < 0) {
-            av_log(avctx, AV_LOG_ERROR, "av_bsf_receive_packet failed\n");
+        if ((ret = av_bsf_receive_packet_ijk(ctx->bsf, &filtered_packet)) < 0) {
+            av_log(avctx, AV_LOG_ERROR, "av_bsf_receive_packet_ijk failed\n");
             return ret;
         }
 

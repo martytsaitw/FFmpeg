@@ -262,7 +262,7 @@ static int bsfs_poll(AVCodecContext *avctx, AVPacket *pkt)
     idx = s->nb_bsfs - 1;
     while (idx >= 0) {
         /* request a packet from the currently selected filter */
-        ret = av_bsf_receive_packet(s->bsfs[idx], pkt);
+        ret = av_bsf_receive_packet_ijk(s->bsfs[idx], pkt);
         if (ret == AVERROR(EAGAIN)) {
             /* no packets available, try the next filter up the chain */
             ret = 0;
@@ -278,7 +278,7 @@ static int bsfs_poll(AVCodecContext *avctx, AVPacket *pkt)
             return ret;
         } else {
             idx++;
-            ret = av_bsf_send_packet(s->bsfs[idx], ret < 0 ? NULL : pkt);
+            ret = av_bsf_send_packet_ijk(s->bsfs[idx], ret < 0 ? NULL : pkt);
             if (ret < 0) {
                 av_log(avctx, AV_LOG_ERROR,
                        "Error pre-processing a packet before decoding\n");
@@ -738,7 +738,7 @@ int attribute_align_arg avcodec_send_packet(AVCodecContext *avctx, const AVPacke
             return ret;
     }
 
-    ret = av_bsf_send_packet(avci->filter.bsfs[0], avci->buffer_pkt);
+    ret = av_bsf_send_packet_ijk(avci->filter.bsfs[0], avci->buffer_pkt);
     if (ret < 0) {
         av_packet_unref_ijk(avci->buffer_pkt);
         return ret;

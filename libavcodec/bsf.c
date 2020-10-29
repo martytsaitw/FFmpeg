@@ -172,7 +172,7 @@ int av_bsf_init_ijk(AVBSFContext *ctx)
     return 0;
 }
 
-int av_bsf_send_packet(AVBSFContext *ctx, AVPacket *pkt)
+int av_bsf_send_packet_ijk(AVBSFContext *ctx, AVPacket *pkt)
 {
     int ret;
 
@@ -198,7 +198,7 @@ int av_bsf_send_packet(AVBSFContext *ctx, AVPacket *pkt)
     return 0;
 }
 
-int av_bsf_receive_packet(AVBSFContext *ctx, AVPacket *pkt)
+int av_bsf_receive_packet_ijk(AVBSFContext *ctx, AVPacket *pkt)
 {
     return ctx->filter->filter(ctx, pkt);
 }
@@ -293,7 +293,7 @@ static int bsf_list_filter(AVBSFContext *bsf, AVPacket *out)
 
     while (1) {
         if (lst->idx > lst->flushed_idx) {
-            ret = av_bsf_receive_packet(lst->bsfs[lst->idx-1], out);
+            ret = av_bsf_receive_packet_ijk(lst->bsfs[lst->idx-1], out);
             if (ret == AVERROR(EAGAIN)) {
                 /* no more packets from idx-1, try with previous */
                 ret = 0;
@@ -324,7 +324,7 @@ static int bsf_list_filter(AVBSFContext *bsf, AVPacket *out)
             } else {
                 pkt = out;
             }
-            ret = av_bsf_send_packet(lst->bsfs[lst->idx], pkt);
+            ret = av_bsf_send_packet_ijk(lst->bsfs[lst->idx], pkt);
             if (ret < 0)
                 break;
             lst->idx++;

@@ -852,7 +852,7 @@ static int do_packet_auto_bsf(AVFormatContext *s, AVPacket *pkt) {
         AVBSFContext *ctx = st->internal->bsfcs[i];
         // TODO: when any bitstream filter requires flushing at EOF, we'll need to
         // flush each stream's BSF chain on write_trailer.
-        if ((ret = av_bsf_send_packet(ctx, pkt)) < 0) {
+        if ((ret = av_bsf_send_packet_ijk(ctx, pkt)) < 0) {
             av_log(ctx, AV_LOG_ERROR,
                     "Failed to send packet to filter %s for stream %d\n",
                     ctx->filter->name, pkt->stream_index);
@@ -861,7 +861,7 @@ static int do_packet_auto_bsf(AVFormatContext *s, AVPacket *pkt) {
         // TODO: when any automatically-added bitstream filter is generating multiple
         // output packets for a single input one, we'll need to call this in a loop
         // and write each output packet.
-        if ((ret = av_bsf_receive_packet(ctx, pkt)) < 0) {
+        if ((ret = av_bsf_receive_packet_ijk(ctx, pkt)) < 0) {
             if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
                 return 0;
             av_log(ctx, AV_LOG_ERROR,

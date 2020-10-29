@@ -5807,7 +5807,7 @@ attribute_deprecated
 AVBitStreamFilterContext *av_bitstream_filter_init(const char *name);
 /**
  * @deprecated the old bitstream filtering API (using AVBitStreamFilterContext)
- * is deprecated. Use av_bsf_send_packet() and av_bsf_receive_packet() from the
+ * is deprecated. Use av_bsf_send_packet_ijk() and av_bsf_receive_packet_ijk() from the
  * new bitstream filtering API (using AVBSFContext).
  */
 attribute_deprecated
@@ -5876,7 +5876,7 @@ int av_bsf_init_ijk(AVBSFContext *ctx);
  * Submit a packet for filtering.
  *
  * After sending each packet, the filter must be completely drained by calling
- * av_bsf_receive_packet() repeatedly until it returns AVERROR(EAGAIN) or
+ * av_bsf_receive_packet_ijk() repeatedly until it returns AVERROR(EAGAIN) or
  * AVERROR_EOF.
  *
  * @param pkt the packet to filter. The bitstream filter will take ownership of
@@ -5887,7 +5887,7 @@ int av_bsf_init_ijk(AVBSFContext *ctx);
  *
  * @return 0 on success, a negative AVERROR on error.
  */
-int av_bsf_send_packet(AVBSFContext *ctx, AVPacket *pkt);
+int av_bsf_send_packet_ijk(AVBSFContext *ctx, AVPacket *pkt);
 
 /**
  * Retrieve a filtered packet.
@@ -5903,17 +5903,17 @@ int av_bsf_send_packet(AVBSFContext *ctx, AVPacket *pkt);
  *                 touched.
  *
  * @return 0 on success. AVERROR(EAGAIN) if more packets need to be sent to the
- * filter (using av_bsf_send_packet()) to get more output. AVERROR_EOF if there
+ * filter (using av_bsf_send_packet_ijk()) to get more output. AVERROR_EOF if there
  * will be no further output from the filter. Another negative AVERROR value if
  * an error occurs.
  *
  * @note one input packet may result in several output packets, so after sending
- * a packet with av_bsf_send_packet(), this function needs to be called
+ * a packet with av_bsf_send_packet_ijk(), this function needs to be called
  * repeatedly until it stops returning 0. It is also possible for a filter to
  * output fewer packets than were sent to it, so this function may return
- * AVERROR(EAGAIN) immediately after a successful av_bsf_send_packet() call.
+ * AVERROR(EAGAIN) immediately after a successful av_bsf_send_packet_ijk() call.
  */
-int av_bsf_receive_packet(AVBSFContext *ctx, AVPacket *pkt);
+int av_bsf_receive_packet_ijk(AVBSFContext *ctx, AVPacket *pkt);
 
 /**
  * Free a bitstream filter context and everything associated with it; write NULL

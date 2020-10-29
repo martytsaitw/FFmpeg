@@ -134,14 +134,14 @@ int av_bitstream_filter_filter(AVBitStreamFilterContext *bsfc,
     pkt.data = (uint8_t *)buf;
     pkt.size = buf_size;
 
-    ret = av_bsf_send_packet(priv->ctx, &pkt);
+    ret = av_bsf_send_packet_ijk(priv->ctx, &pkt);
     if (ret < 0)
         return ret;
 
     *poutbuf      = NULL;
     *poutbuf_size = 0;
 
-    ret = av_bsf_receive_packet(priv->ctx, &pkt);
+    ret = av_bsf_receive_packet_ijk(priv->ctx, &pkt);
     if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
         return 0;
     else if (ret < 0)
@@ -160,7 +160,7 @@ int av_bitstream_filter_filter(AVBitStreamFilterContext *bsfc,
 
     /* drain all the remaining packets we cannot return */
     while (ret >= 0) {
-        ret = av_bsf_receive_packet(priv->ctx, &pkt);
+        ret = av_bsf_receive_packet_ijk(priv->ctx, &pkt);
         av_packet_unref_ijk(&pkt);
     }
 

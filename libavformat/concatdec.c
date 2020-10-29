@@ -581,12 +581,12 @@ static int open_next_file(AVFormatContext *avf)
     return open_file(avf, fileno);
 }
 
-static int filter_packet(AVFormatContext *avf, ConcatStream *cs, AVPacket *pkt)
+static int filter_packet_ijk(AVFormatContext *avf, ConcatStream *cs, AVPacket *pkt)
 {
     int ret;
 
     if (cs->bsf) {
-        ret = av_bsf_send_packet(cs->bsf, pkt);
+        ret = av_bsf_send_packet_ijk(cs->bsf, pkt);
         if (ret < 0) {
             av_log(avf, AV_LOG_ERROR, "h264_mp4toannexb filter "
                    "failed to send input packet\n");
@@ -595,7 +595,7 @@ static int filter_packet(AVFormatContext *avf, ConcatStream *cs, AVPacket *pkt)
         }
 
         while (!ret)
-            ret = av_bsf_receive_packet(cs->bsf, pkt);
+            ret = av_bsf_receive_packet_ijk(cs->bsf, pkt);
 
         if (ret < 0 && (ret != AVERROR(EAGAIN) && ret != AVERROR_EOF)) {
             av_log(avf, AV_LOG_ERROR, "h264_mp4toannexb filter "
@@ -682,7 +682,7 @@ open_fail:
 
         av_log(avf, AV_LOG_WARNING, "open_next_file() failed (%d)\n", try_counter);
     }
-    if ((ret = filter_packet(avf, cs, pkt)))
+    if ((ret = filter_packet_ijk(avf, cs, pkt)))
         return ret;
 
     st = cat->avf->streams[pkt->stream_index];
