@@ -430,7 +430,7 @@ static int concat_read_close(AVFormatContext *avf)
     return 0;
 }
 
-static int concat_read_header(AVFormatContext *avf, AVDictionary **options)
+static int concat_read_header_ijk(AVFormatContext *avf, AVDictionary **options)
 {
     ConcatContext *cat = avf->priv_data;
     AVBPrint bp;
@@ -857,7 +857,7 @@ AVInputFormat ff_concat_demuxer = {
     .long_name      = NULL_IF_CONFIG_SMALL("Virtual concatenation script"),
     .priv_data_size = sizeof(ConcatContext),
     .read_probe     = concat_probe,
-    .read_header2   = concat_read_header,
+    .read_header2   = concat_read_header_ijk,
     .read_packet    = concat_read_packet,
     .read_close     = concat_read_close,
     .read_seek2     = concat_seek,
