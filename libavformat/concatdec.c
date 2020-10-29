@@ -852,7 +852,7 @@ static const AVClass concat_class = {
 };
 
 
-AVInputFormat ff_concat_demuxer = {
+AVInputFormat ff_concat_demuxer_ijk = {
     .name           = "concat",
     .long_name      = NULL_IF_CONFIG_SMALL("Virtual concatenation script"),
     .priv_data_size = sizeof(ConcatContext),
