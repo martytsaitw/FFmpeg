@@ -60,7 +60,7 @@ static int initialize_fifo_tst_muxer_chain(AVFormatContext **oc)
     int ret = 0;
     AVStream *s;
 
-    ret = avformat_alloc_output_context2(oc, NULL, "fifo", "-");
+    ret = avformat_alloc_output_context2_ijk(oc, NULL, "fifo", "-");
     if (ret) {
         fprintf(stderr, "Failed to create format context: %s\n",
                 av_err2str(ret));

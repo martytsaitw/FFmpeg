@@ -449,7 +449,7 @@ static int fifo_mux_init(AVFormatContext *avf, AVOutputFormat *oformat,
     AVFormatContext *avf2;
     int ret = 0, i;
 
-    ret = avformat_alloc_output_context2(&avf2, oformat, NULL, filename);
+    ret = avformat_alloc_output_context2_ijk(&avf2, oformat, NULL, filename);
     if (ret < 0)
         return ret;
 

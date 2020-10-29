@@ -713,7 +713,7 @@ static int hls_mux_init(AVFormatContext *s, VariantStream *vs)
     int byterange_mode = (hls->flags & HLS_SINGLE_FILE) || (hls->max_seg_size > 0);
     int i, ret;
 
-    ret = avformat_alloc_output_context2(&vs->avf, vs->oformat, NULL, NULL);
+    ret = avformat_alloc_output_context2_ijk(&vs->avf, vs->oformat, NULL, NULL);
     if (ret < 0)
         return ret;
     oc = vs->avf;
@@ -731,7 +731,7 @@ static int hls_mux_init(AVFormatContext *s, VariantStream *vs)
     av_dict_copy(&oc->metadata, s->metadata, 0);
 
     if(vs->vtt_oformat) {
-        ret = avformat_alloc_output_context2(&vs->vtt_avf, vs->vtt_oformat, NULL, NULL);
+        ret = avformat_alloc_output_context2_ijk(&vs->vtt_avf, vs->vtt_oformat, NULL, NULL);
         if (ret < 0)
             return ret;
         vtt_oc          = vs->vtt_avf;

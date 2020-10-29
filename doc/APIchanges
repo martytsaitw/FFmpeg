@@ -2240,7 +2240,7 @@ lavd 54.4.100 / 54.0.0, lavfi 3.5.0
   Add fps_probe_size to AVFormatContext.
 
 2011-05-22 - 5ecdfd0 - lavf 53.2.0 - avformat.h
-  Introduce avformat_alloc_output_context2() and deprecate
+  Introduce avformat_alloc_output_context2_ijk() and deprecate
   avformat_alloc_output_context().
 
 2011-05-22 - 83db719 - lavfi 2.10.0 - vsrc_buffer.h

@@ -118,7 +118,7 @@ static int open_output_file(const char *filename)
     unsigned int i;
 
     ofmt_ctx = NULL;
-    avformat_alloc_output_context2(&ofmt_ctx, NULL, NULL, filename);
+    avformat_alloc_output_context2_ijk(&ofmt_ctx, NULL, NULL, filename);
     if (!ofmt_ctx) {
         av_log(NULL, AV_LOG_ERROR, "Could not create output context\n");
         return AVERROR_UNKNOWN;

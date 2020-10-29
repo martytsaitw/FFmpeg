@@ -365,7 +365,7 @@ int avdevice_dev_to_app_control_message(struct AVFormatContext *s,
  *  AVOptionRanges *ranges;
  *  int ret;
  *
- *  if ((ret = avformat_alloc_output_context2(&oc, NULL, "opengl", NULL)) < 0)
+ *  if ((ret = avformat_alloc_output_context2_ijk(&oc, NULL, "opengl", NULL)) < 0)
  *      goto fail;
  *  if (avdevice_capabilities_create(&caps, oc, NULL) < 0)
  *      goto fail;

@@ -132,7 +132,7 @@ int main(int argc, char **argv)
             *(dev++) = 0;
             fmt = out_dev_name[i];
         }
-        ret = avformat_alloc_output_context2(&st->mux, NULL, fmt, dev);
+        ret = avformat_alloc_output_context2_ijk(&st->mux, NULL, fmt, dev);
         if (ret < 0) {
             av_log(NULL, AV_LOG_ERROR, "Failed to allocate output: %s\n",
                    av_err2str(ret));

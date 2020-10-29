@@ -253,7 +253,7 @@ int main(int argc, char **argv)
         goto end;
     }
 
-    if ((ret = (avformat_alloc_output_context2(&ofmt_ctx, NULL, NULL, argv[3]))) < 0) {
+    if ((ret = (avformat_alloc_output_context2_ijk(&ofmt_ctx, NULL, NULL, argv[3]))) < 0) {
         fprintf(stderr, "Failed to deduce output format from file extension. Error code: "
                 "%s\n", av_err2str(ret));
         goto end;

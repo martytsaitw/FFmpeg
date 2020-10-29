@@ -582,10 +582,10 @@ int main(int argc, char **argv)
     }
 
     /* allocate the output media context */
-    avformat_alloc_output_context2(&oc, NULL, NULL, filename);
+    avformat_alloc_output_context2_ijk(&oc, NULL, NULL, filename);
     if (!oc) {
         printf("Could not deduce output format from file extension: using MPEG.\n");
-        avformat_alloc_output_context2(&oc, NULL, "mpeg", filename);
+        avformat_alloc_output_context2_ijk(&oc, NULL, "mpeg", filename);
     }
     if (!oc)
         return 1;

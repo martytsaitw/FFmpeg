@@ -149,7 +149,7 @@ static int segment_mux_init(AVFormatContext *s)
     int i;
     int ret;
 
-    ret = avformat_alloc_output_context2(&seg->avf, seg->oformat, NULL, NULL);
+    ret = avformat_alloc_output_context2_ijk(&seg->avf, seg->oformat, NULL, NULL);
     if (ret < 0)
         return ret;
     oc = seg->avf;

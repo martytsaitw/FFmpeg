@@ -156,7 +156,7 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
 
         av_assert0(!img->split_planes);
 
-        ret = avformat_alloc_output_context2(&fmt, NULL, img->muxer, s->url);
+        ret = avformat_alloc_output_context2_ijk(&fmt, NULL, img->muxer, s->url);
         if (ret < 0)
             return ret;
         st = avformat_new_stream(fmt, NULL);

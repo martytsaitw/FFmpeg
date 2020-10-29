@@ -63,7 +63,7 @@ static int chunk_mux_init(AVFormatContext *s)
     AVFormatContext *oc;
     int ret;
 
-    ret = avformat_alloc_output_context2(&wc->avf, wc->oformat, NULL, NULL);
+    ret = avformat_alloc_output_context2_ijk(&wc->avf, wc->oformat, NULL, NULL);
     if (ret < 0)
         return ret;
     oc = wc->avf;

@@ -2092,7 +2092,7 @@ static int open_output_file(OptionsContext *o, const char *filename)
     if (!strcmp(filename, "-"))
         filename = "pipe:";
 
-    err = avformat_alloc_output_context2(&oc, NULL, o->format, filename);
+    err = avformat_alloc_output_context2_ijk(&oc, NULL, o->format, filename);
     if (!oc) {
         print_error(filename, err);
         exit_program(1);
