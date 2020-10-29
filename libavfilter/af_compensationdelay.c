@@ -106,7 +106,7 @@ static int config_input(AVFilterLink *inlink)
     while (new_size < min_size)
         new_size <<= 1;
 
-    s->delay_frame = av_frame_alloc();
+    s->delay_frame = av_frame_alloc_ijk();
     if (!s->delay_frame)
         return AVERROR(ENOMEM);
 

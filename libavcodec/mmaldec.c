@@ -128,7 +128,7 @@ static int ffmmal_set_ref(AVFrame *frame, FFPoolRef *pool,
     ref->pool = pool;
     ref->buffer = buffer;
 
-    frame->buf[0] = av_buffer_create((void *)ref, sizeof(*ref),
+    frame->buf[0] = av_buffer_create_ijk((void *)ref, sizeof(*ref),
                                      ffmmal_release_frame, NULL,
                                      AV_BUFFER_FLAG_READONLY);
     if (!frame->buf[0]) {
@@ -488,11 +488,11 @@ static int ffmmal_add_packet(AVCodecContext *avctx, AVPacket *avpkt,
 
     if (avpkt->size) {
         if (avpkt->buf) {
-            buf = av_buffer_ref(avpkt->buf);
+            buf = av_buffer_ref_ijk(avpkt->buf);
             size = avpkt->size;
             data = avpkt->data;
         } else {
-            buf = av_buffer_alloc(avpkt->size);
+            buf = av_buffer_alloc_ijk(avpkt->size);
             if (buf) {
                 memcpy(buf->data, avpkt->data, avpkt->size);
                 size = buf->size;
@@ -551,7 +551,7 @@ static int ffmmal_add_packet(AVCodecContext *avctx, AVPacket *avpkt,
         }
 
         if (buf) {
-            buffer->ref = av_buffer_ref(buf);
+            buffer->ref = av_buffer_ref_ijk(buf);
             if (!buffer->ref) {
                 av_free(buffer);
                 ret = AVERROR(ENOMEM);
@@ -776,7 +776,7 @@ static int ffmmal_decode(AVCodecContext *avctx, void *data, int *got_frame,
 
     if (avctx->extradata_size && !ctx->extradata_sent) {
         AVPacket pkt = {0};
-        av_init_packet(&pkt);
+        av_init_packet_ijk(&pkt);
         pkt.data = avctx->extradata;
         pkt.size = avctx->extradata_size;
         ctx->extradata_sent = 1;

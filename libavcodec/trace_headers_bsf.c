@@ -98,7 +98,7 @@ static int trace_headers(AVBSFContext *bsf, AVPacket *pkt)
 
     err = ff_cbs_read_packet(ctx->cbc, &au, pkt);
     if (err < 0) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return err;
     }
 

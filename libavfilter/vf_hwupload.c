@@ -52,7 +52,7 @@ static int hwupload_query_formats(AVFilterContext *avctx)
         return AVERROR(EINVAL);
     }
 
-    ctx->hwdevice_ref = av_buffer_ref(avctx->hw_device_ctx);
+    ctx->hwdevice_ref = av_buffer_ref_ijk(avctx->hw_device_ctx);
     if (!ctx->hwdevice_ref)
         return AVERROR(ENOMEM);
     ctx->hwdevice = (AVHWDeviceContext*)ctx->hwdevice_ref->data;
@@ -110,7 +110,7 @@ static int hwupload_config_output(AVFilterLink *outlink)
             return AVERROR(EINVAL);
         }
 
-        outlink->hw_frames_ctx = av_buffer_ref(inlink->hw_frames_ctx);
+        outlink->hw_frames_ctx = av_buffer_ref_ijk(inlink->hw_frames_ctx);
         if (!outlink->hw_frames_ctx)
             return AVERROR(ENOMEM);
 
@@ -138,7 +138,7 @@ static int hwupload_config_output(AVFilterLink *outlink)
     if (err < 0)
         goto fail;
 
-    outlink->hw_frames_ctx = av_buffer_ref(ctx->hwframes_ref);
+    outlink->hw_frames_ctx = av_buffer_ref_ijk(ctx->hwframes_ref);
     if (!outlink->hw_frames_ctx) {
         err = AVERROR(ENOMEM);
         goto fail;

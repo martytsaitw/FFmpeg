@@ -101,7 +101,7 @@ int main(int argc, char **argv)
     filename    = argv[1];
     outfilename = argv[2];
 
-    pkt = av_packet_alloc();
+    pkt = av_packet_alloc_ijk();
     if (!pkt)
         exit(1);
 
@@ -143,7 +143,7 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    frame = av_frame_alloc();
+    frame = av_frame_alloc_ijk();
     if (!frame) {
         fprintf(stderr, "Could not allocate video frame\n");
         exit(1);

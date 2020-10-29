@@ -235,7 +235,7 @@ static int v4l2_buf_to_bufref(V4L2Buffer *in, int plane, AVBufferRef **buf)
         return AVERROR(EINVAL);
 
     /* even though most encoders return 0 in data_offset encoding vp8 does require this value */
-    *buf = av_buffer_create((char *)in->plane_info[plane].mm_addr + in->planes[plane].data_offset,
+    *buf = av_buffer_create_ijk((char *)in->plane_info[plane].mm_addr + in->planes[plane].data_offset,
                             in->plane_info[plane].length, v4l2_free_buffer, in, 0);
     if (!*buf)
         return AVERROR(ENOMEM);
@@ -243,7 +243,7 @@ static int v4l2_buf_to_bufref(V4L2Buffer *in, int plane, AVBufferRef **buf)
     if (in->context_ref)
         atomic_fetch_add(&in->context_refcount, 1);
     else {
-        in->context_ref = av_buffer_ref(s->self_ref);
+        in->context_ref = av_buffer_ref_ijk(s->self_ref);
         if (!in->context_ref) {
             av_buffer_unref(buf);
             return AVERROR(ENOMEM);
@@ -356,7 +356,7 @@ int ff_v4l2_buffer_buf_to_avpkt(AVPacket *pkt, V4L2Buffer *avbuf)
 {
     int ret;
 
-    av_packet_unref(pkt);
+    av_packet_unref_ijk(pkt);
     ret = v4l2_buf_to_bufref(avbuf, 0, &pkt->buf);
     if (ret)
         return ret;

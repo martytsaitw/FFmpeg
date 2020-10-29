@@ -222,7 +222,7 @@ static av_cold int seqvideo_decode_init(AVCodecContext *avctx)
     if (ret < 0)
         return ret;
 
-    seq->frame = av_frame_alloc();
+    seq->frame = av_frame_alloc_ijk();
     if (!seq->frame)
         return AVERROR(ENOMEM);
 

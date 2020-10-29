@@ -458,7 +458,7 @@ int ff_img_read_packet(AVFormatContext *s1, AVPacket *pkt)
         }
     }
 
-    res = av_new_packet(pkt, size[0] + size[1] + size[2]);
+    res = av_new_packet_ijk(pkt, size[0] + size[1] + size[2]);
     if (res < 0) {
         goto fail;
     }
@@ -501,7 +501,7 @@ int ff_img_read_packet(AVFormatContext *s1, AVPacket *pkt)
     }
 
     if (ret[0] <= 0 || ret[1] < 0 || ret[2] < 0) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         if (ret[0] < 0) {
             res = ret[0];
         } else if (ret[1] < 0) {

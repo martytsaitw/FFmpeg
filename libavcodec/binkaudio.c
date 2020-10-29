@@ -141,7 +141,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
     else
         return -1;
 
-    s->pkt = av_packet_alloc();
+    s->pkt = av_packet_alloc_ijk();
     if (!s->pkt)
         return AVERROR(ENOMEM);
 
@@ -328,14 +328,14 @@ static int binkaudio_receive_frame(AVCodecContext *avctx, AVFrame *frame)
     get_bits_align32(gb);
     if (!get_bits_left(gb)) {
         memset(gb, 0, sizeof(*gb));
-        av_packet_unref(s->pkt);
+        av_packet_unref_ijk(s->pkt);
     }
 
     frame->nb_samples = s->block_size / avctx->channels;
 
     return 0;
 fail:
-    av_packet_unref(s->pkt);
+    av_packet_unref_ijk(s->pkt);
     return ret;
 }
 

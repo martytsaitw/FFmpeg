@@ -59,10 +59,10 @@ static void qsv_clear_buffers(QSVH2645Context *s)
     AVPacket pkt;
     while (av_fifo_size(s->packet_fifo) >= sizeof(pkt)) {
         av_fifo_generic_read(s->packet_fifo, &pkt, sizeof(pkt), NULL);
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
     }
 
-    av_packet_unref(&s->buffer_pkt);
+    av_packet_unref_ijk(&s->buffer_pkt);
 }
 
 static av_cold int qsv_decode_close(AVCodecContext *avctx)
@@ -133,7 +133,7 @@ static int qsv_decode_frame(AVCodecContext *avctx, void *data,
                 return ret;
         }
 
-        ret = av_packet_ref(&input_ref, avpkt);
+        ret = av_packet_ref_ijk(&input_ref, avpkt);
         if (ret < 0)
             return ret;
         av_fifo_generic_write(s->packet_fifo, &input_ref, sizeof(input_ref), NULL);
@@ -147,7 +147,7 @@ static int qsv_decode_frame(AVCodecContext *avctx, void *data,
             if (av_fifo_size(s->packet_fifo) < sizeof(AVPacket))
                 return avpkt->size ? avpkt->size : ff_qsv_process_data(avctx, &s->qsv, frame, got_frame, avpkt);
 
-            av_packet_unref(&s->buffer_pkt);
+            av_packet_unref_ijk(&s->buffer_pkt);
 
             av_fifo_generic_read(s->packet_fifo, &s->buffer_pkt, sizeof(s->buffer_pkt), NULL);
         }
@@ -156,7 +156,7 @@ static int qsv_decode_frame(AVCodecContext *avctx, void *data,
         if (ret < 0){
             /* Drop buffer_pkt when failed to decode the packet. Otherwise,
                the decoder will keep decoding the failure packet. */
-            av_packet_unref(&s->buffer_pkt);
+            av_packet_unref_ijk(&s->buffer_pkt);
             return ret;
         }
 

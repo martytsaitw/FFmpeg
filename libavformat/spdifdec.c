@@ -190,14 +190,14 @@ int ff_spdif_read_packet(AVFormatContext *s, AVPacket *pkt)
     if (pkt_size_bits % 16)
         avpriv_request_sample(s, "Packet not ending at a 16-bit boundary");
 
-    ret = av_new_packet(pkt, FFALIGN(pkt_size_bits, 16) >> 3);
+    ret = av_new_packet_ijk(pkt, FFALIGN(pkt_size_bits, 16) >> 3);
     if (ret)
         return ret;
 
     pkt->pos = avio_tell(pb) - BURST_HEADER_SIZE;
 
     if (avio_read(pb, pkt->data, pkt->size) < pkt->size) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return AVERROR_EOF;
     }
     ff_spdif_bswap_buf16((uint16_t *)pkt->data, (uint16_t *)pkt->data, pkt->size >> 1);
@@ -205,7 +205,7 @@ int ff_spdif_read_packet(AVFormatContext *s, AVPacket *pkt)
     ret = spdif_get_offset_and_codec(s, data_type, pkt->data,
                                      &offset, &codec_id);
     if (ret) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return ret;
     }
 
@@ -216,7 +216,7 @@ int ff_spdif_read_packet(AVFormatContext *s, AVPacket *pkt)
         /* first packet, create a stream */
         AVStream *st = avformat_new_stream_ijk(s, NULL);
         if (!st) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return AVERROR(ENOMEM);
         }
         st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;

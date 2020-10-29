@@ -186,7 +186,7 @@ static int cin_read_packet(AVFormatContext *s, AVPacket *pkt)
 
         pkt_size = ffio_limit(pb, pkt_size);
 
-        ret = av_new_packet(pkt, 4 + pkt_size);
+        ret = av_new_packet_ijk(pkt, 4 + pkt_size);
         if (ret < 0)
             return ret;
 
@@ -200,7 +200,7 @@ static int cin_read_packet(AVFormatContext *s, AVPacket *pkt)
 
         ret = avio_read(pb, &pkt->data[4], pkt_size);
         if (ret < 0) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return ret;
         }
         if (ret < pkt_size)

@@ -283,7 +283,7 @@ static int vmd_read_packet(AVFormatContext *s,
 
     if(ffio_limit(pb, frame->frame_size) != frame->frame_size)
         return AVERROR(EIO);
-    if (av_new_packet(pkt, frame->frame_size + BYTES_PER_FRAME_RECORD))
+    if (av_new_packet_ijk(pkt, frame->frame_size + BYTES_PER_FRAME_RECORD))
         return AVERROR(ENOMEM);
     pkt->pos= avio_tell(pb);
     memcpy(pkt->data, frame->frame_record, BYTES_PER_FRAME_RECORD);
@@ -294,7 +294,7 @@ static int vmd_read_packet(AVFormatContext *s,
             frame->frame_size);
 
     if (ret != frame->frame_size) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         ret = AVERROR(EIO);
     }
     pkt->stream_index = frame->stream_index;

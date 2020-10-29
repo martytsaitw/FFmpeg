@@ -149,19 +149,19 @@ int av_bitstream_filter_filter(AVBitStreamFilterContext *bsfc,
 
     *poutbuf = av_malloc(pkt.size + AV_INPUT_BUFFER_PADDING_SIZE);
     if (!*poutbuf) {
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
         return AVERROR(ENOMEM);
     }
 
     *poutbuf_size = pkt.size;
     memcpy(*poutbuf, pkt.data, pkt.size);
 
-    av_packet_unref(&pkt);
+    av_packet_unref_ijk(&pkt);
 
     /* drain all the remaining packets we cannot return */
     while (ret >= 0) {
         ret = av_bsf_receive_packet(priv->ctx, &pkt);
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
     }
 
     if (!priv->extradata_updated) {

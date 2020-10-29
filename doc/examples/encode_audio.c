@@ -116,7 +116,7 @@ static void encode(AVCodecContext *ctx, AVFrame *frame, AVPacket *pkt,
         }
 
         fwrite(pkt->data, 1, pkt->size, output);
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
     }
 }
 
@@ -180,14 +180,14 @@ int main(int argc, char **argv)
     }
 
     /* packet for holding encoded output */
-    pkt = av_packet_alloc();
+    pkt = av_packet_alloc_ijk();
     if (!pkt) {
         fprintf(stderr, "could not allocate the packet\n");
         exit(1);
     }
 
     /* frame containing input raw audio */
-    frame = av_frame_alloc();
+    frame = av_frame_alloc_ijk();
     if (!frame) {
         fprintf(stderr, "Could not allocate audio frame\n");
         exit(1);

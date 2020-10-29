@@ -163,7 +163,7 @@ static int genh_read_packet(AVFormatContext *s, AVPacket *pkt)
 
         if (avio_feof(s->pb))
             return AVERROR_EOF;
-        ret = av_new_packet(pkt, 8 * par->channels);
+        ret = av_new_packet_ijk(pkt, 8 * par->channels);
         if (ret < 0)
             return ret;
         for (i = 0; i < 8 / c->interleave_size; i++) {

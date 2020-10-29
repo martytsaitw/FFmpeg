@@ -474,7 +474,7 @@ static int opt_vaapi_device(void *optctx, const char *opt, const char *arg)
     av_free(tmp);
     if (err < 0)
         return err;
-    hw_device_ctx = av_buffer_ref(dev->device_ref);
+    hw_device_ctx = av_buffer_ref_ijk(dev->device_ref);
     if (!hw_device_ctx)
         return AVERROR(ENOMEM);
     return 0;

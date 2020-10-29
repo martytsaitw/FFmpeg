@@ -2738,7 +2738,7 @@ static int mxf_interleave_get_packet(AVFormatContext *s, AVPacket *out, AVPacket
 
                 if(s->streams[pktl->pkt.stream_index]->last_in_packet_buffer == pktl)
                     s->streams[pktl->pkt.stream_index]->last_in_packet_buffer= NULL;
-                av_packet_unref(&pktl->pkt);
+                av_packet_unref_ijk(&pktl->pkt);
                 av_freep(&pktl);
                 pktl = next;
             }
@@ -2763,7 +2763,7 @@ static int mxf_interleave_get_packet(AVFormatContext *s, AVPacket *out, AVPacket
         return 1;
     } else {
     out:
-        av_init_packet(out);
+        av_init_packet_ijk(out);
         return 0;
     }
 }

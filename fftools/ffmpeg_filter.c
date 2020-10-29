@@ -727,7 +727,7 @@ static int sub2video_prepare(InputStream *ist, InputFilter *ifilter)
        palettes for all rectangles are identical or compatible */
     ifilter->format = AV_PIX_FMT_RGB32;
 
-    ist->sub2video.frame = av_frame_alloc();
+    ist->sub2video.frame = av_frame_alloc_ijk();
     if (!ist->sub2video.frame)
         return AVERROR(ENOMEM);
     ist->sub2video.last_pts = INT64_MIN;
@@ -1051,7 +1051,7 @@ int configure_filtergraph(FilterGraph *fg)
         AVBufferRef *device = filter_hw_device ? filter_hw_device->device_ref
                                                : hw_device_ctx;
         for (i = 0; i < fg->graph->nb_filters; i++) {
-            fg->graph->filters[i]->hw_device_ctx = av_buffer_ref(device);
+            fg->graph->filters[i]->hw_device_ctx = av_buffer_ref_ijk(device);
             if (!fg->graph->filters[i]->hw_device_ctx) {
                 ret = AVERROR(ENOMEM);
                 goto fail;
@@ -1188,7 +1188,7 @@ int ifilter_parameters_from_frame(InputFilter *ifilter, const AVFrame *frame)
     ifilter->channel_layout      = frame->channel_layout;
 
     if (frame->hw_frames_ctx) {
-        ifilter->hw_frames_ctx = av_buffer_ref(frame->hw_frames_ctx);
+        ifilter->hw_frames_ctx = av_buffer_ref_ijk(frame->hw_frames_ctx);
         if (!ifilter->hw_frames_ctx)
             return AVERROR(ENOMEM);
     }

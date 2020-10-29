@@ -221,7 +221,7 @@ static int sap_fetch_packet(AVFormatContext *s, AVPacket *pkt)
             int i = s->nb_streams;
             AVStream *st = avformat_new_stream_ijk(s, NULL);
             if (!st) {
-                av_packet_unref(pkt);
+                av_packet_unref_ijk(pkt);
                 return AVERROR(ENOMEM);
             }
             st->id = i;

@@ -319,7 +319,7 @@ int ff_h264_update_thread_context(AVCodecContext *dst,
     for (i = 0; i < FF_ARRAY_ELEMS(h->ps.sps_list); i++) {
         av_buffer_unref(&h->ps.sps_list[i]);
         if (h1->ps.sps_list[i]) {
-            h->ps.sps_list[i] = av_buffer_ref(h1->ps.sps_list[i]);
+            h->ps.sps_list[i] = av_buffer_ref_ijk(h1->ps.sps_list[i]);
             if (!h->ps.sps_list[i])
                 return AVERROR(ENOMEM);
         }
@@ -327,7 +327,7 @@ int ff_h264_update_thread_context(AVCodecContext *dst,
     for (i = 0; i < FF_ARRAY_ELEMS(h->ps.pps_list); i++) {
         av_buffer_unref(&h->ps.pps_list[i]);
         if (h1->ps.pps_list[i]) {
-            h->ps.pps_list[i] = av_buffer_ref(h1->ps.pps_list[i]);
+            h->ps.pps_list[i] = av_buffer_ref_ijk(h1->ps.pps_list[i]);
             if (!h->ps.pps_list[i])
                 return AVERROR(ENOMEM);
         }
@@ -338,13 +338,13 @@ int ff_h264_update_thread_context(AVCodecContext *dst,
     h->ps.pps = NULL;
     h->ps.sps = NULL;
     if (h1->ps.pps_ref) {
-        h->ps.pps_ref = av_buffer_ref(h1->ps.pps_ref);
+        h->ps.pps_ref = av_buffer_ref_ijk(h1->ps.pps_ref);
         if (!h->ps.pps_ref)
             return AVERROR(ENOMEM);
         h->ps.pps = (const PPS*)h->ps.pps_ref->data;
     }
     if (h1->ps.sps_ref) {
-        h->ps.sps_ref = av_buffer_ref(h1->ps.sps_ref);
+        h->ps.sps_ref = av_buffer_ref_ijk(h1->ps.sps_ref);
         if (!h->ps.sps_ref)
             return AVERROR(ENOMEM);
         h->ps.sps = (const SPS*)h->ps.sps_ref->data;
@@ -1011,7 +1011,7 @@ static int h264_init_ps(H264Context *h, const H264SliceContext *sl, int first_sl
     if (first_slice) {
         av_buffer_unref(&h->ps.pps_ref);
         h->ps.pps = NULL;
-        h->ps.pps_ref = av_buffer_ref(h->ps.pps_list[sl->pps_id]);
+        h->ps.pps_ref = av_buffer_ref_ijk(h->ps.pps_list[sl->pps_id]);
         if (!h->ps.pps_ref)
             return AVERROR(ENOMEM);
         h->ps.pps = (const PPS*)h->ps.pps_ref->data;
@@ -1020,7 +1020,7 @@ static int h264_init_ps(H264Context *h, const H264SliceContext *sl, int first_sl
     if (h->ps.sps != (const SPS*)h->ps.sps_list[h->ps.pps->sps_id]->data) {
         av_buffer_unref(&h->ps.sps_ref);
         h->ps.sps = NULL;
-        h->ps.sps_ref = av_buffer_ref(h->ps.sps_list[h->ps.pps->sps_id]);
+        h->ps.sps_ref = av_buffer_ref_ijk(h->ps.sps_list[h->ps.pps->sps_id]);
         if (!h->ps.sps_ref)
             return AVERROR(ENOMEM);
         h->ps.sps = (const SPS*)h->ps.sps_ref->data;

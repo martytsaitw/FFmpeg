@@ -63,7 +63,7 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
         ret = av_get_packet(s->pb, pkt, CDG_PACKET_SIZE);
         if (ret < 1 || (pkt->data[0] & CDG_MASK) == CDG_COMMAND)
             break;
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
     }
 
     if (!priv->got_first_packet) {

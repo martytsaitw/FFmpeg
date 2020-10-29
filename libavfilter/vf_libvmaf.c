@@ -224,8 +224,8 @@ static av_cold int init(AVFilterContext *ctx)
 {
     LIBVMAFContext *s = ctx->priv;
 
-    s->gref = av_frame_alloc();
-    s->gmain = av_frame_alloc();
+    s->gref = av_frame_alloc_ijk();
+    s->gmain = av_frame_alloc_ijk();
     s->error = 0;
 
     pthread_mutex_init(&s->lock, NULL);

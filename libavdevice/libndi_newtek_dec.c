@@ -47,7 +47,7 @@ static int ndi_set_video_packet(AVFormatContext *avctx, NDIlib_video_frame_t *v,
     int ret;
     struct NDIContext *ctx = avctx->priv_data;
 
-    ret = av_new_packet(pkt, v->yres * v->line_stride_in_bytes);
+    ret = av_new_packet_ijk(pkt, v->yres * v->line_stride_in_bytes);
     if (ret < 0)
         return ret;
 
@@ -72,7 +72,7 @@ static int ndi_set_audio_packet(AVFormatContext *avctx, NDIlib_audio_frame_t *a,
 
     NDIlib_audio_frame_interleaved_16s_t dst;
 
-    ret = av_new_packet(pkt, 2 * a->no_samples * a->no_channels);
+    ret = av_new_packet_ijk(pkt, 2 * a->no_samples * a->no_channels);
     if (ret < 0)
         return ret;
 

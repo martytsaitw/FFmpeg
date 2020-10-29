@@ -321,7 +321,7 @@ static int fourxm_read_packet(AVFormatContext *s,
         case cfr2_TAG:
             /* allocate 8 more bytes than 'size' to account for fourcc
              * and size */
-            if (size + 8 < size || av_new_packet(pkt, size + 8))
+            if (size + 8 < size || av_new_packet_ijk(pkt, size + 8))
                 return AVERROR(EIO);
             pkt->stream_index = fourxm->video_stream_index;
             pkt->pts          = fourxm->video_pts;
@@ -330,7 +330,7 @@ static int fourxm_read_packet(AVFormatContext *s,
             ret = avio_read(s->pb, &pkt->data[8], size);
 
             if (ret < 0) {
-                av_packet_unref(pkt);
+                av_packet_unref_ijk(pkt);
             } else {
                 packet_read = 1;
                 av_shrink_packet(pkt, ret + 8);

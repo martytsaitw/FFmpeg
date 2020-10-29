@@ -74,7 +74,7 @@ static void *sender_thread(void *arg)
             AVDictionary *meta = NULL;
             struct message msg = {
                 .magic = MAGIC,
-                .frame = av_frame_alloc(),
+                .frame = av_frame_alloc_ijk(),
             };
 
             if (!msg.frame) {

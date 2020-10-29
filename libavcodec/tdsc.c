@@ -109,8 +109,8 @@ static av_cold int tdsc_init(AVCodecContext *avctx)
         return ret;
 
     /* Allocate reference and JPEG frame */
-    ctx->refframe = av_frame_alloc();
-    ctx->jpgframe = av_frame_alloc();
+    ctx->refframe = av_frame_alloc_ijk();
+    ctx->jpgframe = av_frame_alloc_ijk();
     if (!ctx->refframe || !ctx->jpgframe)
         return AVERROR(ENOMEM);
 
@@ -346,7 +346,7 @@ static int tdsc_decode_jpeg_tile(AVCodecContext *avctx, int tile_size,
     int ret;
 
     /* Prepare a packet and send to the MJPEG decoder */
-    av_init_packet(&jpkt);
+    av_init_packet_ijk(&jpkt);
     jpkt.data = ctx->tilebuffer;
     jpkt.size = tile_size;
 

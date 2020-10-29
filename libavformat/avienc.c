@@ -747,7 +747,7 @@ static int write_skip_frames(AVFormatContext *s, int stream_index, int64_t dts)
             return AVERROR(EINVAL);
         }
 
-        av_init_packet(&empty_packet);
+        av_init_packet_ijk(&empty_packet);
         empty_packet.size         = 0;
         empty_packet.data         = NULL;
         empty_packet.stream_index = stream_index;

@@ -172,7 +172,7 @@ static AVBufferRef *qsv_pool_alloc(void *opaque, int size)
 
     if (s->nb_surfaces_used < hwctx->nb_surfaces) {
         s->nb_surfaces_used++;
-        return av_buffer_create((uint8_t*)(s->surfaces_internal + s->nb_surfaces_used - 1),
+        return av_buffer_create_ijk((uint8_t*)(s->surfaces_internal + s->nb_surfaces_used - 1),
                                 sizeof(*hwctx->surfaces), qsv_pool_release_dummy, NULL, 0);
     }
 
@@ -675,12 +675,12 @@ static int qsv_map_from(AVHWFramesContext *ctx,
         return AVERROR(ENOSYS);
     }
 
-    dummy = av_frame_alloc();
+    dummy = av_frame_alloc_ijk();
     if (!dummy)
         return AVERROR(ENOMEM);
 
-    dummy->buf[0]        = av_buffer_ref(src->buf[0]);
-    dummy->hw_frames_ctx = av_buffer_ref(s->child_frames_ref);
+    dummy->buf[0]        = av_buffer_ref_ijk(src->buf[0]);
+    dummy->hw_frames_ctx = av_buffer_ref_ijk(s->child_frames_ref);
     if (!dummy->buf[0] || !dummy->hw_frames_ctx)
         goto fail;
 
@@ -708,7 +708,7 @@ static int qsv_transfer_data_child(AVHWFramesContext *ctx, AVFrame *dst,
     AVFrame *dummy;
     int ret;
 
-    dummy = av_frame_alloc();
+    dummy = av_frame_alloc_ijk();
     if (!dummy)
         return AVERROR(ENOMEM);
 

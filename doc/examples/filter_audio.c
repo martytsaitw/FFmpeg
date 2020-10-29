@@ -290,7 +290,7 @@ int main(int argc, char *argv[])
     }
 
     /* Allocate the frame we will be using to store the data. */
-    frame  = av_frame_alloc();
+    frame  = av_frame_alloc_ijk();
     if (!frame) {
         fprintf(stderr, "Error allocating the frame\n");
         return 1;

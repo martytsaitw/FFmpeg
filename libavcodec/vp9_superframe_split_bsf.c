@@ -90,7 +90,7 @@ static int vp9_superframe_split_filter(AVBSFContext *ctx, AVPacket *out)
         GetBitContext gb;
         int profile, invisible = 0;
 
-        ret = av_packet_ref(out, &s->buffer_pkt);
+        ret = av_packet_ref_ijk(out, &s->buffer_pkt);
         if (ret < 0)
             goto fail;
 
@@ -101,7 +101,7 @@ static int vp9_superframe_split_filter(AVBSFContext *ctx, AVPacket *out)
         s->next_frame++;
 
         if (s->next_frame >= s->nb_frames)
-            av_packet_unref(&s->buffer_pkt);
+            av_packet_unref_ijk(&s->buffer_pkt);
 
         ret = init_get_bits8(&gb, out->data, out->size);
         if (ret < 0)
@@ -127,15 +127,15 @@ static int vp9_superframe_split_filter(AVBSFContext *ctx, AVPacket *out)
     return 0;
 fail:
     if (ret < 0)
-        av_packet_unref(out);
-    av_packet_unref(&s->buffer_pkt);
+        av_packet_unref_ijk(out);
+    av_packet_unref_ijk(&s->buffer_pkt);
     return ret;
 }
 
 static void vp9_superframe_split_uninit(AVBSFContext *ctx)
 {
     VP9SFSplitContext *s = ctx->priv_data;
-    av_packet_unref(&s->buffer_pkt);
+    av_packet_unref_ijk(&s->buffer_pkt);
 }
 
 const AVBitStreamFilter ff_vp9_superframe_split_bsf = {

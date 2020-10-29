@@ -138,7 +138,7 @@ static av_cold int flic_decode_init(AVCodecContext *avctx)
                   return AVERROR_INVALIDDATA;
     }
 
-    s->frame = av_frame_alloc();
+    s->frame = av_frame_alloc_ijk();
     if (!s->frame)
         return AVERROR(ENOMEM);
 

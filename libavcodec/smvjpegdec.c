@@ -98,11 +98,11 @@ static av_cold int smvjpeg_decode_init(AVCodecContext *avctx)
 
     s->frames_per_jpeg = 0;
 
-    s->picture[0] = av_frame_alloc();
+    s->picture[0] = av_frame_alloc_ijk();
     if (!s->picture[0])
         return AVERROR(ENOMEM);
 
-    s->picture[1] = av_frame_alloc();
+    s->picture[1] = av_frame_alloc_ijk();
     if (!s->picture[1]) {
         av_frame_free(&s->picture[0]);
         return AVERROR(ENOMEM);

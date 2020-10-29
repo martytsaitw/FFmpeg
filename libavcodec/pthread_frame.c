@@ -289,7 +289,7 @@ static int update_context_from_thread(AVCodecContext *dst, AVCodecContext *src, 
             av_buffer_unref(&dst->hw_frames_ctx);
 
             if (src->hw_frames_ctx) {
-                dst->hw_frames_ctx = av_buffer_ref(src->hw_frames_ctx);
+                dst->hw_frames_ctx = av_buffer_ref_ijk(src->hw_frames_ctx);
                 if (!dst->hw_frames_ctx)
                     return AVERROR(ENOMEM);
             }
@@ -417,11 +417,11 @@ static int submit_packet(PerThreadContext *p, AVCodecContext *user_avctx,
         }
     }
 
-    av_packet_unref(&p->avpkt);
-    ret = av_packet_ref(&p->avpkt, avpkt);
+    av_packet_unref_ijk(&p->avpkt);
+    ret = av_packet_ref_ijk(&p->avpkt, avpkt);
     if (ret < 0) {
         pthread_mutex_unlock(&p->mutex);
-        av_log(p->avctx, AV_LOG_ERROR, "av_packet_ref() failed in submit_packet()\n");
+        av_log(p->avctx, AV_LOG_ERROR, "av_packet_ref_ijk() failed in submit_packet()\n");
         return ret;
     }
 
@@ -691,7 +691,7 @@ void ff_frame_thread_free(AVCodecContext *avctx, int thread_count)
         pthread_cond_destroy(&p->input_cond);
         pthread_cond_destroy(&p->progress_cond);
         pthread_cond_destroy(&p->output_cond);
-        av_packet_unref(&p->avpkt);
+        av_packet_unref_ijk(&p->avpkt);
         av_freep(&p->released_buffers);
 
         if (i && p->avctx) {
@@ -774,7 +774,7 @@ int ff_frame_thread_init(AVCodecContext *avctx)
         pthread_cond_init(&p->progress_cond, NULL);
         pthread_cond_init(&p->output_cond, NULL);
 
-        p->frame = av_frame_alloc();
+        p->frame = av_frame_alloc_ijk();
         if (!p->frame) {
             av_freep(&copy);
             err = AVERROR(ENOMEM);
@@ -897,7 +897,7 @@ static int thread_get_buffer_internal(AVCodecContext *avctx, ThreadFrame *f, int
 
     if (avctx->internal->allocate_progress) {
         atomic_int *progress;
-        f->progress = av_buffer_alloc(2 * sizeof(*progress));
+        f->progress = av_buffer_alloc_ijk(2 * sizeof(*progress));
         if (!f->progress) {
             return AVERROR(ENOMEM);
         }

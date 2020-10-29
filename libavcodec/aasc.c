@@ -70,7 +70,7 @@ static av_cold int aasc_decode_init(AVCodecContext *avctx)
         return -1;
     }
 
-    s->frame = av_frame_alloc();
+    s->frame = av_frame_alloc_ijk();
     if (!s->frame)
         return AVERROR(ENOMEM);
 

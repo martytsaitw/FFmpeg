@@ -73,7 +73,7 @@ static av_cold int cinvideo_decode_init(AVCodecContext *avctx)
     cin->avctx = avctx;
     avctx->pix_fmt = AV_PIX_FMT_PAL8;
 
-    cin->frame = av_frame_alloc();
+    cin->frame = av_frame_alloc_ijk();
     if (!cin->frame)
         return AVERROR(ENOMEM);
 

@@ -112,7 +112,7 @@ static int amf_load_library(AVCodecContext *avctx)
     AMFQueryVersion_Fn version_fun;
     AMF_RESULT         res;
 
-    ctx->delayed_frame = av_frame_alloc();
+    ctx->delayed_frame = av_frame_alloc_ijk();
     if (!ctx->delayed_frame) {
         return AVERROR(ENOMEM);
     }
@@ -267,7 +267,7 @@ static int amf_init_context(AVCodecContext *avctx)
             return AVERROR(ENOSYS);
         }
 
-        ctx->hw_frames_ctx = av_buffer_ref(avctx->hw_frames_ctx);
+        ctx->hw_frames_ctx = av_buffer_ref_ijk(avctx->hw_frames_ctx);
         if (!ctx->hw_frames_ctx)
             return AVERROR(ENOMEM);
 
@@ -298,7 +298,7 @@ static int amf_init_context(AVCodecContext *avctx)
             return AVERROR(ENOSYS);
         }
 
-        ctx->hw_device_ctx = av_buffer_ref(avctx->hw_device_ctx);
+        ctx->hw_device_ctx = av_buffer_ref_ijk(avctx->hw_device_ctx);
         if (!ctx->hw_device_ctx)
             return AVERROR(ENOMEM);
 

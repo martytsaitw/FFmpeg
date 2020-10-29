@@ -249,7 +249,7 @@ cleanup:
  */
 static void init_packet(AVPacket *packet)
 {
-    av_init_packet(packet);
+    av_init_packet_ijk(packet);
     /* Set the packet data and size so that it is recognized as being empty. */
     packet->data = NULL;
     packet->size = 0;
@@ -262,7 +262,7 @@ static void init_packet(AVPacket *packet)
  */
 static int init_input_frame(AVFrame **frame)
 {
-    if (!(*frame = av_frame_alloc())) {
+    if (!(*frame = av_frame_alloc_ijk())) {
         fprintf(stderr, "Could not allocate input frame\n");
         return AVERROR(ENOMEM);
     }
@@ -418,7 +418,7 @@ static int decode_audio_frame(AVFrame *frame,
     }
 
 cleanup:
-    av_packet_unref(&input_packet);
+    av_packet_unref_ijk(&input_packet);
     return error;
 }
 
@@ -616,7 +616,7 @@ static int init_output_frame(AVFrame **frame,
     int error;
 
     /* Create a new frame to store the audio samples. */
-    if (!(*frame = av_frame_alloc())) {
+    if (!(*frame = av_frame_alloc_ijk())) {
         fprintf(stderr, "Could not allocate output frame\n");
         return AVERROR_EXIT;
     }
@@ -713,7 +713,7 @@ static int encode_audio_frame(AVFrame *frame,
     }
 
 cleanup:
-    av_packet_unref(&output_packet);
+    av_packet_unref_ijk(&output_packet);
     return error;
 }
 

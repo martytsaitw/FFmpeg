@@ -564,7 +564,7 @@ static int tee_write_packet(AVFormatContext *avf, AVPacket *pkt)
             continue;
 
         memset(&pkt2, 0, sizeof(AVPacket));
-        if ((ret = av_packet_ref(&pkt2, pkt)) < 0)
+        if ((ret = av_packet_ref_ijk(&pkt2, pkt)) < 0)
             if (!ret_all) {
                 ret_all = ret;
                 continue;

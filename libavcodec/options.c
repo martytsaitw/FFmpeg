@@ -278,7 +278,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
 #undef alloc_and_copy_or_fail
 
     if (src->hw_frames_ctx) {
-        dest->hw_frames_ctx = av_buffer_ref(src->hw_frames_ctx);
+        dest->hw_frames_ctx = av_buffer_ref_ijk(src->hw_frames_ctx);
         if (!dest->hw_frames_ctx)
             goto fail;
     }

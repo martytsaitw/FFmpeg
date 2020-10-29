@@ -484,7 +484,7 @@ int ff_read_packet(AVFormatContext *s, AVPacket *pkt);
  * Interleave a packet per dts in an output media file.
  *
  * Packets with pkt->destruct == av_destruct_packet will be freed inside this
- * function, so they cannot be used after it. Note that calling av_packet_unref()
+ * function, so they cannot be used after it. Note that calling av_packet_unref_ijk()
  * on them is still safe.
  *
  * @param s media file handle

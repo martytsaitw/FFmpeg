@@ -223,7 +223,7 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     int mb_x, mb_y;
 
     if (pict->width % 16 || pict->height % 16) {
-        AVFrame *clone = av_frame_alloc();
+        AVFrame *clone = av_frame_alloc_ijk();
         int i;
 
         if (!clone)

@@ -62,7 +62,7 @@ static void encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt,
 
         printf("Write packet %3"PRId64" (size=%5d)\n", pkt->pts, pkt->size);
         fwrite(pkt->data, 1, pkt->size, outfile);
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
     }
 }
 
@@ -97,7 +97,7 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    pkt = av_packet_alloc();
+    pkt = av_packet_alloc_ijk();
     if (!pkt)
         exit(1);
 
@@ -136,7 +136,7 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    frame = av_frame_alloc();
+    frame = av_frame_alloc_ijk();
     if (!frame) {
         fprintf(stderr, "Could not allocate video frame\n");
         exit(1);

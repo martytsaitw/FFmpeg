@@ -73,7 +73,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
     ff_init_scantable(s->idsp.idct_permutation, &s->scantable, ff_zigzag_direct);
     ff_mpeg12_init_vlcs();
 
-    s->last_frame = av_frame_alloc();
+    s->last_frame = av_frame_alloc_ijk();
     if (!s->last_frame)
         return AVERROR(ENOMEM);
 

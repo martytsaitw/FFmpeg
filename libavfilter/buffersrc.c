@@ -113,7 +113,7 @@ int av_buffersrc_parameters_set(AVFilterContext *ctx, AVBufferSrcParameters *par
             s->frame_rate = param->frame_rate;
         if (param->hw_frames_ctx) {
             av_buffer_unref(&s->hw_frames_ctx);
-            s->hw_frames_ctx = av_buffer_ref(param->hw_frames_ctx);
+            s->hw_frames_ctx = av_buffer_ref_ijk(param->hw_frames_ctx);
             if (!s->hw_frames_ctx)
                 return AVERROR(ENOMEM);
         }
@@ -163,7 +163,7 @@ int attribute_align_arg av_buffersrc_add_frame_flags(AVFilterContext *ctx, AVFra
     if (!(flags & AV_BUFFERSRC_FLAG_KEEP_REF) || !frame)
         return av_buffersrc_add_frame_internal(ctx, frame, flags);
 
-    if (!(copy = av_frame_alloc()))
+    if (!(copy = av_frame_alloc_ijk()))
         return AVERROR(ENOMEM);
     ret = av_frame_ref(copy, frame);
     if (ret >= 0)
@@ -228,7 +228,7 @@ static int av_buffersrc_add_frame_internal(AVFilterContext *ctx,
                                          sizeof(copy))) < 0)
         return ret;
 
-    if (!(copy = av_frame_alloc()))
+    if (!(copy = av_frame_alloc_ijk()))
         return AVERROR(ENOMEM);
 
     if (refcounted) {
@@ -436,7 +436,7 @@ static int config_props(AVFilterLink *link)
         link->sample_aspect_ratio = c->pixel_aspect;
 
         if (c->hw_frames_ctx) {
-            link->hw_frames_ctx = av_buffer_ref(c->hw_frames_ctx);
+            link->hw_frames_ctx = av_buffer_ref_ijk(c->hw_frames_ctx);
             if (!link->hw_frames_ctx)
                 return AVERROR(ENOMEM);
         }

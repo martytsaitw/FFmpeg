@@ -524,7 +524,7 @@ static int config_output(AVFilterLink *outlink)
         return 0;
     }
 
-    s->delay_frame = av_frame_alloc();
+    s->delay_frame = av_frame_alloc_ijk();
     if (!s->delay_frame) {
         uninit(ctx);
         return AVERROR(ENOMEM);

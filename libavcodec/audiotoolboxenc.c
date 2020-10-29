@@ -444,7 +444,7 @@ static av_cold int ffat_init_encoder(AVCodecContext *avctx)
 
     ff_af_queue_init(avctx, &at->afq);
 
-    at->encoding_frame = av_frame_alloc();
+    at->encoding_frame = av_frame_alloc_ijk();
     if (!at->encoding_frame)
         return AVERROR(ENOMEM);
 

@@ -95,7 +95,7 @@ static av_cold int paf_video_init(AVCodecContext *avctx)
     if (ret < 0)
         return ret;
 
-    c->pic = av_frame_alloc();
+    c->pic = av_frame_alloc_ijk();
     if (!c->pic)
         return AVERROR(ENOMEM);
 

@@ -1048,7 +1048,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
 
     if (s->b_frame_strategy == 2) {
         for (i = 0; i < s->max_b_frames + 2; i++) {
-            s->tmp_frames[i] = av_frame_alloc();
+            s->tmp_frames[i] = av_frame_alloc_ijk();
             if (!s->tmp_frames[i])
                 return AVERROR(ENOMEM);
 
@@ -1361,7 +1361,7 @@ static int encode_frame(AVCodecContext *c, AVFrame *frame)
     int ret;
     int size = 0;
 
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
 
     ret = avcodec_send_frame(c, frame);
     if (ret < 0)
@@ -1371,7 +1371,7 @@ static int encode_frame(AVCodecContext *c, AVFrame *frame)
         ret = avcodec_receive_packet(c, &pkt);
         if (ret >= 0) {
             size += pkt.size;
-            av_packet_unref(&pkt);
+            av_packet_unref_ijk(&pkt);
         } else if (ret < 0 && ret != AVERROR(EAGAIN) && ret != AVERROR_EOF)
             return ret;
     } while (ret >= 0);
@@ -2042,7 +2042,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
                 return AVERROR(ENOMEM);
             props->vbv_delay = vbv_delay * 300;
 
-            ret = av_packet_add_side_data(pkt, AV_PKT_DATA_CPB_PROPERTIES,
+            ret = av_packet_add_side_data_ijk(pkt, AV_PKT_DATA_CPB_PROPERTIES,
                                           (uint8_t*)props, props_size);
             if (ret < 0) {
                 av_freep(&props);

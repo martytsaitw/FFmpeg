@@ -154,7 +154,7 @@ AVEncryptionInfo *av_encryption_info_get_side_data(const uint8_t *side_data, siz
 /**
  * Allocates and initializes side data that holds a copy of the given encryption
  * info.  The resulting pointer should be either freed using av_free or given
- * to av_packet_add_side_data().
+ * to av_packet_add_side_data_ijk().
  *
  * @return The new side-data pointer, or NULL.
  */
@@ -190,7 +190,7 @@ AVEncryptionInitInfo *av_encryption_init_info_get_side_data(
 /**
  * Allocates and initializes side data that holds a copy of the given encryption
  * init info.  The resulting pointer should be either freed using av_free or
- * given to av_packet_add_side_data().
+ * given to av_packet_add_side_data_ijk().
  *
  * @return The new side-data pointer, or NULL.
  */

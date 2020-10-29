@@ -182,8 +182,8 @@ static av_cold int roq_decode_init(AVCodecContext *avctx)
     s->width = avctx->width;
     s->height = avctx->height;
 
-    s->last_frame    = av_frame_alloc();
-    s->current_frame = av_frame_alloc();
+    s->last_frame    = av_frame_alloc_ijk();
+    s->current_frame = av_frame_alloc_ijk();
     if (!s->current_frame || !s->last_frame) {
         av_frame_free(&s->current_frame);
         av_frame_free(&s->last_frame);

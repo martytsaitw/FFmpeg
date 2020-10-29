@@ -890,8 +890,8 @@ static av_cold int decode_init(AVCodecContext *avctx)
     if (!s->blocks)
         return AVERROR(ENOMEM);
 
-    s->last_frame = av_frame_alloc();
-    s->current_frame = av_frame_alloc();
+    s->last_frame = av_frame_alloc_ijk();
+    s->current_frame = av_frame_alloc_ijk();
     if (!s->last_frame || !s->current_frame)
         return AVERROR(ENOMEM);
 

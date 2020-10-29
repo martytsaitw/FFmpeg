@@ -2336,7 +2336,7 @@ static int read_interval_packets(WriterContext *w, InputFile *ifile,
     int64_t start = -INT64_MAX, end = interval->end;
     int has_start = 0, has_end = interval->has_end && !interval->end_is_offset;
 
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
 
     av_log(NULL, AV_LOG_VERBOSE, "Processing read interval ");
     log_read_interval(interval, NULL, AV_LOG_VERBOSE);
@@ -2365,7 +2365,7 @@ static int read_interval_packets(WriterContext *w, InputFile *ifile,
         }
     }
 
-    frame = av_frame_alloc();
+    frame = av_frame_alloc_ijk();
     if (!frame) {
         ret = AVERROR(ENOMEM);
         goto end;
@@ -2411,9 +2411,9 @@ static int read_interval_packets(WriterContext *w, InputFile *ifile,
                 while (process_frame(w, ifile, frame, &pkt, &packet_new) > 0);
             }
         }
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
     }
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
     pkt.data = NULL;
     pkt.size = 0;
     //Flush remaining frames that are cached in the decoder

@@ -120,12 +120,12 @@ static int mpeg4_unpack_bframes_filter(AVBSFContext *ctx, AVPacket *out)
 
     if (nb_vop == 1 && s->b_frame_buf) {
         /* use frame from BSFContext */
-        ret = av_packet_copy_props(out, in);
+        ret = av_packet_copy_props_ijk(out, in);
         if (ret < 0) {
             goto fail;
         }
 
-        ret = av_packet_from_data(out, s->b_frame_buf, s->b_frame_buf_size);
+        ret = av_packet_from_data_ijk(out, s->b_frame_buf, s->b_frame_buf_size);
         if (ret < 0) {
             goto fail;
         }
@@ -163,7 +163,7 @@ static int mpeg4_unpack_bframes_filter(AVBSFContext *ctx, AVPacket *out)
 
 fail:
     if (ret < 0)
-        av_packet_unref(out);
+        av_packet_unref_ijk(out);
     av_packet_free(&in);
 
     return ret;

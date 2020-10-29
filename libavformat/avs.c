@@ -90,7 +90,7 @@ avs_read_video_packet(AVFormatContext * s, AVPacket * pkt,
     AvsFormat *avs = s->priv_data;
     int ret;
 
-    ret = av_new_packet(pkt, size + palette_size);
+    ret = av_new_packet_ijk(pkt, size + palette_size);
     if (ret < 0)
         return ret;
 
@@ -108,7 +108,7 @@ avs_read_video_packet(AVFormatContext * s, AVPacket * pkt,
     pkt->data[palette_size + 3] = (size >> 8) & 0xFF;
     ret = avio_read(s->pb, pkt->data + palette_size + 4, size - 4) + 4;
     if (ret < size) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return AVERROR(EIO);
     }
 

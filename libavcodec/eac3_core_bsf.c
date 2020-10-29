@@ -71,7 +71,7 @@ static int eac3_core_filter(AVBSFContext *ctx, AVPacket *pkt)
 
     return 0;
 fail:
-    av_packet_unref(pkt);
+    av_packet_unref_ijk(pkt);
     return ret;
 }
 

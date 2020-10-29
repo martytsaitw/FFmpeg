@@ -474,7 +474,7 @@ static int demux_video(AVFormatContext *s, TyRecHdr *rec_hdr, AVPacket *pkt)
                     int size = rec_hdr->rec_size - VIDEO_PES_LENGTH - es_offset1;
 
                     ty->cur_chunk_pos += VIDEO_PES_LENGTH + es_offset1;
-                    if (av_new_packet(pkt, size) < 0)
+                    if (av_new_packet_ijk(pkt, size) < 0)
                         return AVERROR(ENOMEM);
                     memcpy(pkt->data, ty->chunk + ty->cur_chunk_pos, size);
                     ty->cur_chunk_pos += size;
@@ -498,7 +498,7 @@ static int demux_video(AVFormatContext *s, TyRecHdr *rec_hdr, AVPacket *pkt)
     }
 
     if (!got_packet) {
-        if (av_new_packet(pkt, rec_size) < 0)
+        if (av_new_packet_ijk(pkt, rec_size) < 0)
             return AVERROR(ENOMEM);
         memcpy(pkt->data, ty->chunk + ty->cur_chunk_pos, rec_size);
         ty->cur_chunk_pos += rec_size;
@@ -621,7 +621,7 @@ static int demux_audio(AVFormatContext *s, TyRecHdr *rec_hdr, AVPacket *pkt)
             ty->pes_buf_cnt = 0;
 
         }
-        if (av_new_packet(pkt, rec_size - need) < 0)
+        if (av_new_packet_ijk(pkt, rec_size - need) < 0)
             return AVERROR(ENOMEM);
         memcpy(pkt->data, ty->chunk + ty->cur_chunk_pos, rec_size - need);
         ty->cur_chunk_pos += rec_size - need;
@@ -643,7 +643,7 @@ static int demux_audio(AVFormatContext *s, TyRecHdr *rec_hdr, AVPacket *pkt)
             }
         }
     } else if (subrec_type == 0x03) {
-        if (av_new_packet(pkt, rec_size) < 0)
+        if (av_new_packet_ijk(pkt, rec_size) < 0)
             return AVERROR(ENOMEM);
         memcpy(pkt->data, ty->chunk + ty->cur_chunk_pos, rec_size);
         ty->cur_chunk_pos += rec_size;
@@ -658,7 +658,7 @@ static int demux_audio(AVFormatContext *s, TyRecHdr *rec_hdr, AVPacket *pkt)
             ty->last_audio_pts = ff_parse_pes_pts(&pkt->data[SA_PTS_OFFSET]);
             if (ty->first_audio_pts == AV_NOPTS_VALUE)
                 ty->first_audio_pts = ty->last_audio_pts;
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return 0;
         }
         /* DTiVo Audio with PES Header                      */
@@ -668,20 +668,20 @@ static int demux_audio(AVFormatContext *s, TyRecHdr *rec_hdr, AVPacket *pkt)
         if (check_sync_pes(s, pkt, es_offset1, rec_size) == -1) {
             /* partial PES header found, nothing else.
              * we're done. */
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return 0;
         }
     } else if (subrec_type == 0x04) {
         /* SA Audio with no PES Header                      */
         /* ================================================ */
-        if (av_new_packet(pkt, rec_size) < 0)
+        if (av_new_packet_ijk(pkt, rec_size) < 0)
             return AVERROR(ENOMEM);
         memcpy(pkt->data, ty->chunk + ty->cur_chunk_pos, rec_size);
         ty->cur_chunk_pos += rec_size;
         pkt->stream_index = 1;
         pkt->pts = ty->last_audio_pts;
     } else if (subrec_type == 0x09) {
-        if (av_new_packet(pkt, rec_size) < 0)
+        if (av_new_packet_ijk(pkt, rec_size) < 0)
             return AVERROR(ENOMEM);
         memcpy(pkt->data, ty->chunk + ty->cur_chunk_pos, rec_size);
         ty->cur_chunk_pos += rec_size ;
@@ -694,7 +694,7 @@ static int demux_audio(AVFormatContext *s, TyRecHdr *rec_hdr, AVPacket *pkt)
         /* Check for complete PES */
         if (check_sync_pes(s, pkt, es_offset1, rec_size) == -1) {
             /* partial PES header found, nothing else.  we're done. */
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return 0;
         }
         /* S2 DTivo has invalid long AC3 packets */

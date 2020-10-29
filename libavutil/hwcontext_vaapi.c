@@ -426,7 +426,7 @@ static AVBufferRef *vaapi_pool_alloc(void *opaque, int size)
     }
     av_log(hwfc, AV_LOG_DEBUG, "Created surface %#x.\n", surface_id);
 
-    ref = av_buffer_create((uint8_t*)(uintptr_t)surface_id,
+    ref = av_buffer_create_ijk((uint8_t*)(uintptr_t)surface_id,
                            sizeof(surface_id), &vaapi_buffer_free,
                            hwfc, AV_BUFFER_FLAG_READONLY);
     if (!ref) {
@@ -844,7 +844,7 @@ static int vaapi_transfer_data_from(AVHWFramesContext *hwfc,
     if (dst->width > hwfc->width || dst->height > hwfc->height)
         return AVERROR(EINVAL);
 
-    map = av_frame_alloc();
+    map = av_frame_alloc_ijk();
     if (!map)
         return AVERROR(ENOMEM);
     map->format = dst->format;
@@ -875,7 +875,7 @@ static int vaapi_transfer_data_to(AVHWFramesContext *hwfc,
     if (src->width > hwfc->width || src->height > hwfc->height)
         return AVERROR(EINVAL);
 
-    map = av_frame_alloc();
+    map = av_frame_alloc_ijk();
     if (!map)
         return AVERROR(ENOMEM);
     map->format = src->format;

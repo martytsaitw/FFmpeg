@@ -199,7 +199,7 @@ static int read_packet(AVFormatContext* ctx, AVPacket *pkt)
     }
 
     /* Create a packet of appropriate size */
-    if ((error = av_new_packet(pkt, nb_samples*ad->sample_step)) < 0)
+    if ((error = av_new_packet_ijk(pkt, nb_samples*ad->sample_step)) < 0)
         goto fail;
     pkt->pts = av_gettime();
 
@@ -211,7 +211,7 @@ static int read_packet(AVFormatContext* ctx, AVPacket *pkt)
 fail:
     /* Handle failure */
     if (pkt->data)
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
     if (error_msg)
         av_log(ctx, AV_LOG_ERROR, "Error: %s\n", error_msg);
     return error;

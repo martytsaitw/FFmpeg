@@ -110,12 +110,12 @@ static int vp8_ref_frame(VP8Context *s, VP8Frame *dst, VP8Frame *src)
     if ((ret = ff_thread_ref_frame(&dst->tf, &src->tf)) < 0)
         return ret;
     if (src->seg_map &&
-        !(dst->seg_map = av_buffer_ref(src->seg_map))) {
+        !(dst->seg_map = av_buffer_ref_ijk(src->seg_map))) {
         vp8_release_frame(s, dst);
         return AVERROR(ENOMEM);
     }
     if (src->hwaccel_picture_private) {
-        dst->hwaccel_priv_buf = av_buffer_ref(src->hwaccel_priv_buf);
+        dst->hwaccel_priv_buf = av_buffer_ref_ijk(src->hwaccel_priv_buf);
         if (!dst->hwaccel_priv_buf)
             return AVERROR(ENOMEM);
         dst->hwaccel_picture_private = dst->hwaccel_priv_buf->data;
@@ -2820,7 +2820,7 @@ static av_cold int vp8_init_frames(VP8Context *s)
 {
     int i;
     for (i = 0; i < FF_ARRAY_ELEMS(s->frames); i++) {
-        s->frames[i].tf.f = av_frame_alloc();
+        s->frames[i].tf.f = av_frame_alloc_ijk();
         if (!s->frames[i].tf.f)
             return AVERROR(ENOMEM);
     }

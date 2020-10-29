@@ -404,7 +404,7 @@ int hw_device_setup_for_decode(InputStream *ist)
         return err;
     }
 
-    ist->dec_ctx->hw_device_ctx = av_buffer_ref(dev->device_ref);
+    ist->dec_ctx->hw_device_ctx = av_buffer_ref_ijk(dev->device_ref);
     if (!ist->dec_ctx->hw_device_ctx)
         return AVERROR(ENOMEM);
 
@@ -417,7 +417,7 @@ int hw_device_setup_for_encode(OutputStream *ost)
 
     dev = hw_device_match_by_codec(ost->enc);
     if (dev) {
-        ost->enc_ctx->hw_device_ctx = av_buffer_ref(dev->device_ref);
+        ost->enc_ctx->hw_device_ctx = av_buffer_ref_ijk(dev->device_ref);
         if (!ost->enc_ctx->hw_device_ctx)
             return AVERROR(ENOMEM);
         return 0;
@@ -439,7 +439,7 @@ static int hwaccel_retrieve_data(AVCodecContext *avctx, AVFrame *input)
         return 0;
     }
 
-    output = av_frame_alloc();
+    output = av_frame_alloc_ijk();
     if (!output)
         return AVERROR(ENOMEM);
 

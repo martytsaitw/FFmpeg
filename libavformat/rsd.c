@@ -186,7 +186,7 @@ static int rsd_read_packet(AVFormatContext *s, AVPacket *pkt)
                par->channels > 1) {
         int i, ch;
 
-        ret = av_new_packet(pkt, par->block_align);
+        ret = av_new_packet_ijk(pkt, par->block_align);
         if (ret < 0)
             return ret;
         for (i = 0; i < 4; i++) {

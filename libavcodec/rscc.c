@@ -79,7 +79,7 @@ static av_cold int rscc_init(AVCodecContext *avctx)
     }
 
     /* Allocate reference frame */
-    ctx->reference = av_frame_alloc();
+    ctx->reference = av_frame_alloc_ijk();
     if (!ctx->reference)
         return AVERROR(ENOMEM);
 

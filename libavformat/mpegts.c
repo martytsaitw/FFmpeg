@@ -880,7 +880,7 @@ static void reset_pes_packet_state(PESContext *pes)
 
 static void new_data_packet(const uint8_t *buffer, int len, AVPacket *pkt)
 {
-    av_init_packet(pkt);
+    av_init_packet_ijk(pkt);
     pkt->data = (uint8_t *)buffer;
     pkt->size = len;
 }
@@ -889,7 +889,7 @@ static int new_pes_packet(PESContext *pes, AVPacket *pkt)
 {
     char *sd;
 
-    av_init_packet(pkt);
+    av_init_packet_ijk(pkt);
 
     pkt->buf  = pes->buffer;
     pkt->data = pes->buffer->data;
@@ -1075,7 +1075,7 @@ static int mpegts_push_data(MpegTSFilter *filter,
                         pes->total_size = MAX_PES_PAYLOAD;
 
                     /* allocate pes buffer */
-                    pes->buffer = av_buffer_alloc(pes->total_size +
+                    pes->buffer = av_buffer_alloc_ijk(pes->total_size +
                                                   AV_INPUT_BUFFER_PADDING_SIZE);
                     if (!pes->buffer)
                         return AVERROR(ENOMEM);
@@ -1236,7 +1236,7 @@ skip:
                     if (ret < 0)
                         return ret;
                     pes->total_size = MAX_PES_PAYLOAD;
-                    pes->buffer = av_buffer_alloc(pes->total_size +
+                    pes->buffer = av_buffer_alloc_ijk(pes->total_size +
                                                   AV_INPUT_BUFFER_PADDING_SIZE);
                     if (!pes->buffer)
                         return AVERROR(ENOMEM);
@@ -2772,12 +2772,12 @@ static int mpegts_raw_read_packet(AVFormatContext *s, AVPacket *pkt)
     uint8_t pcr_buf[12];
     const uint8_t *data;
 
-    if (av_new_packet(pkt, TS_PACKET_SIZE) < 0)
+    if (av_new_packet_ijk(pkt, TS_PACKET_SIZE) < 0)
         return AVERROR(ENOMEM);
     ret = read_packet(s, pkt->data, ts->raw_packet_size, &data);
     pkt->pos = avio_tell(s->pb);
     if (ret < 0) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return ret;
     }
     if (data != pkt->data)
@@ -2820,7 +2820,7 @@ static int mpegts_read_packet(AVFormatContext *s, AVPacket *pkt)
     ts->pkt = pkt;
     ret = handle_packets(ts, 0);
     if (ret < 0) {
-        av_packet_unref(ts->pkt);
+        av_packet_unref_ijk(ts->pkt);
         /* flush pes data left */
         for (i = 0; i < NB_PID_MAX; i++)
             if (ts->pids[i] && ts->pids[i]->type == MPEGTS_PES) {
@@ -2906,7 +2906,7 @@ static int64_t mpegts_get_dts(AVFormatContext *s, int stream_index,
     while(pos < pos_limit) {
         int ret;
         AVPacket pkt;
-        av_init_packet(&pkt);
+        av_init_packet_ijk(&pkt);
         ret = av_read_frame(s, &pkt);
         if (ret < 0)
             return AV_NOPTS_VALUE;
@@ -2916,12 +2916,12 @@ static int64_t mpegts_get_dts(AVFormatContext *s, int stream_index,
             if (pkt.stream_index == stream_index && pkt.pos >= *ppos) {
                 int64_t dts = pkt.dts;
                 *ppos = pkt.pos;
-                av_packet_unref(&pkt);
+                av_packet_unref_ijk(&pkt);
                 return dts;
             }
         }
         pos = pkt.pos;
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
     }
 
     return AV_NOPTS_VALUE;

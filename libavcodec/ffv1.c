@@ -49,8 +49,8 @@ av_cold int ff_ffv1_common_init(AVCodecContext *avctx)
     s->avctx = avctx;
     s->flags = avctx->flags;
 
-    s->picture.f = av_frame_alloc();
-    s->last_picture.f = av_frame_alloc();
+    s->picture.f = av_frame_alloc_ijk();
+    s->last_picture.f = av_frame_alloc_ijk();
     if (!s->picture.f || !s->last_picture.f)
         return AVERROR(ENOMEM);
 

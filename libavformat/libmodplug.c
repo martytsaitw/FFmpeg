@@ -284,7 +284,7 @@ static int modplug_read_packet(AVFormatContext *s, AVPacket *pkt)
             var_values[VAR_PATTERN] = ModPlug_GetCurrentPattern(modplug->f);
             var_values[VAR_ROW    ] = ModPlug_GetCurrentRow    (modplug->f);
 
-            if (av_new_packet(pkt, modplug->fsize) < 0)
+            if (av_new_packet_ijk(pkt, modplug->fsize) < 0)
                 return AVERROR(ENOMEM);
             pkt->stream_index = 1;
             memset(pkt->data, 0, modplug->fsize);
@@ -317,7 +317,7 @@ static int modplug_read_packet(AVFormatContext *s, AVPacket *pkt)
         }
     }
 
-    if (av_new_packet(pkt, AUDIO_PKT_SIZE) < 0)
+    if (av_new_packet_ijk(pkt, AUDIO_PKT_SIZE) < 0)
         return AVERROR(ENOMEM);
 
     if (modplug->video_stream)
@@ -325,7 +325,7 @@ static int modplug_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     pkt->size = ModPlug_Read(modplug->f, pkt->data, AUDIO_PKT_SIZE);
     if (pkt->size <= 0) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return pkt->size == 0 ? AVERROR_EOF : AVERROR(EIO);
     }
     return 0;

@@ -36,7 +36,7 @@ typedef struct FFFramePool FFFramePool;
  *
  * @param alloc a function that will be used to allocate new frame buffers when
  * the pool is empty. May be NULL, then the default allocator will be used
- * (av_buffer_alloc()).
+ * (av_buffer_alloc_ijk()).
  * @param width width of each frame in this pool
  * @param height height of each frame in this pool
  * @param format format of each frame in this pool
@@ -54,7 +54,7 @@ FFFramePool *ff_frame_pool_video_init(AVBufferRef* (*alloc)(int size),
  *
  * @param alloc a function that will be used to allocate new frame buffers when
  * the pool is empty. May be NULL, then the default allocator will be used
- * (av_buffer_alloc()).
+ * (av_buffer_alloc_ijk()).
  * @param channels channels of each frame in this pool
  * @param nb_samples number of samples of each frame in this pool
  * @param format format of each frame in this pool

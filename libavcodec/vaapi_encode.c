@@ -172,7 +172,7 @@ static int vaapi_encode_issue(AVCodecContext *avctx,
 
     av_log(avctx, AV_LOG_DEBUG, "Input surface is %#x.\n", pic->input_surface);
 
-    pic->recon_image = av_frame_alloc();
+    pic->recon_image = av_frame_alloc_ijk();
     if (!pic->recon_image) {
         err = AVERROR(ENOMEM);
         goto fail;
@@ -476,7 +476,7 @@ static int vaapi_encode_output(AVCodecContext *avctx,
         av_log(avctx, AV_LOG_DEBUG, "Output buffer: %u bytes "
                "(status %08x).\n", buf->size, buf->status);
 
-        err = av_new_packet(pkt, buf->size);
+        err = av_new_packet_ijk(pkt, buf->size);
         if (err < 0)
             goto fail_mapped;
 
@@ -874,7 +874,7 @@ int ff_vaapi_encode2(AVCodecContext *avctx, AVPacket *pkt,
             return err;
         }
 
-        pic->input_image = av_frame_alloc();
+        pic->input_image = av_frame_alloc_ijk();
         if (!pic->input_image) {
             err = AVERROR(ENOMEM);
             goto fail;
@@ -1256,7 +1256,7 @@ static AVBufferRef *vaapi_encode_alloc_output_buffer(void *opaque,
 
     av_log(avctx, AV_LOG_DEBUG, "Allocated output buffer %#x\n", buffer_id);
 
-    ref = av_buffer_create((uint8_t*)(uintptr_t)buffer_id,
+    ref = av_buffer_create_ijk((uint8_t*)(uintptr_t)buffer_id,
                            sizeof(buffer_id),
                            &vaapi_encode_free_output_buffer,
                            avctx, AV_BUFFER_FLAG_READONLY);
@@ -1383,14 +1383,14 @@ av_cold int ff_vaapi_encode_init(AVCodecContext *avctx)
         goto fail;
     }
 
-    ctx->input_frames_ref = av_buffer_ref(avctx->hw_frames_ctx);
+    ctx->input_frames_ref = av_buffer_ref_ijk(avctx->hw_frames_ctx);
     if (!ctx->input_frames_ref) {
         err = AVERROR(ENOMEM);
         goto fail;
     }
     ctx->input_frames = (AVHWFramesContext*)ctx->input_frames_ref->data;
 
-    ctx->device_ref = av_buffer_ref(ctx->input_frames->device_ref);
+    ctx->device_ref = av_buffer_ref_ijk(ctx->input_frames->device_ref);
     if (!ctx->device_ref) {
         err = AVERROR(ENOMEM);
         goto fail;

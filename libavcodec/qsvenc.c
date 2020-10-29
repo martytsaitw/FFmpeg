@@ -816,7 +816,7 @@ static int qsvenc_init_session(AVCodecContext *avctx, QSVEncContext *q)
         AVQSVContext *qsv = avctx->hwaccel_context;
         q->session = qsv->session;
     } else if (avctx->hw_frames_ctx) {
-        q->frames_ctx.hw_frames_ctx = av_buffer_ref(avctx->hw_frames_ctx);
+        q->frames_ctx.hw_frames_ctx = av_buffer_ref_ijk(avctx->hw_frames_ctx);
         if (!q->frames_ctx.hw_frames_ctx)
             return AVERROR(ENOMEM);
 
@@ -1021,7 +1021,7 @@ static int get_free_frame(QSVEncContext *q, QSVFrame **f)
     frame = av_mallocz(sizeof(*frame));
     if (!frame)
         return AVERROR(ENOMEM);
-    frame->frame = av_frame_alloc();
+    frame->frame = av_frame_alloc_ijk();
     if (!frame->frame) {
         av_freep(&frame);
         return AVERROR(ENOMEM);
@@ -1147,7 +1147,7 @@ static int encode_frame(AVCodecContext *avctx, QSVEncContext *q,
         enc_ctrl = &qsv_frame->enc_ctrl;
     }
 
-    ret = av_new_packet(&new_pkt, q->packet_size);
+    ret = av_new_packet_ijk(&new_pkt, q->packet_size);
     if (ret < 0) {
         av_log(avctx, AV_LOG_ERROR, "Error allocating the output packet\n");
         return ret;
@@ -1155,7 +1155,7 @@ static int encode_frame(AVCodecContext *avctx, QSVEncContext *q,
 
     bs = av_mallocz(sizeof(*bs));
     if (!bs) {
-        av_packet_unref(&new_pkt);
+        av_packet_unref_ijk(&new_pkt);
         return AVERROR(ENOMEM);
     }
     bs->Data      = new_pkt.data;
@@ -1168,7 +1168,7 @@ static int encode_frame(AVCodecContext *avctx, QSVEncContext *q,
     sync = av_mallocz(sizeof(*sync));
     if (!sync) {
         av_freep(&bs);
-        av_packet_unref(&new_pkt);
+        av_packet_unref_ijk(&new_pkt);
         return AVERROR(ENOMEM);
     }
 
@@ -1182,7 +1182,7 @@ static int encode_frame(AVCodecContext *avctx, QSVEncContext *q,
         ff_qsv_print_warning(avctx, ret, "Warning during encoding");
 
     if (ret < 0) {
-        av_packet_unref(&new_pkt);
+        av_packet_unref_ijk(&new_pkt);
         av_freep(&bs);
         av_freep(&sync);
         return (ret == MFX_ERR_MORE_DATA) ?
@@ -1198,7 +1198,7 @@ static int encode_frame(AVCodecContext *avctx, QSVEncContext *q,
         av_fifo_generic_write(q->async_fifo, &bs,      sizeof(bs),    NULL);
     } else {
         av_freep(&sync);
-        av_packet_unref(&new_pkt);
+        av_packet_unref_ijk(&new_pkt);
         av_freep(&bs);
     }
 
@@ -1254,15 +1254,15 @@ FF_ENABLE_DEPRECATION_WARNINGS
             if (pkt->size < new_pkt.size) {
                 av_log(avctx, AV_LOG_ERROR, "Submitted buffer not large enough: %d < %d\n",
                        pkt->size, new_pkt.size);
-                av_packet_unref(&new_pkt);
+                av_packet_unref_ijk(&new_pkt);
                 return AVERROR(EINVAL);
             }
 
             memcpy(pkt->data, new_pkt.data, new_pkt.size);
             pkt->size = new_pkt.size;
 
-            ret = av_packet_copy_props(pkt, &new_pkt);
-            av_packet_unref(&new_pkt);
+            ret = av_packet_copy_props_ijk(pkt, &new_pkt);
+            av_packet_unref_ijk(&new_pkt);
             if (ret < 0)
                 return ret;
         } else
@@ -1308,7 +1308,7 @@ int ff_qsv_enc_close(AVCodecContext *avctx, QSVEncContext *q)
 
         av_freep(&sync);
         av_freep(&bs);
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
     }
     av_fifo_free(q->async_fifo);
     q->async_fifo = NULL;

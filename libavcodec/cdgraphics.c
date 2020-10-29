@@ -75,7 +75,7 @@ static av_cold int cdg_decode_init(AVCodecContext *avctx)
 {
     CDGraphicsContext *cc = avctx->priv_data;
 
-    cc->frame = av_frame_alloc();
+    cc->frame = av_frame_alloc_ijk();
     if (!cc->frame)
         return AVERROR(ENOMEM);
     cc->transparency = -1;

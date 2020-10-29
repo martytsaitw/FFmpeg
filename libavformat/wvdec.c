@@ -269,30 +269,30 @@ static int wv_read_packet(AVFormatContext *s, AVPacket *pkt)
     }
 
     pos = wc->pos;
-    if (av_new_packet(pkt, wc->header.blocksize + WV_HEADER_SIZE) < 0)
+    if (av_new_packet_ijk(pkt, wc->header.blocksize + WV_HEADER_SIZE) < 0)
         return AVERROR(ENOMEM);
     memcpy(pkt->data, wc->block_header, WV_HEADER_SIZE);
     ret = avio_read(s->pb, pkt->data + WV_HEADER_SIZE, wc->header.blocksize);
     if (ret != wc->header.blocksize) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return AVERROR(EIO);
     }
     while (!(wc->header.flags & WV_FLAG_FINAL_BLOCK)) {
         if ((ret = wv_read_block_header(s, s->pb)) < 0) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return ret;
         }
 
         off = pkt->size;
-        if ((ret = av_grow_packet(pkt, WV_HEADER_SIZE + wc->header.blocksize)) < 0) {
-            av_packet_unref(pkt);
+        if ((ret = av_grow_packet_ijk(pkt, WV_HEADER_SIZE + wc->header.blocksize)) < 0) {
+            av_packet_unref_ijk(pkt);
             return ret;
         }
         memcpy(pkt->data + off, wc->block_header, WV_HEADER_SIZE);
 
         ret = avio_read(s->pb, pkt->data + off + WV_HEADER_SIZE, wc->header.blocksize);
         if (ret != wc->header.blocksize) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return (ret < 0) ? ret : AVERROR_EOF;
         }
     }

@@ -849,7 +849,7 @@ static av_cold int mss3_decode_init(AVCodecContext *avctx)
         }
     }
 
-    c->pic = av_frame_alloc();
+    c->pic = av_frame_alloc_ijk();
     if (!c->pic) {
         mss3_decode_end(avctx);
         return AVERROR(ENOMEM);

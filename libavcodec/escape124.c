@@ -62,7 +62,7 @@ static av_cold int escape124_decode_init(AVCodecContext *avctx)
     s->num_superblocks = ((unsigned)avctx->width / 8) *
                          ((unsigned)avctx->height / 8);
 
-    s->frame = av_frame_alloc();
+    s->frame = av_frame_alloc_ijk();
     if (!s->frame)
         return AVERROR(ENOMEM);
 

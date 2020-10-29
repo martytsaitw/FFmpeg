@@ -250,7 +250,7 @@ static void mux_frames(int n, int c)
     while (1) {
         AVPacket pkt;
         uint8_t pktdata[8] = { 0 };
-        av_init_packet(&pkt);
+        av_init_packet_ijk(&pkt);
 
         if (av_compare_ts(audio_dts, audio_st->time_base, video_dts, video_st->time_base) < 0) {
             pkt.dts = pkt.pts = audio_dts;
@@ -328,7 +328,7 @@ static void skip_gops(int n)
 static void signal_init_ts(void)
 {
     AVPacket pkt;
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
     pkt.size = 0;
     pkt.data = NULL;
 

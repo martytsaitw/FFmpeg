@@ -1711,9 +1711,9 @@ static av_cold int allocate_tables(AVCodecContext *avctx)
 
 static av_cold int init_frames(Vp3DecodeContext *s)
 {
-    s->current_frame.f = av_frame_alloc();
-    s->last_frame.f    = av_frame_alloc();
-    s->golden_frame.f  = av_frame_alloc();
+    s->current_frame.f = av_frame_alloc_ijk();
+    s->last_frame.f    = av_frame_alloc_ijk();
+    s->golden_frame.f  = av_frame_alloc_ijk();
 
     if (!s->current_frame.f || !s->last_frame.f || !s->golden_frame.f) {
         av_frame_free(&s->current_frame.f);

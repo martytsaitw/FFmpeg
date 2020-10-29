@@ -569,7 +569,7 @@ static void ffmpeg_cleanup(int ret)
             while (av_fifo_size(ost->muxing_queue)) {
                 AVPacket pkt;
                 av_fifo_generic_read(ost->muxing_queue, &pkt, sizeof(pkt), NULL);
-                av_packet_unref(&pkt);
+                av_packet_unref_ijk(&pkt);
             }
             av_fifo_freep(&ost->muxing_queue);
         }
@@ -692,7 +692,7 @@ static void write_packet(OutputFile *of, AVPacket *pkt, OutputStream *ost, int u
      */
     if (!(st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO && ost->encoding_needed) && !unqueue) {
         if (ost->frame_number >= ost->max_frames) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return;
         }
         ost->frame_number++;
@@ -714,11 +714,11 @@ static void write_packet(OutputFile *of, AVPacket *pkt, OutputStream *ost, int u
             if (ret < 0)
                 exit_program(1);
         }
-        ret = av_packet_ref(&tmp_pkt, pkt);
+        ret = av_packet_ref_ijk(&tmp_pkt, pkt);
         if (ret < 0)
             exit_program(1);
         av_fifo_generic_write(ost->muxing_queue, &tmp_pkt, sizeof(tmp_pkt), NULL);
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return;
     }
 
@@ -808,7 +808,7 @@ static void write_packet(OutputFile *of, AVPacket *pkt, OutputStream *ost, int u
         main_return_code = 1;
         close_all_output_streams(ost, MUXER_FINISHED | ENCODER_FINISHED, ENCODER_FINISHED);
     }
-    av_packet_unref(pkt);
+    av_packet_unref_ijk(pkt);
 }
 
 static void close_output_stream(OutputStream *ost)
@@ -904,7 +904,7 @@ static void do_audio_out(OutputFile *of, OutputStream *ost,
     AVPacket pkt;
     int ret;
 
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
     pkt.data = NULL;
     pkt.size = 0;
 
@@ -1022,7 +1022,7 @@ static void do_subtitle_out(OutputFile *of,
             exit_program(1);
         }
 
-        av_init_packet(&pkt);
+        av_init_packet_ijk(&pkt);
         pkt.data = subtitle_out;
         pkt.size = subtitle_out_size;
         pkt.pts  = av_rescale_q(sub->pts, AV_TIME_BASE_Q, ost->mux_timebase);
@@ -1186,7 +1186,7 @@ static void do_video_out(OutputFile *of,
   /* duplicates frame if needed */
   for (i = 0; i < nb_frames; i++) {
     AVFrame *in_picture;
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
     pkt.data = NULL;
     pkt.size = 0;
 
@@ -1328,7 +1328,7 @@ static void do_video_out(OutputFile *of,
   }
 
     if (!ost->last_frame)
-        ost->last_frame = av_frame_alloc();
+        ost->last_frame = av_frame_alloc_ijk();
     av_frame_unref(ost->last_frame);
     if (next_picture && ost->last_frame)
         av_frame_ref(ost->last_frame, next_picture);
@@ -1437,7 +1437,7 @@ static int reap_filters(int flush)
             }
         }
 
-        if (!ost->filtered_frame && !(ost->filtered_frame = av_frame_alloc())) {
+        if (!ost->filtered_frame && !(ost->filtered_frame = av_frame_alloc_ijk())) {
             return AVERROR(ENOMEM);
         }
         filtered_frame = ost->filtered_frame;
@@ -1915,7 +1915,7 @@ static void flush_encoders(void)
                 av_assert0(0);
             }
 
-                av_init_packet(&pkt);
+                av_init_packet_ijk(&pkt);
                 pkt.data = NULL;
                 pkt.size = 0;
 
@@ -1946,7 +1946,7 @@ static void flush_encoders(void)
                     break;
                 }
                 if (ost->finished & MUXER_FINISHED) {
-                    av_packet_unref(&pkt);
+                    av_packet_unref_ijk(&pkt);
                     continue;
                 }
                 av_packet_rescale_ts(&pkt, enc->time_base, ost->mux_timebase);
@@ -1987,7 +1987,7 @@ static void do_streamcopy(InputStream *ist, OutputStream *ost, const AVPacket *p
     int64_t ost_tb_start_time = av_rescale_q(start_time, AV_TIME_BASE_Q, ost->mux_timebase);
     AVPacket opkt = { 0 };
 
-    av_init_packet(&opkt);
+    av_init_packet_ijk(&opkt);
 
     // EOF: flush output bitstream filters.
     if (!pkt) {
@@ -2054,14 +2054,14 @@ static void do_streamcopy(InputStream *ist, OutputStream *ost, const AVPacket *p
     opkt.flags    = pkt->flags;
 
     if (pkt->buf) {
-        opkt.buf = av_buffer_ref(pkt->buf);
+        opkt.buf = av_buffer_ref_ijk(pkt->buf);
         if (!opkt.buf)
             exit_program(1);
     }
     opkt.data = pkt->data;
     opkt.size = pkt->size;
 
-    av_copy_packet_side_data(&opkt, pkt);
+    av_copy_packet_side_data_ijk(&opkt, pkt);
 
     output_packet(of, &opkt, ost, 0);
 }
@@ -2271,9 +2271,9 @@ static int decode_audio(InputStream *ist, AVPacket *pkt, int *got_output,
     int ret, err = 0;
     AVRational decoded_frame_tb;
 
-    if (!ist->decoded_frame && !(ist->decoded_frame = av_frame_alloc()))
+    if (!ist->decoded_frame && !(ist->decoded_frame = av_frame_alloc_ijk()))
         return AVERROR(ENOMEM);
-    if (!ist->filter_frame && !(ist->filter_frame = av_frame_alloc()))
+    if (!ist->filter_frame && !(ist->filter_frame = av_frame_alloc_ijk()))
         return AVERROR(ENOMEM);
     decoded_frame = ist->decoded_frame;
 
@@ -2342,9 +2342,9 @@ static int decode_video(InputStream *ist, AVPacket *pkt, int *got_output, int64_
     if (!eof && pkt && pkt->size == 0)
         return 0;
 
-    if (!ist->decoded_frame && !(ist->decoded_frame = av_frame_alloc()))
+    if (!ist->decoded_frame && !(ist->decoded_frame = av_frame_alloc_ijk()))
         return AVERROR(ENOMEM);
-    if (!ist->filter_frame && !(ist->filter_frame = av_frame_alloc()))
+    if (!ist->filter_frame && !(ist->filter_frame = av_frame_alloc_ijk()))
         return AVERROR(ENOMEM);
     decoded_frame = ist->decoded_frame;
     if (ist->dts != AV_NOPTS_VALUE)
@@ -2577,7 +2577,7 @@ static int process_input_packet(InputStream *ist, const AVPacket *pkt, int no_eo
 
     if (!pkt) {
         /* EOF handling */
-        av_init_packet(&avpkt);
+        av_init_packet_ijk(&avpkt);
         avpkt.data = NULL;
         avpkt.size = 0;
     } else {
@@ -2849,7 +2849,7 @@ static enum AVPixelFormat get_format(AVCodecContext *s, const enum AVPixelFormat
         }
 
         if (ist->hw_frames_ctx) {
-            s->hw_frames_ctx = av_buffer_ref(ist->hw_frames_ctx);
+            s->hw_frames_ctx = av_buffer_ref_ijk(ist->hw_frames_ctx);
             if (!s->hw_frames_ctx)
                 return AV_PIX_FMT_NONE;
         }
@@ -3453,7 +3453,7 @@ static int init_output_stream(OutputStream *ost, char *error, int error_len)
         if (ost->filter && av_buffersink_get_hw_frames_ctx(ost->filter->filter) &&
             ((AVHWFramesContext*)av_buffersink_get_hw_frames_ctx(ost->filter->filter)->data)->format ==
             av_buffersink_get_format(ost->filter->filter)) {
-            ost->enc_ctx->hw_frames_ctx = av_buffer_ref(av_buffersink_get_hw_frames_ctx(ost->filter->filter));
+            ost->enc_ctx->hw_frames_ctx = av_buffer_ref_ijk(av_buffersink_get_hw_frames_ctx(ost->filter->filter));
             if (!ost->enc_ctx->hw_frames_ctx)
                 return AVERROR(ENOMEM);
         } else {
@@ -4002,7 +4002,7 @@ static void *input_thread(void *arg)
                 av_log(f->ctx, AV_LOG_ERROR,
                        "Unable to send packet to main thread: %s\n",
                        av_err2str(ret));
-            av_packet_unref(&pkt);
+            av_packet_unref_ijk(&pkt);
             av_thread_message_queue_set_err_recv(f->in_thread_queue, ret);
             break;
         }
@@ -4023,7 +4023,7 @@ static void free_input_threads(void)
             continue;
         av_thread_message_queue_set_err_send(f->in_thread_queue, AVERROR_EOF);
         while (av_thread_message_queue_recv(f->in_thread_queue, &pkt, 0) >= 0)
-            av_packet_unref(&pkt);
+            av_packet_unref_ijk(&pkt);
 
         pthread_join(f->thread, NULL);
         f->joined = 1;
@@ -4441,7 +4441,7 @@ static int process_input(int file_index)
     process_input_packet(ist, &pkt, 0);
 
 discard_packet:
-    av_packet_unref(&pkt);
+    av_packet_unref_ijk(&pkt);
 
     return 0;
 }

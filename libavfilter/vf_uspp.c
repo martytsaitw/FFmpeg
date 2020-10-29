@@ -241,7 +241,7 @@ static void filter(USPPContext *p, uint8_t *dst[3], uint8_t *src[3],
         AVPacket pkt = {0};
         int got_pkt_ptr;
 
-        av_init_packet(&pkt);
+        av_init_packet_ijk(&pkt);
         pkt.data = p->outbuf;
         pkt.size = p->outbuf_size;
 
@@ -369,7 +369,7 @@ static int config_input(AVFilterLink *inlink)
     }
 
     uspp->outbuf_size = (width + BLOCK) * (height + BLOCK) * 10;
-    if (!(uspp->frame = av_frame_alloc()))
+    if (!(uspp->frame = av_frame_alloc_ijk()))
         return AVERROR(ENOMEM);
     if (!(uspp->outbuf = av_malloc(uspp->outbuf_size)))
         return AVERROR(ENOMEM);

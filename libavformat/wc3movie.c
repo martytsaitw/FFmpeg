@@ -100,7 +100,7 @@ static int wc3_read_header(AVFormatContext *s)
     wc3->height = WC3_DEFAULT_HEIGHT;
     wc3->pts = 0;
     wc3->video_stream_index = wc3->audio_stream_index = 0;
-    av_init_packet(&wc3->vpkt);
+    av_init_packet_ijk(&wc3->vpkt);
     wc3->vpkt.data = NULL; wc3->vpkt.size = 0;
 
     /* skip the first 3 32-bit numbers */
@@ -289,7 +289,7 @@ static int wc3_read_close(AVFormatContext *s)
     Wc3DemuxContext *wc3 = s->priv_data;
 
     if (wc3->vpkt.size > 0)
-        av_packet_unref(&wc3->vpkt);
+        av_packet_unref_ijk(&wc3->vpkt);
 
     return 0;
 }

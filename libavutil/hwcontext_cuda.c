@@ -101,7 +101,7 @@ static AVBufferRef *cuda_pool_alloc(void *opaque, int size)
     if (err != CUDA_SUCCESS)
         goto fail;
 
-    ret = av_buffer_create((uint8_t*)data, size, cuda_buffer_free, ctx, 0);
+    ret = av_buffer_create_ijk((uint8_t*)data, size, cuda_buffer_free, ctx, 0);
     if (!ret) {
         cu->cuMemFree(data);
         goto fail;

@@ -117,7 +117,7 @@ RMStream *ff_rm_alloc_rmstream (void)
 
 void ff_rm_free_rmstream (RMStream *rms)
 {
-    av_packet_unref(&rms->pkt);
+    av_packet_unref_ijk(&rms->pkt);
 }
 
 static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
@@ -294,7 +294,7 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
                 ast->audio_framesize * sub_packet_h > (unsigned)INT_MAX ||
                 ast->audio_framesize * sub_packet_h < st->codecpar->block_align)
                 return AVERROR_INVALIDDATA;
-            if (av_new_packet(&ast->pkt, ast->audio_framesize * sub_packet_h) < 0)
+            if (av_new_packet_ijk(&ast->pkt, ast->audio_framesize * sub_packet_h) < 0)
                 return AVERROR(ENOMEM);
         }
 
@@ -783,13 +783,13 @@ static int rm_assemble_video_frame(AVFormatContext *s, AVIOContext *pb,
             return -1;
         }
         rm->remaining_len -= len;
-        if(av_new_packet(pkt, len + 9) < 0)
+        if(av_new_packet_ijk(pkt, len + 9) < 0)
             return AVERROR(EIO);
         pkt->data[0] = 0;
         AV_WL32(pkt->data + 1, 1);
         AV_WL32(pkt->data + 5, 0);
         if ((ret = avio_read(pb, pkt->data + 9, len)) != len) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             av_log(s, AV_LOG_ERROR, "Failed to read %d bytes\n", len);
             return ret < 0 ? ret : AVERROR(EIO);
         }
@@ -805,8 +805,8 @@ static int rm_assemble_video_frame(AVFormatContext *s, AVIOContext *pb,
         }
         vst->slices = ((hdr & 0x3F) << 1) + 1;
         vst->videobufsize = len2 + 8*vst->slices + 1;
-        av_packet_unref(&vst->pkt); //FIXME this should be output.
-        if(av_new_packet(&vst->pkt, vst->videobufsize) < 0)
+        av_packet_unref_ijk(&vst->pkt); //FIXME this should be output.
+        if(av_new_packet_ijk(&vst->pkt, vst->videobufsize) < 0)
             return AVERROR(ENOMEM);
         memset(vst->pkt.data, 0, vst->pkt.size);
         vst->videobufpos = 8*vst->slices + 1;
@@ -981,7 +981,7 @@ ff_rm_retrieve_cache (AVFormatContext *s, AVIOContext *pb,
         if (ret < 0)
             return ret;
     } else {
-        ret = av_new_packet(pkt, st->codecpar->block_align);
+        ret = av_new_packet_ijk(pkt, st->codecpar->block_align);
         if (ret < 0)
             return ret;
         memcpy(pkt->data, ast->pkt.data + st->codecpar->block_align * //FIXME avoid this
@@ -1049,7 +1049,7 @@ static int rm_read_packet(AVFormatContext *s, AVPacket *pkt)
 
         if(  (st->discard >= AVDISCARD_NONKEY && !(flags&2))
            || st->discard >= AVDISCARD_ALL){
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
         } else
             break;
     }

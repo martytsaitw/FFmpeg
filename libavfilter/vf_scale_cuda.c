@@ -102,11 +102,11 @@ static av_cold int cudascale_init(AVFilterContext *ctx)
     CUDAScaleContext *s = ctx->priv;
 
     s->format = AV_PIX_FMT_NONE;
-    s->frame = av_frame_alloc();
+    s->frame = av_frame_alloc_ijk();
     if (!s->frame)
         return AVERROR(ENOMEM);
 
-    s->tmp_frame = av_frame_alloc();
+    s->tmp_frame = av_frame_alloc_ijk();
     if (!s->tmp_frame)
         return AVERROR(ENOMEM);
 
@@ -240,7 +240,7 @@ static av_cold int init_processing_chain(AVFilterContext *ctx, int in_width, int
     if (ret < 0)
         return ret;
 
-    ctx->outputs[0]->hw_frames_ctx = av_buffer_ref(s->frames_ctx);
+    ctx->outputs[0]->hw_frames_ctx = av_buffer_ref_ijk(s->frames_ctx);
     if (!ctx->outputs[0]->hw_frames_ctx)
         return AVERROR(ENOMEM);
 
@@ -474,7 +474,7 @@ static int cudascale_filter_frame(AVFilterLink *link, AVFrame *in)
     CUcontext dummy;
     int ret = 0;
 
-    out = av_frame_alloc();
+    out = av_frame_alloc_ijk();
     if (!out) {
         ret = AVERROR(ENOMEM);
         goto fail;

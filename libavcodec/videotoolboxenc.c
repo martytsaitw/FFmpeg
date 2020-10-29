@@ -2188,7 +2188,7 @@ static int create_cv_pixel_buffer(AVCodecContext   *avctx,
         return status;
     }
 #else
-    AVFrame *enc_frame = av_frame_alloc();
+    AVFrame *enc_frame = av_frame_alloc_ijk();
     if (!enc_frame) return AVERROR(ENOMEM);
 
     status = av_frame_ref(enc_frame, frame);
@@ -2363,7 +2363,7 @@ static av_cold int vtenc_frame(
     return 0;
 
 end_nopkt:
-    av_packet_unref(pkt);
+    av_packet_unref_ijk(pkt);
     return status;
 }
 
@@ -2375,7 +2375,7 @@ static int vtenc_populate_extradata(AVCodecContext   *avctx,
                                     CFDictionaryRef  pixel_buffer_info)
 {
     VTEncContext *vtctx = avctx->priv_data;
-    AVFrame *frame = av_frame_alloc();
+    AVFrame *frame = av_frame_alloc_ijk();
     int y_size = avctx->width * avctx->height;
     int chroma_size = (avctx->width / 2) * (avctx->height / 2);
     CMSampleBufferRef buf = NULL;
@@ -2384,7 +2384,7 @@ static int vtenc_populate_extradata(AVCodecContext   *avctx,
     if (!frame)
         return AVERROR(ENOMEM);
 
-    frame->buf[0] = av_buffer_alloc(y_size + 2 * chroma_size);
+    frame->buf[0] = av_buffer_alloc_ijk(y_size + 2 * chroma_size);
 
     if(!frame->buf[0]){
         status = AVERROR(ENOMEM);

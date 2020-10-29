@@ -205,7 +205,7 @@ static int roq_read_packet(AVFormatContext *s,
             }
 
             /* load up the packet */
-            if (av_new_packet(pkt, chunk_size + RoQ_CHUNK_PREAMBLE_SIZE))
+            if (av_new_packet_ijk(pkt, chunk_size + RoQ_CHUNK_PREAMBLE_SIZE))
                 return AVERROR(EIO);
             /* copy over preamble */
             memcpy(pkt->data, preamble, RoQ_CHUNK_PREAMBLE_SIZE);
@@ -223,7 +223,7 @@ static int roq_read_packet(AVFormatContext *s,
             ret = avio_read(pb, pkt->data + RoQ_CHUNK_PREAMBLE_SIZE,
                 chunk_size);
             if (ret != chunk_size) {
-                av_packet_unref(pkt);
+                av_packet_unref_ijk(pkt);
                 ret = AVERROR(EIO);
             }
 

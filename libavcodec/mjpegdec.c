@@ -130,7 +130,7 @@ av_cold int ff_mjpeg_decode_init(AVCodecContext *avctx)
     int ret;
 
     if (!s->picture_ptr) {
-        s->picture = av_frame_alloc();
+        s->picture = av_frame_alloc_ijk();
         if (!s->picture)
             return AVERROR(ENOMEM);
         s->picture_ptr = s->picture;
@@ -2427,7 +2427,7 @@ eoi_parser:
                                 s->qscale[1],
                                 s->qscale[2]);
                 int qpw = (s->width + 15) / 16;
-                AVBufferRef *qp_table_buf = av_buffer_alloc(qpw);
+                AVBufferRef *qp_table_buf = av_buffer_alloc_ijk(qpw);
                 if (qp_table_buf) {
                     memset(qp_table_buf->data, qp, qpw);
                     av_frame_set_qp_table(data, qp_table_buf, 0, FF_QSCALE_TYPE_MPEG1);

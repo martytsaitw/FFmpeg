@@ -594,7 +594,7 @@ API changes, most recent first:
   they should close the sinks.
 
 2015-12-17 - lavc 57.18.100 / 57.11.0 - avcodec.h dirac.h
-  xxxxxxx - Add av_packet_add_side_data().
+  xxxxxxx - Add av_packet_add_side_data_ijk().
   xxxxxxx - Add AVCodecContext.coded_side_data.
   xxxxxxx - Add AVCPBProperties API.
   xxxxxxx - Add a new public header dirac.h containing
@@ -622,11 +622,11 @@ API changes, most recent first:
   Add av_fast_mallocz()
 
 2015-10-29 - lavc 57.12.100 / 57.8.0 - avcodec.h
-  xxxxxx - Deprecate av_free_packet(). Use av_packet_unref() as replacement,
+  xxxxxx - Deprecate av_free_packet_ijk(). Use av_packet_unref_ijk() as replacement,
            it resets the packet in a more consistent way.
-  xxxxxx - Deprecate av_dup_packet(), it is a no-op for most cases.
-           Use av_packet_ref() to make a non-refcounted AVPacket refcounted.
-  xxxxxx - Add av_packet_alloc(), av_packet_clone(), av_packet_free().
+  xxxxxx - Deprecate av_dup_packet_ijk(), it is a no-op for most cases.
+           Use av_packet_ref_ijk() to make a non-refcounted AVPacket refcounted.
+  xxxxxx - Add av_packet_alloc_ijk(), av_packet_clone(), av_packet_free().
            They match the AVFrame functions with the same name.
 
 2015-10-27 - 1e477a9 - lavu 55.5.100 - cpu.h
@@ -1244,7 +1244,7 @@ API changes, most recent first:
   Install ffversion.h and make it public.
 
 2013-12-11 - 29c83d2 / b9fb59d,409a143 / 9431356,44967ab / d7b3ee9 - lavc 55.45.101 / 55.28.1 - avcodec.h
-  av_frame_alloc(), av_frame_unref() and av_frame_free() now can and should be
+  av_frame_alloc_ijk(), av_frame_unref() and av_frame_free() now can and should be
   used instead of avcodec_alloc_frame(), avcodec_get_frame_defaults() and
   avcodec_free_frame() respectively. The latter three functions are deprecated.
 
@@ -1344,8 +1344,8 @@ API changes, most recent first:
   to extend it in the future without breaking ABI/API.
 
 2013-08-10 - 67a580f / 5a9a9d4 - lavc 55.25.100 / 55.16.0 - avcodec.h
-  Extend AVPacket API with av_packet_unref, av_packet_ref,
-  av_packet_move_ref, av_packet_copy_props, av_packet_free_side_data.
+  Extend AVPacket API with av_packet_unref_ijk, av_packet_ref_ijk,
+  av_packet_move_ref, av_packet_copy_props_ijk, av_packet_free_side_data_ijk.
 
 2013-08-05 - 9547e3e / f824535 - lavc 55.22.100 / 55.13.0 - avcodec.h
   Deprecate the bitstream-related members from struct AVVDPAUContext.
@@ -1621,7 +1621,7 @@ lavd 54.4.100 / 54.0.0, lavfi 3.5.0
   36099df / 8e401db, 532f31a / 1cec062 - add a new API for reference counted buffers and buffer
                      pools (new header libavutil/buffer.h).
   2653e12 / 1afddbe - add AVPacket.buf to allow reference counting for the AVPacket data.
-            Add av_packet_from_data() function for constructing packets from
+            Add av_packet_from_data_ijk() function for constructing packets from
             av_malloc()ed data.
   c4e8821 / 7ecc2d4 - move AVFrame from lavc to lavu (new header libavutil/frame.h), add
             AVFrame.buf/extended_buf to allow reference counting for the AVFrame
@@ -2535,7 +2535,7 @@ lavd 54.4.100 / 54.0.0, lavfi 3.5.0
   Add av_append_packet().
 
 2010-11-21 - a08d918 - lavc 52.97.0 - avcodec.h
-  Add av_grow_packet().
+  Add av_grow_packet_ijk().
 
 2010-11-17 - 0985e1a - lavcore 0.13.0 - parseutils.h
   Add av_parse_color() declared in libavcore/parseutils.h.
@@ -2997,8 +2997,8 @@ lavd 54.4.100 / 54.0.0, lavfi 3.5.0
   When the lock manager is registered, FFmpeg is guaranteed to behave
   correctly in a multi-threaded application.
 
-2009-04-30 - ce1d9c8 - lavc 52.28.0 - av_free_packet()
-  av_free_packet() is no longer an inline function. It is now exported.
+2009-04-30 - ce1d9c8 - lavc 52.28.0 - av_free_packet_ijk()
+  av_free_packet_ijk() is no longer an inline function. It is now exported.
 
 2009-04-11 - 80d403f - lavc 52.25.0 - deprecate av_destruct_packet_nofree()
   Please use NULL instead. This has been supported since r16506

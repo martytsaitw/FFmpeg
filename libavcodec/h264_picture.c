@@ -76,8 +76,8 @@ int ff_h264_ref_picture(H264Context *h, H264Picture *dst, H264Picture *src)
     if (ret < 0)
         goto fail;
 
-    dst->qscale_table_buf = av_buffer_ref(src->qscale_table_buf);
-    dst->mb_type_buf      = av_buffer_ref(src->mb_type_buf);
+    dst->qscale_table_buf = av_buffer_ref_ijk(src->qscale_table_buf);
+    dst->mb_type_buf      = av_buffer_ref_ijk(src->mb_type_buf);
     if (!dst->qscale_table_buf || !dst->mb_type_buf) {
         ret = AVERROR(ENOMEM);
         goto fail;
@@ -86,8 +86,8 @@ int ff_h264_ref_picture(H264Context *h, H264Picture *dst, H264Picture *src)
     dst->mb_type      = src->mb_type;
 
     for (i = 0; i < 2; i++) {
-        dst->motion_val_buf[i] = av_buffer_ref(src->motion_val_buf[i]);
-        dst->ref_index_buf[i]  = av_buffer_ref(src->ref_index_buf[i]);
+        dst->motion_val_buf[i] = av_buffer_ref_ijk(src->motion_val_buf[i]);
+        dst->ref_index_buf[i]  = av_buffer_ref_ijk(src->ref_index_buf[i]);
         if (!dst->motion_val_buf[i] || !dst->ref_index_buf[i]) {
             ret = AVERROR(ENOMEM);
             goto fail;
@@ -97,7 +97,7 @@ int ff_h264_ref_picture(H264Context *h, H264Picture *dst, H264Picture *src)
     }
 
     if (src->hwaccel_picture_private) {
-        dst->hwaccel_priv_buf = av_buffer_ref(src->hwaccel_priv_buf);
+        dst->hwaccel_priv_buf = av_buffer_ref_ijk(src->hwaccel_priv_buf);
         if (!dst->hwaccel_priv_buf) {
             ret = AVERROR(ENOMEM);
             goto fail;

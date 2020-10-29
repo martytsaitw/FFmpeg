@@ -188,7 +188,7 @@ static AVFrame *alloc_audio_frame(enum AVSampleFormat sample_fmt,
                                   uint64_t channel_layout,
                                   int sample_rate, int nb_samples)
 {
-    AVFrame *frame = av_frame_alloc();
+    AVFrame *frame = av_frame_alloc_ijk();
     int ret;
 
     if (!frame) {
@@ -315,7 +315,7 @@ static int write_audio_frame(AVFormatContext *oc, OutputStream *ost)
     int got_packet;
     int dst_nb_samples;
 
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
     c = ost->enc;
 
     frame = get_audio_frame(ost);
@@ -375,7 +375,7 @@ static AVFrame *alloc_picture(enum AVPixelFormat pix_fmt, int width, int height)
     AVFrame *picture;
     int ret;
 
-    picture = av_frame_alloc();
+    picture = av_frame_alloc_ijk();
     if (!picture)
         return NULL;
 
@@ -516,7 +516,7 @@ static int write_video_frame(AVFormatContext *oc, OutputStream *ost)
 
     frame = get_video_frame(ost);
 
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
 
     /* encode the image */
     ret = avcodec_encode_video2(c, &pkt, frame, &got_packet);

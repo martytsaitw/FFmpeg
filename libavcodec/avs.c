@@ -159,7 +159,7 @@ static av_cold int avs_decode_init(AVCodecContext * avctx)
 {
     AvsContext *s = avctx->priv_data;
 
-    s->frame = av_frame_alloc();
+    s->frame = av_frame_alloc_ijk();
     if (!s->frame)
         return AVERROR(ENOMEM);
 

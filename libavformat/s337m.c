@@ -168,13 +168,13 @@ static int s337m_read_packet(AVFormatContext *s, AVPacket *pkt)
     if ((ret = s337m_get_offset_and_codec(s, state, data_type, data_size, &offset, &codec)) < 0)
         return ret;
 
-    if ((ret = av_new_packet(pkt, offset)) < 0)
+    if ((ret = av_new_packet_ijk(pkt, offset)) < 0)
         return ret;
 
     pkt->pos = pos;
 
     if (avio_read(pb, pkt->data, pkt->size) < pkt->size) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return AVERROR_EOF;
     }
 
@@ -186,7 +186,7 @@ static int s337m_read_packet(AVFormatContext *s, AVPacket *pkt)
     if (!s->nb_streams) {
         AVStream *st = avformat_new_stream_ijk(s, NULL);
         if (!st) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return AVERROR(ENOMEM);
         }
         st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;

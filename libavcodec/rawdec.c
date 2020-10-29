@@ -93,7 +93,7 @@ static av_cold int raw_init_decoder(AVCodecContext *avctx)
     }
 
     if (desc->flags & (AV_PIX_FMT_FLAG_PAL | FF_PSEUDOPAL)) {
-        context->palette = av_buffer_alloc(AVPALETTE_SIZE);
+        context->palette = av_buffer_alloc_ijk(AVPALETTE_SIZE);
         if (!context->palette)
             return AVERROR(ENOMEM);
 #if FF_API_PSEUDOPAL
@@ -251,9 +251,9 @@ static int raw_decode(AVCodecContext *avctx, void *data, int *got_frame,
         return res;
 
     if (need_copy)
-        frame->buf[0] = av_buffer_alloc(FFMAX(context->frame_size, buf_size));
+        frame->buf[0] = av_buffer_alloc_ijk(FFMAX(context->frame_size, buf_size));
     else
-        frame->buf[0] = av_buffer_ref(avpkt->buf);
+        frame->buf[0] = av_buffer_ref_ijk(avpkt->buf);
     if (!frame->buf[0])
         return AVERROR(ENOMEM);
 
@@ -377,7 +377,7 @@ static int raw_decode(AVCodecContext *avctx, void *data, int *got_frame,
         }
 
         if (!context->palette)
-            context->palette = av_buffer_alloc(AVPALETTE_SIZE);
+            context->palette = av_buffer_alloc_ijk(AVPALETTE_SIZE);
         if (!context->palette) {
             av_buffer_unref(&frame->buf[0]);
             return AVERROR(ENOMEM);
@@ -426,7 +426,7 @@ static int raw_decode(AVCodecContext *avctx, void *data, int *got_frame,
 
     if ((avctx->pix_fmt == AV_PIX_FMT_PAL8 && buf_size < context->frame_size) ||
         (desc->flags & FF_PSEUDOPAL)) {
-        frame->buf[1]  = av_buffer_ref(context->palette);
+        frame->buf[1]  = av_buffer_ref_ijk(context->palette);
         if (!frame->buf[1]) {
             av_buffer_unref(&frame->buf[0]);
             return AVERROR(ENOMEM);

@@ -167,7 +167,7 @@ static int rkmpp_init_decoder(AVCodecContext *avctx)
         goto fail;
     }
 
-    rk_context->decoder_ref = av_buffer_create((uint8_t *)decoder, sizeof(*decoder), rkmpp_release_decoder,
+    rk_context->decoder_ref = av_buffer_create_ijk((uint8_t *)decoder, sizeof(*decoder), rkmpp_release_decoder,
                                                NULL, AV_BUFFER_FLAG_READONLY);
     if (!rk_context->decoder_ref) {
         av_free(decoder);
@@ -446,11 +446,11 @@ static int rkmpp_retrieve_frame(AVCodecContext *avctx, AVFrame *frame)
 
             // MPP decoder needs to be closed only when all frames have been released.
             framecontext = (RKMPPFrameContext *)framecontextref->data;
-            framecontext->decoder_ref = av_buffer_ref(rk_context->decoder_ref);
+            framecontext->decoder_ref = av_buffer_ref_ijk(rk_context->decoder_ref);
             framecontext->frame = mppframe;
 
             frame->data[0]  = (uint8_t *)desc;
-            frame->buf[0]   = av_buffer_create((uint8_t *)desc, sizeof(*desc), rkmpp_release_frame,
+            frame->buf[0]   = av_buffer_create_ijk((uint8_t *)desc, sizeof(*desc), rkmpp_release_frame,
                                                framecontextref, AV_BUFFER_FLAG_READONLY);
 
             if (!frame->buf[0]) {
@@ -458,7 +458,7 @@ static int rkmpp_retrieve_frame(AVCodecContext *avctx, AVFrame *frame)
                 goto fail;
             }
 
-            frame->hw_frames_ctx = av_buffer_ref(decoder->frames_ref);
+            frame->hw_frames_ctx = av_buffer_ref_ijk(decoder->frames_ref);
             if (!frame->hw_frames_ctx) {
                 ret = AVERROR(ENOMEM);
                 goto fail;
@@ -517,7 +517,7 @@ static int rkmpp_receive_frame(AVCodecContext *avctx, AVFrame *frame)
             }
 
             ret = rkmpp_send_packet(avctx, &pkt);
-            av_packet_unref(&pkt);
+            av_packet_unref_ijk(&pkt);
 
             if (ret < 0) {
                 av_log(avctx, AV_LOG_ERROR, "Failed to send packet to decoder (code = %d)\n", ret);

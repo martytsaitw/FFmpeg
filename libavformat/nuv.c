@@ -277,7 +277,7 @@ static int nuv_packet(AVFormatContext *s, AVPacket *pkt)
                 avio_skip(pb, size);
                 break;
             }
-            ret = av_new_packet(pkt, copyhdrsize + size);
+            ret = av_new_packet_ijk(pkt, copyhdrsize + size);
             if (ret < 0)
                 return ret;
 
@@ -288,7 +288,7 @@ static int nuv_packet(AVFormatContext *s, AVPacket *pkt)
             memcpy(pkt->data, hdr, copyhdrsize);
             ret = avio_read(pb, pkt->data + copyhdrsize, size);
             if (ret < 0) {
-                av_packet_unref(pkt);
+                av_packet_unref_ijk(pkt);
                 return ret;
             }
             if (ret < size)

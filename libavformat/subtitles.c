@@ -119,7 +119,7 @@ AVPacket *ff_subtitles_queue_insert(FFDemuxSubtitlesQueue *q,
         int old_len;
         sub = &q->subs[q->nb_subs - 1];
         old_len = sub->size;
-        if (av_grow_packet(sub, len) < 0)
+        if (av_grow_packet_ijk(sub, len) < 0)
             return NULL;
         memcpy(sub->data + old_len, event, len);
     } else {
@@ -133,7 +133,7 @@ AVPacket *ff_subtitles_queue_insert(FFDemuxSubtitlesQueue *q,
             return NULL;
         q->subs = subs;
         sub = &subs[q->nb_subs++];
-        if (av_new_packet(sub, len) < 0)
+        if (av_new_packet_ijk(sub, len) < 0)
             return NULL;
         sub->flags |= AV_PKT_FLAG_KEY;
         sub->pts = sub->dts = 0;
@@ -176,7 +176,7 @@ static void drop_dups(void *log_ctx, FFDemuxSubtitlesQueue *q)
             q->subs[i].stream_index == last->stream_index &&
             !strcmp(q->subs[i].data, last->data)) {
 
-            av_packet_unref(&q->subs[i]);
+            av_packet_unref_ijk(&q->subs[i]);
             drop++;
         } else if (drop) {
             q->subs[last_id + 1] = q->subs[i];
@@ -211,7 +211,7 @@ int ff_subtitles_queue_read_packet(FFDemuxSubtitlesQueue *q, AVPacket *pkt)
 
     if (q->current_sub_idx == q->nb_subs)
         return AVERROR_EOF;
-    if (av_packet_ref(pkt, sub) < 0) {
+    if (av_packet_ref_ijk(pkt, sub) < 0) {
         return AVERROR(ENOMEM);
     }
 
@@ -299,7 +299,7 @@ void ff_subtitles_queue_clean(FFDemuxSubtitlesQueue *q)
     int i;
 
     for (i = 0; i < q->nb_subs; i++)
-        av_packet_unref(&q->subs[i]);
+        av_packet_unref_ijk(&q->subs[i]);
     av_freep(&q->subs);
     q->nb_subs = q->allocated_size = q->current_sub_idx = 0;
 }

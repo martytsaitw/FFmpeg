@@ -65,8 +65,8 @@ static av_cold int mxpeg_decode_init(AVCodecContext *avctx)
 {
     MXpegDecodeContext *s = avctx->priv_data;
 
-    s->picture[0] = av_frame_alloc();
-    s->picture[1] = av_frame_alloc();
+    s->picture[0] = av_frame_alloc_ijk();
+    s->picture[1] = av_frame_alloc_ijk();
     if (!s->picture[0] || !s->picture[1]) {
         mxpeg_decode_end(avctx);
         return AVERROR(ENOMEM);

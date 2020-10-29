@@ -181,7 +181,7 @@ static int thp_read_packet(AVFormatContext *s,
         if (ret < 0)
             return ret;
         if (ret != size) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return AVERROR(EIO);
         }
 
@@ -191,7 +191,7 @@ static int thp_read_packet(AVFormatContext *s,
         if (ret < 0)
             return ret;
         if (ret != thp->audiosize) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return AVERROR(EIO);
         }
 

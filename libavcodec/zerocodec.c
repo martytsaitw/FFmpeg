@@ -130,7 +130,7 @@ static av_cold int zerocodec_decode_init(AVCodecContext *avctx)
         return AVERROR(ENOMEM);
     }
 
-    zc->previous_frame = av_frame_alloc();
+    zc->previous_frame = av_frame_alloc_ijk();
     if (!zc->previous_frame) {
         zerocodec_decode_close(avctx);
         return AVERROR(ENOMEM);

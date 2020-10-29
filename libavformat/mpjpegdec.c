@@ -334,7 +334,7 @@ static int mpjpeg_read_packet(AVFormatContext *s, AVPacket *pkt)
         int remaining = 0, len;
 
         const int read_chunk = 2048;
-        av_init_packet(pkt);
+        av_init_packet_ijk(pkt);
         pkt->data = NULL;
         pkt->size = 0;
         pkt->pos  = avio_tell(s->pb);
@@ -365,7 +365,7 @@ static int mpjpeg_read_packet(AVFormatContext *s, AVPacket *pkt)
         if (ret == AVERROR_EOF) {
             ret = pkt->size > 0 ? pkt->size : AVERROR_EOF;
         } else {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
         }
     }
 

@@ -97,7 +97,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     if (!s->qp_expr_str || ctx->is_disabled)
         return ff_filter_frame(outlink, in);
 
-    out_qp_table_buf = av_buffer_alloc(s->h * s->qstride);
+    out_qp_table_buf = av_buffer_alloc_ijk(s->h * s->qstride);
     if (!out_qp_table_buf) {
         ret = AVERROR(ENOMEM);
         goto fail;

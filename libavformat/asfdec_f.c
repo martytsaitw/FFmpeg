@@ -298,7 +298,7 @@ static int asf_read_picture(AVFormatContext *s, int len)
 
 fail:
     av_freep(&desc);
-    av_packet_unref(&pkt);
+    av_packet_unref_ijk(&pkt);
     return ret;
 }
 
@@ -856,7 +856,7 @@ static int asf_read_header(AVFormatContext *s)
                     if ((ret = av_get_packet(pb, &pkt, len)) < 0)
                         return ret;
                     av_hex_dump_log(s, AV_LOG_DEBUG, pkt.data, pkt.size);
-                    av_packet_unref(&pkt);
+                    av_packet_unref_ijk(&pkt);
                     len= avio_rl32(pb);
                     get_tag(s, "ASF_Protection_Type", -1, len, 32);
                     len= avio_rl32(pb);
@@ -1292,10 +1292,10 @@ static int asf_parse_packet(AVFormatContext *s, AVIOContext *pb, AVPacket *pkt)
                        "freeing incomplete packet size %d, new %d\n",
                        asf_st->pkt.size, asf_st->packet_obj_size);
                 asf_st->frag_offset = 0;
-                av_packet_unref(&asf_st->pkt);
+                av_packet_unref_ijk(&asf_st->pkt);
             }
             /* new packet */
-            if ((ret = av_new_packet(&asf_st->pkt, asf_st->packet_obj_size)) < 0)
+            if ((ret = av_new_packet_ijk(&asf_st->pkt, asf_st->packet_obj_size)) < 0)
                 return ret;
             asf_st->seq              = asf->packet_seq;
             if (asf->ts_is_pts) {
@@ -1383,7 +1383,7 @@ static int asf_parse_packet(AVFormatContext *s, AVIOContext *pb, AVPacket *pkt)
                 if (i == asf_st->pkt.size) {
                     av_log(s, AV_LOG_DEBUG, "discarding ms fart\n");
                     asf_st->frag_offset = 0;
-                    av_packet_unref(&asf_st->pkt);
+                    av_packet_unref_ijk(&asf_st->pkt);
                     continue;
                 }
             }
@@ -1397,7 +1397,7 @@ static int asf_parse_packet(AVFormatContext *s, AVIOContext *pb, AVPacket *pkt)
                            asf_st->ds_span);
                 } else {
                     /* packet descrambling */
-                    AVBufferRef *buf = av_buffer_alloc(asf_st->pkt.size +
+                    AVBufferRef *buf = av_buffer_alloc_ijk(asf_st->pkt.size +
                                                        AV_INPUT_BUFFER_PADDING_SIZE);
                     if (buf) {
                         uint8_t *newdata = buf->data;
@@ -1480,7 +1480,7 @@ static void asf_reset_header(AVFormatContext *s)
 
     for (i = 0; i < 128; i++) {
         asf_st = &asf->streams[i];
-        av_packet_unref(&asf_st->pkt);
+        av_packet_unref_ijk(&asf_st->pkt);
         asf_st->packet_obj_size = 0;
         asf_st->frag_offset = 0;
         asf_st->seq         = 0;
@@ -1556,11 +1556,11 @@ static int64_t asf_read_pts(AVFormatContext *s, int stream_index,
             start_pos[i] = asf_st->packet_pos + 1;
 
             if (pkt->stream_index == stream_index) {
-                av_packet_unref(pkt);
+                av_packet_unref_ijk(pkt);
                 break;
             }
         }
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
     }
 
     *ppos = pos;

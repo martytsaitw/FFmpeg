@@ -227,7 +227,7 @@ static AVBufferRef *vdpau_pool_alloc(void *opaque, int size)
         return NULL;
     }
 
-    ret = av_buffer_create((uint8_t*)(uintptr_t)surf, sizeof(surf),
+    ret = av_buffer_create_ijk((uint8_t*)(uintptr_t)surf, sizeof(surf),
                            vdpau_buffer_free, ctx, AV_BUFFER_FLAG_READONLY);
     if (!ret) {
         device_priv->surf_destroy(surf);

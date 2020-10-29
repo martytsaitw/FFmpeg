@@ -648,7 +648,7 @@ static void read_apic(AVFormatContext *s, AVIOContext *pb, int taglen,
         goto fail;
     }
 
-    apic->buf = av_buffer_alloc(taglen + AV_INPUT_BUFFER_PADDING_SIZE);
+    apic->buf = av_buffer_alloc_ijk(taglen + AV_INPUT_BUFFER_PADDING_SIZE);
     if (!apic->buf || !taglen || avio_read(pb, apic->buf->data, taglen) != taglen)
         goto fail;
     memset(apic->buf->data + taglen, 0, AV_INPUT_BUFFER_PADDING_SIZE);
@@ -1164,7 +1164,7 @@ int ff_id3v2_parse_apic(AVFormatContext *s, ID3v2ExtraMeta **extra_meta)
 
         av_dict_set(&st->metadata, "comment", apic->type, 0);
 
-        av_init_packet(&st->attached_pic);
+        av_init_packet_ijk(&st->attached_pic);
         st->attached_pic.buf          = apic->buf;
         st->attached_pic.data         = apic->buf->data;
         st->attached_pic.size         = apic->buf->size - AV_INPUT_BUFFER_PADDING_SIZE;

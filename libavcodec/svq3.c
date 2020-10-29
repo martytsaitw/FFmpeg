@@ -1142,9 +1142,9 @@ static av_cold int svq3_decode_init(AVCodecContext *avctx)
         goto fail;
     }
 
-    s->cur_pic->f  = av_frame_alloc();
-    s->last_pic->f = av_frame_alloc();
-    s->next_pic->f = av_frame_alloc();
+    s->cur_pic->f  = av_frame_alloc_ijk();
+    s->last_pic->f = av_frame_alloc_ijk();
+    s->next_pic->f = av_frame_alloc_ijk();
     if (!s->cur_pic->f || !s->last_pic->f || !s->next_pic->f)
         return AVERROR(ENOMEM);
 

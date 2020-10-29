@@ -1094,7 +1094,7 @@ static int decode_frame(NUTContext *nut, AVPacket *pkt, int frame_code)
         return 1;
     }
 
-    ret = av_new_packet(pkt, size + nut->header_len[header_idx]);
+    ret = av_new_packet_ijk(pkt, size + nut->header_len[header_idx]);
     if (ret < 0)
         return ret;
     if (nut->header[header_idx])
@@ -1129,7 +1129,7 @@ static int decode_frame(NUTContext *nut, AVPacket *pkt, int frame_code)
 
     return 0;
 fail:
-    av_packet_unref(pkt);
+    av_packet_unref_ijk(pkt);
     return ret;
 }
 

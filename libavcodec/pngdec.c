@@ -1578,9 +1578,9 @@ static av_cold int png_dec_init(AVCodecContext *avctx)
     avctx->color_range = AVCOL_RANGE_JPEG;
 
     s->avctx = avctx;
-    s->previous_picture.f = av_frame_alloc();
-    s->last_picture.f = av_frame_alloc();
-    s->picture.f = av_frame_alloc();
+    s->previous_picture.f = av_frame_alloc_ijk();
+    s->last_picture.f = av_frame_alloc_ijk();
+    s->picture.f = av_frame_alloc_ijk();
     if (!s->previous_picture.f || !s->last_picture.f || !s->picture.f) {
         av_frame_free(&s->previous_picture.f);
         av_frame_free(&s->last_picture.f);

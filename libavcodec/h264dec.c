@@ -336,16 +336,16 @@ static int h264_init_context(AVCodecContext *avctx, H264Context *h)
     }
 
     for (i = 0; i < H264_MAX_PICTURE_COUNT; i++) {
-        h->DPB[i].f = av_frame_alloc();
+        h->DPB[i].f = av_frame_alloc_ijk();
         if (!h->DPB[i].f)
             return AVERROR(ENOMEM);
     }
 
-    h->cur_pic.f = av_frame_alloc();
+    h->cur_pic.f = av_frame_alloc_ijk();
     if (!h->cur_pic.f)
         return AVERROR(ENOMEM);
 
-    h->last_pic_for_ec.f = av_frame_alloc();
+    h->last_pic_for_ec.f = av_frame_alloc_ijk();
     if (!h->last_pic_for_ec.f)
         return AVERROR(ENOMEM);
 

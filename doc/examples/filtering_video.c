@@ -210,8 +210,8 @@ int main(int argc, char **argv)
 {
     int ret;
     AVPacket packet;
-    AVFrame *frame = av_frame_alloc();
-    AVFrame *filt_frame = av_frame_alloc();
+    AVFrame *frame = av_frame_alloc_ijk();
+    AVFrame *filt_frame = av_frame_alloc_ijk();
 
     if (!frame || !filt_frame) {
         perror("Could not allocate frame");
@@ -271,7 +271,7 @@ int main(int argc, char **argv)
                 }
             }
         }
-        av_packet_unref(&packet);
+        av_packet_unref_ijk(&packet);
     }
 end:
     avfilter_graph_free(&filter_graph);

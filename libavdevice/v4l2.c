@@ -545,7 +545,7 @@ static int mmap_read_frame(AVFormatContext *ctx, AVPacket *pkt)
     /* Image is at s->buff_start[buf.index] */
     if (atomic_load(&s->buffers_queued) == FFMAX(s->buffers / 8, 1)) {
         /* when we start getting low on queued buffers, fall back on copying data */
-        res = av_new_packet(pkt, buf.bytesused);
+        res = av_new_packet_ijk(pkt, buf.bytesused);
         if (res < 0) {
             av_log(ctx, AV_LOG_ERROR, "Error allocating a packet.\n");
             enqueue_buffer(s, &buf);
@@ -555,7 +555,7 @@ static int mmap_read_frame(AVFormatContext *ctx, AVPacket *pkt)
 
         res = enqueue_buffer(s, &buf);
         if (res) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return res;
         }
     } else {
@@ -577,7 +577,7 @@ static int mmap_read_frame(AVFormatContext *ctx, AVPacket *pkt)
         buf_descriptor->index = buf.index;
         buf_descriptor->s     = s;
 
-        pkt->buf = av_buffer_create(pkt->data, pkt->size, mmap_release_buffer,
+        pkt->buf = av_buffer_create_ijk(pkt->data, pkt->size, mmap_release_buffer,
                                     buf_descriptor, 0);
         if (!pkt->buf) {
             av_log(ctx, AV_LOG_ERROR, "Failed to create a buffer\n");

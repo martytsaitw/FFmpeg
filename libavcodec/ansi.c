@@ -95,7 +95,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
         return AVERROR(EINVAL);
     }
 
-    s->frame = av_frame_alloc();
+    s->frame = av_frame_alloc_ijk();
     if (!s->frame)
         return AVERROR(ENOMEM);
 

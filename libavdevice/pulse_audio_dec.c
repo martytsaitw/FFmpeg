@@ -296,7 +296,7 @@ static int pulse_read_packet(AVFormatContext *s, AVPacket *pkt)
         }
     }
 
-    if (av_new_packet(pkt, read_length) < 0) {
+    if (av_new_packet_ijk(pkt, read_length) < 0) {
         ret = AVERROR(ENOMEM);
         goto unlock_and_fail;
     }

@@ -164,15 +164,15 @@ static int kmsgrab_read_packet(AVFormatContext *avctx, AVPacket *pkt)
         },
     };
 
-    frame = av_frame_alloc();
+    frame = av_frame_alloc_ijk();
     if (!frame)
         return AVERROR(ENOMEM);
 
-    frame->hw_frames_ctx = av_buffer_ref(ctx->frames_ref);
+    frame->hw_frames_ctx = av_buffer_ref_ijk(ctx->frames_ref);
     if (!frame->hw_frames_ctx)
         return AVERROR(ENOMEM);
 
-    frame->buf[0] = av_buffer_create((uint8_t*)desc, sizeof(*desc),
+    frame->buf[0] = av_buffer_create_ijk((uint8_t*)desc, sizeof(*desc),
                                      &kmsgrab_free_desc, avctx, 0);
     if (!frame->buf[0])
         return AVERROR(ENOMEM);
@@ -185,7 +185,7 @@ static int kmsgrab_read_packet(AVFormatContext *avctx, AVPacket *pkt)
     drmModeFreeFB(fb);
     drmModeFreePlane(plane);
 
-    pkt->buf = av_buffer_create((uint8_t*)frame, sizeof(*frame),
+    pkt->buf = av_buffer_create_ijk((uint8_t*)frame, sizeof(*frame),
                                 &kmsgrab_free_frame, avctx, 0);
     if (!pkt->buf)
         return AVERROR(ENOMEM);

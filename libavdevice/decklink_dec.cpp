@@ -404,7 +404,7 @@ static uint8_t *get_metadata(AVFormatContext *avctx, uint16_t *buf, size_t width
             clear_parity_bits(buf, len);
             data = vanc_to_cc(avctx, buf, width, data_len);
             if (data) {
-                if (av_packet_add_side_data(pkt, AV_PKT_DATA_A53_CC, data, data_len) < 0)
+                if (av_packet_add_side_data_ijk(pkt, AV_PKT_DATA_A53_CC, data, data_len) < 0)
                     av_free(data);
             }
         } else {
@@ -435,7 +435,7 @@ static void avpacket_queue_flush(AVPacketQueue *q)
     pthread_mutex_lock(&q->mutex);
     for (pkt = q->first_pkt; pkt != NULL; pkt = pkt1) {
         pkt1 = pkt->next;
-        av_packet_unref(&pkt->pkt);
+        av_packet_unref_ijk(&pkt->pkt);
         av_freep(&pkt);
     }
     q->last_pkt   = NULL;
@@ -673,7 +673,7 @@ HRESULT decklink_input_callback::VideoInputFrameArrived(
     // Handle Video Frame
     if (videoFrame) {
         AVPacket pkt;
-        av_init_packet(&pkt);
+        av_init_packet_ijk(&pkt);
         if (ctx->frameCount % 25 == 0) {
             unsigned long long qsize = avpacket_queue_size(&ctx->queue);
             av_log(avctx, AV_LOG_DEBUG,
@@ -784,7 +784,7 @@ HRESULT decklink_input_callback::VideoInputFrameArrived(
                         txt_buf[1] = 0x2c; // data_unit_length
                         txt_buf += 46;
                     }
-                    av_init_packet(&txt_pkt);
+                    av_init_packet_ijk(&txt_pkt);
                     txt_pkt.pts = pkt.pts;
                     txt_pkt.dts = pkt.dts;
                     txt_pkt.stream_index = ctx->teletext_st->index;
@@ -806,7 +806,7 @@ HRESULT decklink_input_callback::VideoInputFrameArrived(
     if (audioFrame) {
         AVPacket pkt;
         BMDTimeValue audio_pts;
-        av_init_packet(&pkt);
+        av_init_packet_ijk(&pkt);
 
         //hack among hacks
         pkt.size = audioFrame->GetSampleFrameCount() * ctx->audio_st->codecpar->channels * (ctx->audio_depth / 8);

@@ -305,7 +305,7 @@ static void bufref_free_interface(void *opaque, uint8_t *data)
 
 static AVBufferRef *bufref_wrap_interface(IUnknown *iface)
 {
-    return av_buffer_create((uint8_t*)iface, 1, bufref_free_interface, iface, 0);
+    return av_buffer_create_ijk((uint8_t*)iface, 1, bufref_free_interface, iface, 0);
 }
 
 #if CONFIG_DXVA2
@@ -867,7 +867,7 @@ static int frame_add_buf(AVFrame *frame, AVBufferRef *ref)
 
     for (i = 0; i < AV_NUM_DATA_POINTERS; i++) {
         if (!frame->buf[i]) {
-            frame->buf[i] = av_buffer_ref(ref);
+            frame->buf[i] = av_buffer_ref_ijk(ref);
             return frame->buf[i] ? 0 : AVERROR(ENOMEM);
         }
     }

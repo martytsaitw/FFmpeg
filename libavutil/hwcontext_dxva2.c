@@ -132,7 +132,7 @@ static AVBufferRef *dxva2_pool_alloc(void *opaque, int size)
 
     if (s->nb_surfaces_used < hwctx->nb_surfaces) {
         s->nb_surfaces_used++;
-        return av_buffer_create((uint8_t*)s->surfaces_internal[s->nb_surfaces_used - 1],
+        return av_buffer_create_ijk((uint8_t*)s->surfaces_internal[s->nb_surfaces_used - 1],
                                 sizeof(*hwctx->surfaces), dxva2_pool_release_dummy, 0, 0);
     }
 
@@ -339,7 +339,7 @@ static int dxva2_transfer_data_to(AVHWFramesContext *ctx, AVFrame *dst,
     if (src->format != ctx->sw_format)
         return AVERROR(ENOSYS);
 
-    map = av_frame_alloc();
+    map = av_frame_alloc_ijk();
     if (!map)
         return AVERROR(ENOMEM);
     map->format = dst->format;
@@ -366,7 +366,7 @@ static int dxva2_transfer_data_from(AVHWFramesContext *ctx, AVFrame *dst,
     if (dst->format != ctx->sw_format)
         return AVERROR(ENOSYS);
 
-    map = av_frame_alloc();
+    map = av_frame_alloc_ijk();
     if (!map)
         return AVERROR(ENOMEM);
     map->format = dst->format;

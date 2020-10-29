@@ -108,7 +108,7 @@ static int h264_redundant_pps_filter(AVBSFContext *bsf, AVPacket *out)
 
     ff_cbs_fragment_uninit(ctx->output, au);
 
-    err = av_packet_copy_props(out, in);
+    err = av_packet_copy_props_ijk(out, in);
     if (err < 0)
         return err;
 

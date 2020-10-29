@@ -177,9 +177,9 @@
  * Otherwise, if AVPacket.buf is NULL, the packet data is backed by a
  * static storage somewhere inside the demuxer and the packet is only valid
  * until the next av_read_frame() call or closing the file. If the caller
- * requires a longer lifetime, av_dup_packet() will make an av_malloc()ed copy
+ * requires a longer lifetime, av_dup_packet_ijk() will make an av_malloc()ed copy
  * of it.
- * In both cases, the packet must be freed with av_packet_unref() when it is no
+ * In both cases, the packet must be freed with av_packet_unref_ijk() when it is no
  * longer needed.
  *
  * @section lavf_decoding_seek Seeking
@@ -424,7 +424,7 @@ int av_get_packet(AVIOContext *s, AVPacket *pkt, int size);
 /**
  * Read data and append it to the current content of the AVPacket.
  * If pkt->size is 0 this is identical to av_get_packet.
- * Note that this uses av_grow_packet and thus involves a realloc
+ * Note that this uses av_grow_packet_ijk and thus involves a realloc
  * which is inefficient. Thus this function should only be used
  * when there is no reasonable way to know (an upper bound of)
  * the final size.
@@ -2395,7 +2395,7 @@ int av_find_best_stream(AVFormatContext *ic,
  * If pkt->buf is NULL, then the packet is valid until the next
  * av_read_frame() or until avformat_close_input(). Otherwise the packet
  * is valid indefinitely. In both cases the packet must be freed with
- * av_packet_unref when it is no longer needed. For video, the packet contains
+ * av_packet_unref_ijk when it is no longer needed. For video, the packet contains
  * exactly one frame. For audio, it contains an integer number of frames if each
  * frame has a known fixed size (e.g. PCM or ADPCM data). If the audio frames
  * have a variable size (e.g. MPEG audio), then it contains one frame.

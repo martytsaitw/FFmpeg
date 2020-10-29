@@ -160,7 +160,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
         return AVERROR_UNKNOWN;
     }
 
-    c->frame = av_frame_alloc();
+    c->frame = av_frame_alloc_ijk();
 
     return 0;
 }

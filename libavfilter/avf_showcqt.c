@@ -359,7 +359,7 @@ error:
 static AVFrame *alloc_frame_empty(enum AVPixelFormat format, int w, int h)
 {
     AVFrame *out;
-    out = av_frame_alloc();
+    out = av_frame_alloc_ijk();
     if (!out)
         return NULL;
     out->format = format;
@@ -412,7 +412,7 @@ static int init_axis_from_file(ShowCQTContext *s)
         goto error;
 
     ret = AVERROR(ENOMEM);
-    if (!(s->axis_frame = av_frame_alloc()))
+    if (!(s->axis_frame = av_frame_alloc_ijk()))
         goto error;
 
     if ((ret = ff_scale_image(s->axis_frame->data, s->axis_frame->linesize, s->width, s->axis_h,
@@ -686,7 +686,7 @@ static int init_axis_from_font(ShowCQTContext *s)
     if (!(tmp = alloc_frame_empty(AV_PIX_FMT_RGBA, width, height)))
         goto fail;
 
-    if (!(s->axis_frame = av_frame_alloc()))
+    if (!(s->axis_frame = av_frame_alloc_ijk()))
         goto fail;
 
     if (render_freetype(s, tmp, s->fontfile) < 0 &&

@@ -209,9 +209,9 @@ static int iec61883_parse_queue_dv(struct iec61883_data *dv, AVPacket *pkt)
     if (size < 0)
         return -1;
 
-    if (av_packet_from_data(pkt, pkt->data, pkt->size) < 0) {
+    if (av_packet_from_data_ijk(pkt, pkt->data, pkt->size) < 0) {
         av_freep(&pkt->data);
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return -1;
     }
 

@@ -70,9 +70,9 @@ static void * attribute_align_arg worker(void *v){
         AVFrame *frame;
         Task task;
 
-        if(!pkt) pkt = av_packet_alloc();
+        if(!pkt) pkt = av_packet_alloc_ijk();
         if(!pkt) continue;
-        av_init_packet(pkt);
+        av_init_packet_ijk(pkt);
 
         pthread_mutex_lock(&c->task_fifo_mutex);
         while (av_fifo_size(c->task_fifo) <= 0 || atomic_load(&c->exit)) {
@@ -268,7 +268,7 @@ int ff_thread_video_encode_frame(AVCodecContext *avctx, AVPacket *pkt, const AVF
     av_assert1(!*got_packet_ptr);
 
     if(frame){
-        AVFrame *new = av_frame_alloc();
+        AVFrame *new = av_frame_alloc_ijk();
         if(!new)
             return AVERROR(ENOMEM);
         ret = av_frame_ref(new, frame);

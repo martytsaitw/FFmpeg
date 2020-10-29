@@ -47,7 +47,7 @@ static int prepare_packet(AVPacket *pkt, const FailingMuxerPacketData *pkt_data,
         return AVERROR(ENOMEM);
     }
     memcpy(data, pkt_data, sizeof(FailingMuxerPacketData));
-    ret = av_packet_from_data(pkt, (uint8_t*) data, sizeof(*data));
+    ret = av_packet_from_data_ijk(pkt, (uint8_t*) data, sizeof(*data));
 
     pkt->pts = pkt->dts = pts;
     pkt->duration = 1;
@@ -83,7 +83,7 @@ static int fifo_basic_test(AVFormatContext *oc, AVDictionary **opts,
     int ret = 0, i;
     AVPacket pkt;
 
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
 
 
     ret = avformat_write_header(oc, opts);
@@ -101,7 +101,7 @@ static int fifo_basic_test(AVFormatContext *oc, AVDictionary **opts,
             goto write_trailer_and_fail;
         }
         ret = av_write_frame(oc, &pkt);
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
         if (ret < 0) {
             fprintf(stderr, "Unexpected write_frame error: %s\n",
                     av_err2str(ret));
@@ -137,7 +137,7 @@ static int fifo_overflow_drop_test(AVFormatContext *oc, AVDictionary **opts,
     int64_t write_pkt_start, write_pkt_end, duration;
     AVPacket pkt;
 
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
 
     ret = avformat_write_header(oc, opts);
     if (ret) {
@@ -155,7 +155,7 @@ static int fifo_overflow_drop_test(AVFormatContext *oc, AVDictionary **opts,
             goto fail;
         }
         ret = av_write_frame(oc, &pkt);
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
         if (ret < 0) {
             break;
         }

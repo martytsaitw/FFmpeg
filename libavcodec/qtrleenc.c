@@ -115,7 +115,7 @@ static av_cold int qtrle_encode_init(AVCodecContext *avctx)
         av_log(avctx, AV_LOG_ERROR, "Error allocating memory.\n");
         return AVERROR(ENOMEM);
     }
-    s->previous_frame = av_frame_alloc();
+    s->previous_frame = av_frame_alloc_ijk();
     if (!s->previous_frame) {
         av_log(avctx, AV_LOG_ERROR, "Error allocating picture\n");
         return AVERROR(ENOMEM);

@@ -700,7 +700,7 @@ static int crystalhd_decode_packet(AVCodecContext *avctx, const AVPacket *avpkt)
         goto exit;
     }
  exit:
-    av_packet_unref(&filtered_packet);
+    av_packet_unref_ijk(&filtered_packet);
     return ret;
 }
 
@@ -732,7 +732,7 @@ static int crystalhd_receive_frame(AVCodecContext *avctx, AVFrame *frame)
     }
 
     ret = crystalhd_decode_packet(avctx, &pkt);
-    av_packet_unref(&pkt);
+    av_packet_unref_ijk(&pkt);
     // crystalhd_is_buffer_full() should avoid this.
     if (ret == AVERROR(EAGAIN)) {
         ret = AVERROR_EXTERNAL;

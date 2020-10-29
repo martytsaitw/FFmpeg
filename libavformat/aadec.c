@@ -252,7 +252,7 @@ static int aa_read_packet(AVFormatContext *s, AVPacket *pkt)
     if (c->current_chapter_size <= 0)
         c->current_chapter_size = 0;
 
-    ret = av_new_packet(pkt, written);
+    ret = av_new_packet_ijk(pkt, written);
     if (ret < 0)
         return ret;
     memcpy(pkt->data, buf, written);

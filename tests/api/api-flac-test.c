@@ -117,7 +117,7 @@ static int run_test(AVCodec *enc, AVCodec *dec, AVCodecContext *enc_ctx,
     int i = 0;
     int in_frame_bytes, out_frame_bytes;
 
-    in_frame = av_frame_alloc();
+    in_frame = av_frame_alloc_ijk();
     if (!in_frame) {
         av_log(NULL, AV_LOG_ERROR, "Can't allocate input frame\n");
         return AVERROR(ENOMEM);
@@ -131,7 +131,7 @@ static int run_test(AVCodec *enc, AVCodec *dec, AVCodecContext *enc_ctx,
         return AVERROR(ENOMEM);
     }
 
-    out_frame = av_frame_alloc();
+    out_frame = av_frame_alloc_ijk();
     if (!out_frame) {
         av_log(NULL, AV_LOG_ERROR, "Can't allocate output frame\n");
         return AVERROR(ENOMEM);
@@ -150,7 +150,7 @@ static int run_test(AVCodec *enc, AVCodec *dec, AVCodecContext *enc_ctx,
     }
 
     for (i = 0; i < NUMBER_OF_FRAMES; i++) {
-        av_init_packet(&enc_pkt);
+        av_init_packet_ijk(&enc_pkt);
         enc_pkt.data = NULL;
         enc_pkt.size = 0;
 
@@ -206,7 +206,7 @@ static int run_test(AVCodec *enc, AVCodec *dec, AVCodecContext *enc_ctx,
                 out_offset += out_frame_bytes;
             }
         }
-        av_packet_unref(&enc_pkt);
+        av_packet_unref_ijk(&enc_pkt);
     }
 
     if (memcmp(raw_in, raw_out, out_frame_bytes * NUMBER_OF_FRAMES) != 0) {

@@ -58,7 +58,7 @@ static av_cold int mediacodec_decode_close(AVCodecContext *avctx)
     ff_mediacodec_dec_close(avctx, s->ctx);
     s->ctx = NULL;
 
-    av_packet_unref(&s->buffered_pkt);
+    av_packet_unref_ijk(&s->buffered_pkt);
 
     return 0;
 }
@@ -407,7 +407,7 @@ static int mediacodec_send_receive(AVCodecContext *avctx,
         s->buffered_pkt.size -= ret;
         s->buffered_pkt.data += ret;
         if (s->buffered_pkt.size <= 0)
-            av_packet_unref(&s->buffered_pkt);
+            av_packet_unref_ijk(&s->buffered_pkt);
     }
 
     /* check for new frame */
@@ -473,7 +473,7 @@ static void mediacodec_decode_flush(AVCodecContext *avctx)
 {
     MediaCodecH264DecContext *s = avctx->priv_data;
 
-    av_packet_unref(&s->buffered_pkt);
+    av_packet_unref_ijk(&s->buffered_pkt);
 
     ff_mediacodec_dec_flush(avctx, s->ctx);
 }

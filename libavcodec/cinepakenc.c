@@ -168,14 +168,14 @@ static av_cold int cinepak_encode_init(AVCodecContext *avctx)
         return AVERROR(EINVAL);
     }
 
-    if (!(s->last_frame = av_frame_alloc()))
+    if (!(s->last_frame = av_frame_alloc_ijk()))
         return AVERROR(ENOMEM);
-    if (!(s->best_frame = av_frame_alloc()))
+    if (!(s->best_frame = av_frame_alloc_ijk()))
         goto enomem;
-    if (!(s->scratch_frame = av_frame_alloc()))
+    if (!(s->scratch_frame = av_frame_alloc_ijk()))
         goto enomem;
     if (avctx->pix_fmt == AV_PIX_FMT_RGB24)
-        if (!(s->input_frame = av_frame_alloc()))
+        if (!(s->input_frame = av_frame_alloc_ijk()))
             goto enomem;
 
     if (!(s->codebook_input = av_malloc_array((avctx->pix_fmt == AV_PIX_FMT_RGB24 ? 6 : 4) * (avctx->width * avctx->height) >> 2, sizeof(*s->codebook_input))))

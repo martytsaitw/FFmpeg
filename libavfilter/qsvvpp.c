@@ -362,7 +362,7 @@ static QSVFrame *query_frame(QSVVPPContext *s, AVFilterLink *outlink)
     /* For video memory, get a hw frame;
      * For system memory, get a sw frame and map it into a mfx_surface. */
     if (!IS_SYSTEM_MEMORY(s->out_mem_mode)) {
-        out_frame->frame = av_frame_alloc();
+        out_frame->frame = av_frame_alloc_ijk();
         if (!out_frame->frame)
             return NULL;
 

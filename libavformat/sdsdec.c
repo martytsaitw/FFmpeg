@@ -134,7 +134,7 @@ static int sds_read_packet(AVFormatContext *ctx, AVPacket *pkt)
         return AVERROR_INVALIDDATA;
     avio_skip(pb, 3);
 
-    ret = av_new_packet(pkt, s->size);
+    ret = av_new_packet_ijk(pkt, s->size);
     if (ret < 0)
         return ret;
 

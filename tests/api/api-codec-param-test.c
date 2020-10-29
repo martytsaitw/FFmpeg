@@ -44,7 +44,7 @@ static int try_decode_video_frame(AVCodecContext *codec_ctx, AVPacket *pkt, int 
         }
     }
 
-    frame = av_frame_alloc();
+    frame = av_frame_alloc_ijk();
     if (!frame) {
         av_log(NULL, AV_LOG_ERROR, "Failed to allocate frame\n");
         goto end;
@@ -80,7 +80,7 @@ static int find_video_stream_info(AVFormatContext *fmt_ctx, int decode)
     int i, done = 0;
     AVPacket pkt;
 
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
 
     while (!done) {
         AVCodecContext *codec_ctx = NULL;
@@ -101,7 +101,7 @@ static int find_video_stream_info(AVFormatContext *fmt_ctx, int decode)
          * */
         if (codec_ctx->codec_type != AVMEDIA_TYPE_VIDEO ||
             st->codec_info_nb_frames++ > 0) {
-            av_packet_unref(&pkt);
+            av_packet_unref_ijk(&pkt);
             continue;
         }
 
@@ -111,7 +111,7 @@ static int find_video_stream_info(AVFormatContext *fmt_ctx, int decode)
             goto end;
         }
 
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
 
         /* check if all video streams have demuxed a packet */
         done = 1;
@@ -127,7 +127,7 @@ static int find_video_stream_info(AVFormatContext *fmt_ctx, int decode)
     }
 
 end:
-    av_packet_unref(&pkt);
+    av_packet_unref_ijk(&pkt);
 
     /* close all codecs opened in try_decode_video_frame */
     for (i = 0; i < fmt_ctx->nb_streams; i++) {

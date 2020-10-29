@@ -61,8 +61,8 @@ static av_cold int decode_init(AVCodecContext *avctx)
     C93DecoderContext *s = avctx->priv_data;
     avctx->pix_fmt = AV_PIX_FMT_PAL8;
 
-    s->pictures[0] = av_frame_alloc();
-    s->pictures[1] = av_frame_alloc();
+    s->pictures[0] = av_frame_alloc_ijk();
+    s->pictures[1] = av_frame_alloc_ijk();
     if (!s->pictures[0] || !s->pictures[1]) {
         decode_end(avctx);
         return AVERROR(ENOMEM);

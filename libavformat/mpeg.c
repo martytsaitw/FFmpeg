@@ -934,7 +934,7 @@ static int vobsub_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     avio_seek(pb, idx_pkt.pos, SEEK_SET);
 
-    av_init_packet(pkt);
+    av_init_packet_ijk(pkt);
     pkt->size = 0;
     pkt->data = NULL;
 
@@ -963,7 +963,7 @@ static int vobsub_read_packet(AVFormatContext *s, AVPacket *pkt)
         if ((startcode & 0x1f) != s->streams[idx_pkt.stream_index]->id)
             break;
 
-        ret = av_grow_packet(pkt, to_read);
+        ret = av_grow_packet_ijk(pkt, to_read);
         if (ret < 0)
             goto fail;
 
@@ -976,12 +976,12 @@ static int vobsub_read_packet(AVFormatContext *s, AVPacket *pkt)
     pkt->pos = idx_pkt.pos;
     pkt->stream_index = idx_pkt.stream_index;
 
-    av_packet_unref(&idx_pkt);
+    av_packet_unref_ijk(&idx_pkt);
     return 0;
 
 fail:
-    av_packet_unref(pkt);
-    av_packet_unref(&idx_pkt);
+    av_packet_unref_ijk(pkt);
+    av_packet_unref_ijk(&idx_pkt);
     return ret;
 }
 

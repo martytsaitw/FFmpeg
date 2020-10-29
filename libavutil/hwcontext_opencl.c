@@ -1660,7 +1660,7 @@ static AVBufferRef *opencl_pool_alloc(void *opaque, int size)
 
     desc->nb_planes = p;
 
-    ref = av_buffer_create((uint8_t*)desc, sizeof(*desc),
+    ref = av_buffer_create_ijk((uint8_t*)desc, sizeof(*desc),
                            &opencl_pool_free, hwfc, 0);
     if (!ref)
         goto fail;
@@ -2157,7 +2157,7 @@ static int opencl_map_from_vaapi(AVHWFramesContext *dst_fc,
     AVFrame *tmp;
     int err;
 
-    tmp = av_frame_alloc();
+    tmp = av_frame_alloc_ijk();
     if (!tmp)
         return AVERROR(ENOMEM);
 

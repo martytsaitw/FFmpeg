@@ -174,7 +174,7 @@ static int fits_read_packet(AVFormatContext *s, AVPacket *pkt)
     }
 
     // Header is sent with the first line removed...
-    ret = av_new_packet(pkt, avbuf.len - 80 + size);
+    ret = av_new_packet_ijk(pkt, avbuf.len - 80 + size);
     if (ret < 0)
         goto fail;
 
@@ -183,7 +183,7 @@ static int fits_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     ret = av_bprint_finalize(&avbuf, &buf);
     if (ret < 0) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return ret;
     }
 
@@ -192,7 +192,7 @@ static int fits_read_packet(AVFormatContext *s, AVPacket *pkt)
     av_freep(&buf);
     ret = avio_read(s->pb, pkt->data + pkt->size, size);
     if (ret < 0) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return ret;
     }
 

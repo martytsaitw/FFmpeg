@@ -35,7 +35,7 @@ int ff_load_image(uint8_t *data[4], int linesize[4],
     AVPacket pkt;
     AVDictionary *opt=NULL;
 
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
 
     iformat = av_find_input_format("image2pipe");
     if ((ret = avformat_open_input_ijk(&format_ctx, filename, iformat, NULL)) < 0) {
@@ -76,7 +76,7 @@ int ff_load_image(uint8_t *data[4], int linesize[4],
         goto end;
     }
 
-    if (!(frame = av_frame_alloc()) ) {
+    if (!(frame = av_frame_alloc_ijk()) ) {
         av_log(log_ctx, AV_LOG_ERROR, "Failed to alloc frame\n");
         ret = AVERROR(ENOMEM);
         goto end;
@@ -107,7 +107,7 @@ int ff_load_image(uint8_t *data[4], int linesize[4],
     av_image_copy(data, linesize, (const uint8_t **)frame->data, frame->linesize, *pix_fmt, *w, *h);
 
 end:
-    av_packet_unref(&pkt);
+    av_packet_unref_ijk(&pkt);
     avcodec_free_context(&codec_ctx);
     avformat_close_input(&format_ctx);
     av_frame_free(&frame);

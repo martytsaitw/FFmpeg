@@ -105,20 +105,20 @@ static int audio_read_packet(AVFormatContext *s1, AVPacket *pkt)
     int64_t dts;
     snd_pcm_sframes_t delay = 0;
 
-    if (av_new_packet(pkt, s->period_size * s->frame_size) < 0) {
+    if (av_new_packet_ijk(pkt, s->period_size * s->frame_size) < 0) {
         return AVERROR(EIO);
     }
 
     while ((res = snd_pcm_readi(s->h, pkt->data, s->period_size)) < 0) {
         if (res == -EAGAIN) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
 
             return AVERROR(EAGAIN);
         }
         if (ff_alsa_xrun_recover(s1, res) < 0) {
             av_log(s1, AV_LOG_ERROR, "ALSA read error: %s\n",
                    snd_strerror(res));
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
 
             return AVERROR(EIO);
         }

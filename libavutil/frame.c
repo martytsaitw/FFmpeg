@@ -69,7 +69,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     av_frame_remove_side_data(f, AV_FRAME_DATA_QP_TABLE_PROPERTIES);
     av_frame_remove_side_data(f, AV_FRAME_DATA_QP_TABLE_DATA);
 
-    ref = av_buffer_ref(buf);
+    ref = av_buffer_ref_ijk(buf);
     if (!av_frame_new_side_data_from_buf(f, AV_FRAME_DATA_QP_TABLE_DATA, ref)) {
         av_buffer_unref(&ref);
         return AVERROR(ENOMEM);
@@ -186,7 +186,7 @@ static void wipe_side_data(AVFrame *frame)
     av_freep(&frame->side_data);
 }
 
-AVFrame *av_frame_alloc(void)
+AVFrame *av_frame_alloc_ijk(void)
 {
     AVFrame *frame = av_mallocz(sizeof(*frame));
 
@@ -241,7 +241,7 @@ static int get_video_buffer(AVFrame *frame, int align)
         if (i == 1 || i == 2)
             h = AV_CEIL_RSHIFT(h, desc->log2_chroma_h);
 
-        frame->buf[i] = av_buffer_alloc(frame->linesize[i] * h + 16 + 16/*STRIDE_ALIGN*/ - 1);
+        frame->buf[i] = av_buffer_alloc_ijk(frame->linesize[i] * h + 16 + 16/*STRIDE_ALIGN*/ - 1);
         if (!frame->buf[i])
             goto fail;
 
@@ -249,7 +249,7 @@ static int get_video_buffer(AVFrame *frame, int align)
     }
     if (desc->flags & AV_PIX_FMT_FLAG_PAL || desc->flags & FF_PSEUDOPAL) {
         av_buffer_unref(&frame->buf[1]);
-        frame->buf[1] = av_buffer_alloc(AVPALETTE_SIZE);
+        frame->buf[1] = av_buffer_alloc_ijk(AVPALETTE_SIZE);
         if (!frame->buf[1])
             goto fail;
         frame->data[1] = frame->buf[1]->data;
@@ -300,7 +300,7 @@ static int get_audio_buffer(AVFrame *frame, int align)
         frame->extended_data = frame->data;
 
     for (i = 0; i < FFMIN(planes, AV_NUM_DATA_POINTERS); i++) {
-        frame->buf[i] = av_buffer_alloc(frame->linesize[0]);
+        frame->buf[i] = av_buffer_alloc_ijk(frame->linesize[0]);
         if (!frame->buf[i]) {
             av_frame_unref(frame);
             return AVERROR(ENOMEM);
@@ -308,7 +308,7 @@ static int get_audio_buffer(AVFrame *frame, int align)
         frame->extended_data[i] = frame->data[i] = frame->buf[i]->data;
     }
     for (i = 0; i < planes - AV_NUM_DATA_POINTERS; i++) {
-        frame->extended_buf[i] = av_buffer_alloc(frame->linesize[0]);
+        frame->extended_buf[i] = av_buffer_alloc_ijk(frame->linesize[0]);
         if (!frame->extended_buf[i]) {
             av_frame_unref(frame);
             return AVERROR(ENOMEM);
@@ -395,7 +395,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
             }
             memcpy(sd_dst->data, sd_src->data, sd_src->size);
         } else {
-            AVBufferRef *ref = av_buffer_ref(sd_src->buf);
+            AVBufferRef *ref = av_buffer_ref_ijk(sd_src->buf);
             sd_dst = av_frame_new_side_data_from_buf(dst, sd_src->type, ref);
             if (!sd_dst) {
                 av_buffer_unref(&ref);
@@ -413,7 +413,7 @@ FF_DISABLE_DEPRECATION_WARNINGS
     dst->qscale_type  = 0;
     av_buffer_unref(&dst->qp_table_buf);
     if (src->qp_table_buf) {
-        dst->qp_table_buf = av_buffer_ref(src->qp_table_buf);
+        dst->qp_table_buf = av_buffer_ref_ijk(src->qp_table_buf);
         if (dst->qp_table_buf) {
             dst->qscale_table = dst->qp_table_buf->data;
             dst->qstride      = src->qstride;
@@ -426,12 +426,12 @@ FF_ENABLE_DEPRECATION_WARNINGS
     av_buffer_unref(&dst->opaque_ref);
     av_buffer_unref(&dst->private_ref);
     if (src->opaque_ref) {
-        dst->opaque_ref = av_buffer_ref(src->opaque_ref);
+        dst->opaque_ref = av_buffer_ref_ijk(src->opaque_ref);
         if (!dst->opaque_ref)
             return AVERROR(ENOMEM);
     }
     if (src->private_ref) {
-        dst->private_ref = av_buffer_ref(src->private_ref);
+        dst->private_ref = av_buffer_ref_ijk(src->private_ref);
         if (!dst->private_ref)
             return AVERROR(ENOMEM);
     }
@@ -473,7 +473,7 @@ int av_frame_ref(AVFrame *dst, const AVFrame *src)
     for (i = 0; i < FF_ARRAY_ELEMS(src->buf); i++) {
         if (!src->buf[i])
             continue;
-        dst->buf[i] = av_buffer_ref(src->buf[i]);
+        dst->buf[i] = av_buffer_ref_ijk(src->buf[i]);
         if (!dst->buf[i]) {
             ret = AVERROR(ENOMEM);
             goto fail;
@@ -490,7 +490,7 @@ int av_frame_ref(AVFrame *dst, const AVFrame *src)
         dst->nb_extended_buf = src->nb_extended_buf;
 
         for (i = 0; i < src->nb_extended_buf; i++) {
-            dst->extended_buf[i] = av_buffer_ref(src->extended_buf[i]);
+            dst->extended_buf[i] = av_buffer_ref_ijk(src->extended_buf[i]);
             if (!dst->extended_buf[i]) {
                 ret = AVERROR(ENOMEM);
                 goto fail;
@@ -499,7 +499,7 @@ int av_frame_ref(AVFrame *dst, const AVFrame *src)
     }
 
     if (src->hw_frames_ctx) {
-        dst->hw_frames_ctx = av_buffer_ref(src->hw_frames_ctx);
+        dst->hw_frames_ctx = av_buffer_ref_ijk(src->hw_frames_ctx);
         if (!dst->hw_frames_ctx) {
             ret = AVERROR(ENOMEM);
             goto fail;
@@ -537,7 +537,7 @@ fail:
 
 AVFrame *av_frame_clone(const AVFrame *src)
 {
-    AVFrame *ret = av_frame_alloc();
+    AVFrame *ret = av_frame_alloc_ijk();
 
     if (!ret)
         return NULL;
@@ -722,7 +722,7 @@ AVFrameSideData *av_frame_new_side_data(AVFrame *frame,
                                         int size)
 {
     AVFrameSideData *ret;
-    AVBufferRef *buf = av_buffer_alloc(size);
+    AVBufferRef *buf = av_buffer_alloc_ijk(size);
     ret = av_frame_new_side_data_from_buf(frame, type, buf);
     if (!ret)
         av_buffer_unref(&buf);

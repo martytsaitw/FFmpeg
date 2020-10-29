@@ -386,7 +386,7 @@ static int config_props(AVFilterLink *inlink)
 
     s->hw_frames_ctx = ctx->inputs[0]->hw_frames_ctx;
 
-    ctx->outputs[0]->hw_frames_ctx = av_buffer_ref(s->hw_frames_ctx);
+    ctx->outputs[0]->hw_frames_ctx = av_buffer_ref_ijk(s->hw_frames_ctx);
     if (!ctx->outputs[0]->hw_frames_ctx)
         return AVERROR(ENOMEM);
 

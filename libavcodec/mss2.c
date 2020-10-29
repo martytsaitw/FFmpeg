@@ -826,7 +826,7 @@ static av_cold int mss2_decode_init(AVCodecContext *avctx)
     c->avctx = avctx;
     if (ret = ff_mss12_decode_init(c, 1, &ctx->sc[0], &ctx->sc[1]))
         return ret;
-    ctx->last_pic   = av_frame_alloc();
+    ctx->last_pic   = av_frame_alloc_ijk();
     c->pal_stride   = c->mask_stride;
     c->pal_pic      = av_mallocz(c->pal_stride * avctx->height);
     c->last_pal_pic = av_mallocz(c->pal_stride * avctx->height);

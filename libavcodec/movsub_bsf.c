@@ -37,13 +37,13 @@ static int text2movsub(AVBSFContext *ctx, AVPacket *out)
         goto fail;
     }
 
-    ret = av_new_packet(out, in->size + 2);
+    ret = av_new_packet_ijk(out, in->size + 2);
     if (ret < 0) {
         ret = AVERROR(ENOMEM);
         goto fail;
     }
 
-    ret = av_packet_copy_props(out, in);
+    ret = av_packet_copy_props_ijk(out, in);
     if (ret < 0)
         goto fail;
 
@@ -52,7 +52,7 @@ static int text2movsub(AVBSFContext *ctx, AVPacket *out)
 
 fail:
     if (ret < 0)
-        av_packet_unref(out);
+        av_packet_unref_ijk(out);
     av_packet_free(&in);
     return ret;
 }
@@ -71,7 +71,7 @@ static int mov2textsub(AVBSFContext *ctx, AVPacket *pkt)
         return ret;
 
     if (pkt->size < 2) {
-       av_packet_unref(pkt);
+       av_packet_unref_ijk(pkt);
        return AVERROR_INVALIDDATA;
     }
 

@@ -240,7 +240,7 @@ static av_cold int rpza_decode_init(AVCodecContext *avctx)
     s->avctx = avctx;
     avctx->pix_fmt = AV_PIX_FMT_RGB555;
 
-    s->frame = av_frame_alloc();
+    s->frame = av_frame_alloc_ijk();
     if (!s->frame)
         return AVERROR(ENOMEM);
 

@@ -3234,17 +3234,17 @@ static int hevc_ref_frame(HEVCContext *s, HEVCFrame *dst, HEVCFrame *src)
     if (ret < 0)
         return ret;
 
-    dst->tab_mvf_buf = av_buffer_ref(src->tab_mvf_buf);
+    dst->tab_mvf_buf = av_buffer_ref_ijk(src->tab_mvf_buf);
     if (!dst->tab_mvf_buf)
         goto fail;
     dst->tab_mvf = src->tab_mvf;
 
-    dst->rpl_tab_buf = av_buffer_ref(src->rpl_tab_buf);
+    dst->rpl_tab_buf = av_buffer_ref_ijk(src->rpl_tab_buf);
     if (!dst->rpl_tab_buf)
         goto fail;
     dst->rpl_tab = src->rpl_tab;
 
-    dst->rpl_buf = av_buffer_ref(src->rpl_buf);
+    dst->rpl_buf = av_buffer_ref_ijk(src->rpl_buf);
     if (!dst->rpl_buf)
         goto fail;
 
@@ -3254,7 +3254,7 @@ static int hevc_ref_frame(HEVCContext *s, HEVCFrame *dst, HEVCFrame *src)
     dst->sequence   = src->sequence;
 
     if (src->hwaccel_picture_private) {
-        dst->hwaccel_priv_buf = av_buffer_ref(src->hwaccel_priv_buf);
+        dst->hwaccel_priv_buf = av_buffer_ref_ijk(src->hwaccel_priv_buf);
         if (!dst->hwaccel_priv_buf)
             goto fail;
         dst->hwaccel_picture_private = dst->hwaccel_priv_buf->data;
@@ -3327,12 +3327,12 @@ static av_cold int hevc_init_context(AVCodecContext *avctx)
     if (!s->cabac_state)
         goto fail;
 
-    s->output_frame = av_frame_alloc();
+    s->output_frame = av_frame_alloc_ijk();
     if (!s->output_frame)
         goto fail;
 
     for (i = 0; i < FF_ARRAY_ELEMS(s->DPB); i++) {
-        s->DPB[i].frame = av_frame_alloc();
+        s->DPB[i].frame = av_frame_alloc_ijk();
         if (!s->DPB[i].frame)
             goto fail;
         s->DPB[i].tf.f = s->DPB[i].frame;
@@ -3385,7 +3385,7 @@ static int hevc_update_thread_context(AVCodecContext *dst,
     for (i = 0; i < FF_ARRAY_ELEMS(s->ps.vps_list); i++) {
         av_buffer_unref(&s->ps.vps_list[i]);
         if (s0->ps.vps_list[i]) {
-            s->ps.vps_list[i] = av_buffer_ref(s0->ps.vps_list[i]);
+            s->ps.vps_list[i] = av_buffer_ref_ijk(s0->ps.vps_list[i]);
             if (!s->ps.vps_list[i])
                 return AVERROR(ENOMEM);
         }
@@ -3394,7 +3394,7 @@ static int hevc_update_thread_context(AVCodecContext *dst,
     for (i = 0; i < FF_ARRAY_ELEMS(s->ps.sps_list); i++) {
         av_buffer_unref(&s->ps.sps_list[i]);
         if (s0->ps.sps_list[i]) {
-            s->ps.sps_list[i] = av_buffer_ref(s0->ps.sps_list[i]);
+            s->ps.sps_list[i] = av_buffer_ref_ijk(s0->ps.sps_list[i]);
             if (!s->ps.sps_list[i])
                 return AVERROR(ENOMEM);
         }
@@ -3403,7 +3403,7 @@ static int hevc_update_thread_context(AVCodecContext *dst,
     for (i = 0; i < FF_ARRAY_ELEMS(s->ps.pps_list); i++) {
         av_buffer_unref(&s->ps.pps_list[i]);
         if (s0->ps.pps_list[i]) {
-            s->ps.pps_list[i] = av_buffer_ref(s0->ps.pps_list[i]);
+            s->ps.pps_list[i] = av_buffer_ref_ijk(s0->ps.pps_list[i]);
             if (!s->ps.pps_list[i])
                 return AVERROR(ENOMEM);
         }

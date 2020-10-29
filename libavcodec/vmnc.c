@@ -550,7 +550,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
     }
     c->bpp2 = c->bpp / 8;
 
-    c->pic = av_frame_alloc();
+    c->pic = av_frame_alloc_ijk();
     if (!c->pic)
         return AVERROR(ENOMEM);
 

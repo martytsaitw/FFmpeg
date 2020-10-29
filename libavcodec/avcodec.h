@@ -1403,17 +1403,17 @@ typedef struct AVPacketSideData {
  *
  * The semantics of data ownership depends on the buf field.
  * If it is set, the packet data is dynamically allocated and is
- * valid indefinitely until a call to av_packet_unref() reduces the
+ * valid indefinitely until a call to av_packet_unref_ijk() reduces the
  * reference count to 0.
  *
- * If the buf field is not set av_packet_ref() would make a copy instead
+ * If the buf field is not set av_packet_ref_ijk() would make a copy instead
  * of increasing the reference count.
  *
  * The side data is always allocated with av_malloc(), copied by
- * av_packet_ref() and freed by av_packet_unref().
+ * av_packet_ref_ijk() and freed by av_packet_unref_ijk().
  *
- * @see av_packet_ref
- * @see av_packet_unref
+ * @see av_packet_ref_ijk
+ * @see av_packet_unref_ijk
  */
 typedef struct AVPacket {
     /**
@@ -2298,8 +2298,8 @@ typedef struct AVCodecContext {
      * - buf[] must contain one or more pointers to AVBufferRef structures. Each of
      *   the frame's data and extended_data pointers must be contained in these. That
      *   is, one AVBufferRef for each allocated chunk of memory, not necessarily one
-     *   AVBufferRef per data[] entry. See: av_buffer_create(), av_buffer_alloc(),
-     *   and av_buffer_ref().
+     *   AVBufferRef per data[] entry. See: av_buffer_create_ijk(), av_buffer_alloc_ijk(),
+     *   and av_buffer_ref_ijk().
      * - extended_buf and nb_extended_buf must be allocated with av_malloc() by
      *   this callback and filled with the extra buffers if there are more
      *   buffers than buf[] can hold. extended_buf will be freed in
@@ -4305,21 +4305,21 @@ void avsubtitle_free(AVSubtitle *sub);
  * @return An AVPacket filled with default values or NULL on failure.
  *
  * @note this only allocates the AVPacket itself, not the data buffers. Those
- * must be allocated through other means such as av_new_packet.
+ * must be allocated through other means such as av_new_packet_ijk.
  *
- * @see av_new_packet
+ * @see av_new_packet_ijk
  */
-AVPacket *av_packet_alloc(void);
+AVPacket *av_packet_alloc_ijk(void);
 
 /**
  * Create a new packet that references the same data as src.
  *
- * This is a shortcut for av_packet_alloc()+av_packet_ref().
+ * This is a shortcut for av_packet_alloc_ijk()+av_packet_ref_ijk().
  *
  * @return newly created AVPacket on success, NULL on error.
  *
- * @see av_packet_alloc
- * @see av_packet_ref
+ * @see av_packet_alloc_ijk
+ * @see av_packet_ref_ijk
  */
 AVPacket *av_packet_clone(const AVPacket *src);
 
@@ -4340,7 +4340,7 @@ void av_packet_free(AVPacket **pkt);
  *
  * @param pkt packet
  */
-void av_init_packet(AVPacket *pkt);
+void av_init_packet_ijk(AVPacket *pkt);
 
 /**
  * Allocate the payload of a packet and initialize its fields with
@@ -4350,7 +4350,7 @@ void av_init_packet(AVPacket *pkt);
  * @param size wanted payload size
  * @return 0 if OK, AVERROR_xxx otherwise
  */
-int av_new_packet(AVPacket *pkt, int size);
+int av_new_packet_ijk(AVPacket *pkt, int size);
 
 /**
  * Reduce packet size, correctly zeroing padding
@@ -4366,7 +4366,7 @@ void av_shrink_packet(AVPacket *pkt, int size);
  * @param pkt packet
  * @param grow_by number of bytes by which to increase the size of the packet
  */
-int av_grow_packet(AVPacket *pkt, int grow_by);
+int av_grow_packet_ijk(AVPacket *pkt, int grow_by);
 
 /**
  * Initialize a reference-counted packet from av_malloc()ed data.
@@ -4381,23 +4381,23 @@ int av_grow_packet(AVPacket *pkt, int grow_by);
  *
  * @return 0 on success, a negative AVERROR on error
  */
-int av_packet_from_data(AVPacket *pkt, uint8_t *data, int size);
+int av_packet_from_data_ijk(AVPacket *pkt, uint8_t *data, int size);
 
 #if FF_API_AVPACKET_OLD_API
 /**
  * @warning This is a hack - the packet memory allocation stuff is broken. The
  * packet is allocated if it was not really allocated.
  *
- * @deprecated Use av_packet_ref or av_packet_make_refcounted
+ * @deprecated Use av_packet_ref_ijk or av_packet_make_refcounted
  */
 attribute_deprecated
-int av_dup_packet(AVPacket *pkt);
+int av_dup_packet_ijk(AVPacket *pkt);
 /**
  * Copy packet, including contents
  *
  * @return 0 on success, negative AVERROR on fail
  *
- * @deprecated Use av_packet_ref
+ * @deprecated Use av_packet_ref_ijk
  */
 attribute_deprecated
 int av_copy_packet(AVPacket *dst, const AVPacket *src);
@@ -4407,20 +4407,20 @@ int av_copy_packet(AVPacket *dst, const AVPacket *src);
  *
  * @return 0 on success, negative AVERROR on fail
  *
- * @deprecated Use av_packet_copy_props
+ * @deprecated Use av_packet_copy_props_ijk
  */
 attribute_deprecated
-int av_copy_packet_side_data(AVPacket *dst, const AVPacket *src);
+int av_copy_packet_side_data_ijk(AVPacket *dst, const AVPacket *src);
 
 /**
  * Free a packet.
  *
- * @deprecated Use av_packet_unref
+ * @deprecated Use av_packet_unref_ijk
  *
  * @param pkt packet to free
  */
 attribute_deprecated
-void av_free_packet(AVPacket *pkt);
+void av_free_packet_ijk(AVPacket *pkt);
 #endif
 /**
  * Allocate new information of a packet.
@@ -4446,7 +4446,7 @@ uint8_t* av_packet_new_side_data(AVPacket *pkt, enum AVPacketSideDataType type,
  *         failure. On failure, the packet is unchanged and the data remains
  *         owned by the caller.
  */
-int av_packet_add_side_data(AVPacket *pkt, enum AVPacketSideDataType type,
+int av_packet_add_side_data_ijk(AVPacket *pkt, enum AVPacketSideDataType type,
                             uint8_t *data, size_t size);
 
 /**
@@ -4506,7 +4506,7 @@ int av_packet_unpack_dictionary(const uint8_t *data, int size, AVDictionary **di
  *
  * @param pkt packet
  */
-void av_packet_free_side_data(AVPacket *pkt);
+void av_packet_free_side_data_ijk(AVPacket *pkt);
 
 /**
  * Setup a new reference to the data described by a given packet
@@ -4517,14 +4517,14 @@ void av_packet_free_side_data(AVPacket *pkt);
  *
  * All the other fields are copied from src.
  *
- * @see av_packet_unref
+ * @see av_packet_unref_ijk
  *
  * @param dst Destination packet
  * @param src Source packet
  *
  * @return 0 on success, a negative AVERROR on error.
  */
-int av_packet_ref(AVPacket *dst, const AVPacket *src);
+int av_packet_ref_ijk(AVPacket *dst, const AVPacket *src);
 
 /**
  * Wipe the packet.
@@ -4534,12 +4534,12 @@ int av_packet_ref(AVPacket *dst, const AVPacket *src);
  *
  * @param pkt The packet to be unreferenced.
  */
-void av_packet_unref(AVPacket *pkt);
+void av_packet_unref_ijk(AVPacket *pkt);
 
 /**
  * Move every field in src to dst and reset src.
  *
- * @see av_packet_unref
+ * @see av_packet_unref_ijk
  *
  * @param src Source packet, will be reset
  * @param dst Destination packet
@@ -4557,7 +4557,7 @@ void av_packet_move_ref(AVPacket *dst, AVPacket *src);
  *
  * @return 0 on success AVERROR on failure.
  */
-int av_packet_copy_props(AVPacket *dst, const AVPacket *src);
+int av_packet_copy_props_ijk(AVPacket *dst, const AVPacket *src);
 
 /**
  * Ensure the data described by a given packet is reference counted.
@@ -4565,7 +4565,7 @@ int av_packet_copy_props(AVPacket *dst, const AVPacket *src);
  * @note This function does not ensure that the reference will be writable.
  *       Use av_packet_make_writable instead for that purpose.
  *
- * @see av_packet_ref
+ * @see av_packet_ref_ijk
  * @see av_packet_make_writable
  *
  * @param pkt packet whose data should be made reference counted.
@@ -4750,7 +4750,7 @@ int avcodec_decode_audio4(AVCodecContext *avctx, AVFrame *frame,
  *
  * @param avctx the codec context
  * @param[out] picture The AVFrame in which the decoded video frame will be stored.
- *             Use av_frame_alloc() to get an AVFrame. The codec will
+ *             Use av_frame_alloc_ijk() to get an AVFrame. The codec will
  *             allocate memory for the actual bitmap by calling the
  *             AVCodecContext.get_buffer2() callback.
  *             When AVCodecContext.refcounted_frames is set to 1, the frame is
@@ -4764,7 +4764,7 @@ int avcodec_decode_audio4(AVCodecContext *avctx, AVFrame *frame,
  *             decoder. The caller may not write to it.
  *
  * @param[in] avpkt The input AVPacket containing the input buffer.
- *            You can create such packet with av_init_packet() and by then setting
+ *            You can create such packet with av_init_packet_ijk() and by then setting
  *            data and size, some decoders might in addition need other fields like
  *            flags&AV_PKT_FLAG_KEY. All decoders are designed to use the least
  *            fields possible.
@@ -5342,12 +5342,12 @@ AVCodec *avcodec_find_encoder_by_name(const char *name);
  *                  large enough, encoding will fail. If avpkt->data and
  *                  avpkt->size are set, avpkt->destruct must also be set. All
  *                  other AVPacket fields will be reset by the encoder using
- *                  av_init_packet(). If avpkt->data is NULL, the encoder will
+ *                  av_init_packet_ijk(). If avpkt->data is NULL, the encoder will
  *                  allocate it. The encoder will set avpkt->size to the size
  *                  of the output packet.
  *
  *                  If this function fails or produces no output, avpkt will be
- *                  freed using av_packet_unref().
+ *                  freed using av_packet_unref_ijk().
  * @param[in] frame AVFrame containing the raw audio data to be encoded.
  *                  May be NULL when flushing an encoder that has the
  *                  AV_CODEC_CAP_DELAY capability set.
@@ -5384,14 +5384,14 @@ int avcodec_encode_audio2(AVCodecContext *avctx, AVPacket *avpkt,
  *                  avpkt->data and avpkt->size prior to calling the
  *                  function, but if the size of the user-provided data is not
  *                  large enough, encoding will fail. All other AVPacket fields
- *                  will be reset by the encoder using av_init_packet(). If
+ *                  will be reset by the encoder using av_init_packet_ijk(). If
  *                  avpkt->data is NULL, the encoder will allocate it.
  *                  The encoder will set avpkt->size to the size of the
  *                  output packet. The returned data (if any) belongs to the
  *                  caller, he is responsible for freeing it.
  *
  *                  If this function fails or produces no output, avpkt will be
- *                  freed using av_packet_unref().
+ *                  freed using av_packet_unref_ijk().
  * @param[in] frame AVFrame containing the raw video data to be encoded.
  *                  May be NULL when flushing an encoder that has the
  *                  AV_CODEC_CAP_DELAY capability set.
@@ -5894,9 +5894,9 @@ int av_bsf_send_packet(AVBSFContext *ctx, AVPacket *pkt);
  *
  * @param[out] pkt this struct will be filled with the contents of the filtered
  *                 packet. It is owned by the caller and must be freed using
- *                 av_packet_unref() when it is no longer needed.
+ *                 av_packet_unref_ijk() when it is no longer needed.
  *                 This parameter should be "clean" (i.e. freshly allocated
- *                 with av_packet_alloc() or unreffed with av_packet_unref())
+ *                 with av_packet_alloc_ijk() or unreffed with av_packet_unref_ijk())
  *                 when this function is called. If this function returns
  *                 successfully, the contents of pkt will be completely
  *                 overwritten by the returned data. On failure, pkt is not

@@ -141,7 +141,7 @@ static int query_formats(AVFilterContext *ctx)
 
 static AVFrame *alloc_frame(enum AVPixelFormat pixfmt, int w, int h)
 {
-    AVFrame *frame = av_frame_alloc();
+    AVFrame *frame = av_frame_alloc_ijk();
     if (!frame)
         return NULL;
 

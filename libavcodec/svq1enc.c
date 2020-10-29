@@ -525,8 +525,8 @@ static av_cold int svq1_encode_init(AVCodecContext *avctx)
     ff_me_cmp_init(&s->mecc, avctx);
     ff_mpegvideoencdsp_init(&s->m.mpvencdsp, avctx);
 
-    s->current_picture = av_frame_alloc();
-    s->last_picture    = av_frame_alloc();
+    s->current_picture = av_frame_alloc_ijk();
+    s->last_picture    = av_frame_alloc_ijk();
     if (!s->current_picture || !s->last_picture) {
         svq1_encode_end(avctx);
         return AVERROR(ENOMEM);

@@ -75,7 +75,7 @@ static av_cold int screenpresso_init(AVCodecContext *avctx)
     }
 
     /* Allocate current frame */
-    ctx->current = av_frame_alloc();
+    ctx->current = av_frame_alloc_ijk();
     if (!ctx->current)
         return AVERROR(ENOMEM);
 

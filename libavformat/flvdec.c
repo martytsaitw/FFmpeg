@@ -1268,7 +1268,7 @@ leave:
         av_log(s, AV_LOG_ERROR, "Packet mismatch %d %d %d\n", last, orig_size + 11, flv->sum_flv_tag_size);
         avio_seek(s->pb, pos + 1, SEEK_SET);
         ret = resync(s);
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         if (ret >= 0) {
             goto retry;
         }

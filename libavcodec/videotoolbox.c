@@ -99,7 +99,7 @@ int ff_videotoolbox_alloc_frame(AVCodecContext *avctx, AVFrame *frame)
     data = av_mallocz(size);
     if (!data)
         return AVERROR(ENOMEM);
-    buf = av_buffer_create(data, size, videotoolbox_buffer_release, NULL, 0);
+    buf = av_buffer_create_ijk(data, size, videotoolbox_buffer_release, NULL, 0);
     if (!buf) {
         av_freep(&data);
         return AVERROR(ENOMEM);
@@ -472,7 +472,7 @@ static int videotoolbox_buffer_create(AVCodecContext *avctx, AVFrame *frame)
     }
 
     av_buffer_unref(&frame->hw_frames_ctx);
-    frame->hw_frames_ctx = av_buffer_ref(vtctx->cached_hw_frames_ctx);
+    frame->hw_frames_ctx = av_buffer_ref_ijk(vtctx->cached_hw_frames_ctx);
     if (!frame->hw_frames_ctx)
         return AVERROR(ENOMEM);
 
@@ -1027,7 +1027,7 @@ static int videotoolbox_common_init(AVCodecContext *avctx)
         }
     }
 
-    vtctx->cached_hw_frames_ctx = av_buffer_ref(avctx->hw_frames_ctx);
+    vtctx->cached_hw_frames_ctx = av_buffer_ref_ijk(avctx->hw_frames_ctx);
     if (!vtctx->cached_hw_frames_ctx) {
         err = AVERROR(ENOMEM);
         goto fail;

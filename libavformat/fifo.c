@@ -174,7 +174,7 @@ static int fifo_thread_write_packet(FifoThreadContext *ctx, AVPacket *pkt)
             av_log(avf, AV_LOG_VERBOSE, "Keyframe received, recovering...\n");
         } else {
             av_log(avf, AV_LOG_VERBOSE, "Dropping non-keyframe packet\n");
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return 0;
         }
     }
@@ -186,7 +186,7 @@ static int fifo_thread_write_packet(FifoThreadContext *ctx, AVPacket *pkt)
 
     ret = av_write_frame(avf2, pkt);
     if (ret >= 0)
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
     return ret;
 }
 
@@ -254,7 +254,7 @@ static void free_message(void *msg)
     FifoMessage *fifo_msg = msg;
 
     if (fifo_msg->type == FIFO_WRITE_PACKET)
-        av_packet_unref(&fifo_msg->pkt);
+        av_packet_unref_ijk(&fifo_msg->pkt);
 }
 
 static int fifo_thread_process_recovery_failure(FifoThreadContext *ctx, AVPacket *pkt,
@@ -379,7 +379,7 @@ static int fifo_thread_recover(FifoThreadContext *ctx, FifoMessage *msg, int err
 
     if (ret == AVERROR(EAGAIN) && fifo->drop_pkts_on_overflow) {
         if (msg->type == FIFO_WRITE_PACKET)
-            av_packet_unref(&msg->pkt);
+            av_packet_unref_ijk(&msg->pkt);
         ret = 0;
     }
 
@@ -547,8 +547,8 @@ static int fifo_write_packet(AVFormatContext *avf, AVPacket *pkt)
     int ret;
 
     if (pkt) {
-        av_init_packet(&msg.pkt);
-        ret = av_packet_ref(&msg.pkt,pkt);
+        av_init_packet_ijk(&msg.pkt);
+        ret = av_packet_ref_ijk(&msg.pkt,pkt);
         if (ret < 0)
             return ret;
     }
@@ -578,7 +578,7 @@ static int fifo_write_packet(AVFormatContext *avf, AVPacket *pkt)
     return ret;
 fail:
     if (pkt)
-        av_packet_unref(&msg.pkt);
+        av_packet_unref_ijk(&msg.pkt);
     return ret;
 }
 

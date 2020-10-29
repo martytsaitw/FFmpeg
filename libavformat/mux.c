@@ -935,7 +935,7 @@ int ff_interleave_add_packet(AVFormatContext *s, AVPacket *pkt,
         pkt->side_data = NULL;
         pkt->side_data_elems = 0;
     } else {
-        if ((ret = av_packet_ref(&this_pktl->pkt, pkt)) < 0) {
+        if ((ret = av_packet_ref_ijk(&this_pktl->pkt, pkt)) < 0) {
             av_free(this_pktl);
             return ret;
         }
@@ -989,7 +989,7 @@ next_non_null:
     s->streams[pkt->stream_index]->last_in_packet_buffer =
         *next_point                                      = this_pktl;
 
-    av_packet_unref(pkt);
+    av_packet_unref_ijk(pkt);
 
     return 0;
 }
@@ -1109,7 +1109,7 @@ int ff_interleave_packet_per_dts(AVFormatContext *s, AVPacket *out,
             if (st->last_in_packet_buffer == pktl)
                 st->last_in_packet_buffer = NULL;
 
-            av_packet_unref(&pktl->pkt);
+            av_packet_unref_ijk(&pktl->pkt);
             av_freep(&pktl);
             flush = 0;
         }
@@ -1131,7 +1131,7 @@ int ff_interleave_packet_per_dts(AVFormatContext *s, AVPacket *out,
 
         return 1;
     } else {
-        av_init_packet(out);
+        av_init_packet_ijk(out);
         return 0;
     }
 }
@@ -1176,7 +1176,7 @@ static int interleave_packet(AVFormatContext *s, AVPacket *out, AVPacket *in, in
     if (s->oformat->interleave_packet) {
         int ret = s->oformat->interleave_packet(s, out, in, flush);
         if (in)
-            av_packet_unref(in);
+            av_packet_unref_ijk(in);
         return ret;
     } else
         return ff_interleave_packet_per_dts(s, out, in, flush);
@@ -1222,7 +1222,7 @@ int av_interleaved_write_frame(AVFormatContext *s, AVPacket *pkt)
         int ret = interleave_packet(s, &opkt, pkt, flush);
         if (pkt) {
             memset(pkt, 0, sizeof(*pkt));
-            av_init_packet(pkt);
+            av_init_packet_ijk(pkt);
             pkt = NULL;
         }
         if (ret <= 0) //FIXME cleanup needed for ret<0 ?
@@ -1232,7 +1232,7 @@ int av_interleaved_write_frame(AVFormatContext *s, AVPacket *pkt)
         if (ret >= 0)
             s->streams[opkt.stream_index]->nb_frames++;
 
-        av_packet_unref(&opkt);
+        av_packet_unref_ijk(&opkt);
 
         if (ret < 0)
             return ret;
@@ -1240,7 +1240,7 @@ int av_interleaved_write_frame(AVFormatContext *s, AVPacket *pkt)
             return s->pb->error;
     }
 fail:
-    av_packet_unref(pkt);
+    av_packet_unref_ijk(pkt);
     return ret;
 }
 
@@ -1260,7 +1260,7 @@ int av_write_trailer(AVFormatContext *s)
         if (ret >= 0)
             s->streams[pkt.stream_index]->nb_frames++;
 
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
 
         if (ret < 0)
             goto fail;
@@ -1350,7 +1350,7 @@ static int av_write_uncoded_frame_internal(AVFormatContext *s, int stream_index,
         pktp = NULL;
     } else {
         pktp = &pkt;
-        av_init_packet(&pkt);
+        av_init_packet_ijk(&pkt);
         pkt.data = (void *)frame;
         pkt.size         = UNCODED_FRAME_PACKET_SIZE;
         pkt.pts          =

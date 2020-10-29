@@ -61,7 +61,7 @@ static int set_hwframe_ctx(AVCodecContext *ctx, AVBufferRef *hw_device_ctx)
         av_buffer_unref(&hw_frames_ref);
         return err;
     }
-    ctx->hw_frames_ctx = av_buffer_ref(hw_frames_ref);
+    ctx->hw_frames_ctx = av_buffer_ref_ijk(hw_frames_ref);
     if (!ctx->hw_frames_ctx)
         err = AVERROR(ENOMEM);
 
@@ -74,7 +74,7 @@ static int encode_write(AVCodecContext *avctx, AVFrame *frame, FILE *fout)
     int ret = 0;
     AVPacket enc_pkt;
 
-    av_init_packet(&enc_pkt);
+    av_init_packet_ijk(&enc_pkt);
     enc_pkt.data = NULL;
     enc_pkt.size = 0;
 
@@ -89,7 +89,7 @@ static int encode_write(AVCodecContext *avctx, AVFrame *frame, FILE *fout)
 
         enc_pkt.stream_index = 0;
         ret = fwrite(enc_pkt.data, enc_pkt.size, 1, fout);
-        av_packet_unref(&enc_pkt);
+        av_packet_unref_ijk(&enc_pkt);
     }
 
 end:
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
     }
 
     while (1) {
-        if (!(sw_frame = av_frame_alloc())) {
+        if (!(sw_frame = av_frame_alloc_ijk())) {
             err = AVERROR(ENOMEM);
             goto close;
         }
@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
         if ((err = fread((uint8_t*)(sw_frame->data[1]), size/2, 1, fin)) <= 0)
             break;
 
-        if (!(hw_frame = av_frame_alloc())) {
+        if (!(hw_frame = av_frame_alloc_ijk())) {
             err = AVERROR(ENOMEM);
             goto close;
         }

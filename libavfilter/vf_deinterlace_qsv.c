@@ -334,12 +334,12 @@ static int qsvdeint_config_props(AVFilterLink *outlink)
         return AVERROR(EINVAL);
     }
 
-    s->hw_frames_ctx = av_buffer_ref(inlink->hw_frames_ctx);
+    s->hw_frames_ctx = av_buffer_ref_ijk(inlink->hw_frames_ctx);
     if (!s->hw_frames_ctx)
         return AVERROR(ENOMEM);
 
     av_buffer_unref(&outlink->hw_frames_ctx);
-    outlink->hw_frames_ctx = av_buffer_ref(inlink->hw_frames_ctx);
+    outlink->hw_frames_ctx = av_buffer_ref_ijk(inlink->hw_frames_ctx);
     if (!outlink->hw_frames_ctx) {
         qsvdeint_uninit(ctx);
         return AVERROR(ENOMEM);

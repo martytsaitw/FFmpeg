@@ -225,8 +225,8 @@ int main(int argc, char **argv)
         goto finish;
     }
 
-    frame    = av_frame_alloc();
-    sw_frame = av_frame_alloc();
+    frame    = av_frame_alloc_ijk();
+    sw_frame = av_frame_alloc_ijk();
     if (!frame || !sw_frame) {
         ret = AVERROR(ENOMEM);
         goto finish;
@@ -241,7 +241,7 @@ int main(int argc, char **argv)
         if (pkt.stream_index == video_st->index)
             ret = decode_packet(&decode, decoder_ctx, frame, sw_frame, &pkt, output_ctx);
 
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
     }
 
     /* flush the decoder */

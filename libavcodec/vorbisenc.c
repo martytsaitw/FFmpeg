@@ -1025,7 +1025,7 @@ static int apply_window_and_mdct(vorbis_enc_context *venc)
 /* Used for padding the last encoded packet */
 static AVFrame *spawn_empty_frame(AVCodecContext *avctx, int channels)
 {
-    AVFrame *f = av_frame_alloc();
+    AVFrame *f = av_frame_alloc_ijk();
     int ch;
 
     if (!f)

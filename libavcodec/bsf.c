@@ -103,7 +103,7 @@ int av_bsf_alloc_ijk(const AVBitStreamFilter *filter, AVBSFContext **pctx)
         goto fail;
     }
 
-    ctx->internal->buffer_pkt = av_packet_alloc();
+    ctx->internal->buffer_pkt = av_packet_alloc_ijk();
     if (!ctx->internal->buffer_pkt) {
         ret = AVERROR(ENOMEM);
         goto fail;
@@ -215,7 +215,7 @@ int ff_bsf_get_packet(AVBSFContext *ctx, AVPacket **pkt)
         !ctx->internal->buffer_pkt->side_data_elems)
         return AVERROR(EAGAIN);
 
-    tmp_pkt = av_packet_alloc();
+    tmp_pkt = av_packet_alloc_ijk();
     if (!tmp_pkt)
         return AVERROR(ENOMEM);
 
@@ -335,7 +335,7 @@ static int bsf_list_filter(AVBSFContext *bsf, AVPacket *out)
     }
 
     if (ret < 0)
-        av_packet_unref(out);
+        av_packet_unref_ijk(out);
 
     return ret;
 }

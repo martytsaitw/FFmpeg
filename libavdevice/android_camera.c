@@ -447,7 +447,7 @@ static void image_available(void *context, AImageReader *reader)
             goto error;
     }
 
-    ret = av_new_packet(&pkt, pkt_buffer_size);
+    ret = av_new_packet_ijk(&pkt, pkt_buffer_size);
     if (ret < 0) {
         av_log(avctx, AV_LOG_ERROR,
                "Failed to create new av packet, error: %s.\n", av_err2str(ret));
@@ -476,7 +476,7 @@ error:
                    ctx->input_queue_size);
         }
         if (pkt_buffer_size) {
-            av_packet_unref(&pkt);
+            av_packet_unref_ijk(&pkt);
         }
     }
 
@@ -761,7 +761,7 @@ static int android_camera_read_close(AVFormatContext *avctx)
         AVPacket pkt;
         av_thread_message_queue_set_err_send(ctx->input_queue, AVERROR_EOF);
         while (av_thread_message_queue_recv(ctx->input_queue, &pkt, AV_THREAD_MESSAGE_NONBLOCK) >= 0) {
-            av_packet_unref(&pkt);
+            av_packet_unref_ijk(&pkt);
         }
         av_thread_message_queue_free(&ctx->input_queue);
     }

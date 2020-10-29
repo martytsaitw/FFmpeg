@@ -211,7 +211,7 @@ static int CUDAAPI cuvid_handle_video_sequence(void *opaque, CUVIDEOFORMAT* form
     if (avctx->hw_frames_ctx) {
         av_buffer_unref(&ctx->hwframe);
 
-        ctx->hwframe = av_buffer_ref(avctx->hw_frames_ctx);
+        ctx->hwframe = av_buffer_ref_ijk(avctx->hw_frames_ctx);
         if (!ctx->hwframe) {
             ctx->internal_error = AVERROR(ENOMEM);
             return 0;
@@ -401,14 +401,14 @@ static int cuvid_decode_packet(AVCodecContext *avctx, const AVPacket *avpkt)
         return AVERROR(EAGAIN);
 
     if (ctx->bsf && avpkt && avpkt->size) {
-        if ((ret = av_packet_ref(&filter_packet, avpkt)) < 0) {
-            av_log(avctx, AV_LOG_ERROR, "av_packet_ref failed\n");
+        if ((ret = av_packet_ref_ijk(&filter_packet, avpkt)) < 0) {
+            av_log(avctx, AV_LOG_ERROR, "av_packet_ref_ijk failed\n");
             return ret;
         }
 
         if ((ret = av_bsf_send_packet(ctx->bsf, &filter_packet)) < 0) {
             av_log(avctx, AV_LOG_ERROR, "av_bsf_send_packet failed\n");
-            av_packet_unref(&filter_packet);
+            av_packet_unref_ijk(&filter_packet);
             return ret;
         }
 
@@ -422,7 +422,7 @@ static int cuvid_decode_packet(AVCodecContext *avctx, const AVPacket *avpkt)
 
     ret = CHECK_CU(ctx->cudl->cuCtxPushCurrent(cuda_ctx));
     if (ret < 0) {
-        av_packet_unref(&filtered_packet);
+        av_packet_unref_ijk(&filtered_packet);
         return ret;
     }
 
@@ -446,7 +446,7 @@ static int cuvid_decode_packet(AVCodecContext *avctx, const AVPacket *avpkt)
 
     ret = CHECK_CU(ctx->cvdl->cuvidParseVideoData(ctx->cuparser, &cupkt));
 
-    av_packet_unref(&filtered_packet);
+    av_packet_unref_ijk(&filtered_packet);
 
     if (ret < 0)
         goto error;
@@ -494,7 +494,7 @@ static int cuvid_output_frame(AVCodecContext *avctx, AVFrame *frame)
         if (ret < 0 && ret != AVERROR_EOF)
             return ret;
         ret = cuvid_decode_packet(avctx, &pkt);
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
         // cuvid_is_buffer_full() should avoid this.
         if (ret == AVERROR(EAGAIN))
             ret = AVERROR_EXTERNAL;
@@ -559,15 +559,15 @@ static int cuvid_output_frame(AVCodecContext *avctx, AVFrame *frame)
         } else if (avctx->pix_fmt == AV_PIX_FMT_NV12 ||
                    avctx->pix_fmt == AV_PIX_FMT_P010 ||
                    avctx->pix_fmt == AV_PIX_FMT_P016) {
-            AVFrame *tmp_frame = av_frame_alloc();
+            AVFrame *tmp_frame = av_frame_alloc_ijk();
             if (!tmp_frame) {
-                av_log(avctx, AV_LOG_ERROR, "av_frame_alloc failed\n");
+                av_log(avctx, AV_LOG_ERROR, "av_frame_alloc_ijk failed\n");
                 ret = AVERROR(ENOMEM);
                 goto error;
             }
 
             tmp_frame->format        = AV_PIX_FMT_CUDA;
-            tmp_frame->hw_frames_ctx = av_buffer_ref(ctx->hwframe);
+            tmp_frame->hw_frames_ctx = av_buffer_ref_ijk(ctx->hwframe);
             tmp_frame->data[0]       = (uint8_t*)mapped_frame;
             tmp_frame->linesize[0]   = pitch;
             tmp_frame->data[1]       = (uint8_t*)(mapped_frame + avctx->height * pitch);
@@ -856,7 +856,7 @@ static av_cold int cuvid_decode_init(AVCodecContext *avctx)
     }
 
     if (avctx->hw_frames_ctx) {
-        ctx->hwframe = av_buffer_ref(avctx->hw_frames_ctx);
+        ctx->hwframe = av_buffer_ref_ijk(avctx->hw_frames_ctx);
         if (!ctx->hwframe) {
             ret = AVERROR(ENOMEM);
             goto error;
@@ -864,14 +864,14 @@ static av_cold int cuvid_decode_init(AVCodecContext *avctx)
 
         hwframe_ctx = (AVHWFramesContext*)ctx->hwframe->data;
 
-        ctx->hwdevice = av_buffer_ref(hwframe_ctx->device_ref);
+        ctx->hwdevice = av_buffer_ref_ijk(hwframe_ctx->device_ref);
         if (!ctx->hwdevice) {
             ret = AVERROR(ENOMEM);
             goto error;
         }
     } else {
         if (avctx->hw_device_ctx) {
-            ctx->hwdevice = av_buffer_ref(avctx->hw_device_ctx);
+            ctx->hwdevice = av_buffer_ref_ijk(avctx->hw_device_ctx);
             if (!ctx->hwdevice) {
                 ret = AVERROR(ENOMEM);
                 goto error;

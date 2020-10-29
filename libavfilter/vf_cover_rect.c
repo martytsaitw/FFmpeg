@@ -211,7 +211,7 @@ static av_cold int init(AVFilterContext *ctx)
             return AVERROR(EINVAL);
         }
 
-        cover->cover_frame = av_frame_alloc();
+        cover->cover_frame = av_frame_alloc_ijk();
         if (!cover->cover_frame)
             return AVERROR(ENOMEM);
 

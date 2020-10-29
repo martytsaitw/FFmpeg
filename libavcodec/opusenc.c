@@ -523,7 +523,7 @@ static void opus_packet_assembler(OpusEncContext *s, AVPacket *avpkt)
 static AVFrame *spawn_empty_frame(OpusEncContext *s)
 {
     int i;
-    AVFrame *f = av_frame_alloc();
+    AVFrame *f = av_frame_alloc_ijk();
     if (!f)
         return NULL;
     f->format         = s->avctx->sample_fmt;

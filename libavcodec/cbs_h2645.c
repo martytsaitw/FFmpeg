@@ -776,7 +776,7 @@ static int cbs_h264_read_nal_unit(CodedBitstreamContext *ctx,
             }
 
             slice->data_size = len - pos / 8;
-            slice->data_ref  = av_buffer_alloc(slice->data_size +
+            slice->data_ref  = av_buffer_alloc_ijk(slice->data_size +
                                                AV_INPUT_BUFFER_PADDING_SIZE);
             if (!slice->data_ref)
                 return AVERROR(ENOMEM);
@@ -946,7 +946,7 @@ static int cbs_h265_read_nal_unit(CodedBitstreamContext *ctx,
             }
 
             slice->data_size = len - pos / 8;
-            slice->data_ref  = av_buffer_alloc(slice->data_size +
+            slice->data_ref  = av_buffer_alloc_ijk(slice->data_size +
                                                AV_INPUT_BUFFER_PADDING_SIZE);
             if (!slice->data_ref)
                 return AVERROR(ENOMEM);
@@ -1354,7 +1354,7 @@ static int cbs_h2645_assemble_fragment(CodedBitstreamContext *ctx,
         return err;
     memset(data + dp, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 
-    frag->data_ref = av_buffer_create(data, dp + AV_INPUT_BUFFER_PADDING_SIZE,
+    frag->data_ref = av_buffer_create_ijk(data, dp + AV_INPUT_BUFFER_PADDING_SIZE,
                                       NULL, NULL, 0);
     if (!frag->data_ref) {
         av_freep(&data);
@@ -1455,7 +1455,7 @@ int ff_cbs_h264_add_sei_message(CodedBitstreamContext *ctx,
         sei->nal_unit_header.nal_unit_type = H264_NAL_SEI;
         sei->nal_unit_header.nal_ref_idc   = 0;
 
-        sei_ref = av_buffer_create((uint8_t*)sei, sizeof(*sei),
+        sei_ref = av_buffer_create_ijk((uint8_t*)sei, sizeof(*sei),
                                    &cbs_h264_free_sei, ctx, 0);
         if (!sei_ref) {
             av_freep(&sei);

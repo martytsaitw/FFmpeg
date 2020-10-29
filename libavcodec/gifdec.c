@@ -447,7 +447,7 @@ static av_cold int gif_decode_init(AVCodecContext *avctx)
     s->avctx = avctx;
 
     avctx->pix_fmt = AV_PIX_FMT_RGB32;
-    s->frame = av_frame_alloc();
+    s->frame = av_frame_alloc_ijk();
     if (!s->frame)
         return AVERROR(ENOMEM);
     ff_lzw_decode_open(&s->lzw);

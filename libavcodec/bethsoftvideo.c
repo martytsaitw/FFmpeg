@@ -43,7 +43,7 @@ static av_cold int bethsoftvid_decode_init(AVCodecContext *avctx)
     BethsoftvidContext *vid = avctx->priv_data;
     avctx->pix_fmt = AV_PIX_FMT_PAL8;
 
-    vid->frame = av_frame_alloc();
+    vid->frame = av_frame_alloc_ijk();
     if (!vid->frame)
         return AVERROR(ENOMEM);
 

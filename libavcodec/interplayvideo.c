@@ -1164,10 +1164,10 @@ static av_cold int ipvideo_decode_init(AVCodecContext *avctx)
 
     ff_hpeldsp_init(&s->hdsp, avctx->flags);
 
-    s->last_frame        = av_frame_alloc();
-    s->second_last_frame = av_frame_alloc();
-    s->cur_decode_frame  = av_frame_alloc();
-    s->prev_decode_frame = av_frame_alloc();
+    s->last_frame        = av_frame_alloc_ijk();
+    s->second_last_frame = av_frame_alloc_ijk();
+    s->cur_decode_frame  = av_frame_alloc_ijk();
+    s->prev_decode_frame = av_frame_alloc_ijk();
     if (!s->last_frame || !s->second_last_frame ||
         !s->cur_decode_frame || !s->prev_decode_frame) {
         ret = AVERROR(ENOMEM);

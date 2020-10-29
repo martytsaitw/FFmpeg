@@ -58,12 +58,12 @@ int ff_alloc_packet2(AVCodecContext *avctx, AVPacket *avpkt, int64_t size, int64
             return AVERROR(EINVAL);
         }
 
-        av_init_packet(avpkt);
+        av_init_packet_ijk(avpkt);
         avpkt->buf      = buf;
         avpkt->size     = size;
         return 0;
     } else {
-        int ret = av_new_packet(avpkt, size);
+        int ret = av_new_packet_ijk(avpkt, size);
         if (ret < 0)
             av_log(avctx, AV_LOG_ERROR, "Failed to allocate packet of size %"PRId64"\n", size);
         return ret;
@@ -83,7 +83,7 @@ static int pad_last_frame(AVCodecContext *s, AVFrame **dst, const AVFrame *src)
     AVFrame *frame = NULL;
     int ret;
 
-    if (!(frame = av_frame_alloc()))
+    if (!(frame = av_frame_alloc_ijk()))
         return AVERROR(ENOMEM);
 
     frame->format         = src->format;
@@ -134,8 +134,8 @@ int attribute_align_arg avcodec_encode_audio2(AVCodecContext *avctx,
     }
 
     if (!(avctx->codec->capabilities & AV_CODEC_CAP_DELAY) && !frame) {
-        av_packet_unref(avpkt);
-        av_init_packet(avpkt);
+        av_packet_unref_ijk(avpkt);
+        av_init_packet_ijk(avpkt);
         return 0;
     }
 
@@ -150,7 +150,7 @@ int attribute_align_arg avcodec_encode_audio2(AVCodecContext *avctx,
         }
         av_log(avctx, AV_LOG_WARNING, "extended_data is not set.\n");
 
-        extended_frame = av_frame_alloc();
+        extended_frame = av_frame_alloc_ijk();
         if (!extended_frame)
             return AVERROR(ENOMEM);
 
@@ -231,7 +231,7 @@ int attribute_align_arg avcodec_encode_audio2(AVCodecContext *avctx,
 
     if (!ret) {
         if (needs_realloc && avpkt->data) {
-            ret = av_buffer_realloc(&avpkt->buf, avpkt->size + AV_INPUT_BUFFER_PADDING_SIZE);
+            ret = av_buffer_realloc_ijk(&avpkt->buf, avpkt->size + AV_INPUT_BUFFER_PADDING_SIZE);
             if (ret >= 0)
                 avpkt->data = avpkt->buf->data;
         }
@@ -240,8 +240,8 @@ int attribute_align_arg avcodec_encode_audio2(AVCodecContext *avctx,
     }
 
     if (ret < 0 || !*got_packet_ptr) {
-        av_packet_unref(avpkt);
-        av_init_packet(avpkt);
+        av_packet_unref_ijk(avpkt);
+        av_init_packet_ijk(avpkt);
         goto end;
     }
 
@@ -281,8 +281,8 @@ int attribute_align_arg avcodec_encode_video2(AVCodecContext *avctx,
         avctx->stats_out[0] = '\0';
 
     if (!(avctx->codec->capabilities & AV_CODEC_CAP_DELAY) && !frame) {
-        av_packet_unref(avpkt);
-        av_init_packet(avpkt);
+        av_packet_unref_ijk(avpkt);
+        av_init_packet_ijk(avpkt);
         avpkt->size = 0;
         return 0;
     }
@@ -328,7 +328,7 @@ int attribute_align_arg avcodec_encode_video2(AVCodecContext *avctx,
             avpkt->pts = avpkt->dts = frame->pts;
 
         if (needs_realloc && avpkt->data) {
-            ret = av_buffer_realloc(&avpkt->buf, avpkt->size + AV_INPUT_BUFFER_PADDING_SIZE);
+            ret = av_buffer_realloc_ijk(&avpkt->buf, avpkt->size + AV_INPUT_BUFFER_PADDING_SIZE);
             if (ret >= 0)
                 avpkt->data = avpkt->buf->data;
         }
@@ -337,7 +337,7 @@ int attribute_align_arg avcodec_encode_video2(AVCodecContext *avctx,
     }
 
     if (ret < 0 || !*got_packet_ptr)
-        av_packet_unref(avpkt);
+        av_packet_unref_ijk(avpkt);
 
     return ret;
 }
@@ -361,7 +361,7 @@ static int do_encode(AVCodecContext *avctx, const AVFrame *frame, int *got_packe
     int ret;
     *got_packet = 0;
 
-    av_packet_unref(avctx->internal->buffer_pkt);
+    av_packet_unref_ijk(avctx->internal->buffer_pkt);
     avctx->internal->buffer_pkt_valid = 0;
 
     if (avctx->codec_type == AVMEDIA_TYPE_VIDEO) {
@@ -381,7 +381,7 @@ static int do_encode(AVCodecContext *avctx, const AVFrame *frame, int *got_packe
         avctx->internal->buffer_pkt_valid = 1;
         ret = 0;
     } else {
-        av_packet_unref(avctx->internal->buffer_pkt);
+        av_packet_unref_ijk(avctx->internal->buffer_pkt);
     }
 
     return ret;
@@ -419,7 +419,7 @@ int attribute_align_arg avcodec_send_frame(AVCodecContext *avctx, const AVFrame 
 
 int attribute_align_arg avcodec_receive_packet(AVCodecContext *avctx, AVPacket *avpkt)
 {
-    av_packet_unref(avpkt);
+    av_packet_unref_ijk(avpkt);
 
     if (!avcodec_is_open(avctx) || !av_codec_is_encoder(avctx->codec))
         return AVERROR(EINVAL);

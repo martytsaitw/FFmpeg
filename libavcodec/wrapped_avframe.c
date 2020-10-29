@@ -56,7 +56,7 @@ static int wrapped_avframe_encode(AVCodecContext *avctx, AVPacket *pkt,
         return AVERROR(ENOMEM);
     }
 
-    pkt->buf = av_buffer_create(data, size,
+    pkt->buf = av_buffer_create_ijk(data, size,
                                 wrapped_avframe_release_buffer, NULL,
                                 AV_BUFFER_FLAG_READONLY);
     if (!pkt->buf) {

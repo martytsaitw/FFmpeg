@@ -59,7 +59,7 @@ static av_cold int tgv_decode_init(AVCodecContext *avctx)
     avctx->framerate = (AVRational){ 15, 1 };
     avctx->pix_fmt   = AV_PIX_FMT_PAL8;
 
-    s->last_frame = av_frame_alloc();
+    s->last_frame = av_frame_alloc_ijk();
     if (!s->last_frame)
         return AVERROR(ENOMEM);
 

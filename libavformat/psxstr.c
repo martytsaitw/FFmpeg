@@ -212,8 +212,8 @@ static int str_read_packet(AVFormatContext *s,
                 if(pkt->size != sector_count*VIDEO_DATA_CHUNK_SIZE){
                     if(pkt->data)
                         av_log(s, AV_LOG_ERROR, "mismatching sector_count\n");
-                    av_packet_unref(pkt);
-                    if (av_new_packet(pkt, sector_count*VIDEO_DATA_CHUNK_SIZE))
+                    av_packet_unref_ijk(pkt);
+                    if (av_new_packet_ijk(pkt, sector_count*VIDEO_DATA_CHUNK_SIZE))
                         return AVERROR(EIO);
                     memset(pkt->data, 0, sector_count*VIDEO_DATA_CHUNK_SIZE);
 
@@ -267,7 +267,7 @@ static int str_read_packet(AVFormatContext *s,
                 st->start_time = 0;
             }
             pkt = ret_pkt;
-            if (av_new_packet(pkt, 2304))
+            if (av_new_packet_ijk(pkt, 2304))
                 return AVERROR(EIO);
             memcpy(pkt->data,sector+24,2304);
 
@@ -292,7 +292,7 @@ static int str_read_close(AVFormatContext *s)
     int i;
     for(i=0; i<32; i++){
         if(str->channels[i].tmp_pkt.data)
-            av_packet_unref(&str->channels[i].tmp_pkt);
+            av_packet_unref_ijk(&str->channels[i].tmp_pkt);
     }
 
     return 0;

@@ -81,7 +81,7 @@ int ff_vaapi_vpp_config_input(AVFilterLink *inlink)
         return AVERROR(EINVAL);
     }
 
-    ctx->input_frames_ref = av_buffer_ref(inlink->hw_frames_ctx);
+    ctx->input_frames_ref = av_buffer_ref_ijk(inlink->hw_frames_ctx);
     if (!ctx->input_frames_ref) {
         av_log(avctx, AV_LOG_ERROR, "A input frames reference create "
                "failed.\n");
@@ -112,7 +112,7 @@ int ff_vaapi_vpp_config_output(AVFilterLink *outlink)
         ctx->output_height = avctx->inputs[0]->h;
 
     av_assert0(ctx->input_frames);
-    ctx->device_ref = av_buffer_ref(ctx->input_frames->device_ref);
+    ctx->device_ref = av_buffer_ref_ijk(ctx->input_frames->device_ref);
     if (!ctx->device_ref) {
         av_log(avctx, AV_LOG_ERROR, "A device reference create "
                "failed.\n");

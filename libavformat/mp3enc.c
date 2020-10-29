@@ -379,7 +379,7 @@ static int mp3_queue_flush(AVFormatContext *s)
         ff_packet_list_get(&mp3->queue, &mp3->queue_end, &pkt);
         if (write && (ret = mp3_write_audio_packet(s, &pkt)) < 0)
             write = 0;
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
     }
     return ret;
 }

@@ -53,7 +53,7 @@ static int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type)
         fprintf(stderr, "Failed to create specified HW device.\n");
         return err;
     }
-    ctx->hw_device_ctx = av_buffer_ref(hw_device_ctx);
+    ctx->hw_device_ctx = av_buffer_ref_ijk(hw_device_ctx);
 
     return err;
 }
@@ -87,7 +87,7 @@ static int decode_write(AVCodecContext *avctx, AVPacket *packet)
     }
 
     while (1) {
-        if (!(frame = av_frame_alloc()) || !(sw_frame = av_frame_alloc())) {
+        if (!(frame = av_frame_alloc_ijk()) || !(sw_frame = av_frame_alloc_ijk())) {
             fprintf(stderr, "Can not alloc frame\n");
             ret = AVERROR(ENOMEM);
             goto fail;
@@ -232,14 +232,14 @@ int main(int argc, char *argv[])
         if (video_stream == packet.stream_index)
             ret = decode_write(decoder_ctx, &packet);
 
-        av_packet_unref(&packet);
+        av_packet_unref_ijk(&packet);
     }
 
     /* flush the decoder */
     packet.data = NULL;
     packet.size = 0;
     ret = decode_write(decoder_ctx, &packet);
-    av_packet_unref(&packet);
+    av_packet_unref_ijk(&packet);
 
     if (output_file)
         fclose(output_file);

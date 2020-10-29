@@ -496,13 +496,13 @@ av_cold int ff_snow_common_init(AVCodecContext *avctx){
     for(i=0; i<MAX_REF_FRAMES; i++) {
         for(j=0; j<MAX_REF_FRAMES; j++)
             ff_scale_mv_ref[i][j] = 256*(i+1)/(j+1);
-        s->last_picture[i] = av_frame_alloc();
+        s->last_picture[i] = av_frame_alloc_ijk();
         if (!s->last_picture[i])
             goto fail;
     }
 
-    s->mconly_picture = av_frame_alloc();
-    s->current_picture = av_frame_alloc();
+    s->mconly_picture = av_frame_alloc_ijk();
+    s->current_picture = av_frame_alloc_ijk();
     if (!s->mconly_picture || !s->current_picture)
         goto fail;
 

@@ -263,7 +263,7 @@ void ff_color_frame(AVFrame *frame, const int color[4]);
  *                to ensure it is large enough.
  *                If avpkt->data is NULL, a new buffer is allocated.
  *                avpkt->size is set to the specified size.
- *                All other AVPacket fields will be reset with av_init_packet().
+ *                All other AVPacket fields will be reset with av_init_packet_ijk().
  * @param size    the minimum required packet size
  * @param min_size This is a hint to the allocation algorithm, which indicates
  *                to what minimal size the caller might later shrink the packet

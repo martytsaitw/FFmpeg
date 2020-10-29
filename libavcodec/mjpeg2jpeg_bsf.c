@@ -111,7 +111,7 @@ static int mjpeg2jpeg_filter(AVBSFContext *ctx, AVPacket *out)
     }
     output_size = in->size - input_skip +
                   sizeof(jpeg_header) + dht_segment_size;
-    ret = av_new_packet(out, output_size);
+    ret = av_new_packet_ijk(out, output_size);
     if (ret < 0)
         goto fail;
 
@@ -121,13 +121,13 @@ static int mjpeg2jpeg_filter(AVBSFContext *ctx, AVPacket *out)
     output = append_dht_segment(output);
     output = append(output, in->data + input_skip, in->size - input_skip);
 
-    ret = av_packet_copy_props(out, in);
+    ret = av_packet_copy_props_ijk(out, in);
     if (ret < 0)
         goto fail;
 
 fail:
     if (ret < 0)
-        av_packet_unref(out);
+        av_packet_unref_ijk(out);
     av_packet_free(&in);
     return ret;
 }

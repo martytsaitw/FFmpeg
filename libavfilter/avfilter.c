@@ -360,7 +360,7 @@ int avfilter_config_links(AVFilterContext *filter)
                 !(link->src->filter->flags_internal & FF_FILTER_FLAG_HWFRAME_AWARE)) {
                 av_assert0(!link->hw_frames_ctx &&
                            "should not be set by non-hwframe-aware filter");
-                link->hw_frames_ctx = av_buffer_ref(link->src->inputs[0]->hw_frames_ctx);
+                link->hw_frames_ctx = av_buffer_ref_ijk(link->src->inputs[0]->hw_frames_ctx);
                 if (!link->hw_frames_ctx)
                     return AVERROR(ENOMEM);
             }

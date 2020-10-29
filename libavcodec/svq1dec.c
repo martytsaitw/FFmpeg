@@ -766,7 +766,7 @@ static av_cold int svq1_decode_init(AVCodecContext *avctx)
     int i;
     int offset = 0;
 
-    s->prev = av_frame_alloc();
+    s->prev = av_frame_alloc_ijk();
     if (!s->prev)
         return AVERROR(ENOMEM);
 

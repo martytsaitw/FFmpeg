@@ -306,7 +306,7 @@ int main (int argc, char **argv)
         goto end;
     }
 
-    frame = av_frame_alloc();
+    frame = av_frame_alloc_ijk();
     if (!frame) {
         fprintf(stderr, "Could not allocate frame\n");
         ret = AVERROR(ENOMEM);
@@ -314,7 +314,7 @@ int main (int argc, char **argv)
     }
 
     /* initialize packet, set data to NULL, let the demuxer fill it */
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
     pkt.data = NULL;
     pkt.size = 0;
 
@@ -333,7 +333,7 @@ int main (int argc, char **argv)
             pkt.data += ret;
             pkt.size -= ret;
         } while (pkt.size > 0);
-        av_packet_unref(&orig_pkt);
+        av_packet_unref_ijk(&orig_pkt);
     }
 
     /* flush cached frames */

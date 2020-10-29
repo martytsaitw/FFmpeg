@@ -334,8 +334,8 @@ static av_cold int decode_init(AVCodecContext *avctx){
 
     decode_flush(avctx);
 
-    a->pic = av_frame_alloc();
-    a->ref = av_frame_alloc();
+    a->pic = av_frame_alloc_ijk();
+    a->ref = av_frame_alloc_ijk();
     if (!a->pic || !a->ref) {
         decode_end(avctx);
         return AVERROR(ENOMEM);

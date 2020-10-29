@@ -114,11 +114,11 @@ static int nppscale_init(AVFilterContext *ctx)
     }
 
     for (i = 0; i < FF_ARRAY_ELEMS(s->stages); i++) {
-        s->stages[i].frame = av_frame_alloc();
+        s->stages[i].frame = av_frame_alloc_ijk();
         if (!s->stages[i].frame)
             return AVERROR(ENOMEM);
     }
-    s->tmp_frame = av_frame_alloc();
+    s->tmp_frame = av_frame_alloc_ijk();
     if (!s->tmp_frame)
         return AVERROR(ENOMEM);
 
@@ -320,9 +320,9 @@ static int init_processing_chain(AVFilterContext *ctx, int in_width, int in_heig
     }
 
     if (last_stage >= 0)
-        ctx->outputs[0]->hw_frames_ctx = av_buffer_ref(s->stages[last_stage].frames_ctx);
+        ctx->outputs[0]->hw_frames_ctx = av_buffer_ref_ijk(s->stages[last_stage].frames_ctx);
     else
-        ctx->outputs[0]->hw_frames_ctx = av_buffer_ref(ctx->inputs[0]->hw_frames_ctx);
+        ctx->outputs[0]->hw_frames_ctx = av_buffer_ref_ijk(ctx->inputs[0]->hw_frames_ctx);
 
     if (!ctx->outputs[0]->hw_frames_ctx)
         return AVERROR(ENOMEM);
@@ -505,7 +505,7 @@ static int nppscale_filter_frame(AVFilterLink *link, AVFrame *in)
     if (s->passthrough)
         return ff_filter_frame(outlink, in);
 
-    out = av_frame_alloc();
+    out = av_frame_alloc_ijk();
     if (!out) {
         ret = AVERROR(ENOMEM);
         goto fail;

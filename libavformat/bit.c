@@ -94,7 +94,7 @@ static int read_packet(AVFormatContext *s,
     if(ret != 8 * packet_size * sizeof(uint16_t))
         return AVERROR(EIO);
 
-    if (av_new_packet(pkt, packet_size) < 0)
+    if (av_new_packet_ijk(pkt, packet_size) < 0)
         return AVERROR(ENOMEM);
 
     init_put_bits(&pbo, pkt->data, packet_size);

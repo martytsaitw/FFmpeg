@@ -184,7 +184,7 @@ static int tcp_getaddrinfo_request_create(TCPAddrinfoRequest **request,
         req->hints.ai_flags    = hints->ai_flags;
     }
 
-    req->buffer = av_buffer_create(NULL, 0, tcp_getaddrinfo_request_free_buffer, req, 0);
+    req->buffer = av_buffer_create_ijk(NULL, 0, tcp_getaddrinfo_request_free_buffer, req, 0);
     if (!req->buffer)
         goto fail;
 
@@ -271,7 +271,7 @@ int ijk_tcp_getaddrinfo_nonblock(const char *hostname, const char *servname,
     if (ret)
         goto fail;
 
-    req_ref = av_buffer_ref(req->buffer);
+    req_ref = av_buffer_ref_ijk(req->buffer);
     if (req_ref == NULL) {
         ret = AVERROR(ENOMEM);
         goto fail;

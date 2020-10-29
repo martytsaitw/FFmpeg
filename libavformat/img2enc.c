@@ -167,16 +167,16 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
         st->id = pkt->stream_index;
 
         fmt->pb = pb[0];
-        if ((ret = av_packet_ref(&pkt2, pkt))                             < 0 ||
+        if ((ret = av_packet_ref_ijk(&pkt2, pkt))                             < 0 ||
             (ret = avcodec_parameters_copy_ijk(st->codecpar, s->streams[0]->codecpar)) < 0 ||
             (ret = avformat_write_header(fmt, NULL))                      < 0 ||
             (ret = av_interleaved_write_frame(fmt, &pkt2))                < 0 ||
             (ret = av_write_trailer(fmt))                                 < 0) {
-            av_packet_unref(&pkt2);
+            av_packet_unref_ijk(&pkt2);
             avformat_free_context(fmt);
             return ret;
         }
-        av_packet_unref(&pkt2);
+        av_packet_unref_ijk(&pkt2);
         avformat_free_context(fmt);
     } else {
         avio_write(pb[0], pkt->data, pkt->size);

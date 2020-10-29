@@ -930,20 +930,20 @@ av_cold int ff_mpv_common_init(MpegEncContext *s)
     FF_ALLOCZ_OR_GOTO(s->avctx, s->picture,
                       MAX_PICTURE_COUNT * sizeof(Picture), fail);
     for (i = 0; i < MAX_PICTURE_COUNT; i++) {
-        s->picture[i].f = av_frame_alloc();
+        s->picture[i].f = av_frame_alloc_ijk();
         if (!s->picture[i].f)
             goto fail;
     }
-    s->next_picture.f = av_frame_alloc();
+    s->next_picture.f = av_frame_alloc_ijk();
     if (!s->next_picture.f)
         goto fail;
-    s->last_picture.f = av_frame_alloc();
+    s->last_picture.f = av_frame_alloc_ijk();
     if (!s->last_picture.f)
         goto fail;
-    s->current_picture.f = av_frame_alloc();
+    s->current_picture.f = av_frame_alloc_ijk();
     if (!s->current_picture.f)
         goto fail;
-    s->new_picture.f = av_frame_alloc();
+    s->new_picture.f = av_frame_alloc_ijk();
     if (!s->new_picture.f)
         goto fail;
 
@@ -1434,7 +1434,7 @@ void ff_print_debug_info(MpegEncContext *s, Picture *p, AVFrame *pict)
 
 int ff_mpv_export_qp_table(MpegEncContext *s, AVFrame *f, Picture *p, int qp_type)
 {
-    AVBufferRef *ref = av_buffer_ref(p->qscale_table_buf);
+    AVBufferRef *ref = av_buffer_ref_ijk(p->qscale_table_buf);
     int offset = 2*s->mb_stride + 1;
     if(!ref)
         return AVERROR(ENOMEM);

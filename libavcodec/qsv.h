@@ -82,7 +82,7 @@ typedef struct AVQSVContext {
      * passed to other parts of the pipeline.
      *
      * The buffer reference exported here is owned and managed by libavcodec,
-     * the callers should make their own reference with av_buffer_ref() and free
+     * the callers should make their own reference with av_buffer_ref_ijk() and free
      * it with av_buffer_unref() when it is no longer needed.
      *
      * The buffer data is an nb_opaque_surfaces-sized array of mfxFrameSurface1.

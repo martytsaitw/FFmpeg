@@ -257,7 +257,7 @@ static void free_playlist_list(HLSContext *c)
         av_dict_free(&pls->id3_initial);
         ff_id3v2_free_extra_meta(&pls->id3_deferred_extra);
         av_freep(&pls->init_sec_buf);
-        av_packet_unref(&pls->pkt);
+        av_packet_unref_ijk(&pls->pkt);
         av_freep(&pls->pb.buffer);
         if (pls->input)
             ff_format_io_close(c->ctx, &pls->input);
@@ -306,7 +306,7 @@ static void free_rendition_list(HLSContext *c)
  */
 static void reset_packet(AVPacket *pkt)
 {
-    av_init_packet(pkt);
+    av_init_packet_ijk(pkt);
     pkt->data = NULL;
 }
 
@@ -2192,7 +2192,7 @@ static int hls_read_packet(AVFormatContext *s, AVPacket *pkt)
                         break;
                     }
                 }
-                av_packet_unref(&pls->pkt);
+                av_packet_unref_ijk(&pls->pkt);
                 reset_packet(&pls->pkt);
             }
         }
@@ -2221,7 +2221,7 @@ static int hls_read_packet(AVFormatContext *s, AVPacket *pkt)
 
         ret = update_streams_from_subdemuxer(s, pls);
         if (ret < 0) {
-            av_packet_unref(&pls->pkt);
+            av_packet_unref_ijk(&pls->pkt);
             reset_packet(&pls->pkt);
             return ret;
         }
@@ -2246,7 +2246,7 @@ static int hls_read_packet(AVFormatContext *s, AVPacket *pkt)
         if (pls->pkt.stream_index >= pls->n_main_streams) {
             av_log(s, AV_LOG_ERROR, "stream index inconsistency: index %d, %d main streams, %d subdemuxer streams\n",
                    pls->pkt.stream_index, pls->n_main_streams, pls->ctx->nb_streams);
-            av_packet_unref(&pls->pkt);
+            av_packet_unref_ijk(&pls->pkt);
             reset_packet(&pls->pkt);
             return AVERROR_BUG;
         }
@@ -2268,7 +2268,7 @@ static int hls_read_packet(AVFormatContext *s, AVPacket *pkt)
         if (ist->codecpar->codec_id != st->codecpar->codec_id) {
             ret = set_stream_info_from_input_stream(st, pls, ist);
             if (ret < 0) {
-                av_packet_unref(pkt);
+                av_packet_unref_ijk(pkt);
                 return ret;
             }
         }
@@ -2356,7 +2356,7 @@ static int hls_read_seek(AVFormatContext *s, int stream_index,
         if (pls->input_next)
             ff_format_io_close(pls->parent, &pls->input_next);
         pls->input_next_requested = 0;
-        av_packet_unref(&pls->pkt);
+        av_packet_unref_ijk(&pls->pkt);
         reset_packet(&pls->pkt);
         pls->pb.eof_reached = 0;
         /* Clear any buffered data */

@@ -45,7 +45,7 @@ static int alloc_and_copy(AVPacket *out,
     uint8_t start_code_size = offset == 0 || ps ? 4 : 3;
     int err;
 
-    err = av_grow_packet(out, sps_pps_size + in_size + start_code_size);
+    err = av_grow_packet_ijk(out, sps_pps_size + in_size + start_code_size);
     if (err < 0)
         return err;
 
@@ -267,13 +267,13 @@ next_nal:
         cumul_size += nal_size + s->length_size;
     } while (cumul_size < buf_size);
 
-    ret = av_packet_copy_props(out, in);
+    ret = av_packet_copy_props_ijk(out, in);
     if (ret < 0)
         goto fail;
 
 fail:
     if (ret < 0)
-        av_packet_unref(out);
+        av_packet_unref_ijk(out);
     av_packet_free(&in);
 
     return ret;

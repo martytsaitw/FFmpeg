@@ -687,9 +687,9 @@ FF_ENABLE_DEPRECATION_WARNINGS
         AVPacket packet = {0};
         int size, got_packet, ret;
 
-        av_init_packet(&packet);
+        av_init_packet_ijk(&packet);
 
-        picture = av_frame_alloc();
+        picture = av_frame_alloc_ijk();
         if (!picture)
             return AVERROR(ENOMEM);
 
@@ -712,7 +712,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
         memset(picture->data[1], 128, size / 2);
         ret = xvid_encode_frame(avctx, &packet, picture, &got_packet);
         if (!ret && got_packet)
-            av_packet_unref(&packet);
+            av_packet_unref_ijk(&packet);
         av_free(picture->data[0]);
         av_frame_free(&picture);
         xvid_encore(x->encoder_handle, XVID_ENC_DESTROY, NULL, NULL);
@@ -862,7 +862,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
         return 0;
     } else {
         if (!user_packet)
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
         if (!xerr)
             return 0;
         av_log(avctx, AV_LOG_ERROR,

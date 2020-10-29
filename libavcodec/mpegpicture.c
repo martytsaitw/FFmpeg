@@ -322,7 +322,7 @@ do {                                                                          \
     if (src->table &&                                                         \
         (!dst->table || dst->table->buffer != src->table->buffer)) {          \
         av_buffer_unref(&dst->table);                                         \
-        dst->table = av_buffer_ref(src->table);                               \
+        dst->table = av_buffer_ref_ijk(src->table);                               \
         if (!dst->table) {                                                    \
             ff_free_picture_tables(dst);                                      \
             return AVERROR(ENOMEM);                                           \
@@ -376,7 +376,7 @@ int ff_mpeg_ref_picture(AVCodecContext *avctx, Picture *dst, Picture *src)
         goto fail;
 
     if (src->hwaccel_picture_private) {
-        dst->hwaccel_priv_buf = av_buffer_ref(src->hwaccel_priv_buf);
+        dst->hwaccel_priv_buf = av_buffer_ref_ijk(src->hwaccel_priv_buf);
         if (!dst->hwaccel_priv_buf) {
             ret = AVERROR(ENOMEM);
             goto fail;

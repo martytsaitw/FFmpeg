@@ -180,7 +180,7 @@ static int hwmap_config_output(AVFilterLink *outlink)
             // Map from a hardware format to a software format, or
             // undo an existing such mapping.
 
-            ctx->hwframes_ref = av_buffer_ref(inlink->hw_frames_ctx);
+            ctx->hwframes_ref = av_buffer_ref_ijk(inlink->hw_frames_ctx);
             if (!ctx->hwframes_ref) {
                 err = AVERROR(ENOMEM);
                 goto fail;
@@ -241,7 +241,7 @@ static int hwmap_config_output(AVFilterLink *outlink)
         return AVERROR(EINVAL);
     }
 
-    outlink->hw_frames_ctx = av_buffer_ref(ctx->hwframes_ref);
+    outlink->hw_frames_ctx = av_buffer_ref_ijk(ctx->hwframes_ref);
     if (!outlink->hw_frames_ctx) {
         err = AVERROR(ENOMEM);
         goto fail;
@@ -278,7 +278,7 @@ static AVFrame *hwmap_get_buffer(AVFilterLink *inlink, int w, int h)
             return NULL;
         }
 
-        dst = av_frame_alloc();
+        dst = av_frame_alloc_ijk();
         if (!dst) {
             av_frame_free(&src);
             return NULL;
@@ -312,14 +312,14 @@ static int hwmap_filter_frame(AVFilterLink *link, AVFrame *input)
            av_get_pix_fmt_name(input->format),
            input->width, input->height, input->pts);
 
-    map = av_frame_alloc();
+    map = av_frame_alloc_ijk();
     if (!map) {
         err = AVERROR(ENOMEM);
         goto fail;
     }
 
     map->format = outlink->format;
-    map->hw_frames_ctx = av_buffer_ref(ctx->hwframes_ref);
+    map->hw_frames_ctx = av_buffer_ref_ijk(ctx->hwframes_ref);
     if (!map->hw_frames_ctx) {
         err = AVERROR(ENOMEM);
         goto fail;
@@ -329,7 +329,7 @@ static int hwmap_filter_frame(AVFilterLink *link, AVFrame *input)
         // If we mapped backwards from hardware to software, we need
         // to attach the hardware frame context to the input frame to
         // make the mapping visible to av_hwframe_map().
-        input->hw_frames_ctx = av_buffer_ref(ctx->hwframes_ref);
+        input->hw_frames_ctx = av_buffer_ref_ijk(ctx->hwframes_ref);
         if (!input->hw_frames_ctx) {
             err = AVERROR(ENOMEM);
             goto fail;

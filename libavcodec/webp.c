@@ -595,7 +595,7 @@ static int decode_entropy_coded_image(WebPContext *s, enum ImageRole role,
     img->role = role;
 
     if (!img->frame) {
-        img->frame = av_frame_alloc();
+        img->frame = av_frame_alloc_ijk();
         if (!img->frame)
             return AVERROR(ENOMEM);
     }
@@ -1289,7 +1289,7 @@ static int vp8_lossy_decode_alpha(AVCodecContext *avctx, AVFrame *p,
         uint8_t *ap, *pp;
         int alpha_got_frame = 0;
 
-        s->alpha_frame = av_frame_alloc();
+        s->alpha_frame = av_frame_alloc_ijk();
         if (!s->alpha_frame)
             return AVERROR(ENOMEM);
 
@@ -1345,7 +1345,7 @@ static int vp8_lossy_decode_frame(AVCodecContext *avctx, AVFrame *p,
         return AVERROR_PATCHWELCOME;
     }
 
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
     pkt.data = data_start;
     pkt.size = data_size;
 

@@ -379,7 +379,7 @@ static int try_push_frame(AVFilterContext *ctx)
         return 0;
 
     /* setup the output frame */
-    frame = av_frame_alloc();
+    frame = av_frame_alloc_ijk();
     if (!frame)
         return AVERROR(ENOMEM);
     if (s->nb_channels > FF_ARRAY_ELEMS(frame->data)) {
@@ -426,14 +426,14 @@ static int try_push_frame(AVFilterContext *ctx)
         }
     }
     for (i = 0; i < FFMIN(FF_ARRAY_ELEMS(frame->buf), nb_buffers); i++) {
-        frame->buf[i] = av_buffer_ref(s->buffers[i]);
+        frame->buf[i] = av_buffer_ref_ijk(s->buffers[i]);
         if (!frame->buf[i]) {
             ret = AVERROR(ENOMEM);
             goto fail;
         }
     }
     for (i = 0; i < frame->nb_extended_buf; i++) {
-        frame->extended_buf[i] = av_buffer_ref(s->buffers[i +
+        frame->extended_buf[i] = av_buffer_ref_ijk(s->buffers[i +
                                                FF_ARRAY_ELEMS(frame->buf)]);
         if (!frame->extended_buf[i]) {
             ret = AVERROR(ENOMEM);

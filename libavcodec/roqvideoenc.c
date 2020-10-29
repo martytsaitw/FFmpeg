@@ -1002,8 +1002,8 @@ static av_cold int roq_encode_init(AVCodecContext *avctx)
     enc->framesSinceKeyframe = 0;
     enc->first_frame = 1;
 
-    enc->last_frame    = av_frame_alloc();
-    enc->current_frame = av_frame_alloc();
+    enc->last_frame    = av_frame_alloc_ijk();
+    enc->current_frame = av_frame_alloc_ijk();
     if (!enc->last_frame || !enc->current_frame) {
         roq_encode_end(avctx);
         return AVERROR(ENOMEM);

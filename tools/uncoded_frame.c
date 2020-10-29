@@ -219,7 +219,7 @@ int main(int argc, char **argv)
         for (i = 0; i < nb_streams; i++) {
             st = &streams[i];
             while (1) {
-                if (!frame && !(frame = av_frame_alloc())) {
+                if (!frame && !(frame = av_frame_alloc_ijk())) {
                     ret = AVERROR(ENOMEM);
                     av_log(NULL, AV_LOG_ERROR, "Could not allocate frame\n");
                     goto fail;

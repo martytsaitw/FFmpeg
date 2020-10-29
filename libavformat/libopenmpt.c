@@ -172,7 +172,7 @@ static int read_packet_openmpt(AVFormatContext *s, AVPacket *pkt)
     int n_samples = AUDIO_PKT_SIZE / (openmpt->channels ? openmpt->channels*4 : 4);
     int ret;
 
-    if ((ret = av_new_packet(pkt, AUDIO_PKT_SIZE)) < 0)
+    if ((ret = av_new_packet_ijk(pkt, AUDIO_PKT_SIZE)) < 0)
         return ret;
 
     switch (openmpt->channels) {

@@ -119,7 +119,7 @@ dshow_read_close(AVFormatContext *s)
     pktl = ctx->pktl;
     while (pktl) {
         AVPacketList *next = pktl->next;
-        av_packet_unref(&pktl->pkt);
+        av_packet_unref_ijk(&pktl->pkt);
         av_free(pktl);
         pktl = next;
     }
@@ -175,7 +175,7 @@ callback(void *priv_data, int index, uint8_t *buf, int buf_size, int64_t time, e
     if(!pktl_next)
         goto fail;
 
-    if(av_new_packet(&pktl_next->pkt, buf_size) < 0) {
+    if(av_new_packet_ijk(&pktl_next->pkt, buf_size) < 0) {
         av_free(pktl_next);
         goto fail;
     }

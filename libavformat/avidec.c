@@ -1461,7 +1461,7 @@ resync:
             pkt->buf    = avbuf;
             pkt->flags |= AV_PKT_FLAG_KEY;
             if (size < 0)
-                av_packet_unref(pkt);
+                av_packet_unref_ijk(pkt);
         } else if (st->codecpar->codec_type == AVMEDIA_TYPE_SUBTITLE &&
                    !st->codecpar->codec_tag && read_gab2_sub(s, st, pkt)) {
             ast->frame_offset++;
@@ -1515,7 +1515,7 @@ resync:
         }
 
         if (!avi->non_interleaved && pkt->pos >= 0 && ast->seek_pos > pkt->pos) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             goto resync;
         }
         ast->seek_pos= 0;
@@ -1769,7 +1769,7 @@ static void seek_subtitle(AVStream *st, AVStream *st2, int64_t timestamp)
 {
     AVIStream *ast2 = st2->priv_data;
     int64_t ts2     = av_rescale_q(timestamp, st->time_base, st2->time_base);
-    av_packet_unref(&ast2->sub_pkt);
+    av_packet_unref_ijk(&ast2->sub_pkt);
     if (avformat_seek_file_ijk(ast2->sub_ctx, 0, INT64_MIN, ts2, ts2, 0) >= 0 ||
         avformat_seek_file_ijk(ast2->sub_ctx, 0, ts2, ts2, INT64_MAX, 0) >= 0)
         ff_read_packet(ast2->sub_ctx, &ast2->sub_pkt);
@@ -1906,7 +1906,7 @@ static int avi_read_close(AVFormatContext *s)
                 avformat_close_input(&ast->sub_ctx);
             }
             av_freep(&ast->sub_buffer);
-            av_packet_unref(&ast->sub_pkt);
+            av_packet_unref_ijk(&ast->sub_pkt);
         }
     }
 

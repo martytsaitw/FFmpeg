@@ -179,7 +179,7 @@ static int flac_finish_header(struct AVFormatContext *s)
         if (!pkt)
             continue;
         ret = flac_write_picture(s, pkt);
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         if (ret < 0 && (s->error_recognition & AV_EF_EXPLODE))
             return ret;
     }
@@ -315,7 +315,7 @@ static int flac_queue_flush(AVFormatContext *s)
         ff_packet_list_get(&c->queue, &c->queue_end, &pkt);
         if (write && (ret = flac_write_audio_packet(s, &pkt)) < 0)
             write = 0;
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
     }
     return ret;
 }

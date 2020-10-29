@@ -1884,7 +1884,7 @@ static av_cold int xma_decode_init(AVCodecContext *avctx)
         ret = decode_init(&s->xma[i], avctx, i);
         if (ret < 0)
             return ret;
-        s->frames[i] = av_frame_alloc();
+        s->frames[i] = av_frame_alloc_ijk();
         if (!s->frames[i])
             return AVERROR(ENOMEM);
         s->frames[i]->nb_samples = 512;

@@ -94,7 +94,7 @@ int main(int argc, char **argv)
     filename    = argv[1];
     outfilename = argv[2];
 
-    pkt = av_packet_alloc();
+    pkt = av_packet_alloc_ijk();
 
     /* find the MPEG audio decoder */
     codec = avcodec_find_decoder_ijk(AV_CODEC_ID_MP2);
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
 
     while (data_size > 0) {
         if (!decoded_frame) {
-            if (!(decoded_frame = av_frame_alloc())) {
+            if (!(decoded_frame = av_frame_alloc_ijk())) {
                 fprintf(stderr, "Could not allocate audio frame\n");
                 exit(1);
             }

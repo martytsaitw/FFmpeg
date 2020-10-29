@@ -525,7 +525,7 @@ enum {
  * This has a number of different possible effects, depending on the format
  * and origin of the src and dst frames.  On input, src should be a usable
  * frame with valid buffers and dst should be blank (typically as just created
- * by av_frame_alloc()).  src should have an associated hwframe context, and
+ * by av_frame_alloc_ijk()).  src should have an associated hwframe context, and
  * dst may optionally have a format and associated hwframe context.
  *
  * If src was created by mapping a frame from the hwframe context of dst,

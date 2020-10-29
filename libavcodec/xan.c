@@ -105,7 +105,7 @@ static av_cold int xan_decode_init(AVCodecContext *avctx)
         return AVERROR(ENOMEM);
     }
 
-    s->last_frame = av_frame_alloc();
+    s->last_frame = av_frame_alloc_ijk();
     if (!s->last_frame) {
         xan_decode_end(avctx);
         return AVERROR(ENOMEM);

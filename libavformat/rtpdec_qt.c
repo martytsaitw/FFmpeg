@@ -53,7 +53,7 @@ static int qt_rtp_parse_packet(AVFormatContext *s, PayloadContext *qt,
     if (qt->remaining) {
         int num = qt->pkt.size / qt->bytes_per_frame;
 
-        if (av_new_packet(pkt, qt->bytes_per_frame))
+        if (av_new_packet_ijk(pkt, qt->bytes_per_frame))
             return AVERROR(ENOMEM);
         pkt->stream_index = st->index;
         pkt->flags        = qt->pkt.flags;
@@ -180,7 +180,7 @@ static int qt_rtp_parse_packet(AVFormatContext *s, PayloadContext *qt,
             }
         } else {
             av_freep(&qt->pkt.data);
-            av_init_packet(&qt->pkt);
+            av_init_packet_ijk(&qt->pkt);
             qt->pkt.data = av_realloc(NULL, alen + AV_INPUT_BUFFER_PADDING_SIZE);
             if (!qt->pkt.data)
                 return AVERROR(ENOMEM);
@@ -190,7 +190,7 @@ static int qt_rtp_parse_packet(AVFormatContext *s, PayloadContext *qt,
         memcpy(qt->pkt.data + qt->pkt.size, buf + avio_tell(&pb), alen);
         qt->pkt.size += alen;
         if (has_marker_bit) {
-            int ret = av_packet_from_data(pkt, qt->pkt.data, qt->pkt.size);
+            int ret = av_packet_from_data_ijk(pkt, qt->pkt.data, qt->pkt.size);
             if (ret < 0)
                 return ret;
 
@@ -208,7 +208,7 @@ static int qt_rtp_parse_packet(AVFormatContext *s, PayloadContext *qt,
             alen % qt->bytes_per_frame != 0)
             return AVERROR_INVALIDDATA; /* wrongly padded */
         qt->remaining = (alen / qt->bytes_per_frame) - 1;
-        if (av_new_packet(pkt, qt->bytes_per_frame))
+        if (av_new_packet_ijk(pkt, qt->bytes_per_frame))
             return AVERROR(ENOMEM);
         memcpy(pkt->data, buf + avio_tell(&pb), qt->bytes_per_frame);
         pkt->flags = keyframe ? AV_PKT_FLAG_KEY : 0;
@@ -217,7 +217,7 @@ static int qt_rtp_parse_packet(AVFormatContext *s, PayloadContext *qt,
             av_freep(&qt->pkt.data);
             qt->pkt.data = av_realloc(NULL, qt->remaining * qt->bytes_per_frame);
             if (!qt->pkt.data) {
-                av_packet_unref(pkt);
+                av_packet_unref_ijk(pkt);
                 return AVERROR(ENOMEM);
             }
             qt->pkt.size = qt->remaining * qt->bytes_per_frame;

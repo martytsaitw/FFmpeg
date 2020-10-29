@@ -50,7 +50,7 @@ static int noise(AVBSFContext *ctx, AVPacket *pkt)
 
     if (s->dropamount > 0 && s->state % s->dropamount == 0) {
         s->state++;
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return AVERROR(EAGAIN);
     }
 
@@ -65,7 +65,7 @@ static int noise(AVBSFContext *ctx, AVPacket *pkt)
     }
 fail:
     if (ret < 0)
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
 
     return ret;
 }

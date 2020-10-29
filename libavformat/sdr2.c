@@ -90,12 +90,12 @@ static int sdr2_read_packet(AVFormatContext *s, AVPacket *pkt)
     avio_skip(s->pb, 30);
 
     if (pos == FIRST) {
-        if (av_new_packet(pkt, next - 52 + 24) < 0)
+        if (av_new_packet_ijk(pkt, next - 52 + 24) < 0)
             return AVERROR(ENOMEM);
         memcpy(pkt->data, header, 24);
         ret = avio_read(s->pb, pkt->data + 24, next - 52);
         if (ret < 0) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return ret;
         }
         av_shrink_packet(pkt, ret + 24);

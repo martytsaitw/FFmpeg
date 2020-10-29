@@ -108,7 +108,7 @@ int ff_flac_parse_picture(AVFormatContext *s, uint8_t *buf, int buf_size)
             ret = AVERROR_INVALIDDATA;
         goto fail;
     }
-    if (!(data = av_buffer_alloc(len + AV_INPUT_BUFFER_PADDING_SIZE))) {
+    if (!(data = av_buffer_alloc_ijk(len + AV_INPUT_BUFFER_PADDING_SIZE))) {
         RETURN_ERROR(AVERROR(ENOMEM));
     }
     memset(data->data + len, 0, AV_INPUT_BUFFER_PADDING_SIZE);
@@ -124,7 +124,7 @@ int ff_flac_parse_picture(AVFormatContext *s, uint8_t *buf, int buf_size)
         RETURN_ERROR(AVERROR(ENOMEM));
     }
 
-    av_init_packet(&st->attached_pic);
+    av_init_packet_ijk(&st->attached_pic);
     st->attached_pic.buf          = data;
     st->attached_pic.data         = data->data;
     st->attached_pic.size         = len;

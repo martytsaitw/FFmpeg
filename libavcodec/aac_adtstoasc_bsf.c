@@ -125,7 +125,7 @@ packet_too_small:
     av_log(bsfc, AV_LOG_ERROR, "Input packet too small\n");
     ret = AVERROR_INVALIDDATA;
 fail:
-    av_packet_unref(pkt);
+    av_packet_unref_ijk(pkt);
     return ret;
 }
 

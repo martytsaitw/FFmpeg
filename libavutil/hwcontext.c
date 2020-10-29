@@ -171,7 +171,7 @@ AVBufferRef *av_hwdevice_ctx_alloc(enum AVHWDeviceType type)
             goto fail;
     }
 
-    buf = av_buffer_create((uint8_t*)ctx, sizeof(*ctx),
+    buf = av_buffer_create_ijk((uint8_t*)ctx, sizeof(*ctx),
                            hwdevice_ctx_free, NULL,
                            AV_BUFFER_FLAG_READONLY);
     if (!buf)
@@ -267,11 +267,11 @@ AVBufferRef *av_hwframe_ctx_alloc(AVBufferRef *device_ref_in)
             goto fail;
     }
 
-    device_ref = av_buffer_ref(device_ref_in);
+    device_ref = av_buffer_ref_ijk(device_ref_in);
     if (!device_ref)
         goto fail;
 
-    buf = av_buffer_create((uint8_t*)ctx, sizeof(*ctx),
+    buf = av_buffer_create_ijk((uint8_t*)ctx, sizeof(*ctx),
                            hwframe_ctx_free, NULL,
                            AV_BUFFER_FLAG_READONLY);
     if (!buf)
@@ -309,7 +309,7 @@ static int hwframe_pool_prealloc(AVBufferRef *ref)
         return AVERROR(ENOMEM);
 
     for (i = 0; i < ctx->initial_pool_size; i++) {
-        frames[i] = av_frame_alloc();
+        frames[i] = av_frame_alloc_ijk();
         if (!frames[i])
             goto fail;
 
@@ -396,7 +396,7 @@ static int transfer_data_alloc(AVFrame *dst, const AVFrame *src, int flags)
     AVFrame *frame_tmp;
     int ret = 0;
 
-    frame_tmp = av_frame_alloc();
+    frame_tmp = av_frame_alloc_ijk();
     if (!frame_tmp)
         return AVERROR(ENOMEM);
 
@@ -473,11 +473,11 @@ int av_hwframe_get_buffer(AVBufferRef *hwframe_ref, AVFrame *frame, int flags)
         AVFrame *src_frame;
 
         frame->format = ctx->format;
-        frame->hw_frames_ctx = av_buffer_ref(hwframe_ref);
+        frame->hw_frames_ctx = av_buffer_ref_ijk(hwframe_ref);
         if (!frame->hw_frames_ctx)
             return AVERROR(ENOMEM);
 
-        src_frame = av_frame_alloc();
+        src_frame = av_frame_alloc_ijk();
         if (!src_frame)
             return AVERROR(ENOMEM);
 
@@ -510,7 +510,7 @@ int av_hwframe_get_buffer(AVBufferRef *hwframe_ref, AVFrame *frame, int flags)
     if (!ctx->pool)
         return AVERROR(EINVAL);
 
-    frame->hw_frames_ctx = av_buffer_ref(hwframe_ref);
+    frame->hw_frames_ctx = av_buffer_ref_ijk(hwframe_ref);
     if (!frame->hw_frames_ctx)
         return AVERROR(ENOMEM);
 
@@ -616,7 +616,7 @@ int av_hwdevice_ctx_create_derived(AVBufferRef **dst_ref_ptr,
     while (tmp_ref) {
         tmp_ctx = (AVHWDeviceContext*)tmp_ref->data;
         if (tmp_ctx->type == type) {
-            dst_ref = av_buffer_ref(tmp_ref);
+            dst_ref = av_buffer_ref_ijk(tmp_ref);
             if (!dst_ref) {
                 ret = AVERROR(ENOMEM);
                 goto fail;
@@ -641,7 +641,7 @@ int av_hwdevice_ctx_create_derived(AVBufferRef **dst_ref_ptr,
                                                             tmp_ctx,
                                                             flags);
             if (ret == 0) {
-                dst_ctx->internal->source_device = av_buffer_ref(src_ref);
+                dst_ctx->internal->source_device = av_buffer_ref_ijk(src_ref);
                 if (!dst_ctx->internal->source_device) {
                     ret = AVERROR(ENOMEM);
                     goto fail;
@@ -702,7 +702,7 @@ int ff_hwframe_map_create(AVBufferRef *hwframe_ref,
         goto fail;
     }
 
-    hwmap->source = av_frame_alloc();
+    hwmap->source = av_frame_alloc_ijk();
     if (!hwmap->source) {
         ret = AVERROR(ENOMEM);
         goto fail;
@@ -711,7 +711,7 @@ int ff_hwframe_map_create(AVBufferRef *hwframe_ref,
     if (ret < 0)
         goto fail;
 
-    hwmap->hw_frames_ctx = av_buffer_ref(hwframe_ref);
+    hwmap->hw_frames_ctx = av_buffer_ref_ijk(hwframe_ref);
     if (!hwmap->hw_frames_ctx) {
         ret = AVERROR(ENOMEM);
         goto fail;
@@ -720,7 +720,7 @@ int ff_hwframe_map_create(AVBufferRef *hwframe_ref,
     hwmap->unmap = unmap;
     hwmap->priv  = priv;
 
-    dst->buf[0] = av_buffer_create((uint8_t*)hwmap, sizeof(*hwmap),
+    dst->buf[0] = av_buffer_create_ijk((uint8_t*)hwmap, sizeof(*hwmap),
                                    &ff_hwframe_unmap, ctx, 0);
     if (!dst->buf[0]) {
         ret = AVERROR(ENOMEM);
@@ -817,7 +817,7 @@ int av_hwframe_ctx_create_derived(AVBufferRef **derived_frame_ctx,
             // This is actually an unmapping, so we just return a
             // reference to the source frame context.
             *derived_frame_ctx =
-                av_buffer_ref(src->internal->source_frames);
+                av_buffer_ref_ijk(src->internal->source_frames);
             if (!*derived_frame_ctx) {
                 ret = AVERROR(ENOMEM);
                 goto fail;
@@ -839,7 +839,7 @@ int av_hwframe_ctx_create_derived(AVBufferRef **derived_frame_ctx,
     dst->width     = src->width;
     dst->height    = src->height;
 
-    dst->internal->source_frames = av_buffer_ref(source_frame_ctx);
+    dst->internal->source_frames = av_buffer_ref_ijk(source_frame_ctx);
     if (!dst->internal->source_frames) {
         ret = AVERROR(ENOMEM);
         goto fail;

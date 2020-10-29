@@ -807,9 +807,9 @@ av_cold int ff_cavs_init(AVCodecContext *avctx)
     h->avctx       = avctx;
     avctx->pix_fmt = AV_PIX_FMT_YUV420P;
 
-    h->cur.f    = av_frame_alloc();
-    h->DPB[0].f = av_frame_alloc();
-    h->DPB[1].f = av_frame_alloc();
+    h->cur.f    = av_frame_alloc_ijk();
+    h->DPB[0].f = av_frame_alloc_ijk();
+    h->DPB[1].f = av_frame_alloc_ijk();
     if (!h->cur.f || !h->DPB[0].f || !h->DPB[1].f) {
         ff_cavs_end(avctx);
         return AVERROR(ENOMEM);

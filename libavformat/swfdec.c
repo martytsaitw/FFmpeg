@@ -384,7 +384,7 @@ static int swf_read_packet(AVFormatContext *s, AVPacket *pkt)
                 st = vst;
             }
 
-            if ((res = av_new_packet(pkt, out_len - colormapsize * colormapbpp)) < 0)
+            if ((res = av_new_packet_ijk(pkt, out_len - colormapsize * colormapbpp)) < 0)
                 goto bitmap_end;
             if (!st->codecpar->width && !st->codecpar->height) {
                 st->codecpar->width  = width;
@@ -397,7 +397,7 @@ static int swf_read_packet(AVFormatContext *s, AVPacket *pkt)
 
             if (linesize * height > pkt->size) {
                 res = AVERROR_INVALIDDATA;
-                av_packet_unref(pkt);
+                av_packet_unref_ijk(pkt);
                 goto bitmap_end;
             }
 
@@ -484,10 +484,10 @@ bitmap_end_skip:
             len -= 2;
             if (len < 4)
                 goto skip;
-            if ((res = av_new_packet(pkt, len)) < 0)
+            if ((res = av_new_packet_ijk(pkt, len)) < 0)
                 return res;
             if (avio_read(pb, pkt->data, 4) != 4) {
-                av_packet_unref(pkt);
+                av_packet_unref_ijk(pkt);
                 return AVERROR_INVALIDDATA;
             }
             if (AV_RB32(pkt->data) == 0xffd8ffd9 ||
@@ -504,7 +504,7 @@ bitmap_end_skip:
             }
             if (res != pkt->size) {
                 if (res < 0) {
-                    av_packet_unref(pkt);
+                    av_packet_unref_ijk(pkt);
                     return res;
                 }
                 av_shrink_packet(pkt, res);

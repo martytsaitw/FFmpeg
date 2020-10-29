@@ -198,7 +198,7 @@ AVFrame *ff_frame_pool_get(FFFramePool *pool)
     AVFrame *frame;
     const AVPixFmtDescriptor *desc;
 
-    frame = av_frame_alloc();
+    frame = av_frame_alloc_ijk();
     if (!frame) {
         return NULL;
     }

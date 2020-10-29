@@ -401,7 +401,7 @@ static av_cold int dirac_decode_init(AVCodecContext *avctx)
     ff_videodsp_init(&s->vdsp, 8);
 
     for (i = 0; i < MAX_FRAMES; i++) {
-        s->all_frames[i].avframe = av_frame_alloc();
+        s->all_frames[i].avframe = av_frame_alloc_ijk();
         if (!s->all_frames[i].avframe) {
             while (i > 0)
                 av_frame_free(&s->all_frames[--i].avframe);

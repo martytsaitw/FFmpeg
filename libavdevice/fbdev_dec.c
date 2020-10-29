@@ -177,7 +177,7 @@ static int fbdev_read_packet(AVFormatContext *avctx, AVPacket *pkt)
         while (nanosleep(&ts, &ts) < 0 && errno == EINTR);
     }
 
-    if ((ret = av_new_packet(pkt, fbdev->frame_size)) < 0)
+    if ((ret = av_new_packet_ijk(pkt, fbdev->frame_size)) < 0)
         return ret;
 
     /* refresh fbdev->varinfo, visible data position may change at each call */

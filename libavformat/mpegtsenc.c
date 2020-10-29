@@ -1604,7 +1604,7 @@ static int mpegts_write_packet_internal(AVFormatContext *s, AVPacket *pkt)
                 av_log(s, AV_LOG_ERROR, "AAC bitstream not in ADTS format "
                                         "and extradata missing\n");
             } else {
-            av_init_packet(&pkt2);
+            av_init_packet_ijk(&pkt2);
             pkt2.data = pkt->data;
             pkt2.size = pkt->size;
             av_assert0(pkt->dts != AV_NOPTS_VALUE);

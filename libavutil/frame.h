@@ -188,7 +188,7 @@ typedef struct AVFrameSideData {
 /**
  * This structure describes decoded (raw) audio or video data.
  *
- * AVFrame must be allocated using av_frame_alloc(). Note that this only
+ * AVFrame must be allocated using av_frame_alloc_ijk(). Note that this only
  * allocates the AVFrame itself, the buffers for the data must be managed
  * through other means (see below).
  * AVFrame must be freed with av_frame_free().
@@ -559,7 +559,7 @@ typedef struct AVFrame {
      * AVBufferRef for free use by the API user. FFmpeg will never check the
      * contents of the buffer ref. FFmpeg calls av_buffer_unref() on it when
      * the frame is unreferenced. av_frame_copy_props() calls create a new
-     * reference with av_buffer_ref() for the target frame's opaque_ref field.
+     * reference with av_buffer_ref_ijk() for the target frame's opaque_ref field.
      *
      * This is unrelated to the opaque field, although it serves a similar
      * purpose.
@@ -590,7 +590,7 @@ typedef struct AVFrame {
      * Code outside the FFmpeg libs should never check or change the contents of the buffer ref.
      *
      * FFmpeg calls av_buffer_unref() on it when the frame is unreferenced.
-     * av_frame_copy_props() calls create a new reference with av_buffer_ref()
+     * av_frame_copy_props() calls create a new reference with av_buffer_ref_ijk()
      * for the target frame's private_ref field.
      */
     AVBufferRef *private_ref;
@@ -669,7 +669,7 @@ const char *av_get_colorspace_name(enum AVColorSpace val);
  * must be allocated through other means, e.g. with av_frame_get_buffer() or
  * manually.
  */
-AVFrame *av_frame_alloc(void);
+AVFrame *av_frame_alloc_ijk(void);
 
 /**
  * Free the frame and any dynamically allocated objects in it,
@@ -690,7 +690,7 @@ void av_frame_free(AVFrame **frame);
  * copied.
  *
  * @warning: dst MUST have been either unreferenced with av_frame_unref(dst),
- *           or newly allocated with av_frame_alloc() before calling this
+ *           or newly allocated with av_frame_alloc_ijk() before calling this
  *           function, or undefined behavior will occur.
  *
  * @return 0 on success, a negative AVERROR on error
@@ -700,7 +700,7 @@ int av_frame_ref(AVFrame *dst, const AVFrame *src);
 /**
  * Create a new frame that references the same data as src.
  *
- * This is a shortcut for av_frame_alloc()+av_frame_ref().
+ * This is a shortcut for av_frame_alloc_ijk()+av_frame_ref().
  *
  * @return newly created AVFrame on success, NULL on error.
  */
@@ -752,7 +752,7 @@ int av_frame_get_buffer(AVFrame *frame, int align);
  * only if each of the underlying buffers has only one reference, namely the one
  * stored in this frame). Return 0 otherwise.
  *
- * If 1 is returned the answer is valid until av_buffer_ref() is called on any
+ * If 1 is returned the answer is valid until av_buffer_ref_ijk() is called on any
  * of the underlying AVBufferRefs (e.g. through av_frame_ref() or directly).
  *
  * @see av_frame_make_writable(), av_buffer_is_writable()

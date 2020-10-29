@@ -72,7 +72,7 @@ static int query_formats(AVFilterContext *ctx)
 static AVFrame *downscale(AVFrame *in)
 {
     int x, y;
-    AVFrame *frame = av_frame_alloc();
+    AVFrame *frame = av_frame_alloc_ijk();
     uint8_t *src, *dst;
     if (!frame)
         return NULL;
@@ -250,7 +250,7 @@ static av_cold int init(AVFilterContext *ctx)
         return AVERROR(EINVAL);
     }
 
-    foc->obj_frame = av_frame_alloc();
+    foc->obj_frame = av_frame_alloc_ijk();
     if (!foc->obj_frame)
         return AVERROR(ENOMEM);
 

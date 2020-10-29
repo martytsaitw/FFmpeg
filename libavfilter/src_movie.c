@@ -496,7 +496,7 @@ static int movie_push_frame(AVFilterContext *ctx, unsigned out_id)
         } else {
             ret = av_read_frame(movie->format_ctx, &movie->pkt0);
             if (ret < 0) {
-                av_init_packet(&movie->pkt0); /* ready for flushing */
+                av_init_packet_ijk(&movie->pkt0); /* ready for flushing */
                 *pkt = movie->pkt0;
                 if (ret == AVERROR_EOF) {
                     movie->eof = 1;
@@ -511,7 +511,7 @@ static int movie_push_frame(AVFilterContext *ctx, unsigned out_id)
     pkt_out_id = pkt->stream_index > movie->max_stream_index ? -1 :
                  movie->out_index[pkt->stream_index];
     if (pkt_out_id < 0) {
-        av_packet_unref(&movie->pkt0);
+        av_packet_unref_ijk(&movie->pkt0);
         pkt->size = 0; /* ready for next run */
         pkt->data = NULL;
         return 0;
@@ -519,7 +519,7 @@ static int movie_push_frame(AVFilterContext *ctx, unsigned out_id)
     st = &movie->st[pkt_out_id];
     outlink = ctx->outputs[pkt_out_id];
 
-    frame = av_frame_alloc();
+    frame = av_frame_alloc_ijk();
     if (!frame)
         return AVERROR(ENOMEM);
 
@@ -538,7 +538,7 @@ static int movie_push_frame(AVFilterContext *ctx, unsigned out_id)
     if (ret < 0) {
         av_log(ctx, AV_LOG_WARNING, "Decode error: %s\n", av_err2str(ret));
         av_frame_free(&frame);
-        av_packet_unref(&movie->pkt0);
+        av_packet_unref_ijk(&movie->pkt0);
         movie->pkt.size = 0;
         movie->pkt.data = NULL;
         return 0;
@@ -549,7 +549,7 @@ static int movie_push_frame(AVFilterContext *ctx, unsigned out_id)
     pkt->data += ret;
     pkt->size -= ret;
     if (pkt->size <= 0) {
-        av_packet_unref(&movie->pkt0);
+        av_packet_unref_ijk(&movie->pkt0);
         pkt->size = 0; /* ready for next run */
         pkt->data = NULL;
     }

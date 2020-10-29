@@ -127,7 +127,7 @@ static int handle_id3(AVFormatContext *s, AVPacket *pkt)
 
     ret = av_append_packet(s->pb, pkt, ff_id3v2_tag_len(pkt->data) - pkt->size);
     if (ret < 0) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return ret;
     }
 
@@ -143,7 +143,7 @@ static int handle_id3(AVFormatContext *s, AVPacket *pkt)
     }
 
 error:
-    av_packet_unref(pkt);
+    av_packet_unref_ijk(pkt);
     ff_id3v2_free_extra_meta(&id3v2_extra_meta);
     av_dict_free(&metadata);
 
@@ -169,24 +169,24 @@ static int adts_aac_read_packet(AVFormatContext *s, AVPacket *pkt)
         return ret;
 
     if (ret < ADTS_HEADER_SIZE) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return AVERROR(EIO);
     }
 
     if ((AV_RB16(pkt->data) >> 4) != 0xfff) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return AVERROR_INVALIDDATA;
     }
 
     fsize = (AV_RB32(pkt->data + 3) >> 13) & 0x1FFF;
     if (fsize < ADTS_HEADER_SIZE) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return AVERROR_INVALIDDATA;
     }
 
     ret = av_append_packet(s->pb, pkt, fsize - pkt->size);
     if (ret < 0)
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
 
     return ret;
 }

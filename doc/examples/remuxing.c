@@ -147,7 +147,7 @@ int main(int argc, char **argv)
         in_stream  = ifmt_ctx->streams[pkt.stream_index];
         if (pkt.stream_index >= stream_mapping_size ||
             stream_mapping[pkt.stream_index] < 0) {
-            av_packet_unref(&pkt);
+            av_packet_unref_ijk(&pkt);
             continue;
         }
 
@@ -167,7 +167,7 @@ int main(int argc, char **argv)
             fprintf(stderr, "Error muxing packet\n");
             break;
         }
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
     }
 
     av_write_trailer(ofmt_ctx);

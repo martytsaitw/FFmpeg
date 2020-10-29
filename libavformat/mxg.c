@@ -170,7 +170,7 @@ static int mxg_read_packet(AVFormatContext *s, AVPacket *pkt)
                 }
 
                 size = mxg->buffer_ptr - mxg->soi_ptr;
-                ret = av_new_packet(pkt, size);
+                ret = av_new_packet_ijk(pkt, size);
                 if (ret < 0)
                     return ret;
                 memcpy(pkt->data, mxg->soi_ptr, size);
@@ -209,7 +209,7 @@ static int mxg_read_packet(AVFormatContext *s, AVPacket *pkt)
                 mxg->buffer_ptr += size;
 
                 if (marker == APP13 && size >= 16) { /* audio data */
-                    ret = av_new_packet(pkt, size - 14);
+                    ret = av_new_packet_ijk(pkt, size - 14);
                     if (ret < 0)
                         return ret;
                     memcpy(pkt->data, startmarker_ptr + 16, size - 14);

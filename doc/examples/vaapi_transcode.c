@@ -93,7 +93,7 @@ static int open_input_file(const char *filename)
         return ret;
     }
 
-    decoder_ctx->hw_device_ctx = av_buffer_ref(hw_device_ctx);
+    decoder_ctx->hw_device_ctx = av_buffer_ref_ijk(hw_device_ctx);
     if (!decoder_ctx->hw_device_ctx) {
         fprintf(stderr, "A hardware device reference create failed.\n");
         return AVERROR(ENOMEM);
@@ -112,7 +112,7 @@ static int encode_write(AVFrame *frame)
     int ret = 0;
     AVPacket enc_pkt;
 
-    av_init_packet(&enc_pkt);
+    av_init_packet_ijk(&enc_pkt);
     enc_pkt.data = NULL;
     enc_pkt.size = 0;
 
@@ -155,7 +155,7 @@ static int dec_enc(AVPacket *pkt, AVCodec *enc_codec)
     }
 
     while (ret >= 0) {
-        if (!(frame = av_frame_alloc()))
+        if (!(frame = av_frame_alloc_ijk()))
             return AVERROR(ENOMEM);
 
         ret = avcodec_receive_frame(decoder_ctx, frame);
@@ -170,7 +170,7 @@ static int dec_enc(AVPacket *pkt, AVCodec *enc_codec)
         if (!initialized) {
             /* we need to ref hw_frames_ctx of decoder to initialize encoder's codec.
                Only after we get a decoded frame, can we obtain its hw_frames_ctx */
-            encoder_ctx->hw_frames_ctx = av_buffer_ref(decoder_ctx->hw_frames_ctx);
+            encoder_ctx->hw_frames_ctx = av_buffer_ref_ijk(decoder_ctx->hw_frames_ctx);
             if (!encoder_ctx->hw_frames_ctx) {
                 ret = AVERROR(ENOMEM);
                 goto fail;
@@ -279,14 +279,14 @@ int main(int argc, char **argv)
         if (video_stream == dec_pkt.stream_index)
             ret = dec_enc(&dec_pkt, enc_codec);
 
-        av_packet_unref(&dec_pkt);
+        av_packet_unref_ijk(&dec_pkt);
     }
 
     /* flush decoder */
     dec_pkt.data = NULL;
     dec_pkt.size = 0;
     ret = dec_enc(&dec_pkt, enc_codec);
-    av_packet_unref(&dec_pkt);
+    av_packet_unref_ijk(&dec_pkt);
 
     /* flush encoder */
     ret = encode_write(NULL);

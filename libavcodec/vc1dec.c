@@ -536,7 +536,7 @@ static av_cold int vc1_decode_init(AVCodecContext *avctx)
 
     // Must happen after calling ff_vc1_decode_end
     // to avoid de-allocating the sprite_output_frame
-    v->sprite_output_frame = av_frame_alloc();
+    v->sprite_output_frame = av_frame_alloc_ijk();
     if (!v->sprite_output_frame)
         return AVERROR(ENOMEM);
 

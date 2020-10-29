@@ -83,14 +83,14 @@ static int vpk_read_packet(AVFormatContext *s, AVPacket *pkt)
         unsigned size = vpk->last_block_size / par->channels;
         unsigned skip = (par->block_align - vpk->last_block_size) / par->channels;
 
-        ret = av_new_packet(pkt, vpk->last_block_size);
+        ret = av_new_packet_ijk(pkt, vpk->last_block_size);
         if (ret < 0)
             return ret;
         for (i = 0; i < par->channels; i++) {
             ret = avio_read(s->pb, pkt->data + i * size, size);
             avio_skip(s->pb, skip);
             if (ret != size) {
-                av_packet_unref(pkt);
+                av_packet_unref_ijk(pkt);
                 ret = AVERROR(EIO);
                 break;
             }

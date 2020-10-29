@@ -90,7 +90,7 @@ static int video_decode_example(const char *input_filename)
         return result;
     }
 
-    fr = av_frame_alloc();
+    fr = av_frame_alloc_ijk();
     if (!fr) {
         av_log(NULL, AV_LOG_ERROR, "Can't allocate frame\n");
         return AVERROR(ENOMEM);
@@ -105,7 +105,7 @@ static int video_decode_example(const char *input_filename)
 
     printf("#tb %d: %d/%d\n", video_stream, fmt_ctx->streams[video_stream]->time_base.num, fmt_ctx->streams[video_stream]->time_base.den);
     i = 0;
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
     do {
         if (!end_of_stream)
             if (av_read_frame(fmt_ctx, &pkt) < 0)
@@ -135,13 +135,13 @@ static int video_decode_example(const char *input_filename)
                         fr->pts, fr->pkt_dts, fr->pkt_duration,
                         number_of_written_bytes, av_adler32_update(0, (const uint8_t*)byte_buffer, number_of_written_bytes));
             }
-            av_packet_unref(&pkt);
-            av_init_packet(&pkt);
+            av_packet_unref_ijk(&pkt);
+            av_init_packet_ijk(&pkt);
         }
         i++;
     } while (!end_of_stream || got_frame);
 
-    av_packet_unref(&pkt);
+    av_packet_unref_ijk(&pkt);
     av_frame_free(&fr);
     avcodec_close(ctx);
     avformat_close_input(&fmt_ctx);

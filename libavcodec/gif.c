@@ -301,7 +301,7 @@ static int gif_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     gif_image_write_image(avctx, &outbuf_ptr, end, palette,
                           pict->data[0], pict->linesize[0], pkt);
     if (!s->last_frame) {
-        s->last_frame = av_frame_alloc();
+        s->last_frame = av_frame_alloc_ijk();
         if (!s->last_frame)
             return AVERROR(ENOMEM);
     }

@@ -341,7 +341,7 @@ av_cold static int lavfi_read_header(AVFormatContext *avctx)
     if ((ret = create_subcc_streams(avctx)) < 0)
         goto end;
 
-    if (!(lavfi->decoded_frame = av_frame_alloc()))
+    if (!(lavfi->decoded_frame = av_frame_alloc_ijk()))
         FAIL(AVERROR(ENOMEM));
 
 end:
@@ -368,7 +368,7 @@ static int create_subcc_packet(AVFormatContext *avctx, AVFrame *frame,
     if (i >= frame->nb_side_data)
         return 0;
     sd = frame->side_data[i];
-    if ((ret = av_new_packet(&lavfi->subcc_packet, sd->size)) < 0)
+    if ((ret = av_new_packet_ijk(&lavfi->subcc_packet, sd->size)) < 0)
         return ret;
     memcpy(lavfi->subcc_packet.data, sd->data, sd->size);
     lavfi->subcc_packet.stream_index = stream_idx;
@@ -389,7 +389,7 @@ static int lavfi_read_packet(AVFormatContext *avctx, AVPacket *pkt)
 
     if (lavfi->subcc_packet.size) {
         *pkt = lavfi->subcc_packet;
-        av_init_packet(&lavfi->subcc_packet);
+        av_init_packet_ijk(&lavfi->subcc_packet);
         lavfi->subcc_packet.size = 0;
         lavfi->subcc_packet.data = NULL;
         return pkt->size;
@@ -432,7 +432,7 @@ static int lavfi_read_packet(AVFormatContext *avctx, AVPacket *pkt)
 
     if (frame->width /* FIXME best way of testing a video */) {
         size = av_image_get_buffer_size(frame->format, frame->width, frame->height, 1);
-        if ((ret = av_new_packet(pkt, size)) < 0)
+        if ((ret = av_new_packet_ijk(pkt, size)) < 0)
             return ret;
 
         av_image_copy_to_buffer(pkt->data, size, (const uint8_t **)frame->data, frame->linesize,
@@ -440,7 +440,7 @@ static int lavfi_read_packet(AVFormatContext *avctx, AVPacket *pkt)
     } else if (frame->channels /* FIXME test audio */) {
         size = frame->nb_samples * av_get_bytes_per_sample(frame->format) *
                                    frame->channels;
-        if ((ret = av_new_packet(pkt, size)) < 0)
+        if ((ret = av_new_packet_ijk(pkt, size)) < 0)
             return ret;
         memcpy(pkt->data, frame->data[0], size);
     }
@@ -470,7 +470,7 @@ static int lavfi_read_packet(AVFormatContext *avctx, AVPacket *pkt)
 
     if ((ret = create_subcc_packet(avctx, frame, min_pts_sink_idx)) < 0) {
         av_frame_unref(frame);
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return ret;
     }
 

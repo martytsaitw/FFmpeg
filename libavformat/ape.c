@@ -409,14 +409,14 @@ static int ape_read_packet(AVFormatContext * s, AVPacket * pkt)
         return AVERROR(EIO);
     }
 
-    if (av_new_packet(pkt,  ape->frames[ape->currentframe].size + extra_size) < 0)
+    if (av_new_packet_ijk(pkt,  ape->frames[ape->currentframe].size + extra_size) < 0)
         return AVERROR(ENOMEM);
 
     AV_WL32(pkt->data    , nblocks);
     AV_WL32(pkt->data + 4, ape->frames[ape->currentframe].skip);
     ret = avio_read(s->pb, pkt->data + extra_size, ape->frames[ape->currentframe].size);
     if (ret < 0) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return ret;
     }
 

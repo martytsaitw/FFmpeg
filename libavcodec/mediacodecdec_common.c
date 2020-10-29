@@ -229,7 +229,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
 
     atomic_init(&buffer->released, 0);
 
-    frame->buf[0] = av_buffer_create(NULL,
+    frame->buf[0] = av_buffer_create_ijk(NULL,
                                      0,
                                      mediacodec_buffer_release,
                                      buffer,

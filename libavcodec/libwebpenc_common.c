@@ -131,7 +131,7 @@ int ff_libwebp_get_frame(AVCodecContext *avctx, LibWebPContextCommon *s,
                        "Copying frame due to differing chroma linesizes.\n");
                 s->chroma_warning = 1;
             }
-            *alt_frame_ptr = av_frame_alloc();
+            *alt_frame_ptr = av_frame_alloc_ijk();
             alt_frame = *alt_frame_ptr;
             if (!alt_frame) {
                 ret = AVERROR(ENOMEM);

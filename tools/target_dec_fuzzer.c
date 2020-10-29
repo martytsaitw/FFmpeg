@@ -119,7 +119,7 @@ static void FDBPrepare(FuzzDataBuffer *FDB, AVPacket *dst, const uint8_t *data,
     if (padd > AV_INPUT_BUFFER_PADDING_SIZE)
         padd = AV_INPUT_BUFFER_PADDING_SIZE;
     memset(FDB->data_ + size, 0, padd);
-    av_init_packet(dst);
+    av_init_packet_ijk(dst);
     dst->data = FDB->data_;
     dst->size = size;
 }
@@ -186,7 +186,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     FDBCreate(&buffer);
     int got_frame;
-    AVFrame *frame = av_frame_alloc();
+    AVFrame *frame = av_frame_alloc_ijk();
     if (!frame)
         error("Failed memory allocation");
 
@@ -223,7 +223,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         }
     }
 
-    av_init_packet(&avpkt);
+    av_init_packet_ijk(&avpkt);
     avpkt.data = NULL;
     avpkt.size = 0;
 

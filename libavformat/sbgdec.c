@@ -1454,7 +1454,7 @@ static int sbg_read_packet(AVFormatContext *avf, AVPacket *packet)
                        end_ts);
     if (end_ts <= ts)
         return AVERROR_EOF;
-    if (av_new_packet(packet, 12) < 0)
+    if (av_new_packet_ijk(packet, 12) < 0)
         return AVERROR(ENOMEM);
     packet->dts = packet->pts = ts;
     packet->duration = end_ts - ts;

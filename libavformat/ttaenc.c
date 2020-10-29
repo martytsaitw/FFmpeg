@@ -127,7 +127,7 @@ static void tta_queue_flush(AVFormatContext *s)
     while (tta->queue) {
         ff_packet_list_get(&tta->queue, &tta->queue_end, &pkt);
         avio_write(s->pb, pkt.data, pkt.size);
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
     }
 }
 

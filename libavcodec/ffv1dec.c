@@ -994,8 +994,8 @@ static int init_thread_copy(AVCodecContext *avctx)
                                          f->context_count[i] * sizeof(*f->initial_states[i]));
     }
 
-    f->picture.f      = av_frame_alloc();
-    f->last_picture.f = av_frame_alloc();
+    f->picture.f      = av_frame_alloc_ijk();
+    f->last_picture.f = av_frame_alloc_ijk();
 
     if ((ret = ff_ffv1_init_slice_contexts(f)) < 0)
         return ret;

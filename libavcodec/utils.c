@@ -576,37 +576,37 @@ int attribute_align_arg avcodec_open2(AVCodecContext *avctx, const AVCodec *code
         goto free_and_end;
     }
 
-    avctx->internal->to_free = av_frame_alloc();
+    avctx->internal->to_free = av_frame_alloc_ijk();
     if (!avctx->internal->to_free) {
         ret = AVERROR(ENOMEM);
         goto free_and_end;
     }
 
-    avctx->internal->compat_decode_frame = av_frame_alloc();
+    avctx->internal->compat_decode_frame = av_frame_alloc_ijk();
     if (!avctx->internal->compat_decode_frame) {
         ret = AVERROR(ENOMEM);
         goto free_and_end;
     }
 
-    avctx->internal->buffer_frame = av_frame_alloc();
+    avctx->internal->buffer_frame = av_frame_alloc_ijk();
     if (!avctx->internal->buffer_frame) {
         ret = AVERROR(ENOMEM);
         goto free_and_end;
     }
 
-    avctx->internal->buffer_pkt = av_packet_alloc();
+    avctx->internal->buffer_pkt = av_packet_alloc_ijk();
     if (!avctx->internal->buffer_pkt) {
         ret = AVERROR(ENOMEM);
         goto free_and_end;
     }
 
-    avctx->internal->ds.in_pkt = av_packet_alloc();
+    avctx->internal->ds.in_pkt = av_packet_alloc_ijk();
     if (!avctx->internal->ds.in_pkt) {
         ret = AVERROR(ENOMEM);
         goto free_and_end;
     }
 
-    avctx->internal->last_pkt_props = av_packet_alloc();
+    avctx->internal->last_pkt_props = av_packet_alloc_ijk();
     if (!avctx->internal->last_pkt_props) {
         ret = AVERROR(ENOMEM);
         goto free_and_end;
@@ -746,7 +746,7 @@ int attribute_align_arg avcodec_open2(AVCodecContext *avctx, const AVCodec *code
         int i;
 #if FF_API_CODED_FRAME
 FF_DISABLE_DEPRECATION_WARNINGS
-        avctx->coded_frame = av_frame_alloc();
+        avctx->coded_frame = av_frame_alloc_ijk();
         if (!avctx->coded_frame) {
             ret = AVERROR(ENOMEM);
             goto free_and_end;
@@ -1795,7 +1795,7 @@ int ff_thread_ref_frame(ThreadFrame *dst, ThreadFrame *src)
     av_assert0(!dst->progress);
 
     if (src->progress &&
-        !(dst->progress = av_buffer_ref(src->progress))) {
+        !(dst->progress = av_buffer_ref_ijk(src->progress))) {
         ff_thread_release_buffer(dst->owner[0], dst);
         return AVERROR(ENOMEM);
     }

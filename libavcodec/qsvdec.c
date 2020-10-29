@@ -68,7 +68,7 @@ static int qsv_init_session(AVCodecContext *avctx, QSVContext *q, mfxSession ses
         }
         av_buffer_unref(&q->frames_ctx.hw_frames_ctx);
 
-        q->frames_ctx.hw_frames_ctx = av_buffer_ref(hw_frames_ref);
+        q->frames_ctx.hw_frames_ctx = av_buffer_ref_ijk(hw_frames_ref);
         if (!q->frames_ctx.hw_frames_ctx)
             return AVERROR(ENOMEM);
 
@@ -280,7 +280,7 @@ static int get_surface(AVCodecContext *avctx, QSVContext *q, mfxFrameSurface1 **
     frame = av_mallocz(sizeof(*frame));
     if (!frame)
         return AVERROR(ENOMEM);
-    frame->frame = av_frame_alloc();
+    frame->frame = av_frame_alloc_ijk();
     if (!frame->frame) {
         av_freep(&frame);
         return AVERROR(ENOMEM);

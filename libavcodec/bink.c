@@ -1314,7 +1314,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
     }
     c->avctx = avctx;
 
-    c->last = av_frame_alloc();
+    c->last = av_frame_alloc_ijk();
     if (!c->last)
         return AVERROR(ENOMEM);
 

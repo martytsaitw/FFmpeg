@@ -62,12 +62,12 @@ static int audio_read_packet(AVFormatContext *s1, AVPacket *pkt)
     int64_t bdelay, cur_time;
     int ret;
 
-    if ((ret = av_new_packet(pkt, s->buffer_size)) < 0)
+    if ((ret = av_new_packet_ijk(pkt, s->buffer_size)) < 0)
         return ret;
 
     ret = sio_read(s->hdl, pkt->data, pkt->size);
     if (ret == 0 || sio_eof(s->hdl)) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return AVERROR_EOF;
     }
 

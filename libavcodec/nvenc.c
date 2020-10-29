@@ -1276,7 +1276,7 @@ static av_cold int nvenc_alloc_surface(AVCodecContext *avctx, int idx)
     allocOut.version = NV_ENC_CREATE_BITSTREAM_BUFFER_VER;
 
     if (avctx->pix_fmt == AV_PIX_FMT_CUDA || avctx->pix_fmt == AV_PIX_FMT_D3D11) {
-        ctx->surfaces[idx].in_ref = av_frame_alloc();
+        ctx->surfaces[idx].in_ref = av_frame_alloc_ijk();
         if (!ctx->surfaces[idx].in_ref)
             return AVERROR(ENOMEM);
     } else {

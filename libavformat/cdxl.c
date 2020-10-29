@@ -201,12 +201,12 @@ static int cdxl_read_packet(AVFormatContext *s, AVPacket *pkt)
                 avpriv_set_pts_info_ijk(st, 64, 1, cdxl->sample_rate);
         }
 
-        if (av_new_packet(pkt, video_size + CDXL_HEADER_SIZE) < 0)
+        if (av_new_packet_ijk(pkt, video_size + CDXL_HEADER_SIZE) < 0)
             return AVERROR(ENOMEM);
         memcpy(pkt->data, cdxl->header, CDXL_HEADER_SIZE);
         ret = avio_read(pb, pkt->data + CDXL_HEADER_SIZE, video_size);
         if (ret < 0) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return ret;
         }
         av_shrink_packet(pkt, CDXL_HEADER_SIZE + ret);

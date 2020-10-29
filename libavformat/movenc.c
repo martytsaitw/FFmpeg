@@ -485,21 +485,21 @@ concatenate:
     }
 
     if (!info->num_blocks) {
-        ret = av_packet_ref(&info->pkt, pkt);
+        ret = av_packet_ref_ijk(&info->pkt, pkt);
         if (!ret)
             info->num_blocks = num_blocks;
         goto end;
     } else {
-        if ((ret = av_grow_packet(&info->pkt, pkt->size)) < 0)
+        if ((ret = av_grow_packet_ijk(&info->pkt, pkt->size)) < 0)
             goto end;
         memcpy(info->pkt.data + info->pkt.size - pkt->size, pkt->data, pkt->size);
         info->num_blocks += num_blocks;
         info->pkt.duration += pkt->duration;
-        if ((ret = av_copy_packet_side_data(&info->pkt, pkt)) < 0)
+        if ((ret = av_copy_packet_side_data_ijk(&info->pkt, pkt)) < 0)
             goto end;
         if (info->num_blocks != 6)
             goto end;
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         av_packet_move_ref(pkt, &info->pkt);
         info->num_blocks = 0;
     }
@@ -559,7 +559,7 @@ static int mov_write_eac3_tag(AVIOContext *pb, MOVTrack *track)
     av_free(buf);
 
 end:
-    av_packet_unref(&info->pkt);
+    av_packet_unref_ijk(&info->pkt);
     av_freep(&track->eac3_priv);
 
     return size;
@@ -5519,7 +5519,7 @@ static int mov_write_subtitle_end_packet(AVFormatContext *s,
     uint8_t data[2] = {0};
     int ret;
 
-    av_init_packet(&end);
+    av_init_packet_ijk(&end);
     end.size = sizeof(data);
     end.data = data;
     end.pts = dts;
@@ -5528,7 +5528,7 @@ static int mov_write_subtitle_end_packet(AVFormatContext *s,
     end.stream_index = stream_index;
 
     ret = mov_write_single_packet(s, &end);
-    av_packet_unref(&end);
+    av_packet_unref_ijk(&end);
 
     return ret;
 }
@@ -5557,7 +5557,7 @@ static int mov_write_packet(AVFormatContext *s, AVPacket *pkt)
             return 0;
         }
 
-        if ((ret = av_packet_ref(&trk->cover_image, pkt)) < 0)
+        if ((ret = av_packet_ref_ijk(&trk->cover_image, pkt)) < 0)
             return ret;
 
         return 0;
@@ -5853,7 +5853,7 @@ static void mov_free(AVFormatContext *s)
             av_freep(&mov->tracks[i].par);
         av_freep(&mov->tracks[i].cluster);
         av_freep(&mov->tracks[i].frag_info);
-        av_packet_unref(&mov->tracks[i].cover_image);
+        av_packet_unref_ijk(&mov->tracks[i].cover_image);
 
         if (mov->tracks[i].vos_len)
             av_freep(&mov->tracks[i].vos_data);

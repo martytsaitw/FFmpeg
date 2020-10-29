@@ -148,7 +148,7 @@ static av_cold int decode_init(AVCodecContext *avctx) {
         av_log(avctx, AV_LOG_ERROR, "Can't allocate decompression buffer.\n");
         return AVERROR(ENOMEM);
     }
-    c->pic = av_frame_alloc();
+    c->pic = av_frame_alloc_ijk();
     if (!c->pic)
         return AVERROR(ENOMEM);
     return 0;

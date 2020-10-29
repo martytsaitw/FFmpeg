@@ -130,7 +130,7 @@ static av_cold int flashsv_decode_init(AVCodecContext *avctx)
     }
     avctx->pix_fmt = AV_PIX_FMT_BGR24;
 
-    s->frame = av_frame_alloc();
+    s->frame = av_frame_alloc_ijk();
     if (!s->frame) {
         flashsv_decode_end(avctx);
         return AVERROR(ENOMEM);

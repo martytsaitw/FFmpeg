@@ -417,7 +417,7 @@ static av_cold int vmdvideo_decode_init(AVCodecContext *avctx)
         palette32[i] |= palette32[i] >> 6 & 0x30303;
     }
 
-    s->prev_frame = av_frame_alloc();
+    s->prev_frame = av_frame_alloc_ijk();
     if (!s->prev_frame) {
         vmdvideo_decode_end(avctx);
         return AVERROR(ENOMEM);

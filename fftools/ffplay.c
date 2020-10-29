@@ -457,7 +457,7 @@ static int packet_queue_put(PacketQueue *q, AVPacket *pkt)
     SDL_UnlockMutex(q->mutex);
 
     if (pkt != &flush_pkt && ret < 0)
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
 
     return ret;
 }
@@ -465,7 +465,7 @@ static int packet_queue_put(PacketQueue *q, AVPacket *pkt)
 static int packet_queue_put_nullpacket(PacketQueue *q, int stream_index)
 {
     AVPacket pkt1, *pkt = &pkt1;
-    av_init_packet(pkt);
+    av_init_packet_ijk(pkt);
     pkt->data = NULL;
     pkt->size = 0;
     pkt->stream_index = stream_index;
@@ -497,7 +497,7 @@ static void packet_queue_flush(PacketQueue *q)
     SDL_LockMutex(q->mutex);
     for (pkt = q->first_pkt; pkt; pkt = pkt1) {
         pkt1 = pkt->next;
-        av_packet_unref(&pkt->pkt);
+        av_packet_unref_ijk(&pkt->pkt);
         av_freep(&pkt);
     }
     q->last_pkt = NULL;
@@ -666,13 +666,13 @@ static int decoder_decode_frame(Decoder *d, AVFrame *frame, AVSubtitle *sub) {
                     av_packet_move_ref(&d->pkt, &pkt);
                 }
             }
-            av_packet_unref(&pkt);
+            av_packet_unref_ijk(&pkt);
         }
     }
 }
 
 static void decoder_destroy(Decoder *d) {
-    av_packet_unref(&d->pkt);
+    av_packet_unref_ijk(&d->pkt);
     avcodec_free_context(&d->avctx);
 }
 
@@ -698,7 +698,7 @@ static int frame_queue_init(FrameQueue *f, PacketQueue *pktq, int max_size, int 
     f->max_size = FFMIN(max_size, FRAME_QUEUE_SIZE);
     f->keep_last = !!keep_last;
     for (i = 0; i < f->max_size; i++)
-        if (!(f->queue[i].frame = av_frame_alloc()))
+        if (!(f->queue[i].frame = av_frame_alloc_ijk()))
             return AVERROR(ENOMEM);
     return 0;
 }
@@ -2002,7 +2002,7 @@ end:
 static int audio_thread(void *arg)
 {
     VideoState *is = arg;
-    AVFrame *frame = av_frame_alloc();
+    AVFrame *frame = av_frame_alloc_ijk();
     Frame *af;
 #if CONFIG_AVFILTER
     int last_serial = -1;
@@ -2100,7 +2100,7 @@ static int decoder_start(Decoder *d, int (*fn)(void *), void *arg)
 static int video_thread(void *arg)
 {
     VideoState *is = arg;
-    AVFrame *frame = av_frame_alloc();
+    AVFrame *frame = av_frame_alloc_ijk();
     double pts;
     double duration;
     int ret;
@@ -2957,7 +2957,7 @@ static int read_thread(void *arg)
         if (is->queue_attachments_req) {
             if (is->video_st && is->video_st->disposition & AV_DISPOSITION_ATTACHED_PIC) {
                 AVPacket copy = { 0 };
-                if ((ret = av_packet_ref(&copy, &is->video_st->attached_pic)) < 0)
+                if ((ret = av_packet_ref_ijk(&copy, &is->video_st->attached_pic)) < 0)
                     goto fail;
                 packet_queue_put(&is->videoq, &copy);
                 packet_queue_put_nullpacket(&is->videoq, is->video_stream);
@@ -3023,7 +3023,7 @@ static int read_thread(void *arg)
         } else if (pkt->stream_index == is->subtitle_stream && pkt_in_play_range) {
             packet_queue_put(&is->subtitleq, pkt);
         } else {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
         }
     }
 
@@ -3697,7 +3697,7 @@ int main(int argc, char **argv)
     SDL_EventState(SDL_SYSWMEVENT, SDL_IGNORE);
     SDL_EventState(SDL_USEREVENT, SDL_IGNORE);
 
-    av_init_packet(&flush_pkt);
+    av_init_packet_ijk(&flush_pkt);
     flush_pkt.data = (uint8_t *)&flush_pkt;
 
     if (!display_disable) {

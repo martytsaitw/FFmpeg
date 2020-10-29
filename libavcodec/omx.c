@@ -857,7 +857,7 @@ static int omx_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
                 memcpy(s->output_buf + s->output_buf_size, buffer->pBuffer + buffer->nOffset, buffer->nFilledLen);
                 s->output_buf_size += buffer->nFilledLen;
                 if (buffer->nFlags & OMX_BUFFERFLAG_ENDOFFRAME) {
-                    if ((ret = av_packet_from_data(pkt, s->output_buf, s->output_buf_size)) < 0) {
+                    if ((ret = av_packet_from_data_ijk(pkt, s->output_buf, s->output_buf_size)) < 0) {
                         av_freep(&s->output_buf);
                         s->output_buf_size = 0;
                         goto end;

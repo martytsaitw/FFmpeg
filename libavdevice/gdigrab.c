@@ -559,7 +559,7 @@ static int gdigrab_read_packet(AVFormatContext *s1, AVPacket *pkt)
         }
     }
 
-    if (av_new_packet(pkt, file_size) < 0)
+    if (av_new_packet_ijk(pkt, file_size) < 0)
         return AVERROR(ENOMEM);
     pkt->pts = curtime;
 

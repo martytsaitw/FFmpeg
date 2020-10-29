@@ -1046,7 +1046,7 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
                         ctx->warn = 1;
                     }
 
-                    ret = av_grow_packet(pkt, delta);
+                    ret = av_grow_packet_ijk(pkt, delta);
                     if (ret < 0)
                         return ret;
 

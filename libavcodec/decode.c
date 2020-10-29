@@ -126,9 +126,9 @@ static int extract_packet_props(AVCodecInternal *avci, const AVPacket *pkt)
 {
     int ret = 0;
 
-    av_packet_unref(avci->last_pkt_props);
+    av_packet_unref_ijk(avci->last_pkt_props);
     if (pkt) {
-        ret = av_packet_copy_props(avci->last_pkt_props, pkt);
+        ret = av_packet_copy_props_ijk(avci->last_pkt_props, pkt);
         if (!ret)
             avci->last_pkt_props->size = pkt->size; // HACK: Needed for ff_decode_frame_props().
     }
@@ -282,7 +282,7 @@ static int bsfs_poll(AVCodecContext *avctx, AVPacket *pkt)
             if (ret < 0) {
                 av_log(avctx, AV_LOG_ERROR,
                        "Error pre-processing a packet before decoding\n");
-                av_packet_unref(pkt);
+                av_packet_unref_ijk(pkt);
                 return ret;
             }
         }
@@ -319,7 +319,7 @@ int ff_decode_get_packet(AVCodecContext *avctx, AVPacket *pkt)
 
     return 0;
 finish:
-    av_packet_unref(pkt);
+    av_packet_unref_ijk(pkt);
     return ret;
 }
 
@@ -393,7 +393,7 @@ static int decode_simple_internal(AVCodecContext *avctx, AVFrame *frame)
         need_get_packet = !pkt->data && !avci->draining;
     }
     if (need_get_packet) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         ret = ff_decode_get_packet(avctx, pkt);
         if (ret < 0 && ret != AVERROR_EOF)
             return ret;
@@ -429,11 +429,11 @@ static int decode_simple_internal(AVCodecContext *avctx, AVFrame *frame)
             if (avci->draining_done) {
                 // produce silence packet
                 int64_t pts = guess_correct_pts(avctx, pkt->pts, pkt->dts);
-                av_packet_unref(pkt);
+                av_packet_unref_ijk(pkt);
                 fill_silence_frame(avctx, frame, silence, pts);
                 return 0;
             }
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
         }
     }
 
@@ -639,7 +639,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     avci->compat_decode_consumed += ret;
 
     if (ret >= pkt->size || ret < 0) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
     } else {
         int consumed = ret;
 
@@ -731,16 +731,16 @@ int attribute_align_arg avcodec_send_packet(AVCodecContext *avctx, const AVPacke
     if (ret < 0)
         return ret;
 
-    av_packet_unref(avci->buffer_pkt);
+    av_packet_unref_ijk(avci->buffer_pkt);
     if (avpkt && (avpkt->data || avpkt->side_data_elems)) {
-        ret = av_packet_ref(avci->buffer_pkt, avpkt);
+        ret = av_packet_ref_ijk(avci->buffer_pkt, avpkt);
         if (ret < 0)
             return ret;
     }
 
     ret = av_bsf_send_packet(avci->filter.bsfs[0], avci->buffer_pkt);
     if (ret < 0) {
-        av_packet_unref(avci->buffer_pkt);
+        av_packet_unref_ijk(avci->buffer_pkt);
         return ret;
     }
 
@@ -946,7 +946,7 @@ static int recode_subtitle(AVCodecContext *avctx,
         goto end;
     }
 
-    ret = av_new_packet(&tmp, inl * UTF8_MAX_BYTES);
+    ret = av_new_packet_ijk(&tmp, inl * UTF8_MAX_BYTES);
     if (ret < 0)
         goto end;
     outpkt->buf  = tmp.buf;
@@ -961,7 +961,7 @@ static int recode_subtitle(AVCodecContext *avctx,
         ret = FFMIN(AVERROR(errno), -1);
         av_log(avctx, AV_LOG_ERROR, "Unable to recode subtitle event \"%s\" "
                "from %s to UTF-8\n", inpkt->data, avctx->sub_charenc);
-        av_packet_unref(&tmp);
+        av_packet_unref_ijk(&tmp);
         goto end;
     }
     outpkt->size -= outl;
@@ -1147,7 +1147,7 @@ int avcodec_decode_subtitle2(AVCodecContext *avctx, AVSubtitle *sub,
                 pkt_recoded.side_data = NULL;
                 pkt_recoded.side_data_elems = 0;
 
-                av_packet_unref(&pkt_recoded);
+                av_packet_unref_ijk(&pkt_recoded);
             }
         }
 
@@ -1892,7 +1892,7 @@ int ff_attach_decode_data(AVFrame *frame)
     if (!fdd)
         return AVERROR(ENOMEM);
 
-    fdd_buf = av_buffer_create((uint8_t*)fdd, sizeof(*fdd), decode_data_free,
+    fdd_buf = av_buffer_create_ijk((uint8_t*)fdd, sizeof(*fdd), decode_data_free,
                                NULL, AV_BUFFER_FLAG_READONLY);
     if (!fdd_buf) {
         av_freep(&fdd);
@@ -1991,7 +1991,7 @@ static int reget_buffer_internal(AVCodecContext *avctx, AVFrame *frame)
     if (av_frame_is_writable(frame))
         return ff_decode_frame_props(avctx, frame);
 
-    tmp = av_frame_alloc();
+    tmp = av_frame_alloc_ijk();
     if (!tmp)
         return AVERROR(ENOMEM);
 
@@ -2025,10 +2025,10 @@ void avcodec_flush_buffers(AVCodecContext *avctx)
     avctx->internal->nb_draining_errors = 0;
     av_frame_unref(avctx->internal->buffer_frame);
     av_frame_unref(avctx->internal->compat_decode_frame);
-    av_packet_unref(avctx->internal->buffer_pkt);
+    av_packet_unref_ijk(avctx->internal->buffer_pkt);
     avctx->internal->buffer_pkt_valid = 0;
 
-    av_packet_unref(avctx->internal->ds.in_pkt);
+    av_packet_unref_ijk(avctx->internal->ds.in_pkt);
 
     if (HAVE_THREADS && avctx->active_thread_type & FF_THREAD_FRAME)
         ff_thread_flush(avctx);

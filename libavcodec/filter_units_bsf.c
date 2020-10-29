@@ -148,7 +148,7 @@ static int filter_units_filter(AVBSFContext *bsf, AVPacket *out)
         goto fail;
     }
 
-    err = av_packet_copy_props(out, in);
+    err = av_packet_copy_props_ijk(out, in);
     if (err < 0)
         goto fail;
 

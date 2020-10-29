@@ -165,7 +165,7 @@ static int vt_transfer_data_from(AVHWFramesContext *hwfc,
     if (dst->width > hwfc->width || dst->height > hwfc->height)
         return AVERROR(EINVAL);
 
-    map = av_frame_alloc();
+    map = av_frame_alloc_ijk();
     if (!map)
         return AVERROR(ENOMEM);
     map->format = dst->format;
@@ -196,7 +196,7 @@ static int vt_transfer_data_to(AVHWFramesContext *hwfc,
     if (src->width > hwfc->width || src->height > hwfc->height)
         return AVERROR(EINVAL);
 
-    map = av_frame_alloc();
+    map = av_frame_alloc_ijk();
     if (!map)
         return AVERROR(ENOMEM);
     map->format = src->format;

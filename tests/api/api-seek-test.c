@@ -101,7 +101,7 @@ static int compute_crc_of_packets(AVFormatContext *fmt_ctx, int video_stream,
         avcodec_flush_buffers(ctx);
     }
 
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
     do {
         if (!end_of_stream)
             if (av_read_frame(fmt_ctx, &pkt) < 0)
@@ -143,11 +143,11 @@ static int compute_crc_of_packets(AVFormatContext *fmt_ctx, int video_stream,
                 }
             }
         }
-        av_packet_unref(&pkt);
-        av_init_packet(&pkt);
+        av_packet_unref_ijk(&pkt);
+        av_init_packet_ijk(&pkt);
     } while ((!end_of_stream || got_frame) && (no_seeking || (fr->pts + fr->pkt_duration <= ts_end)));
 
-    av_packet_unref(&pkt);
+    av_packet_unref_ijk(&pkt);
     av_freep(&byte_buffer);
 
     return 0;
@@ -243,7 +243,7 @@ static int seek_test(const char *input_filename, const char *start, const char *
         goto end;
     }
 
-    fr = av_frame_alloc();
+    fr = av_frame_alloc_ijk();
     if (!fr) {
         av_log(NULL, AV_LOG_ERROR, "Can't allocate frame\n");
         result = AVERROR(ENOMEM);

@@ -429,7 +429,7 @@ static OSStatus ffat_decode_callback(AudioConverterRef converter, UInt32 *nb_pac
         return 0;
     }
 
-    av_packet_unref(&at->in_pkt);
+    av_packet_unref_ijk(&at->in_pkt);
     av_packet_move_ref(&at->in_pkt, &at->new_in_pkt);
 
     if (!at->in_pkt.data) {
@@ -514,10 +514,10 @@ static int ffat_decode(AVCodecContext *avctx, void *data,
         }
     };
 
-    av_packet_unref(&at->new_in_pkt);
+    av_packet_unref_ijk(&at->new_in_pkt);
 
     if (avpkt->size) {
-        if ((ret = av_packet_ref(&at->new_in_pkt, avpkt)) < 0) {
+        if ((ret = av_packet_ref_ijk(&at->new_in_pkt, avpkt)) < 0) {
             return ret;
         }
     } else {
@@ -559,8 +559,8 @@ static av_cold void ffat_decode_flush(AVCodecContext *avctx)
 {
     ATDecodeContext *at = avctx->priv_data;
     AudioConverterReset(at->converter);
-    av_packet_unref(&at->new_in_pkt);
-    av_packet_unref(&at->in_pkt);
+    av_packet_unref_ijk(&at->new_in_pkt);
+    av_packet_unref_ijk(&at->in_pkt);
 }
 
 static av_cold int ffat_close_decoder(AVCodecContext *avctx)
@@ -568,8 +568,8 @@ static av_cold int ffat_close_decoder(AVCodecContext *avctx)
     ATDecodeContext *at = avctx->priv_data;
     if (at->converter)
         AudioConverterDispose(at->converter);
-    av_packet_unref(&at->new_in_pkt);
-    av_packet_unref(&at->in_pkt);
+    av_packet_unref_ijk(&at->new_in_pkt);
+    av_packet_unref_ijk(&at->in_pkt);
     av_freep(&at->decoded_data);
     av_freep(&at->extradata);
     return 0;

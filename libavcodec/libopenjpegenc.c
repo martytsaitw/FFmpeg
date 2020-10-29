@@ -77,7 +77,7 @@ static OPJ_SIZE_T stream_write(void *out_buffer, OPJ_SIZE_T nb_bytes, void *user
         if (needed > max_growth) {
             return (OPJ_SIZE_T)-1;
         }
-        if (av_grow_packet(packet, (int)needed)) {
+        if (av_grow_packet_ijk(packet, (int)needed)) {
             return (OPJ_SIZE_T)-1;
         }
     }
@@ -105,7 +105,7 @@ static OPJ_OFF_T stream_skip(OPJ_OFF_T nb_bytes, void *user_data)
             if (needed > max_growth) {
                 return (OPJ_SIZE_T)-1;
             }
-            if (av_grow_packet(packet, (int)needed)) {
+            if (av_grow_packet_ijk(packet, (int)needed)) {
                 return (OPJ_SIZE_T)-1;
             }
         }
@@ -123,7 +123,7 @@ static OPJ_BOOL stream_seek(OPJ_OFF_T nb_bytes, void *user_data)
     }
     if (nb_bytes > packet->size) {
         if (nb_bytes > INT_MAX - AV_INPUT_BUFFER_PADDING_SIZE ||
-            av_grow_packet(packet, (int)nb_bytes - packet->size)) {
+            av_grow_packet_ijk(packet, (int)nb_bytes - packet->size)) {
             return OPJ_FALSE;
         }
     }

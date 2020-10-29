@@ -232,7 +232,7 @@ static int dss_sp_read_packet(AVFormatContext *s, AVPacket *pkt)
     ctx->counter -= read_size;
     ctx->packet_size = DSS_FRAME_SIZE - 1;
 
-    ret = av_new_packet(pkt, DSS_FRAME_SIZE);
+    ret = av_new_packet_ijk(pkt, DSS_FRAME_SIZE);
     if (ret < 0)
         return ret;
 
@@ -268,7 +268,7 @@ static int dss_sp_read_packet(AVFormatContext *s, AVPacket *pkt)
     return pkt->size;
 
 error_eof:
-    av_packet_unref(pkt);
+    av_packet_unref_ijk(pkt);
     return ret < 0 ? ret : AVERROR_EOF;
 }
 
@@ -292,7 +292,7 @@ static int dss_723_1_read_packet(AVFormatContext *s, AVPacket *pkt)
     ctx->packet_size = size;
     ctx->counter -= size;
 
-    ret = av_new_packet(pkt, size);
+    ret = av_new_packet_ijk(pkt, size);
     if (ret < 0)
         return ret;
     pkt->pos = pos;
@@ -310,7 +310,7 @@ static int dss_723_1_read_packet(AVFormatContext *s, AVPacket *pkt)
         ret = avio_read(s->pb, pkt->data + offset,
                         size2 - offset);
         if (ret < size2 - offset) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return ret < 0 ? ret : AVERROR_EOF;
         }
 
@@ -320,7 +320,7 @@ static int dss_723_1_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     ret = avio_read(s->pb, pkt->data + offset, size - offset);
     if (ret < size - offset) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return ret < 0 ? ret : AVERROR_EOF;
     }
 

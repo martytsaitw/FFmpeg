@@ -195,7 +195,7 @@ static int cbs_fill_fragment_data(CodedBitstreamContext *ctx,
     av_assert0(!frag->data && !frag->data_ref);
 
     frag->data_ref =
-        av_buffer_alloc(size + AV_INPUT_BUFFER_PADDING_SIZE);
+        av_buffer_alloc_ijk(size + AV_INPUT_BUFFER_PADDING_SIZE);
     if (!frag->data_ref)
         return AVERROR(ENOMEM);
 
@@ -218,7 +218,7 @@ int ff_cbs_read_packet(CodedBitstreamContext *ctx,
     memset(frag, 0, sizeof(*frag));
 
     if (pkt->buf) {
-        frag->data_ref = av_buffer_ref(pkt->buf);
+        frag->data_ref = av_buffer_ref_ijk(pkt->buf);
         if (!frag->data_ref)
             return AVERROR(ENOMEM);
 
@@ -329,11 +329,11 @@ int ff_cbs_write_packet(CodedBitstreamContext *ctx,
         return err;
 
     av_assert0(frag->data_ref);
-    buf = av_buffer_ref(frag->data_ref);
+    buf = av_buffer_ref_ijk(frag->data_ref);
     if (!buf)
         return AVERROR(ENOMEM);
 
-    av_init_packet(pkt);
+    av_init_packet_ijk(pkt);
     pkt->buf  = buf;
     pkt->data = frag->data;
     pkt->size = frag->data_size;
@@ -462,7 +462,7 @@ int ff_cbs_alloc_unit_content(CodedBitstreamContext *ctx,
     if (!unit->content)
         return AVERROR(ENOMEM);
 
-    unit->content_ref = av_buffer_create(unit->content, size,
+    unit->content_ref = av_buffer_create_ijk(unit->content, size,
                                          free, ctx, 0);
     if (!unit->content_ref) {
         av_freep(&unit->content);
@@ -478,7 +478,7 @@ int ff_cbs_alloc_unit_data(CodedBitstreamContext *ctx,
 {
     av_assert0(!unit->data && !unit->data_ref);
 
-    unit->data_ref = av_buffer_alloc(size + AV_INPUT_BUFFER_PADDING_SIZE);
+    unit->data_ref = av_buffer_alloc_ijk(size + AV_INPUT_BUFFER_PADDING_SIZE);
     if (!unit->data_ref)
         return AVERROR(ENOMEM);
 
@@ -531,7 +531,7 @@ int ff_cbs_insert_unit_content(CodedBitstreamContext *ctx,
     av_assert0(position >= 0 && position <= frag->nb_units);
 
     if (content_buf) {
-        content_ref = av_buffer_ref(content_buf);
+        content_ref = av_buffer_ref_ijk(content_buf);
         if (!content_ref)
             return AVERROR(ENOMEM);
     } else {
@@ -568,9 +568,9 @@ int ff_cbs_insert_unit_data(CodedBitstreamContext *ctx,
     av_assert0(position >= 0 && position <= frag->nb_units);
 
     if (data_buf)
-        data_ref = av_buffer_ref(data_buf);
+        data_ref = av_buffer_ref_ijk(data_buf);
     else
-        data_ref = av_buffer_create(data, data_size, NULL, NULL, 0);
+        data_ref = av_buffer_create_ijk(data, data_size, NULL, NULL, 0);
     if (!data_ref)
         return AVERROR(ENOMEM);
 

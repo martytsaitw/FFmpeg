@@ -128,7 +128,7 @@ int videotoolbox_init(AVCodecContext *s)
     ist->hwaccel_uninit        = videotoolbox_uninit;
     ist->hwaccel_retrieve_data = videotoolbox_retrieve_data;
 
-    vt->tmp_frame = av_frame_alloc();
+    vt->tmp_frame = av_frame_alloc_ijk();
     if (!vt->tmp_frame) {
         ret = AVERROR(ENOMEM);
         goto fail;

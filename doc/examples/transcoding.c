@@ -416,7 +416,7 @@ static int encode_write_frame(AVFrame *filt_frame, unsigned int stream_index, in
     /* encode filtered frame */
     enc_pkt.data = NULL;
     enc_pkt.size = 0;
-    av_init_packet(&enc_pkt);
+    av_init_packet_ijk(&enc_pkt);
     ret = enc_func(stream_ctx[stream_index].enc_ctx, &enc_pkt,
             filt_frame, got_frame);
     av_frame_free(&filt_frame);
@@ -453,7 +453,7 @@ static int filter_encode_write_frame(AVFrame *frame, unsigned int stream_index)
 
     /* pull filtered frames from the filtergraph */
     while (1) {
-        filt_frame = av_frame_alloc();
+        filt_frame = av_frame_alloc_ijk();
         if (!filt_frame) {
             ret = AVERROR(ENOMEM);
             break;
@@ -535,7 +535,7 @@ int main(int argc, char **argv)
 
         if (filter_ctx[stream_index].filter_graph) {
             av_log(NULL, AV_LOG_DEBUG, "Going to reencode&filter the frame\n");
-            frame = av_frame_alloc();
+            frame = av_frame_alloc_ijk();
             if (!frame) {
                 ret = AVERROR(ENOMEM);
                 break;
@@ -572,7 +572,7 @@ int main(int argc, char **argv)
             if (ret < 0)
                 goto end;
         }
-        av_packet_unref(&packet);
+        av_packet_unref_ijk(&packet);
     }
 
     /* flush filters and encoders */
@@ -596,7 +596,7 @@ int main(int argc, char **argv)
 
     av_write_trailer(ofmt_ctx);
 end:
-    av_packet_unref(&packet);
+    av_packet_unref_ijk(&packet);
     av_frame_free(&frame);
     for (i = 0; i < ifmt_ctx->nb_streams; i++) {
         avcodec_free_context(&stream_ctx[i].dec_ctx);

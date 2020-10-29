@@ -143,7 +143,7 @@ static int read_packet_gme(AVFormatContext *s, AVPacket *pkt)
     if (gme_track_ended(gme->music_emu))
         return AVERROR_EOF;
 
-    if ((ret = av_new_packet(pkt, AUDIO_PKT_SIZE)) < 0)
+    if ((ret = av_new_packet_ijk(pkt, AUDIO_PKT_SIZE)) < 0)
         return ret;
 
     if (gme_play(gme->music_emu, n_samples, (short *)pkt->data))

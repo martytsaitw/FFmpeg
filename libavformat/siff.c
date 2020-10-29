@@ -213,13 +213,13 @@ static int siff_read_packet(AVFormatContext *s, AVPacket *pkt)
 
             size = c->pktsize - c->sndsize - c->gmcsize - 2;
             size = ffio_limit(s->pb, size);
-            if (av_new_packet(pkt, size + c->gmcsize + 2) < 0)
+            if (av_new_packet_ijk(pkt, size + c->gmcsize + 2) < 0)
                 return AVERROR(ENOMEM);
             AV_WL16(pkt->data, c->flags);
             if (c->gmcsize)
                 memcpy(pkt->data + 2, c->gmc, c->gmcsize);
             if (avio_read(s->pb, pkt->data + 2 + c->gmcsize, size) != size) {
-                av_packet_unref(pkt);
+                av_packet_unref_ijk(pkt);
                 return AVERROR_INVALIDDATA;
             }
             pkt->stream_index = 0;

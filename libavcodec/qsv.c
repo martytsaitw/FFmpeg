@@ -330,7 +330,7 @@ static AVBufferRef *qsv_create_mids(AVBufferRef *hw_frames_ref)
     QSVMid *mids;
     int i;
 
-    hw_frames_ref1 = av_buffer_ref(hw_frames_ref);
+    hw_frames_ref1 = av_buffer_ref_ijk(hw_frames_ref);
     if (!hw_frames_ref1)
         return NULL;
 
@@ -340,7 +340,7 @@ static AVBufferRef *qsv_create_mids(AVBufferRef *hw_frames_ref)
         return NULL;
     }
 
-    mids_buf = av_buffer_create((uint8_t*)mids, nb_surfaces * sizeof(*mids),
+    mids_buf = av_buffer_create_ijk((uint8_t*)mids, nb_surfaces * sizeof(*mids),
                                 mids_buf_free, hw_frames_ref1, 0);
     if (!mids_buf) {
         av_buffer_unref(&hw_frames_ref1);
@@ -377,13 +377,13 @@ static int qsv_setup_mids(mfxFrameAllocResponse *resp, AVBufferRef *hw_frames_re
         resp->mids[i] = &mids[i];
     resp->NumFrameActual = nb_surfaces;
 
-    resp->mids[resp->NumFrameActual] = (mfxMemId)av_buffer_ref(hw_frames_ref);
+    resp->mids[resp->NumFrameActual] = (mfxMemId)av_buffer_ref_ijk(hw_frames_ref);
     if (!resp->mids[resp->NumFrameActual]) {
         av_freep(&resp->mids);
         return AVERROR(ENOMEM);
     }
 
-    resp->mids[resp->NumFrameActual + 1] = av_buffer_ref(mids_buf);
+    resp->mids[resp->NumFrameActual + 1] = av_buffer_ref_ijk(mids_buf);
     if (!resp->mids[resp->NumFrameActual + 1]) {
         av_buffer_unref((AVBufferRef**)&resp->mids[resp->NumFrameActual]);
         av_freep(&resp->mids);
@@ -501,13 +501,13 @@ static mfxStatus qsv_frame_lock(mfxHDL pthis, mfxMemId mid, mfxFrameData *ptr)
         return MFX_ERR_UNDEFINED_BEHAVIOR;
 
     /* Allocate a system memory frame that will hold the mapped data. */
-    qsv_mid->locked_frame = av_frame_alloc();
+    qsv_mid->locked_frame = av_frame_alloc_ijk();
     if (!qsv_mid->locked_frame)
         return MFX_ERR_MEMORY_ALLOC;
     qsv_mid->locked_frame->format  = hw_frames_ctx->sw_format;
 
     /* wrap the provided handle in a hwaccel AVFrame */
-    qsv_mid->hw_frame = av_frame_alloc();
+    qsv_mid->hw_frame = av_frame_alloc_ijk();
     if (!qsv_mid->hw_frame)
         goto fail;
 
@@ -515,14 +515,14 @@ static mfxStatus qsv_frame_lock(mfxHDL pthis, mfxMemId mid, mfxFrameData *ptr)
     qsv_mid->hw_frame->format  = AV_PIX_FMT_QSV;
 
     // doesn't really matter what buffer is used here
-    qsv_mid->hw_frame->buf[0]  = av_buffer_alloc(1);
+    qsv_mid->hw_frame->buf[0]  = av_buffer_alloc_ijk(1);
     if (!qsv_mid->hw_frame->buf[0])
         goto fail;
 
     qsv_mid->hw_frame->width   = hw_frames_ctx->width;
     qsv_mid->hw_frame->height  = hw_frames_ctx->height;
 
-    qsv_mid->hw_frame->hw_frames_ctx = av_buffer_ref(qsv_mid->hw_frames_ref);
+    qsv_mid->hw_frame->hw_frames_ctx = av_buffer_ref_ijk(qsv_mid->hw_frames_ref);
     if (!qsv_mid->hw_frame->hw_frames_ctx)
         goto fail;
 

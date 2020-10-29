@@ -77,7 +77,7 @@ static int xiph_handle_packet(AVFormatContext *ctx, PayloadContext *data,
             av_log(ctx, AV_LOG_ERROR, "Not enough data to return\n");
             return AVERROR_INVALIDDATA;
         }
-        if (av_new_packet(pkt, pkt_len)) {
+        if (av_new_packet_ijk(pkt, pkt_len)) {
             av_log(ctx, AV_LOG_ERROR, "Out of memory.\n");
             return AVERROR(ENOMEM);
         }
@@ -123,7 +123,7 @@ static int xiph_handle_packet(AVFormatContext *ctx, PayloadContext *data,
     len -= 6;
 
     if (fragmented == 0) {
-        if (av_new_packet(pkt, pkt_len)) {
+        if (av_new_packet_ijk(pkt, pkt_len)) {
             av_log(ctx, AV_LOG_ERROR, "Out of memory.\n");
             return AVERROR(ENOMEM);
         }
@@ -140,7 +140,7 @@ static int xiph_handle_packet(AVFormatContext *ctx, PayloadContext *data,
                 data->split_buf = av_malloc(data->split_buf_size);
                 if (!data->split_buf) {
                     av_log(ctx, AV_LOG_ERROR, "Out of memory.\n");
-                    av_packet_unref(pkt);
+                    av_packet_unref_ijk(pkt);
                     return AVERROR(ENOMEM);
                 }
             }

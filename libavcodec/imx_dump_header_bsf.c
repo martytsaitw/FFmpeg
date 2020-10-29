@@ -43,7 +43,7 @@ static int imx_dump_header(AVBSFContext *ctx, AVPacket *out)
     if (ret < 0)
         return ret;
 
-    ret = av_new_packet(out, in->size + 20);
+    ret = av_new_packet_ijk(out, in->size + 20);
     if (ret < 0)
         goto fail;
 
@@ -54,13 +54,13 @@ static int imx_dump_header(AVBSFContext *ctx, AVPacket *out)
     bytestream_put_be24(&out_buf, in->size);
     bytestream_put_buffer(&out_buf, in->data, in->size);
 
-    ret = av_packet_copy_props(out, in);
+    ret = av_packet_copy_props_ijk(out, in);
     if (ret < 0)
         goto fail;
 
 fail:
     if (ret < 0)
-        av_packet_unref(out);
+        av_packet_unref_ijk(out);
     av_packet_free(&in);
     return ret;
 }

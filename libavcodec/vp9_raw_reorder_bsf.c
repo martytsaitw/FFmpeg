@@ -241,7 +241,7 @@ static int vp9_raw_reorder_make_output(AVBSFContext *bsf,
                "(%"PRId64") from slot %d.\n",
                frame->sequence, frame->pts, s);
 
-        err = av_new_packet(out, 2);
+        err = av_new_packet_ijk(out, 2);
         if (err < 0)
             return err;
 

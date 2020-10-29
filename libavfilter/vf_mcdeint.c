@@ -184,7 +184,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
     av_frame_copy_props(outpic, inpic);
     inpic->quality = mcdeint->qp * FF_QP2LAMBDA;
 
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
 
     ret = avcodec_encode_video2(mcdeint->enc_ctx, &pkt, inpic, &got_frame);
     if (ret < 0)
@@ -274,7 +274,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
     mcdeint->parity ^= 1;
 
 end:
-    av_packet_unref(&pkt);
+    av_packet_unref_ijk(&pkt);
     av_frame_free(&inpic);
     if (ret < 0) {
         av_frame_free(&outpic);

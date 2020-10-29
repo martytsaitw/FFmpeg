@@ -129,7 +129,7 @@ static int video_decode(const char *input_filename)
         return result;
     }
 
-    fr = av_frame_alloc();
+    fr = av_frame_alloc_ijk();
     if (!fr) {
         av_log(NULL, AV_LOG_ERROR, "Can't allocate frame\n");
         return AVERROR(ENOMEM);
@@ -155,7 +155,7 @@ static int video_decode(const char *input_filename)
     memset(slice_byte_buffer, 0, byte_buffer_size);
     slice_byte_buffer_size = byte_buffer_size;
 
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
     do {
         if (!end_of_stream) {
             if (av_read_frame(fmt_ctx, &pkt) < 0) {
@@ -191,12 +191,12 @@ static int video_decode(const char *input_filename)
                     return -1;
                 }
             }
-            av_packet_unref(&pkt);
-            av_init_packet(&pkt);
+            av_packet_unref_ijk(&pkt);
+            av_init_packet_ijk(&pkt);
         }
     } while (!end_of_stream || got_frame);
 
-    av_packet_unref(&pkt);
+    av_packet_unref_ijk(&pkt);
     av_frame_free(&fr);
     avcodec_close(ctx);
     avformat_close_input(&fmt_ctx);

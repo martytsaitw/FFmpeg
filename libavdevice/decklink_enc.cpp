@@ -124,7 +124,7 @@ public:
         if (frame->_avframe)
             av_frame_unref(frame->_avframe);
         if (frame->_avpacket)
-            av_packet_unref(frame->_avpacket);
+            av_packet_unref_ijk(frame->_avpacket);
 
         pthread_mutex_lock(&ctx->mutex);
         ctx->frames_buffer_available_spots++;

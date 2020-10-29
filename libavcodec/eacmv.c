@@ -48,8 +48,8 @@ static av_cold int cmv_decode_init(AVCodecContext *avctx){
     s->avctx = avctx;
     avctx->pix_fmt = AV_PIX_FMT_PAL8;
 
-    s->last_frame  = av_frame_alloc();
-    s->last2_frame = av_frame_alloc();
+    s->last_frame  = av_frame_alloc_ijk();
+    s->last2_frame = av_frame_alloc_ijk();
     if (!s->last_frame || !s->last2_frame) {
         av_frame_free(&s->last_frame);
         av_frame_free(&s->last2_frame);

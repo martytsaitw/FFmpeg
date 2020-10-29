@@ -76,7 +76,7 @@ static av_cold int xan_decode_init(AVCodecContext *avctx)
         return AVERROR(ENOMEM);
     }
 
-    s->pic = av_frame_alloc();
+    s->pic = av_frame_alloc_ijk();
     if (!s->pic) {
         xan_decode_end(avctx);
         return AVERROR(ENOMEM);

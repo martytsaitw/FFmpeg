@@ -612,7 +612,7 @@ static int ea_read_packet(AVFormatContext *s, AVPacket *pkt)
 
             if (partial_packet) {
                 avpriv_request_sample(s, "video header followed by audio packet");
-                av_packet_unref(pkt);
+                av_packet_unref_ijk(pkt);
                 partial_packet = 0;
             }
 
@@ -632,7 +632,7 @@ static int ea_read_packet(AVFormatContext *s, AVPacket *pkt)
             case AV_CODEC_ID_ADPCM_EA_R3:
                 if (pkt->size < 4) {
                     av_log(s, AV_LOG_ERROR, "Packet is too short\n");
-                    av_packet_unref(pkt);
+                    av_packet_unref_ijk(pkt);
                     return AVERROR_INVALIDDATA;
                 }
                 if (ea->audio_codec == AV_CODEC_ID_ADPCM_EA_R3)
@@ -736,7 +736,7 @@ get_video_packet:
     }
 
     if (ret < 0 && partial_packet)
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
     return ret;
 }
 

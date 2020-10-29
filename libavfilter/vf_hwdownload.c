@@ -75,7 +75,7 @@ static int hwdownload_config_input(AVFilterLink *inlink)
         return AVERROR(EINVAL);
     }
 
-    ctx->hwframes_ref = av_buffer_ref(inlink->hw_frames_ctx);
+    ctx->hwframes_ref = av_buffer_ref_ijk(inlink->hw_frames_ctx);
     if (!ctx->hwframes_ref)
         return AVERROR(ENOMEM);
 

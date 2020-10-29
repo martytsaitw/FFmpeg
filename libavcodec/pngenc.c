@@ -734,7 +734,7 @@ static int apng_encode_frame(AVCodecContext *avctx, const AVFrame *pict,
         return encode_frame(avctx, pict);
     }
 
-    diffFrame = av_frame_alloc();
+    diffFrame = av_frame_alloc_ijk();
     if (!diffFrame)
         return AVERROR(ENOMEM);
 
@@ -944,12 +944,12 @@ static int encode_apng(AVCodecContext *avctx, AVPacket *pkt,
 
     if (pict) {
         if (!s->last_frame) {
-            s->last_frame = av_frame_alloc();
+            s->last_frame = av_frame_alloc_ijk();
             if (!s->last_frame)
                 return AVERROR(ENOMEM);
         } else if (s->last_frame_fctl.dispose_op != APNG_DISPOSE_OP_PREVIOUS) {
             if (!s->prev_frame) {
-                s->prev_frame = av_frame_alloc();
+                s->prev_frame = av_frame_alloc_ijk();
                 if (!s->prev_frame)
                     return AVERROR(ENOMEM);
 

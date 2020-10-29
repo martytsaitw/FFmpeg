@@ -364,7 +364,7 @@ static av_cold int tscc2_decode_init(AVCodecContext *avctx)
         return AVERROR(ENOMEM);
     }
 
-    c->pic = av_frame_alloc();
+    c->pic = av_frame_alloc_ijk();
     if (!c->pic) {
         tscc2_decode_end(avctx);
         return AVERROR(ENOMEM);

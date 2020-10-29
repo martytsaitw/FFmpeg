@@ -104,7 +104,7 @@ static int extract_extradata_h2645(AVBSFContext *ctx, AVPacket *pkt,
         uint8_t *extradata, *filtered_data;
 
         if (s->remove) {
-            filtered_buf = av_buffer_alloc(filtered_size + AV_INPUT_BUFFER_PADDING_SIZE);
+            filtered_buf = av_buffer_alloc_ijk(filtered_size + AV_INPUT_BUFFER_PADDING_SIZE);
             if (!filtered_buf) {
                 return AVERROR(ENOMEM);
             }
@@ -293,7 +293,7 @@ static int extract_extradata_filter(AVBSFContext *ctx, AVPacket *pkt)
         goto fail;
 
     if (extradata) {
-        ret = av_packet_add_side_data(pkt, AV_PKT_DATA_NEW_EXTRADATA,
+        ret = av_packet_add_side_data_ijk(pkt, AV_PKT_DATA_NEW_EXTRADATA,
                                       extradata, extradata_size);
         if (ret < 0) {
             av_freep(&extradata);
@@ -304,7 +304,7 @@ static int extract_extradata_filter(AVBSFContext *ctx, AVPacket *pkt)
     return 0;
 
 fail:
-    av_packet_unref(pkt);
+    av_packet_unref_ijk(pkt);
     return ret;
 }
 

@@ -1478,7 +1478,7 @@ int ff_hevc_decode_nal_pps(GetBitContext *gb, AVCodecContext *avctx,
     if (!pps)
         return AVERROR(ENOMEM);
 
-    pps_buf = av_buffer_create((uint8_t *)pps, sizeof(*pps),
+    pps_buf = av_buffer_create_ijk((uint8_t *)pps, sizeof(*pps),
                                hevc_pps_free, NULL, 0);
     if (!pps_buf) {
         av_freep(&pps);

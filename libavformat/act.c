@@ -117,9 +117,9 @@ static int read_packet(AVFormatContext *s,
 
 
     if(s->streams[0]->codecpar->sample_rate==8000)
-        ret=av_new_packet(pkt, 10);
+        ret=av_new_packet_ijk(pkt, 10);
     else
-        ret=av_new_packet(pkt, 11);
+        ret=av_new_packet_ijk(pkt, 11);
 
     if(ret)
         return ret;

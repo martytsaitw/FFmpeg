@@ -89,7 +89,7 @@ static av_cold int mp_decode_init(AVCodecContext *avctx)
     }
     avctx->pix_fmt = AV_PIX_FMT_RGB555;
 
-    mp->frame = av_frame_alloc();
+    mp->frame = av_frame_alloc_ijk();
     if (!mp->frame) {
         mp_decode_end(avctx);
         return AVERROR(ENOMEM);

@@ -590,7 +590,7 @@ static int filter_packet(AVFormatContext *avf, ConcatStream *cs, AVPacket *pkt)
         if (ret < 0) {
             av_log(avf, AV_LOG_ERROR, "h264_mp4toannexb filter "
                    "failed to send input packet\n");
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return ret;
         }
 
@@ -656,18 +656,18 @@ static int concat_read_packet(AVFormatContext *avf, AVPacket *pkt)
             is_new_st = 0;
         }
         if ((ret = match_streams(avf)) < 0) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return ret;
         }
         if (packet_after_outpoint(cat, pkt)) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             if ((ret = open_next_file(avf)) < 0)
                 goto open_fail;
             continue;
         }
         cs = &cat->cur_file->streams[pkt->stream_index];
         if (cs->out_stream_index < 0) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             continue;
         }
         break;

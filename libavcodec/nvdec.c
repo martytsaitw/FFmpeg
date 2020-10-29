@@ -175,14 +175,14 @@ static int nvdec_decoder_create(AVBufferRef **out, AVBufferRef *hw_device_ref,
     if (!decoder)
         return AVERROR(ENOMEM);
 
-    decoder_ref = av_buffer_create((uint8_t*)decoder, sizeof(*decoder),
+    decoder_ref = av_buffer_create_ijk((uint8_t*)decoder, sizeof(*decoder),
                                    nvdec_decoder_free, NULL, AV_BUFFER_FLAG_READONLY);
     if (!decoder_ref) {
         av_freep(&decoder);
         return AVERROR(ENOMEM);
     }
 
-    decoder->hw_device_ref = av_buffer_ref(hw_device_ref);
+    decoder->hw_device_ref = av_buffer_ref_ijk(hw_device_ref);
     if (!decoder->hw_device_ref) {
         ret = AVERROR(ENOMEM);
         goto fail;
@@ -234,7 +234,7 @@ static AVBufferRef *nvdec_decoder_frame_alloc(void *opaque, int size)
     if (pool->nb_allocated >= pool->dpb_size)
         return NULL;
 
-    ret = av_buffer_alloc(sizeof(unsigned int));
+    ret = av_buffer_alloc_ijk(sizeof(unsigned int));
     if (!ret)
         return NULL;
 
@@ -432,7 +432,7 @@ int ff_nvdec_start_frame(AVCodecContext *avctx, AVFrame *frame)
     if (!cf)
         return AVERROR(ENOMEM);
 
-    cf->decoder_ref = av_buffer_ref(ctx->decoder_ref);
+    cf->decoder_ref = av_buffer_ref_ijk(ctx->decoder_ref);
     if (!cf->decoder_ref) {
         ret = AVERROR(ENOMEM);
         goto fail;

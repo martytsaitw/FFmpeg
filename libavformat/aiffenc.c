@@ -233,7 +233,7 @@ static int aiff_write_packet(AVFormatContext *s, AVPacket *pkt)
         if (!pict_list)
             return AVERROR(ENOMEM);
 
-        ret = av_packet_ref(&pict_list->pkt, pkt);
+        ret = av_packet_ref_ijk(&pict_list->pkt, pkt);
         if (ret < 0) {
             av_freep(&pict_list);
             return ret;
@@ -295,7 +295,7 @@ static int aiff_write_trailer(AVFormatContext *s)
 
     while (pict_list) {
         AVPacketList *next = pict_list->next;
-        av_packet_unref(&pict_list->pkt);
+        av_packet_unref_ijk(&pict_list->pkt);
         av_freep(&pict_list);
         pict_list = next;
     }

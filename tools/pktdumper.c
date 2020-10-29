@@ -101,7 +101,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
 
     while ((err = av_read_frame(fctx, &pkt)) >= 0) {
         int fd;
@@ -119,7 +119,7 @@ int main(int argc, char **argv)
             }
             close(fd);
         }
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
         pktnum++;
         if (maxpkts && (pktnum >= maxpkts))
             break;

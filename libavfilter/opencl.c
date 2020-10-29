@@ -50,7 +50,7 @@ static int opencl_filter_set_device(AVFilterContext *avctx,
 
     av_buffer_unref(&ctx->device_ref);
 
-    ctx->device_ref = av_buffer_ref(device);
+    ctx->device_ref = av_buffer_ref_ijk(device);
     if (!ctx->device_ref)
         return AVERROR(ENOMEM);
 

@@ -59,7 +59,7 @@ static int g723_1_read_packet(AVFormatContext *s, AVPacket *pkt)
     byte     = avio_r8(s->pb);
     size     = frame_size[byte & 3];
 
-    ret = av_new_packet(pkt, size);
+    ret = av_new_packet_ijk(pkt, size);
     if (ret < 0)
         return ret;
 
@@ -69,7 +69,7 @@ static int g723_1_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     ret = avio_read(s->pb, pkt->data + 1, size - 1);
     if (ret < size - 1) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return ret < 0 ? ret : AVERROR_EOF;
     }
 

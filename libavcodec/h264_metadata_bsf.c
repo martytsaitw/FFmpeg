@@ -331,7 +331,7 @@ static int h264_metadata_filter(AVBSFContext *bsf, AVPacket *out)
         if (j == 32 && ctx->sei_user_data[i] == '+') {
             size_t len = strlen(ctx->sei_user_data + i + 1);
 
-            udu->data_ref = av_buffer_alloc(len + 1);
+            udu->data_ref = av_buffer_alloc_ijk(len + 1);
             if (!udu->data_ref) {
                 err = AVERROR(ENOMEM);
                 goto fail;
@@ -522,12 +522,12 @@ static int h264_metadata_filter(AVBSFContext *bsf, AVPacket *out)
         goto fail;
     }
 
-    err = av_packet_copy_props(out, in);
+    err = av_packet_copy_props_ijk(out, in);
     if (err < 0)
         goto fail;
 
     if (displaymatrix_side_data) {
-        err = av_packet_add_side_data(out, AV_PKT_DATA_DISPLAYMATRIX,
+        err = av_packet_add_side_data_ijk(out, AV_PKT_DATA_DISPLAYMATRIX,
                                       displaymatrix_side_data,
                                       displaymatrix_side_data_size);
         if (err) {
@@ -546,7 +546,7 @@ fail:
     av_freep(&displaymatrix_side_data);
 
     if (err < 0)
-        av_packet_unref(out);
+        av_packet_unref_ijk(out);
     av_packet_free(&in);
 
     return err;

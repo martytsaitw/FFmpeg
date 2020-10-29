@@ -104,7 +104,7 @@ static int cudaupload_config_output(AVFilterLink *outlink)
     if (ret < 0)
         return ret;
 
-    outlink->hw_frames_ctx = av_buffer_ref(s->hwframe);
+    outlink->hw_frames_ctx = av_buffer_ref_ijk(s->hwframe);
     if (!outlink->hw_frames_ctx)
         return AVERROR(ENOMEM);
 

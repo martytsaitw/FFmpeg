@@ -644,7 +644,7 @@ static int avisynth_read_packet_video(AVFormatContext *s, AVPacket *pkt,
     if (!pkt->size)
         return AVERROR_UNKNOWN;
 
-    if (av_new_packet(pkt, pkt->size) < 0)
+    if (av_new_packet_ijk(pkt, pkt->size) < 0)
         return AVERROR(ENOMEM);
 
     pkt->pts      = n;
@@ -657,7 +657,7 @@ static int avisynth_read_packet_video(AVFormatContext *s, AVPacket *pkt,
     if (error) {
         av_log(s, AV_LOG_ERROR, "%s\n", error);
         avs->error = 1;
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return AVERROR_UNKNOWN;
     }
 
@@ -750,7 +750,7 @@ static int avisynth_read_packet_audio(AVFormatContext *s, AVPacket *pkt,
     if (!pkt->size)
         return AVERROR_UNKNOWN;
 
-    if (av_new_packet(pkt, pkt->size) < 0)
+    if (av_new_packet_ijk(pkt, pkt->size) < 0)
         return AVERROR(ENOMEM);
 
     pkt->pts      = n;
@@ -763,7 +763,7 @@ static int avisynth_read_packet_audio(AVFormatContext *s, AVPacket *pkt,
     if (error) {
         av_log(s, AV_LOG_ERROR, "%s\n", error);
         avs->error = 1;
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return AVERROR_UNKNOWN;
     }
     return 0;

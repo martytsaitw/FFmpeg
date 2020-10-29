@@ -139,7 +139,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     ff_set_cmp(&s->mecc, s->mecc.me_cmp, s->avctx->me_cmp);
     ff_set_cmp(&s->mecc, s->mecc.me_sub_cmp, s->avctx->me_sub_cmp);
 
-    s->input_picture = av_frame_alloc();
+    s->input_picture = av_frame_alloc_ijk();
     if (!s->input_picture)
         return AVERROR(ENOMEM);
 

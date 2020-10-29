@@ -177,7 +177,7 @@ static int xcbgrab_frame(AVFormatContext *s, AVPacket *pkt)
     data   = xcb_get_image_data(img);
     length = xcb_get_image_data_length(img);
 
-    ret = av_new_packet(pkt, length);
+    ret = av_new_packet_ijk(pkt, length);
 
     if (!ret)
         memcpy(pkt->data, data, length);

@@ -55,7 +55,7 @@ static av_cold int ulti_decode_init(AVCodecContext *avctx)
     avctx->pix_fmt = AV_PIX_FMT_YUV410P;
     s->ulti_codebook = ulti_codebook;
 
-    s->frame = av_frame_alloc();
+    s->frame = av_frame_alloc_ijk();
     if (!s->frame)
         return AVERROR(ENOMEM);
 

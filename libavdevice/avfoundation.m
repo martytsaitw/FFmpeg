@@ -904,7 +904,7 @@ static int avf_read_packet(AVFormatContext *s, AVPacket *pkt)
 
         if (ctx->current_frame != nil) {
             void *data;
-            if (av_new_packet(pkt, (int)CVPixelBufferGetDataSize(image_buffer)) < 0) {
+            if (av_new_packet_ijk(pkt, (int)CVPixelBufferGetDataSize(image_buffer)) < 0) {
                 return AVERROR(EIO);
             }
 
@@ -939,7 +939,7 @@ static int avf_read_packet(AVFormatContext *s, AVPacket *pkt)
                 return AVERROR_BUFFER_TOO_SMALL;
             }
 
-            if (av_new_packet(pkt, block_buffer_size) < 0) {
+            if (av_new_packet_ijk(pkt, block_buffer_size) < 0) {
                 return AVERROR(EIO);
             }
 

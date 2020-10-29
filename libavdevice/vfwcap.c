@@ -194,7 +194,7 @@ static LRESULT CALLBACK videostream_cb(HWND hwnd, LPVIDEOHDR vdhdr)
     if(!pktl_next)
         goto fail;
 
-    if(av_new_packet(&pktl_next->pkt, vdhdr->dwBytesUsed) < 0) {
+    if(av_new_packet_ijk(&pktl_next->pkt, vdhdr->dwBytesUsed) < 0) {
         av_free(pktl_next);
         goto fail;
     }
@@ -234,7 +234,7 @@ static int vfw_read_close(AVFormatContext *s)
     pktl = ctx->pktl;
     while (pktl) {
         AVPacketList *next = pktl->next;
-        av_packet_unref(&pktl->pkt);
+        av_packet_unref_ijk(&pktl->pkt);
         av_free(pktl);
         pktl = next;
     }

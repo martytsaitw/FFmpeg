@@ -156,7 +156,7 @@ static av_cold int mimic_decode_init(AVCodecContext *avctx)
     ff_init_scantable(ctx->idsp.idct_permutation, &ctx->scantable, col_zag);
 
     for (i = 0; i < FF_ARRAY_ELEMS(ctx->frames); i++) {
-        ctx->frames[i].f = av_frame_alloc();
+        ctx->frames[i].f = av_frame_alloc_ijk();
         if (!ctx->frames[i].f) {
             mimic_decode_end(avctx);
             return AVERROR(ENOMEM);
@@ -458,7 +458,7 @@ static av_cold int mimic_init_thread_copy(AVCodecContext *avctx)
     int i;
 
     for (i = 0; i < FF_ARRAY_ELEMS(ctx->frames); i++) {
-        ctx->frames[i].f = av_frame_alloc();
+        ctx->frames[i].f = av_frame_alloc_ijk();
         if (!ctx->frames[i].f) {
             mimic_decode_end(avctx);
             return AVERROR(ENOMEM);

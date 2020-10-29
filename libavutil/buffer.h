@@ -43,9 +43,9 @@
  * caller directly.
  *
  * There are two functions provided for creating a new AVBuffer with a single
- * reference -- av_buffer_alloc() to just allocate a new buffer, and
- * av_buffer_create() to wrap an existing array in an AVBuffer. From an existing
- * reference, additional references may be created with av_buffer_ref().
+ * reference -- av_buffer_alloc_ijk() to just allocate a new buffer, and
+ * av_buffer_create_ijk() to wrap an existing array in an AVBuffer. From an existing
+ * reference, additional references may be created with av_buffer_ref_ijk().
  * Use av_buffer_unref() to free a reference (this will automatically free the
  * data once all the references are freed).
  *
@@ -98,10 +98,10 @@ typedef struct AVBufferRef {
  *
  * @return an AVBufferRef of given size or NULL when out of memory
  */
-AVBufferRef *av_buffer_alloc(int size);
+AVBufferRef *av_buffer_alloc_ijk(int size);
 
 /**
- * Same as av_buffer_alloc(), except the returned buffer will be initialized
+ * Same as av_buffer_alloc_ijk(), except the returned buffer will be initialized
  * to zero.
  */
 AVBufferRef *av_buffer_allocz(int size);
@@ -127,13 +127,13 @@ AVBufferRef *av_buffer_allocz(int size);
  *
  * @return an AVBufferRef referring to data on success, NULL on failure.
  */
-AVBufferRef *av_buffer_create(uint8_t *data, int size,
+AVBufferRef *av_buffer_create_ijk(uint8_t *data, int size,
                               void (*free)(void *opaque, uint8_t *data),
                               void *opaque, int flags);
 
 /**
  * Default free callback, which calls av_free() on the buffer data.
- * This function is meant to be passed to av_buffer_create(), not called
+ * This function is meant to be passed to av_buffer_create_ijk(), not called
  * directly.
  */
 void av_buffer_default_free(void *opaque, uint8_t *data);
@@ -144,7 +144,7 @@ void av_buffer_default_free(void *opaque, uint8_t *data);
  * @return a new AVBufferRef referring to the same AVBuffer as buf or NULL on
  * failure.
  */
-AVBufferRef *av_buffer_ref(AVBufferRef *buf);
+AVBufferRef *av_buffer_ref_ijk(AVBufferRef *buf);
 
 /**
  * Free a given reference and automatically free the buffer if there are no more
@@ -158,12 +158,12 @@ void av_buffer_unref(AVBufferRef **buf);
  * @return 1 if the caller may write to the data referred to by buf (which is
  * true if and only if buf is the only reference to the underlying AVBuffer).
  * Return 0 otherwise.
- * A positive answer is valid until av_buffer_ref() is called on buf.
+ * A positive answer is valid until av_buffer_ref_ijk() is called on buf.
  */
 int av_buffer_is_writable(const AVBufferRef *buf);
 
 /**
- * @return the opaque parameter set by av_buffer_create.
+ * @return the opaque parameter set by av_buffer_create_ijk.
  */
 void *av_buffer_get_opaque(const AVBufferRef *buf);
 
@@ -191,11 +191,11 @@ int av_buffer_make_writable(AVBufferRef **buf);
  * @return 0 on success, a negative AVERROR on failure.
  *
  * @note the buffer is actually reallocated with av_realloc() only if it was
- * initially allocated through av_buffer_realloc(NULL) and there is only one
+ * initially allocated through av_buffer_realloc_ijk(NULL) and there is only one
  * reference to it (i.e. the one passed to this function). In all other cases
  * a new buffer is allocated and the data is copied.
  */
-int av_buffer_realloc(AVBufferRef **buf, int size);
+int av_buffer_realloc_ijk(AVBufferRef **buf, int size);
 
 /**
  * @}
@@ -215,9 +215,9 @@ int av_buffer_realloc(AVBufferRef **buf, int size);
  *
  * At the beginning, the user must call av_buffer_pool_init() to create the
  * buffer pool. Then whenever a buffer is needed, call av_buffer_pool_get() to
- * get a reference to a new buffer, similar to av_buffer_alloc(). This new
+ * get a reference to a new buffer, similar to av_buffer_alloc_ijk(). This new
  * reference works in all aspects the same way as the one created by
- * av_buffer_alloc(). However, when the last reference to this buffer is
+ * av_buffer_alloc_ijk(). However, when the last reference to this buffer is
  * unreferenced, it is returned to the pool instead of being freed and will be
  * reused for subsequent av_buffer_pool_get() calls.
  *
@@ -243,7 +243,7 @@ typedef struct AVBufferPool AVBufferPool;
  * @param size size of each buffer in this pool
  * @param alloc a function that will be used to allocate new buffers when the
  * pool is empty. May be NULL, then the default allocator will be used
- * (av_buffer_alloc()).
+ * (av_buffer_alloc_ijk()).
  * @return newly created buffer pool on success, NULL on error.
  */
 AVBufferPool *av_buffer_pool_init(int size, AVBufferRef* (*alloc)(int size));

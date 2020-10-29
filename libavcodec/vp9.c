@@ -146,7 +146,7 @@ static int vp9_frame_ref(AVCodecContext *avctx, VP9Frame *dst, VP9Frame *src)
     if (ret < 0)
         return ret;
 
-    dst->extradata = av_buffer_ref(src->extradata);
+    dst->extradata = av_buffer_ref_ijk(src->extradata);
     if (!dst->extradata)
         goto fail;
 
@@ -155,7 +155,7 @@ static int vp9_frame_ref(AVCodecContext *avctx, VP9Frame *dst, VP9Frame *src)
     dst->uses_2pass = src->uses_2pass;
 
     if (src->hwaccel_picture_private) {
-        dst->hwaccel_priv_buf = av_buffer_ref(src->hwaccel_priv_buf);
+        dst->hwaccel_priv_buf = av_buffer_ref_ijk(src->hwaccel_priv_buf);
         if (!dst->hwaccel_priv_buf)
             goto fail;
         dst->hwaccel_picture_private = dst->hwaccel_priv_buf->data;
@@ -1699,7 +1699,7 @@ static int init_frames(AVCodecContext *avctx)
     int i;
 
     for (i = 0; i < 3; i++) {
-        s->s.frames[i].tf.f = av_frame_alloc();
+        s->s.frames[i].tf.f = av_frame_alloc_ijk();
         if (!s->s.frames[i].tf.f) {
             vp9_decode_free(avctx);
             av_log(avctx, AV_LOG_ERROR, "Failed to allocate frame buffer %d\n", i);
@@ -1707,8 +1707,8 @@ static int init_frames(AVCodecContext *avctx)
         }
     }
     for (i = 0; i < 8; i++) {
-        s->s.refs[i].f = av_frame_alloc();
-        s->next_refs[i].f = av_frame_alloc();
+        s->s.refs[i].f = av_frame_alloc_ijk();
+        s->next_refs[i].f = av_frame_alloc_ijk();
         if (!s->s.refs[i].f || !s->next_refs[i].f) {
             vp9_decode_free(avctx);
             av_log(avctx, AV_LOG_ERROR, "Failed to allocate frame buffer %d\n", i);

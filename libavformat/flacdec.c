@@ -266,7 +266,7 @@ static av_unused int64_t flac_read_timestamp(AVFormatContext *s, int stream_inde
     if (avio_seek(s->pb, *ppos, SEEK_SET) < 0)
         return AV_NOPTS_VALUE;
 
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
     parser = av_parser_init(st->codecpar->codec_id);
     if (!parser){
         return AV_NOPTS_VALUE;
@@ -279,16 +279,16 @@ static av_unused int64_t flac_read_timestamp(AVFormatContext *s, int stream_inde
             if (ret == AVERROR(EAGAIN))
                 continue;
             else {
-                av_packet_unref(&pkt);
+                av_packet_unref_ijk(&pkt);
                 av_assert1(!pkt.size);
             }
         }
-        av_init_packet(&out_pkt);
+        av_init_packet_ijk(&out_pkt);
         av_parser_parse2(parser, st->internal->avctx,
                          &out_pkt.data, &out_pkt.size, pkt.data, pkt.size,
                          pkt.pts, pkt.dts, *ppos);
 
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
         if (out_pkt.size){
             int size = out_pkt.size;
             if (parser->pts != AV_NOPTS_VALUE){

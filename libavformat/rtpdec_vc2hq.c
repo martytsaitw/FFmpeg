@@ -59,7 +59,7 @@ static int vc2hq_handle_sequence_header(PayloadContext *pl_ctx, AVStream *st, AV
     int res;
     uint32_t size = DIRAC_DATA_UNIT_HEADER_SIZE + len;
 
-    if ((res = av_new_packet(pkt, DIRAC_DATA_UNIT_HEADER_SIZE + len)) < 0)
+    if ((res = av_new_packet_ijk(pkt, DIRAC_DATA_UNIT_HEADER_SIZE + len)) < 0)
         return res;
 
     fill_parse_info_header(pl_ctx, pkt->data, 0x00, size);
@@ -78,7 +78,7 @@ static int vc2hq_mark_end_of_sequence(PayloadContext *pl_ctx, AVStream *st, AVPa
     uint32_t size = 0;
 
     /* create A/V packet */
-    if ((res = av_new_packet(pkt, DIRAC_DATA_UNIT_HEADER_SIZE)) < 0)
+    if ((res = av_new_packet_ijk(pkt, DIRAC_DATA_UNIT_HEADER_SIZE)) < 0)
         return res;
 
     fill_parse_info_header(pl_ctx, pkt->data, 0x10, size);

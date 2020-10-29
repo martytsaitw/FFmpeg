@@ -55,13 +55,13 @@ static int dump_extradata(AVBSFContext *ctx, AVPacket *out)
             goto fail;
         }
 
-        ret = av_new_packet(out, in->size + ctx->par_in->extradata_size);
+        ret = av_new_packet_ijk(out, in->size + ctx->par_in->extradata_size);
         if (ret < 0)
             goto fail;
 
-        ret = av_packet_copy_props(out, in);
+        ret = av_packet_copy_props_ijk(out, in);
         if (ret < 0) {
-            av_packet_unref(out);
+            av_packet_unref_ijk(out);
             goto fail;
         }
 
