@@ -128,7 +128,7 @@ static int handle_file(struct Tracks *tracks, const char *file)
         return 1;
     }
 
-    err = avformat_find_stream_info(ctx, NULL);
+    err = avformat_find_stream_info_ijk(ctx, NULL);
     if (err < 0) {
         av_strerror(err, errbuf, sizeof(errbuf));
         fprintf(stderr, "Unable to identify %s: %s\n", file, errbuf);

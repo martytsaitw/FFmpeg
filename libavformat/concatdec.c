@@ -370,7 +370,7 @@ static int open_file(AVFormatContext *avf, unsigned fileno)
     ret = avformat_open_input_ijk(&new_avf, file->url, NULL, &tmp);
     av_dict_free(&tmp);
     if (ret < 0 ||
-        (ret = !cat->use_new_find_stream_info ? avformat_find_stream_info(new_avf, NULL) : av_try_find_stream_info(new_avf, NULL)) < 0) {
+        (ret = !cat->use_new_find_stream_info ? avformat_find_stream_info_ijk(new_avf, NULL) : av_try_find_stream_info(new_avf, NULL)) < 0) {
         av_log(avf, AV_LOG_ERROR, "Impossible to open '%s'\n", file->url);
         avformat_close_input(&new_avf);
         return ret;

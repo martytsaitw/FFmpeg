@@ -2852,7 +2852,7 @@ static int open_input_file(InputFile *ifile, const char *filename)
         AVDictionary **opts = setup_find_stream_info_opts(fmt_ctx, codec_opts);
         int orig_nb_streams = fmt_ctx->nb_streams;
 
-        err = avformat_find_stream_info(fmt_ctx, opts);
+        err = avformat_find_stream_info_ijk(fmt_ctx, opts);
 
         for (i = 0; i < orig_nb_streams; i++)
             av_dict_free(&opts[i]);

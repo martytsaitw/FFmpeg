@@ -1948,7 +1948,7 @@ static int hls_read_header(AVFormatContext *s, AVDictionary **options)
         /*
          * If this is a live stream and this playlist looks like it is one segment
          * behind, try to sync it up so that every substream starts at the same
-         * time position (so e.g. avformat_find_stream_info() will see packets from
+         * time position (so e.g. avformat_find_stream_info_ijk() will see packets from
          * all active streams within the first few seconds). This is not very generic,
          * though, as the sequence numbers are technically independent.
          */
@@ -2004,11 +2004,11 @@ static int hls_read_header(AVFormatContext *s, AVDictionary **options)
         /*
          * For ID3 timestamped raw audio streams we need to detect the packet
          * durations to calculate timestamps in fill_timing_for_id3_timestamped_stream(),
-         * but for other streams we can rely on our user calling avformat_find_stream_info()
+         * but for other streams we can rely on our user calling avformat_find_stream_info_ijk()
          * on us if they want to.
          */
         if (pls->is_id3_timestamped) {
-            ret = avformat_find_stream_info(pls->ctx, NULL);
+            ret = avformat_find_stream_info_ijk(pls->ctx, NULL);
             if (ret < 0)
                 goto fail;
         }

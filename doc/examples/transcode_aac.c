@@ -73,7 +73,7 @@ static int open_input_file(const char *filename,
     }
 
     /* Get information on the input file (number of streams etc.). */
-    if ((error = avformat_find_stream_info(*input_format_context, NULL)) < 0) {
+    if ((error = avformat_find_stream_info_ijk(*input_format_context, NULL)) < 0) {
         fprintf(stderr, "Could not open find stream info (error '%s')\n",
                 av_err2str(error));
         avformat_close_input(input_format_context);

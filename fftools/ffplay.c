@@ -2784,7 +2784,7 @@ static int read_thread(void *arg)
         AVDictionary **opts = setup_find_stream_info_opts(ic, codec_opts);
         int orig_nb_streams = ic->nb_streams;
 
-        err = avformat_find_stream_info(ic, opts);
+        err = avformat_find_stream_info_ijk(ic, opts);
 
         for (i = 0; i < orig_nb_streams; i++)
             av_dict_free(&opts[i]);

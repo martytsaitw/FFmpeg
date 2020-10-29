@@ -259,7 +259,7 @@ int main (int argc, char **argv)
     }
 
     /* retrieve stream information */
-    if (avformat_find_stream_info(fmt_ctx, NULL) < 0) {
+    if (avformat_find_stream_info_ijk(fmt_ctx, NULL) < 0) {
         fprintf(stderr, "Could not find stream information\n");
         exit(1);
     }

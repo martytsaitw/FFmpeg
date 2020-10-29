@@ -3598,7 +3598,7 @@ static int extract_extradata(AVStream *st, AVPacket *pkt)
     return 0;
 }
 
-int avformat_find_stream_info(AVFormatContext *ic, AVDictionary **options)
+int avformat_find_stream_info_ijk(AVFormatContext *ic, AVDictionary **options)
 {
     int i, count = 0, ret = 0, j;
     int64_t read_size;
@@ -3691,7 +3691,7 @@ int avformat_find_stream_info(AVFormatContext *ic, AVDictionary **options)
     }
 
     if (ic->pb)
-        av_log(ic, AV_LOG_DEBUG, "Before avformat_find_stream_info() pos: %"PRId64" bytes read:%"PRId64" seeks:%d nb_streams:%d\n",
+        av_log(ic, AV_LOG_DEBUG, "Before avformat_find_stream_info_ijk() pos: %"PRId64" bytes read:%"PRId64" seeks:%d nb_streams:%d\n",
                avio_tell(ic->pb), ic->pb->bytes_read, ic->pb->seek_count, ic->nb_streams);
 
     for (i = 0; i < ic->nb_streams; i++) {
@@ -4267,7 +4267,7 @@ find_stream_info_err:
         av_packet_free(&ic->streams[i]->internal->extract_extradata.pkt);
     }
     if (ic->pb)
-        av_log(ic, AV_LOG_DEBUG, "After avformat_find_stream_info() pos: %"PRId64" bytes read:%"PRId64" seeks:%d frames:%d\n",
+        av_log(ic, AV_LOG_DEBUG, "After avformat_find_stream_info_ijk() pos: %"PRId64" bytes read:%"PRId64" seeks:%d frames:%d\n",
                avio_tell(ic->pb), ic->pb->bytes_read, ic->pb->seek_count, count);
     return ret;
 }
@@ -6300,7 +6300,7 @@ fail:
     }
     
     if (ret < 0) {
-        ret = avformat_find_stream_info(ic, options);
+        ret = avformat_find_stream_info_ijk(ic, options);
     } else {
         update_stream_timings(ic);
     }

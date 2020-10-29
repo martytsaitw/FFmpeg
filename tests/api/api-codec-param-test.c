@@ -96,7 +96,7 @@ static int find_video_stream_info(AVFormatContext *fmt_ctx, int decode)
 
         /* Writing to AVStream.codec_info_nb_frames must not be done by
          * user applications. It is done here for testing purposing as
-         * find_video_stream_info tries to mimic avformat_find_stream_info
+         * find_video_stream_info tries to mimic avformat_find_stream_info_ijk
          * which writes to this field.
          * */
         if (codec_ctx->codec_type != AVMEDIA_TYPE_VIDEO ||

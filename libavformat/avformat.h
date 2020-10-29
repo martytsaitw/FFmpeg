@@ -115,7 +115,7 @@
  * specified file (autodetecting the format) and read the header, exporting the
  * information stored there into s. Some formats do not have a header or do not
  * store enough information there, so it is recommended that you call the
- * avformat_find_stream_info() function which tries to read and decode a few
+ * avformat_find_stream_info_ijk() function which tries to read and decode a few
  * frames to find missing information.
  *
  * In some cases you might want to preallocate an AVFormatContext yourself with
@@ -938,7 +938,7 @@ typedef struct AVStream {
      * Average framerate
      *
      * - demuxing: May be set by libavformat when creating the stream or in
-     *             avformat_find_stream_info().
+     *             avformat_find_stream_info_ijk().
      * - muxing: May be set by the caller before avformat_write_header().
      */
     AVRational avg_frame_rate;
@@ -1012,7 +1012,7 @@ typedef struct AVStream {
      * respectively.
      *
      * - demuxing: filled by libavformat on stream creation or in
-     *             avformat_find_stream_info()
+     *             avformat_find_stream_info_ijk()
      * - muxing: filled by the caller before avformat_write_header()
      */
     AVCodecParameters *codecpar;
@@ -1029,7 +1029,7 @@ typedef struct AVStream {
 
 #define MAX_STD_TIMEBASES (30*12+30+3+6)
     /**
-     * Stream information used internally by avformat_find_stream_info()
+     * Stream information used internally by avformat_find_stream_info_ijk()
      */
     struct {
         int64_t last_dts;
@@ -1081,7 +1081,7 @@ typedef struct AVStream {
     int probe_packets;
 
     /**
-     * Number of frames that have been demuxed during avformat_find_stream_info()
+     * Number of frames that have been demuxed during avformat_find_stream_info_ijk()
      */
     int codec_info_nb_frames;
 
@@ -1506,8 +1506,8 @@ typedef struct AVFormatContext {
 
     /**
      * Maximum duration (in AV_TIME_BASE units) of the data read
-     * from input in avformat_find_stream_info().
-     * Demuxing only, set by the caller before avformat_find_stream_info().
+     * from input in avformat_find_stream_info_ijk().
+     * Demuxing only, set by the caller before avformat_find_stream_info_ijk().
      * Can be set to 0 to let avformat choose using a heuristic.
      */
     int64_t max_analyze_duration;
@@ -1593,8 +1593,8 @@ typedef struct AVFormatContext {
 
     /**
      * The number of frames used for determining the framerate in
-     * avformat_find_stream_info().
-     * Demuxing only, set by the caller before avformat_find_stream_info().
+     * avformat_find_stream_info_ijk().
+     * Demuxing only, set by the caller before avformat_find_stream_info_ijk().
      */
     int fps_probe_size;
 
@@ -2337,7 +2337,7 @@ int av_demuxer_open(AVFormatContext *ic);
  * @todo Let the user decide somehow what information is needed so that
  *       we do not waste time getting stuff the user does not need.
  */
-int avformat_find_stream_info(AVFormatContext *ic, AVDictionary **options);
+int avformat_find_stream_info_ijk(AVFormatContext *ic, AVDictionary **options);
 
 /**
  * Find the programs which belong to a given stream.

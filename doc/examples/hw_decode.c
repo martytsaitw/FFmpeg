@@ -176,7 +176,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    if (avformat_find_stream_info(input_ctx, NULL) < 0) {
+    if (avformat_find_stream_info_ijk(input_ctx, NULL) < 0) {
         fprintf(stderr, "Cannot find input stream information.\n");
         return -1;
     }

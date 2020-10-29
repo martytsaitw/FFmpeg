@@ -88,7 +88,7 @@ static int video_decode(const char *input_filename)
         return result;
     }
 
-    result = avformat_find_stream_info(fmt_ctx, NULL);
+    result = avformat_find_stream_info_ijk(fmt_ctx, NULL);
     if (result < 0) {
         av_log(NULL, AV_LOG_ERROR, "Can't get stream info\n");
         return result;

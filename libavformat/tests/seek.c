@@ -106,7 +106,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    ret = avformat_find_stream_info(ic, NULL);
+    ret = avformat_find_stream_info_ijk(ic, NULL);
     if (ret < 0) {
         fprintf(stderr, "%s: could not find codec parameters\n", filename);
         return 1;

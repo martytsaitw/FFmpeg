@@ -783,7 +783,7 @@ static void add_input_streams(OptionsContext *o, AVFormatContext *ic)
             }
 #endif
 
-            // avformat_find_stream_info() doesn't set this for us anymore.
+            // avformat_find_stream_info_ijk() doesn't set this for us anymore.
             ist->dec_ctx->framerate = st->avg_frame_rate;
 
             MATCH_PER_STREAM_OPT(frame_rates, str, framerate, ic, st);
@@ -1088,7 +1088,7 @@ static int open_input_file(OptionsContext *o, const char *filename)
 
         /* If not enough info to get the stream parameters, we decode the
            first frames to get it. (used in mpeg case for example) */
-        ret = avformat_find_stream_info(ic, opts);
+        ret = avformat_find_stream_info_ijk(ic, opts);
 
         for (i = 0; i < orig_nb_streams; i++)
             av_dict_free(&opts[i]);

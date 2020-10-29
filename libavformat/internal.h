@@ -167,7 +167,7 @@ struct AVStreamInternal {
     int bitstream_checked;
 
     /**
-     * The codec context used by avformat_find_stream_info, the parser, etc.
+     * The codec context used by avformat_find_stream_info_ijk, the parser, etc.
      */
     AVCodecContext *avctx;
     /**

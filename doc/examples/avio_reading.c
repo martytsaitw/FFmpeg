@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
         goto end;
     }
 
-    ret = avformat_find_stream_info(fmt_ctx, NULL);
+    ret = avformat_find_stream_info_ijk(fmt_ctx, NULL);
     if (ret < 0) {
         fprintf(stderr, "Could not find stream information\n");
         goto end;

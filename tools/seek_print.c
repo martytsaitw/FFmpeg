@@ -69,7 +69,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "%s: %s\n", filename, av_err2str(ret));
         return 1;
     }
-    if ((ret = avformat_find_stream_info(avf, NULL)) < 0) {
+    if ((ret = avformat_find_stream_info_ijk(avf, NULL)) < 0) {
         fprintf(stderr, "%s: could not find codec parameters: %s\n", filename,
                 av_err2str(ret));
         return 1;
