@@ -510,7 +510,7 @@ const AVOutputFormat *av_muxer_iterate(void **opaque)
     return f;
 }
 
-const AVInputFormat *av_demuxer_iterate(void **opaque)
+const AVInputFormat *av_demuxer_iterate_ijk(void **opaque)
 {
     static const uintptr_t size = sizeof(demuxer_list)/sizeof(demuxer_list[0]) - 1;
     uintptr_t i = (uintptr_t)*opaque;
@@ -579,7 +579,7 @@ AVInputFormat *av_iformat_next(const AVInputFormat *f)
         return f->next;
     else {
         void *opaque = NULL;
-        return (AVInputFormat *)av_demuxer_iterate(&opaque);
+        return (AVInputFormat *)av_demuxer_iterate_ijk(&opaque);
     }
 }
 

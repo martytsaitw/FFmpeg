@@ -341,7 +341,7 @@ int ff_img_read_header(AVFormatContext *s1)
             pd.buf_size = probe_buffer_size;
             pd.filename = s1->url;
 
-            while ((fmt = av_demuxer_iterate(&fmt_iter))) {
+            while ((fmt = av_demuxer_iterate_ijk(&fmt_iter))) {
                 if (fmt->read_header != ff_img_read_header ||
                     !fmt->read_probe ||
                     (fmt->flags & AVFMT_NOFILE) ||

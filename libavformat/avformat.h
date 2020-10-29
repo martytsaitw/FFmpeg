@@ -2117,7 +2117,7 @@ const AVOutputFormat *av_muxer_iterate(void **opaque);
  * @return the next registered demuxer or NULL when the iteration is
  *         finished
  */
-const AVInputFormat *av_demuxer_iterate(void **opaque);
+const AVInputFormat *av_demuxer_iterate_ijk(void **opaque);
 
 /**
  * Allocate an AVFormatContext.

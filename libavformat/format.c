@@ -119,7 +119,7 @@ AVInputFormat *av_find_input_format(const char *short_name)
 {
     const AVInputFormat *fmt = NULL;
     void *i = 0;
-    while ((fmt = av_demuxer_iterate(&i)))
+    while ((fmt = av_demuxer_iterate_ijk(&i)))
         if (av_match_name(short_name, fmt->name))
             return (AVInputFormat*)fmt;
     return NULL;
@@ -157,7 +157,7 @@ AVInputFormat *av_probe_input_format3(AVProbeData *pd, int is_opened,
             nodat = ID3_GREATER_PROBE;
     }
 
-    while ((fmt1 = av_demuxer_iterate(&i))) {
+    while ((fmt1 = av_demuxer_iterate_ijk(&i))) {
         if (!is_opened == !(fmt1->flags & AVFMT_NOFILE) && strcmp(fmt1->name, "image2"))
             continue;
         score = 0;
