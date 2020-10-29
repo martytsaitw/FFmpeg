@@ -1149,7 +1149,7 @@ int ff_id3v2_parse_apic(AVFormatContext *s, ID3v2ExtraMeta **extra_meta)
             continue;
         apic = cur->data;
 
-        if (!(st = avformat_new_stream(s, NULL)))
+        if (!(st = avformat_new_stream_ijk(s, NULL)))
             return AVERROR(ENOMEM);
 
         st->disposition      |= AV_DISPOSITION_ATTACHED_PIC;

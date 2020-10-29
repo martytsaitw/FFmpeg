@@ -52,7 +52,7 @@ static int write_header(AVFormatContext *s)
         av_log(s, AV_LOG_ERROR, "Exactly one ASS/SSA stream is needed.\n");
         return AVERROR(EINVAL);
     }
-    avpriv_set_pts_info(s->streams[0], 64, 1, 100);
+    avpriv_set_pts_info_ijk(s->streams[0], 64, 1, 100);
     if (par->extradata_size > 0) {
         size_t header_size = par->extradata_size;
         uint8_t *trailer = strstr(par->extradata, "\n[Events]");

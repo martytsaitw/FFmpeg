@@ -2222,7 +2222,7 @@ static int mxf_write_header(AVFormatContext *s)
             }
             mxf->time_base = spf->time_base;
             rate = av_inv_q(mxf->time_base);
-            avpriv_set_pts_info(st, 64, mxf->time_base.num, mxf->time_base.den);
+            avpriv_set_pts_info_ijk(st, 64, mxf->time_base.num, mxf->time_base.den);
             if((ret = mxf_init_timecode(s, st, rate)) < 0)
                 return ret;
 
@@ -2263,7 +2263,7 @@ static int mxf_write_header(AVFormatContext *s)
                 av_log(s, AV_LOG_ERROR, "only 48khz is implemented\n");
                 return -1;
             }
-            avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+            avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
             if (s->oformat == &ff_mxf_d10_muxer) {
                 if (st->index != 1) {
                     av_log(s, AV_LOG_ERROR, "MXF D-10 only support one audio track\n");

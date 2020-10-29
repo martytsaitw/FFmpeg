@@ -37,16 +37,16 @@ static int sdr2_read_header(AVFormatContext *s)
 {
     AVStream *st, *ast;
 
-    ast = avformat_new_stream(s, 0);
+    ast = avformat_new_stream_ijk(s, 0);
     if (!ast)
         return AVERROR(ENOMEM);
 
-    st = avformat_new_stream(s, 0);
+    st = avformat_new_stream_ijk(s, 0);
     if (!st)
         return AVERROR(ENOMEM);
 
     avio_skip(s->pb, 20);
-    avpriv_set_pts_info(st, 64, 1, avio_rl32(s->pb));
+    avpriv_set_pts_info_ijk(st, 64, 1, avio_rl32(s->pb));
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->width      = avio_rl32(s->pb);
     st->codecpar->height     = avio_rl32(s->pb);
@@ -57,7 +57,7 @@ static int sdr2_read_header(AVFormatContext *s)
     ast->codecpar->channels    = 1;
     ast->codecpar->sample_rate = 8000;
     ast->codecpar->codec_id    = AV_CODEC_ID_PCM_S16LE;
-    avpriv_set_pts_info(ast, 64, 1, 8000);
+    avpriv_set_pts_info_ijk(ast, 64, 1, 8000);
 
     avio_seek(s->pb, FIRST, SEEK_SET);
 

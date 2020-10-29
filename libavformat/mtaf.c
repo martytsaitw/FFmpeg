@@ -41,7 +41,7 @@ static int mtaf_read_header(AVFormatContext *s)
     int stream_count;
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -57,7 +57,7 @@ static int mtaf_read_header(AVFormatContext *s)
     st->codecpar->channels    = 2 * stream_count;
     st->codecpar->sample_rate = 48000;
     st->codecpar->block_align = 0x110 * st->codecpar->channels / 2;
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     avio_seek(s->pb, 0x800, SEEK_SET);
 

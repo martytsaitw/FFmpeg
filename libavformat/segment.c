@@ -166,11 +166,11 @@ static int segment_mux_init(AVFormatContext *s)
         AVStream *st;
         AVCodecParameters *ipar, *opar;
 
-        if (!(st = avformat_new_stream(oc, NULL)))
+        if (!(st = avformat_new_stream_ijk(oc, NULL)))
             return AVERROR(ENOMEM);
         ipar = s->streams[i]->codecpar;
         opar = st->codecpar;
-        avcodec_parameters_copy(opar, ipar);
+        avcodec_parameters_copy_ijk(opar, ipar);
         if (!oc->oformat->codec_tag ||
             av_codec_get_id (oc->oformat->codec_tag, ipar->codec_tag) == opar->codec_id ||
             av_codec_get_tag(oc->oformat->codec_tag, ipar->codec_id) <= 0) {
@@ -791,7 +791,7 @@ static int seg_init(AVFormatContext *s)
     for (i = 0; i < s->nb_streams; i++) {
         AVStream *inner_st  = oc->streams[i];
         AVStream *outer_st = s->streams[i];
-        avpriv_set_pts_info(outer_st, inner_st->pts_wrap_bits, inner_st->time_base.num, inner_st->time_base.den);
+        avpriv_set_pts_info_ijk(outer_st, inner_st->pts_wrap_bits, inner_st->time_base.num, inner_st->time_base.den);
     }
 
     if (oc->avoid_negative_ts > 0 && s->avoid_negative_ts < 0)
@@ -813,7 +813,7 @@ static int seg_write_header(AVFormatContext *s)
 
             ipar = s->streams[i]->codecpar;
             opar = oc->streams[i]->codecpar;
-            avcodec_parameters_copy(opar, ipar);
+            avcodec_parameters_copy_ijk(opar, ipar);
             if (!oc->oformat->codec_tag ||
                 av_codec_get_id (oc->oformat->codec_tag, ipar->codec_tag) == opar->codec_id ||
                 av_codec_get_tag(oc->oformat->codec_tag, ipar->codec_id) <= 0) {

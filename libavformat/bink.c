@@ -93,7 +93,7 @@ static int read_header(AVFormatContext *s)
     int keyframe;
     int ret;
 
-    vst = avformat_new_stream(s, NULL);
+    vst = avformat_new_stream_ijk(s, NULL);
     if (!vst)
         return AVERROR(ENOMEM);
 
@@ -137,7 +137,7 @@ static int read_header(AVFormatContext *s)
                fps_num, fps_den);
         return AVERROR(EIO);
     }
-    avpriv_set_pts_info(vst, 64, fps_den, fps_num);
+    avpriv_set_pts_info_ijk(vst, 64, fps_den, fps_num);
     vst->avg_frame_rate = av_inv_q(vst->time_base);
 
     vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
@@ -171,13 +171,13 @@ static int read_header(AVFormatContext *s)
         avio_skip(pb, 4 * bink->num_audio_tracks); /* max decoded size */
 
         for (i = 0; i < bink->num_audio_tracks; i++) {
-            ast = avformat_new_stream(s, NULL);
+            ast = avformat_new_stream_ijk(s, NULL);
             if (!ast)
                 return AVERROR(ENOMEM);
             ast->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
             ast->codecpar->codec_tag   = 0;
             ast->codecpar->sample_rate = avio_rl16(pb);
-            avpriv_set_pts_info(ast, 64, 1, ast->codecpar->sample_rate);
+            avpriv_set_pts_info_ijk(ast, 64, 1, ast->codecpar->sample_rate);
             flags = avio_rl16(pb);
             ast->codecpar->codec_id = flags & BINK_AUD_USEDCT ?
                                    AV_CODEC_ID_BINKAUDIO_DCT : AV_CODEC_ID_BINKAUDIO_RDFT;

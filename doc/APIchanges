@@ -2022,7 +2022,7 @@ lavd 54.4.100 / 54.0.0, lavfi 3.5.0
   Deprecate AVCodecContext.parse_only and CODEC_CAP_PARSE_ONLY.
 
 2011-10-19 - d049257 / 569129a - lavf 53.17.0 / 53.10.0
-  Add avformat_new_stream(). Deprecate av_new_stream().
+  Add avformat_new_stream_ijk(). Deprecate av_new_stream().
 
 2011-10-13 - 91eb1b1 / b631fba - lavf 53.16.0 / 53.9.0
   Add AVFMT_NO_BYTE_SEEK AVInputFormat flag.

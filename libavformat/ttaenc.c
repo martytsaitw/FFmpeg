@@ -61,7 +61,7 @@ static int tta_init(AVFormatContext *s)
         return AVERROR(EINVAL);
     }
     tta->frame_size = par->sample_rate * 256 / 245;
-    avpriv_set_pts_info(s->streams[0], 64, 1, par->sample_rate);
+    avpriv_set_pts_info_ijk(s->streams[0], 64, 1, par->sample_rate);
 
     return 0;
 }

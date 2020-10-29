@@ -72,7 +72,7 @@ const AVBitStreamFilter *av_bsf_next(void **opaque) {
 }
 #endif
 
-const AVBitStreamFilter *av_bsf_get_by_name(const char *name)
+const AVBitStreamFilter *av_bsf_get_by_name_ijk(const char *name)
 {
     const AVBitStreamFilter *f = NULL;
     void *i = 0;

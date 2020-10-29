@@ -157,16 +157,16 @@ static int rtp_write_header(AVFormatContext *s1)
     s->max_payload_size = s1->packet_size - 12;
 
     if (st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
-        avpriv_set_pts_info(st, 32, 1, st->codecpar->sample_rate);
+        avpriv_set_pts_info_ijk(st, 32, 1, st->codecpar->sample_rate);
     } else {
-        avpriv_set_pts_info(st, 32, 1, 90000);
+        avpriv_set_pts_info_ijk(st, 32, 1, 90000);
     }
     s->buf_ptr = s->buf;
     switch(st->codecpar->codec_id) {
     case AV_CODEC_ID_MP2:
     case AV_CODEC_ID_MP3:
         s->buf_ptr = s->buf + 4;
-        avpriv_set_pts_info(st, 32, 1, 90000);
+        avpriv_set_pts_info_ijk(st, 32, 1, 90000);
         break;
     case AV_CODEC_ID_MPEG1VIDEO:
     case AV_CODEC_ID_MPEG2VIDEO:
@@ -231,7 +231,7 @@ static int rtp_write_header(AVFormatContext *s1)
     case AV_CODEC_ID_ADPCM_G722:
         /* Due to a historical error, the clock rate for G722 in RTP is
          * 8000, even if the sample rate is 16000. See RFC 3551. */
-        avpriv_set_pts_info(st, 32, 1, 8000);
+        avpriv_set_pts_info_ijk(st, 32, 1, 8000);
         break;
     case AV_CODEC_ID_OPUS:
         if (st->codecpar->channels > 2) {
@@ -241,7 +241,7 @@ static int rtp_write_header(AVFormatContext *s1)
         /* The opus RTP RFC says that all opus streams should use 48000 Hz
          * as clock rate, since all opus sample rates can be expressed in
          * this clock rate, and sample rate changes on the fly are supported. */
-        avpriv_set_pts_info(st, 32, 1, 48000);
+        avpriv_set_pts_info_ijk(st, 32, 1, 48000);
         break;
     case AV_CODEC_ID_ILBC:
         if (st->codecpar->block_align != 38 && st->codecpar->block_align != 50) {

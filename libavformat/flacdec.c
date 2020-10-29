@@ -49,7 +49,7 @@ static int flac_read_header(AVFormatContext *s)
     uint8_t header[4];
     uint8_t *buffer=NULL;
     FLACDecContext *flac = s->priv_data;
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -114,7 +114,7 @@ static int flac_read_header(AVFormatContext *s)
 
             /* set time base and duration */
             if (samplerate > 0) {
-                avpriv_set_pts_info(st, 64, 1, samplerate);
+                avpriv_set_pts_info_ijk(st, 64, 1, samplerate);
                 if (samples > 0)
                     st->duration = samples;
             }

@@ -63,8 +63,8 @@ static int yop_read_header(AVFormatContext *s)
 
     int frame_rate, ret;
 
-    audio_stream = avformat_new_stream(s, NULL);
-    video_stream = avformat_new_stream(s, NULL);
+    audio_stream = avformat_new_stream_ijk(s, NULL);
+    video_stream = avformat_new_stream_ijk(s, NULL);
     if (!audio_stream || !video_stream)
         return AVERROR(ENOMEM);
 
@@ -112,7 +112,7 @@ static int yop_read_header(AVFormatContext *s)
 
     avio_seek(pb, 2048, SEEK_SET);
 
-    avpriv_set_pts_info(video_stream, 32, 1, frame_rate);
+    avpriv_set_pts_info_ijk(video_stream, 32, 1, frame_rate);
 
     return 0;
 }

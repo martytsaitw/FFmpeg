@@ -144,7 +144,7 @@ static int webm_chunk_write_header(AVFormatContext *s)
     ff_format_io_close(s, &oc->pb);
     for (i = 0; i < s->nb_streams; i++) {
         // ms precision is the de-facto standard timescale for mkv files.
-        avpriv_set_pts_info(s->streams[i], 64, 1, 1000);
+        avpriv_set_pts_info_ijk(s->streams[i], 64, 1, 1000);
     }
     return 0;
 }

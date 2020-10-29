@@ -101,11 +101,11 @@ static int parse_vtrk(AVFormatContext *s,
     }
 
     /* allocate a new AVStream */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
-    avpriv_set_pts_info(st, 60, fourxm->fps.den, fourxm->fps.num);
+    avpriv_set_pts_info_ijk(st, 60, fourxm->fps.den, fourxm->fps.num);
 
     fourxm->video_stream_index = st->index;
 
@@ -173,12 +173,12 @@ static int parse_strk(AVFormatContext *s,
     }
 
     /* allocate a new AVStream */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
     st->id = track;
-    avpriv_set_pts_info(st, 60, 1, fourxm->tracks[track].sample_rate);
+    avpriv_set_pts_info_ijk(st, 60, 1, fourxm->tracks[track].sample_rate);
 
     fourxm->tracks[track].stream_index = st->index;
 

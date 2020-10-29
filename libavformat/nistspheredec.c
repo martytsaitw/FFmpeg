@@ -39,7 +39,7 @@ static int nist_read_header(AVFormatContext *s)
     int32_t header_size = -1;
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -78,7 +78,7 @@ static int nist_read_header(AVFormatContext *s)
                 avpriv_request_sample(s, "coding %s", coding);
             }
 
-            avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+            avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
             st->codecpar->block_align = st->codecpar->bits_per_coded_sample * st->codecpar->channels / 8;
 

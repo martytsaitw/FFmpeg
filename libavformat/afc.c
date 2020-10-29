@@ -32,7 +32,7 @@ static int afc_read_header(AVFormatContext *s)
     AFCDemuxContext *c = s->priv_data;
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -48,7 +48,7 @@ static int afc_read_header(AVFormatContext *s)
     st->duration = avio_rb32(s->pb);
     st->codecpar->sample_rate = avio_rb16(s->pb);
     avio_skip(s->pb, 22);
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }

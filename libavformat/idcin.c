@@ -192,10 +192,10 @@ static int idcin_read_header(AVFormatContext *s)
         idcin->audio_present = 0;
     }
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
-    avpriv_set_pts_info(st, 33, 1, IDCIN_FPS);
+    avpriv_set_pts_info_ijk(st, 33, 1, IDCIN_FPS);
     st->start_time = 0;
     idcin->video_stream_index = st->index;
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
@@ -210,10 +210,10 @@ static int idcin_read_header(AVFormatContext *s)
 
     if (idcin->audio_present) {
         idcin->audio_present = 1;
-        st = avformat_new_stream(s, NULL);
+        st = avformat_new_stream_ijk(s, NULL);
         if (!st)
             return AVERROR(ENOMEM);
-        avpriv_set_pts_info(st, 63, 1, sample_rate);
+        avpriv_set_pts_info_ijk(st, 63, 1, sample_rate);
         st->start_time = 0;
         idcin->audio_stream_index = st->index;
         st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;

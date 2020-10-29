@@ -40,7 +40,7 @@ static int fsb_read_header(AVFormatContext *s)
     unsigned format, version, c;
     int64_t offset;
     AVCodecParameters *par;
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
 
     avio_skip(pb, 3); // "FSB"
     version = avio_r8(pb) - '0';
@@ -157,7 +157,7 @@ static int fsb_read_header(AVFormatContext *s)
     avio_skip(pb, offset - avio_tell(pb));
     s->internal->data_offset = avio_tell(pb);
 
-    avpriv_set_pts_info(st, 64, 1, par->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, par->sample_rate);
 
     return 0;
 }

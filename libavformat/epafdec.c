@@ -63,7 +63,7 @@ static int epaf_read_header(AVFormatContext *s)
     if (channels <= 0 || channels > FF_SANE_NB_CHANNELS || sample_rate <= 0)
         return AVERROR_INVALIDDATA;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -86,7 +86,7 @@ static int epaf_read_header(AVFormatContext *s)
     st->codecpar->bits_per_coded_sample = av_get_bits_per_sample(st->codecpar->codec_id);
     st->codecpar->block_align = st->codecpar->bits_per_coded_sample * st->codecpar->channels / 8;
 
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     if (avio_skip(s->pb, 2024) < 0)
         return AVERROR_INVALIDDATA;

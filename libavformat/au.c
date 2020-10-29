@@ -195,7 +195,7 @@ static int au_read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
     }
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
@@ -210,7 +210,7 @@ static int au_read_header(AVFormatContext *s)
         st->duration = (((int64_t)data_size)<<3) / (st->codecpar->channels * (int64_t)bps);
 
     st->start_time = 0;
-    avpriv_set_pts_info(st, 64, 1, rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, rate);
 
     return 0;
 }

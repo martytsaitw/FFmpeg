@@ -107,14 +107,14 @@ int main(int argc, char **argv)
 
         stream_mapping[i] = stream_index++;
 
-        out_stream = avformat_new_stream(ofmt_ctx, NULL);
+        out_stream = avformat_new_stream_ijk(ofmt_ctx, NULL);
         if (!out_stream) {
             fprintf(stderr, "Failed allocating output stream\n");
             ret = AVERROR_UNKNOWN;
             goto end;
         }
 
-        ret = avcodec_parameters_copy(out_stream->codecpar, in_codecpar);
+        ret = avcodec_parameters_copy_ijk(out_stream->codecpar, in_codecpar);
         if (ret < 0) {
             fprintf(stderr, "Failed to copy codec parameters\n");
             goto end;

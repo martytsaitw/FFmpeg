@@ -940,9 +940,9 @@ static int dash_init(AVFormatContext *s)
         ctx->io_close           = s->io_close;
         ctx->io_open            = s->io_open;
 
-        if (!(st = avformat_new_stream(ctx, NULL)))
+        if (!(st = avformat_new_stream_ijk(ctx, NULL)))
             return AVERROR(ENOMEM);
-        avcodec_parameters_copy(st->codecpar, s->streams[i]->codecpar);
+        avcodec_parameters_copy_ijk(st->codecpar, s->streams[i]->codecpar);
         st->sample_aspect_ratio = s->streams[i]->sample_aspect_ratio;
         st->time_base = s->streams[i]->time_base;
         st->avg_frame_rate = s->streams[i]->avg_frame_rate;

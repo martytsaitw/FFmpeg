@@ -186,7 +186,7 @@ int ff_img_read_header(AVFormatContext *s1)
 
     s1->ctx_flags |= AVFMTCTX_NOHEADER;
 
-    st = avformat_new_stream(s1, NULL);
+    st = avformat_new_stream_ijk(s1, NULL);
     if (!st) {
         return AVERROR(ENOMEM);
     }
@@ -215,11 +215,11 @@ int ff_img_read_header(AVFormatContext *s1)
         av_log(s1, AV_LOG_ERROR, "POSIX.1-2008 not supported, nanosecond file timestamps unavailable\n");
         return AVERROR(ENOSYS);
 #endif
-        avpriv_set_pts_info(st, 64, 1, 1000000000);
+        avpriv_set_pts_info_ijk(st, 64, 1, 1000000000);
     } else if (s->ts_from_file)
-        avpriv_set_pts_info(st, 64, 1, 1);
+        avpriv_set_pts_info_ijk(st, 64, 1, 1);
     else
-        avpriv_set_pts_info(st, 64, s->framerate.den, s->framerate.num);
+        avpriv_set_pts_info_ijk(st, 64, s->framerate.den, s->framerate.num);
 
     if (s->width && s->height) {
         st->codecpar->width  = s->width;

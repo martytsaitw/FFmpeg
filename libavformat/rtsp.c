@@ -297,7 +297,7 @@ static int sdp_parse_rtpmap(AVFormatContext *s,
         par->channels = RTSP_DEFAULT_NB_AUDIO_CHANNELS;
         if (i > 0) {
             par->sample_rate = i;
-            avpriv_set_pts_info(st, 32, 1, par->sample_rate);
+            avpriv_set_pts_info_ijk(st, 32, 1, par->sample_rate);
             get_word_sep(buf, sizeof(buf), "/", &p);
             i = atoi(buf);
             if (i > 0)
@@ -311,7 +311,7 @@ static int sdp_parse_rtpmap(AVFormatContext *s,
     case AVMEDIA_TYPE_VIDEO:
         av_log(s, AV_LOG_DEBUG, "video codec set to: %s\n", c_name);
         if (i > 0)
-            avpriv_set_pts_info(st, 32, 1, i);
+            avpriv_set_pts_info_ijk(st, 32, 1, i);
         break;
     default:
         break;
@@ -506,7 +506,7 @@ static void sdp_parse_line(AVFormatContext *s, SDPParseState *s1,
             /* RTX stream, a stream that carries all the other actual
              * audio/video streams. Don't expose this to the callers. */
         } else {
-            st = avformat_new_stream(s, NULL);
+            st = avformat_new_stream_ijk(s, NULL);
             if (!st)
                 return;
             st->id = rt->nb_rtsp_streams - 1;
@@ -518,7 +518,7 @@ static void sdp_parse_line(AVFormatContext *s, SDPParseState *s1,
                 ff_rtp_get_codec_info(st->codecpar, rtsp_st->sdp_payload_type);
                 if (st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO &&
                     st->codecpar->sample_rate > 0)
-                    avpriv_set_pts_info(st, 32, 1, st->codecpar->sample_rate);
+                    avpriv_set_pts_info_ijk(st, 32, 1, st->codecpar->sample_rate);
                 /* Even static payload types may need a custom depacketizer */
                 handler = ff_rtp_handler_find_by_id(
                               rtsp_st->sdp_payload_type, st->codecpar->codec_type);
@@ -2471,7 +2471,7 @@ static int rtp_read_header(AVFormatContext *s)
     ffurl_close(in);
     in = NULL;
 
-    par = avcodec_parameters_alloc();
+    par = avcodec_parameters_alloc_ijk();
     if (!par) {
         ret = AVERROR(ENOMEM);
         goto fail;

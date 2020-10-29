@@ -105,7 +105,7 @@ static int create_subcc_streams(AVFormatContext *avctx)
         sink_idx = lavfi->stream_sink_map[stream_idx];
         if (lavfi->sink_stream_subcc_map[sink_idx]) {
             lavfi->sink_stream_subcc_map[sink_idx] = avctx->nb_streams;
-            if (!(st = avformat_new_stream(avctx, NULL)))
+            if (!(st = avformat_new_stream_ijk(avctx, NULL)))
                 return AVERROR(ENOMEM);
             st->codecpar->codec_id = AV_CODEC_ID_EIA_608;
             st->codecpar->codec_type = AVMEDIA_TYPE_SUBTITLE;
@@ -238,7 +238,7 @@ av_cold static int lavfi_read_header(AVFormatContext *avctx)
     /* for each open output create a corresponding stream */
     for (i = 0, inout = output_links; inout; i++, inout = inout->next) {
         AVStream *st;
-        if (!(st = avformat_new_stream(avctx, NULL)))
+        if (!(st = avformat_new_stream_ijk(avctx, NULL)))
             FAIL(AVERROR(ENOMEM));
         st->id = i;
     }
@@ -313,7 +313,7 @@ av_cold static int lavfi_read_header(AVFormatContext *avctx)
         AVRational time_base = av_buffersink_get_time_base(sink);
         AVStream *st = avctx->streams[i];
         st->codecpar->codec_type = av_buffersink_get_type(sink);
-        avpriv_set_pts_info(st, 64, time_base.num, time_base.den);
+        avpriv_set_pts_info_ijk(st, 64, time_base.num, time_base.den);
         if (av_buffersink_get_type(sink) == AVMEDIA_TYPE_VIDEO) {
             st->codecpar->codec_id   = AV_CODEC_ID_RAWVIDEO;
             st->codecpar->format     = av_buffersink_get_format(sink);

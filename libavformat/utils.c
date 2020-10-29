@@ -503,7 +503,7 @@ int avformat_queue_attached_pictures(AVFormatContext *s)
     return 0;
 }
 
-static int update_stream_avctx(AVFormatContext *s)
+static int update_stream_avctx_ijk(AVFormatContext *s)
 {
     int i, ret;
     for (i = 0; i < s->nb_streams; i++) {
@@ -678,7 +678,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
 
     s->internal->raw_packet_buffer_remaining_size = RAW_PACKET_BUFFER_SIZE;
 
-    update_stream_avctx(s);
+    update_stream_avctx_ijk(s);
 
     for (i = 0; i < s->nb_streams; i++)
         s->streams[i]->internal->orig_codec_id = s->streams[i]->codecpar->codec_id;
@@ -1763,7 +1763,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     }
 
 #if FF_API_LAVF_AVCTX
-    update_stream_avctx(s);
+    update_stream_avctx_ijk(s);
 #endif
 
     if (s->debug & FF_FDEBUG_TS)
@@ -2564,7 +2564,7 @@ int av_seek_frame(AVFormatContext *s, int stream_index,
             max_ts = timestamp;
         else
             min_ts = timestamp;
-        return avformat_seek_file(s, stream_index, min_ts, timestamp, max_ts,
+        return avformat_seek_file_ijk(s, stream_index, min_ts, timestamp, max_ts,
                                   flags & ~AVSEEK_FLAG_BACKWARD);
     }
 
@@ -2576,7 +2576,7 @@ int av_seek_frame(AVFormatContext *s, int stream_index,
     return ret;
 }
 
-int avformat_seek_file(AVFormatContext *s, int stream_index, int64_t min_ts,
+int avformat_seek_file_ijk(AVFormatContext *s, int stream_index, int64_t min_ts,
                        int64_t ts, int64_t max_ts, int flags)
 {
     if (min_ts > ts || max_ts < ts)
@@ -3481,7 +3481,7 @@ static int extract_extradata_check(AVStream *st)
 {
     const AVBitStreamFilter *f;
 
-    f = av_bsf_get_by_name("extract_extradata");
+    f = av_bsf_get_by_name_ijk("extract_extradata");
     if (!f)
         return 0;
 
@@ -3501,7 +3501,7 @@ static int extract_extradata_init(AVStream *st)
     const AVBitStreamFilter *f;
     int ret;
 
-    f = av_bsf_get_by_name("extract_extradata");
+    f = av_bsf_get_by_name_ijk("extract_extradata");
     if (!f)
         goto finish;
 
@@ -3514,11 +3514,11 @@ static int extract_extradata_init(AVStream *st)
     if (!i->extract_extradata.pkt)
         return AVERROR(ENOMEM);
 
-    ret = av_bsf_alloc(f, &i->extract_extradata.bsf);
+    ret = av_bsf_alloc_ijk(f, &i->extract_extradata.bsf);
     if (ret < 0)
         goto fail;
 
-    ret = avcodec_parameters_copy(i->extract_extradata.bsf->par_in,
+    ret = avcodec_parameters_copy_ijk(i->extract_extradata.bsf->par_in,
                                   st->codecpar);
     if (ret < 0)
         goto fail;
@@ -3527,7 +3527,7 @@ static int extract_extradata_init(AVStream *st)
 
     /* if init fails here, we assume extracting extradata is just not
      * supported for this codec, so we return success */
-    ret = av_bsf_init(i->extract_extradata.bsf);
+    ret = av_bsf_init_ijk(i->extract_extradata.bsf);
     if (ret < 0) {
         av_bsf_free(&i->extract_extradata.bsf);
         ret = 0;
@@ -4391,7 +4391,7 @@ int ff_stream_encode_params_copy(AVStream *dst, const AVStream *src)
     if (ret < 0)
         return ret;
 
-    ret = avcodec_parameters_copy(dst->codecpar, src->codecpar);
+    ret = avcodec_parameters_copy_ijk(dst->codecpar, src->codecpar);
     if (ret < 0)
         return ret;
 
@@ -4561,7 +4561,7 @@ void avformat_close_input(AVFormatContext **ps)
     avio_close(pb);
 }
 
-AVStream *avformat_new_stream(AVFormatContext *s, const AVCodec *c)
+AVStream *avformat_new_stream_ijk(AVFormatContext *s, const AVCodec *c)
 {
     AVStream *st;
     int i;
@@ -4601,7 +4601,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     if (!st->internal)
         goto fail;
 
-    st->codecpar = avcodec_parameters_alloc();
+    st->codecpar = avcodec_parameters_alloc_ijk();
     if (!st->codecpar)
         goto fail;
 
@@ -4618,7 +4618,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
 #endif
 
         /* default pts setting is MPEG-like */
-        avpriv_set_pts_info(st, 33, 1, 90000);
+        avpriv_set_pts_info_ijk(st, 33, 1, 90000);
         /* we set the current DTS to 0 so that formats without any timestamps
          * but durations get some timestamps, formats with some unknown
          * timestamps have their first few packets buffered and the
@@ -4931,7 +4931,7 @@ int ff_hex_to_data(uint8_t *data, const char *p)
     return len;
 }
 
-void avpriv_set_pts_info(AVStream *s, int pts_wrap_bits,
+void avpriv_set_pts_info_ijk(AVStream *s, int pts_wrap_bits,
                          unsigned int pts_num, unsigned int pts_den)
 {
     AVRational new_tb;
@@ -5601,12 +5601,12 @@ int ff_stream_add_bitstream_filter(AVStream *st, const char *name, const char *a
     AVBSFContext *bsfc;
     AVCodecParameters *in_par;
 
-    if (!(bsf = av_bsf_get_by_name(name))) {
+    if (!(bsf = av_bsf_get_by_name_ijk(name))) {
         av_log(NULL, AV_LOG_ERROR, "Unknown bitstream filter '%s'\n", name);
         return AVERROR_BSF_NOT_FOUND;
     }
 
-    if ((ret = av_bsf_alloc(bsf, &bsfc)) < 0)
+    if ((ret = av_bsf_alloc_ijk(bsf, &bsfc)) < 0)
         return ret;
 
     if (st->internal->nb_bsfcs) {
@@ -5617,7 +5617,7 @@ int ff_stream_add_bitstream_filter(AVStream *st, const char *name, const char *a
         bsfc->time_base_in = st->time_base;
     }
 
-    if ((ret = avcodec_parameters_copy(bsfc->par_in, in_par)) < 0) {
+    if ((ret = avcodec_parameters_copy_ijk(bsfc->par_in, in_par)) < 0) {
         av_bsf_free(&bsfc);
         return ret;
     }
@@ -5635,7 +5635,7 @@ int ff_stream_add_bitstream_filter(AVStream *st, const char *name, const char *a
         }
     }
 
-    if ((ret = av_bsf_init(bsfc)) < 0) {
+    if ((ret = av_bsf_init_ijk(bsfc)) < 0) {
         av_bsf_free(&bsfc);
         return ret;
     }
@@ -6289,7 +6289,7 @@ int av_try_find_stream_info(AVFormatContext *ic, AVDictionary **options) {
         avcodec_copy_context(st->codec,     avctx[i]);
         avcodec_copy_context(st->internal->avctx, avctx[i]);
         avcodec_parameters_from_context_ijk(st->codecpar, avctx[i]);
-        avpriv_set_pts_info(st, st->pts_wrap_bits, st->time_base.num, st->time_base.den);
+        avpriv_set_pts_info_ijk(st, st->pts_wrap_bits, st->time_base.num, st->time_base.den);
     }
 
     ret = 0;

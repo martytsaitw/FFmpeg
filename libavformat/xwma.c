@@ -71,7 +71,7 @@ static int xwma_read_header(AVFormatContext *s)
     if (tag != MKTAG('f', 'm', 't', ' '))
         return -1;
     size = avio_rl32(pb);
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -134,7 +134,7 @@ static int xwma_read_header(AVFormatContext *s)
     }
 
     /* set the sample rate */
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     /* parse the remaining RIFF chunks */
     for (;;) {

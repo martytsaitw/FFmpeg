@@ -219,10 +219,10 @@ static int modplug_read_header(AVFormatContext *s)
     if (!modplug->f)
         return AVERROR_INVALIDDATA;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
-    avpriv_set_pts_info(st, 64, 1, 1000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000);
     st->duration = ModPlug_GetLength(modplug->f);
     st->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id    = AV_CODEC_ID_PCM_S16LE;
@@ -233,10 +233,10 @@ static int modplug_read_header(AVFormatContext *s)
     modplug->ts_per_packet = 1000*AUDIO_PKT_SIZE / (4*44100.);
 
     if (modplug->video_stream) {
-        AVStream *vst = avformat_new_stream(s, NULL);
+        AVStream *vst = avformat_new_stream_ijk(s, NULL);
         if (!vst)
             return AVERROR(ENOMEM);
-        avpriv_set_pts_info(vst, 64, 1, 1000);
+        avpriv_set_pts_info_ijk(vst, 64, 1, 1000);
         vst->duration = st->duration;
         vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
         vst->codecpar->codec_id   = AV_CODEC_ID_XBIN;

@@ -377,12 +377,12 @@ gdigrab_read_header(AVFormatContext *s1)
     /* Get info from the bitmap */
     GetObject(hbmp, sizeof(BITMAP), &bmp);
 
-    st = avformat_new_stream(s1, NULL);
+    st = avformat_new_stream_ijk(s1, NULL);
     if (!st) {
         ret = AVERROR(ENOMEM);
         goto error;
     }
-    avpriv_set_pts_info(st, 64, 1, 1000000); /* 64 bits pts in us */
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000000); /* 64 bits pts in us */
 
     gdigrab->frame_size  = bmp.bmWidthBytes * bmp.bmHeight * bmp.bmPlanes;
     gdigrab->header_size = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) +

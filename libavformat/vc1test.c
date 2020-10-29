@@ -54,7 +54,7 @@ static int vc1t_read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
 
     /* init video codec */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -70,13 +70,13 @@ static int vc1t_read_header(AVFormatContext *s)
     avio_skip(pb, 8);
     fps = avio_rl32(pb);
     if(fps == 0xFFFFFFFF)
-        avpriv_set_pts_info(st, 32, 1, 1000);
+        avpriv_set_pts_info_ijk(st, 32, 1, 1000);
     else{
         if (!fps) {
             av_log(s, AV_LOG_ERROR, "Zero FPS specified, defaulting to 1 FPS\n");
             fps = 1;
         }
-        avpriv_set_pts_info(st, 24, 1, fps);
+        avpriv_set_pts_info_ijk(st, 24, 1, fps);
         st->duration = frames;
     }
 

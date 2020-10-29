@@ -98,7 +98,7 @@ static int cine_read_header(AVFormatContext *avctx)
     char *description;
     uint64_t i;
 
-    st = avformat_new_stream(avctx, NULL);
+    st = avformat_new_stream_ijk(avctx, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
@@ -173,7 +173,7 @@ static int cine_read_header(AVFormatContext *avctx)
 
     avio_skip(pb, 4); // Grid
 
-    avpriv_set_pts_info(st, 64, 1, avio_rl32(pb));
+    avpriv_set_pts_info_ijk(st, 64, 1, avio_rl32(pb));
 
     avio_skip(pb, 20); // Shutter .. bEnableColor
 

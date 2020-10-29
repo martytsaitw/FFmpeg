@@ -55,7 +55,7 @@ static int read_header(AVFormatContext *s)
 {
     AVStream* st;
 
-    st=avformat_new_stream(s, NULL);
+    st=avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -65,7 +65,7 @@ static int read_header(AVFormatContext *s)
     st->codecpar->block_align = 16;
     st->codecpar->channels=1;
 
-    avpriv_set_pts_info(st, 64, 1, 100);
+    avpriv_set_pts_info_ijk(st, 64, 1, 100);
     return 0;
 }
 

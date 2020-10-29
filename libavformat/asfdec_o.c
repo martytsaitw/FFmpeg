@@ -417,7 +417,7 @@ static int asf_read_picture(AVFormatContext *s, int len)
     if (ret < 0)
         goto fail;
 
-    st  = avformat_new_stream(s, NULL);
+    st  = avformat_new_stream_ijk(s, NULL);
     if (!st) {
         ret = AVERROR(ENOMEM);
         goto fail;
@@ -772,10 +772,10 @@ static int asf_read_stream_properties(AVFormatContext *s, const GUIDParseTable *
             return 0;
         }
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
-    avpriv_set_pts_info(st, 32, 1, 1000); // pts should be dword, in milliseconds
+    avpriv_set_pts_info_ijk(st, 32, 1, 1000); // pts should be dword, in milliseconds
     st->codecpar->codec_type = type;
     asf->asf_st[asf->nb_streams] = av_mallocz(sizeof(*asf_st));
     if (!asf->asf_st[asf->nb_streams])

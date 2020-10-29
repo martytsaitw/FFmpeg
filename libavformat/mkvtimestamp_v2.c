@@ -26,7 +26,7 @@ static int write_header(AVFormatContext *s)
 {
     static const char *header = "# timecode format v2\n";
     avio_write(s->pb, header, strlen(header));
-    avpriv_set_pts_info(s->streams[0], 64, 1, 1000);
+    avpriv_set_pts_info_ijk(s->streams[0], 64, 1, 1000);
     return 0;
 }
 

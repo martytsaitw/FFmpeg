@@ -51,7 +51,7 @@ static int pmp_header(AVFormatContext *s)
     uint64_t pos;
     int64_t fsize = avio_size(pb);
 
-    AVStream *vst = avformat_new_stream(s, NULL);
+    AVStream *vst = avformat_new_stream_ijk(s, NULL);
     if (!vst)
         return AVERROR(ENOMEM);
     vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
@@ -73,7 +73,7 @@ static int pmp_header(AVFormatContext *s)
 
     tb_num = avio_rl32(pb);
     tb_den = avio_rl32(pb);
-    avpriv_set_pts_info(vst, 32, tb_num, tb_den);
+    avpriv_set_pts_info_ijk(vst, 32, tb_num, tb_den);
     vst->nb_frames = index_cnt;
     vst->duration = index_cnt;
 
@@ -114,14 +114,14 @@ static int pmp_header(AVFormatContext *s)
         }
     }
     for (i = 1; i < pmp->num_streams; i++) {
-        AVStream *ast = avformat_new_stream(s, NULL);
+        AVStream *ast = avformat_new_stream_ijk(s, NULL);
         if (!ast)
             return AVERROR(ENOMEM);
         ast->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
         ast->codecpar->codec_id    = audio_codec_id;
         ast->codecpar->channels    = channels;
         ast->codecpar->sample_rate = srate;
-        avpriv_set_pts_info(ast, 32, 1, srate);
+        avpriv_set_pts_info_ijk(ast, 32, 1, srate);
     }
     return 0;
 }

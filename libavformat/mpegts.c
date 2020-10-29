@@ -799,7 +799,7 @@ static int mpegts_set_stream_info(AVStream *st, PESContext *pes,
         return 0;
     }
 
-    avpriv_set_pts_info(st, 33, 1, 90000);
+    avpriv_set_pts_info_ijk(st, 33, 1, 90000);
     st->priv_data         = pes;
     st->codecpar->codec_type = AVMEDIA_TYPE_DATA;
     st->codecpar->codec_id   = AV_CODEC_ID_NONE;
@@ -830,14 +830,14 @@ static int mpegts_set_stream_info(AVStream *st, PESContext *pes,
                 return AVERROR(ENOMEM);
             memcpy(sub_pes, pes, sizeof(*sub_pes));
 
-            sub_st = avformat_new_stream(pes->stream, NULL);
+            sub_st = avformat_new_stream_ijk(pes->stream, NULL);
             if (!sub_st) {
                 av_free(sub_pes);
                 return AVERROR(ENOMEM);
             }
 
             sub_st->id = pes->pid;
-            avpriv_set_pts_info(sub_st, 33, 1, 90000);
+            avpriv_set_pts_info_ijk(sub_st, 33, 1, 90000);
             sub_st->priv_data         = sub_pes;
             sub_st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
             sub_st->codecpar->codec_id   = AV_CODEC_ID_AC3;
@@ -998,7 +998,7 @@ static int read_sl_header(PESContext *pes, SLConfigDescr *sl,
         pes->pts = cts;
 
     if (sl->timestamp_len && sl->timestamp_res)
-        avpriv_set_pts_info(pes->st, sl->timestamp_len, 1, sl->timestamp_res);
+        avpriv_set_pts_info_ijk(pes->st, sl->timestamp_len, 1, sl->timestamp_res);
 
     return (get_bits_count(&gb) + 7) >> 3;
 }
@@ -1061,7 +1061,7 @@ static int mpegts_push_data(MpegTSFilter *filter,
                         if (ts->skip_changes)
                             goto skip;
 
-                        pes->st = avformat_new_stream(ts->stream, NULL);
+                        pes->st = avformat_new_stream_ijk(ts->stream, NULL);
                         if (!pes->st)
                             return AVERROR(ENOMEM);
                         pes->st->id = pes->pid;
@@ -2048,7 +2048,7 @@ static void pmt_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
         if (ts->pids[pid] && ts->pids[pid]->type == MPEGTS_PES) {
             pes = ts->pids[pid]->u.pes_filter.opaque;
             if (!pes->st) {
-                pes->st     = avformat_new_stream(pes->stream, NULL);
+                pes->st     = avformat_new_stream_ijk(pes->stream, NULL);
                 if (!pes->st)
                     goto out;
                 pes->st->id = pes->pid;
@@ -2059,7 +2059,7 @@ static void pmt_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
                 mpegts_close_filter(ts, ts->pids[pid]); // wrongly added sdt filter probably
             pes = add_pes_stream(ts, pid, pcr_pid);
             if (pes) {
-                st = avformat_new_stream(pes->stream, NULL);
+                st = avformat_new_stream_ijk(pes->stream, NULL);
                 if (!st)
                     goto out;
                 st->id = pes->pid;
@@ -2069,7 +2069,7 @@ static void pmt_cb(MpegTSFilter *filter, const uint8_t *section, int section_len
             if (idx >= 0) {
                 st = ts->stream->streams[idx];
             } else {
-                st = avformat_new_stream(ts->stream, NULL);
+                st = avformat_new_stream_ijk(ts->stream, NULL);
                 if (!st)
                     goto out;
                 st->id = pid;
@@ -2706,10 +2706,10 @@ static int mpegts_read_header(AVFormatContext *s)
 
         /* only read packets */
 
-        st = avformat_new_stream(s, NULL);
+        st = avformat_new_stream_ijk(s, NULL);
         if (!st)
             return AVERROR(ENOMEM);
-        avpriv_set_pts_info(st, 60, 1, 27000000);
+        avpriv_set_pts_info_ijk(st, 60, 1, 27000000);
         st->codecpar->codec_type = AVMEDIA_TYPE_DATA;
         st->codecpar->codec_id   = AV_CODEC_ID_MPEG2TS;
 

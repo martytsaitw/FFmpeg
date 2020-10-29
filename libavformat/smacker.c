@@ -171,7 +171,7 @@ static int smacker_read_header(AVFormatContext *s)
     }
 
     /* init video codec */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     smk->videoindex = st->index;
@@ -188,13 +188,13 @@ static int smacker_read_header(AVFormatContext *s)
         smk->pts_inc *= 100;
     tbase = 100000;
     av_reduce(&tbase, &smk->pts_inc, tbase, smk->pts_inc, (1UL<<31)-1);
-    avpriv_set_pts_info(st, 33, smk->pts_inc, tbase);
+    avpriv_set_pts_info_ijk(st, 33, smk->pts_inc, tbase);
     st->duration = smk->frames;
     /* handle possible audio streams */
     for(i = 0; i < 7; i++) {
         smk->indexes[i] = -1;
         if (smk->rates[i]) {
-            ast[i] = avformat_new_stream(s, NULL);
+            ast[i] = avformat_new_stream_ijk(s, NULL);
             if (!ast[i])
                 return AVERROR(ENOMEM);
             smk->indexes[i] = ast[i]->index;
@@ -220,7 +220,7 @@ static int smacker_read_header(AVFormatContext *s)
             ast[i]->codecpar->bits_per_coded_sample = (smk->aflags[i] & SMK_AUD_16BITS) ? 16 : 8;
             if(ast[i]->codecpar->bits_per_coded_sample == 16 && ast[i]->codecpar->codec_id == AV_CODEC_ID_PCM_U8)
                 ast[i]->codecpar->codec_id = AV_CODEC_ID_PCM_S16LE;
-            avpriv_set_pts_info(ast[i], 64, 1, ast[i]->codecpar->sample_rate
+            avpriv_set_pts_info_ijk(ast[i], 64, 1, ast[i]->codecpar->sample_rate
                     * ast[i]->codecpar->channels * ast[i]->codecpar->bits_per_coded_sample / 8);
         }
     }

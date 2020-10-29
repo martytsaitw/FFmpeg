@@ -311,9 +311,9 @@ FF_ENABLE_DEPRECATION_WARNINGS
         if (!st->time_base.num) {
             /* fall back on the default timebase values */
             if (par->codec_type == AVMEDIA_TYPE_AUDIO && par->sample_rate)
-                avpriv_set_pts_info(st, 64, 1, par->sample_rate);
+                avpriv_set_pts_info_ijk(st, 64, 1, par->sample_rate);
             else
-                avpriv_set_pts_info(st, 33, 1, 90000);
+                avpriv_set_pts_info_ijk(st, 33, 1, 90000);
         }
 
         switch (par->codec_type) {

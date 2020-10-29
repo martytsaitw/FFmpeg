@@ -422,7 +422,7 @@ static int iff_read_header(AVFormatContext *s)
     uint8_t fmt[16];
     int fmt_size;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -712,7 +712,7 @@ static int iff_read_header(AVFormatContext *s)
 
     switch(st->codecpar->codec_type) {
     case AVMEDIA_TYPE_AUDIO:
-        avpriv_set_pts_info(st, 32, 1, st->codecpar->sample_rate);
+        avpriv_set_pts_info_ijk(st, 32, 1, st->codecpar->sample_rate);
 
         if (st->codecpar->codec_tag == ID_16SV)
             st->codecpar->codec_id = AV_CODEC_ID_PCM_S16BE_PLANAR;
@@ -758,7 +758,7 @@ static int iff_read_header(AVFormatContext *s)
     case AVMEDIA_TYPE_VIDEO:
         iff->bpp          = st->codecpar->bits_per_coded_sample;
         if (st->codecpar->codec_tag == ID_ANIM)
-            avpriv_set_pts_info(st, 32, 1, 60);
+            avpriv_set_pts_info_ijk(st, 32, 1, 60);
         if ((screenmode & 0x800 /* Hold And Modify */) && iff->bpp <= 8) {
             iff->ham      = iff->bpp > 6 ? 6 : 4;
             st->codecpar->bits_per_coded_sample = 24;

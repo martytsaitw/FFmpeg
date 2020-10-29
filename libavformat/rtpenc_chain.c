@@ -48,7 +48,7 @@ int ff_rtp_chain_mux_open(AVFormatContext **out, AVFormatContext *s,
     }
 
     rtpctx->oformat = rtp_format;
-    if (!avformat_new_stream(rtpctx, NULL)) {
+    if (!avformat_new_stream_ijk(rtpctx, NULL)) {
         ret = AVERROR(ENOMEM);
         goto fail;
     }
@@ -74,7 +74,7 @@ int ff_rtp_chain_mux_open(AVFormatContext **out, AVFormatContext *s,
     /* Set the synchronized start time. */
     rtpctx->start_time_realtime = s->start_time_realtime;
 
-    avcodec_parameters_copy(rtpctx->streams[0]->codecpar, st->codecpar);
+    avcodec_parameters_copy_ijk(rtpctx->streams[0]->codecpar, st->codecpar);
     rtpctx->streams[0]->time_base = st->time_base;
 
     if (handle) {

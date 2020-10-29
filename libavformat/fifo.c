@@ -466,7 +466,7 @@ static int fifo_mux_init(AVFormatContext *avf, AVOutputFormat *oformat,
     avf2->flags = avf->flags;
 
     for (i = 0; i < avf->nb_streams; ++i) {
-        AVStream *st = avformat_new_stream(avf2, NULL);
+        AVStream *st = avformat_new_stream_ijk(avf2, NULL);
         if (!st)
             return AVERROR(ENOMEM);
 

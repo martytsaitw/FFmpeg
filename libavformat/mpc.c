@@ -86,7 +86,7 @@ static int mpc_read_header(AVFormatContext *s)
     c->curbits = 8;
     c->frames_noted = 0;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -98,7 +98,7 @@ static int mpc_read_header(AVFormatContext *s)
     if (ff_get_extradata(s, st->codecpar, s->pb, 16) < 0)
         return AVERROR(ENOMEM);
     st->codecpar->sample_rate = mpc_rate[st->codecpar->extradata[2] & 3];
-    avpriv_set_pts_info(st, 32, MPC_FRAMESIZE, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 32, MPC_FRAMESIZE, st->codecpar->sample_rate);
     /* scan for seekpoints */
     st->start_time = 0;
     st->duration = c->fcount;

@@ -92,7 +92,7 @@ static const AVMetadataConv vqf_metadata_conv[] = {
 static int vqf_read_header(AVFormatContext *s)
 {
     VqfContext *c = s->priv_data;
-    AVStream *st  = avformat_new_stream(s, NULL);
+    AVStream *st  = avformat_new_stream_ijk(s, NULL);
     int chunk_tag;
     int rate_flag = -1;
     int header_size;
@@ -216,7 +216,7 @@ static int vqf_read_header(AVFormatContext *s)
         return -1;
     }
     c->frame_bit_len = st->codecpar->bit_rate*size/st->codecpar->sample_rate;
-    avpriv_set_pts_info(st, 64, size, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, size, st->codecpar->sample_rate);
 
     /* put first 12 bytes of COMM chunk in extradata */
     if (ff_alloc_extradata(st->codecpar, 12))

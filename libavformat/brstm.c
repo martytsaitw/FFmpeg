@@ -96,7 +96,7 @@ static int read_header(AVFormatContext *s)
     int loop = 0;
     int bfstm = !strcmp("bfstm", s->iformat->name);
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -223,7 +223,7 @@ static int read_header(AVFormatContext *s)
 
     st->start_time = 0;
     st->duration = read32(s);
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     if (!bfstm)
         start = read32(s);

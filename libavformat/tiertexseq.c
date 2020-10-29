@@ -208,11 +208,11 @@ static int seq_read_header(AVFormatContext *s)
     seq->audio_buffer_full = 0;
 
     /* initialize the video decoder stream */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
-    avpriv_set_pts_info(st, 32, 1, SEQ_FRAME_RATE);
+    avpriv_set_pts_info_ijk(st, 32, 1, SEQ_FRAME_RATE);
     seq->video_stream_index = st->index;
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id = AV_CODEC_ID_TIERTEXSEQVIDEO;
@@ -221,12 +221,12 @@ static int seq_read_header(AVFormatContext *s)
     st->codecpar->height = SEQ_FRAME_H;
 
     /* initialize the audio decoder stream */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
     st->start_time = 0;
-    avpriv_set_pts_info(st, 32, 1, SEQ_SAMPLE_RATE);
+    avpriv_set_pts_info_ijk(st, 32, 1, SEQ_SAMPLE_RATE);
     seq->audio_stream_index = st->index;
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id = AV_CODEC_ID_PCM_S16BE;

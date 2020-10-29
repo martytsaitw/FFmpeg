@@ -149,7 +149,7 @@ static av_cold int pulse_read_header(AVFormatContext *s)
 
     pa_buffer_attr attr = { -1 };
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
 
     if (!st) {
         av_log(s, AV_LOG_ERROR, "Cannot add stream\n");
@@ -246,7 +246,7 @@ static av_cold int pulse_read_header(AVFormatContext *s)
     st->codecpar->codec_id    = codec_id;
     st->codecpar->sample_rate = pd->sample_rate;
     st->codecpar->channels    = pd->channels;
-    avpriv_set_pts_info(st, 64, 1, 1000000);  /* 64 bits pts in us */
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000000);  /* 64 bits pts in us */
 
     pd->timefilter = ff_timefilter_new(1000000.0 / pd->sample_rate,
                                        1000, 1.5E-6);

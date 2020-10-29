@@ -161,7 +161,7 @@ static int wav_parse_fmt_tag(AVFormatContext *s, int64_t size, AVStream **st)
     int ret;
 
     /* parse fmt header */
-    *st = avformat_new_stream(s, NULL);
+    *st = avformat_new_stream_ijk(s, NULL);
     if (!*st)
         return AVERROR(ENOMEM);
 
@@ -172,7 +172,7 @@ static int wav_parse_fmt_tag(AVFormatContext *s, int64_t size, AVStream **st)
 
     (*st)->need_parsing = AVSTREAM_PARSE_FULL_RAW;
 
-    avpriv_set_pts_info(*st, 64, 1, (*st)->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(*st, 64, 1, (*st)->codecpar->sample_rate);
 
     return 0;
 }
@@ -185,7 +185,7 @@ static int wav_parse_xma2_tag(AVFormatContext *s, int64_t size, AVStream **st)
     if (size < 36)
         return AVERROR_INVALIDDATA;
 
-    *st = avformat_new_stream(s, NULL);
+    *st = avformat_new_stream_ijk(s, NULL);
     if (!*st)
         return AVERROR(ENOMEM);
 
@@ -216,7 +216,7 @@ static int wav_parse_xma2_tag(AVFormatContext *s, int64_t size, AVStream **st)
     if ((*st)->codecpar->channels <= 0 || (*st)->codecpar->sample_rate <= 0)
         return AVERROR_INVALIDDATA;
 
-    avpriv_set_pts_info(*st, 64, 1, (*st)->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(*st, 64, 1, (*st)->codecpar->sample_rate);
 
     avio_seek(pb, -size, SEEK_CUR);
     av_freep(&(*st)->codecpar->extradata);
@@ -461,7 +461,7 @@ static int wav_read_header(AVFormatContext *s)
             }
             av_log(s, AV_LOG_DEBUG, "Found SMV data\n");
             wav->smv_given_first = 0;
-            vst = avformat_new_stream(s, NULL);
+            vst = avformat_new_stream_ijk(s, NULL);
             if (!vst)
                 return AVERROR(ENOMEM);
             avio_r8(pb);
@@ -478,7 +478,7 @@ static int wav_read_header(AVFormatContext *s)
             wav->smv_data_ofs = avio_tell(pb) + (size - 5) * 3;
             avio_rl24(pb);
             wav->smv_block_size = avio_rl24(pb);
-            avpriv_set_pts_info(vst, 32, 1, avio_rl24(pb));
+            avpriv_set_pts_info_ijk(vst, 32, 1, avio_rl24(pb));
             vst->duration = avio_rl24(pb);
             avio_rl24(pb);
             avio_rl24(pb);
@@ -797,7 +797,7 @@ static int w64_read_header(AVFormatContext *s)
 
     wav->w64 = 1;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -815,7 +815,7 @@ static int w64_read_header(AVFormatContext *s)
                 return ret;
             avio_skip(pb, FFALIGN(size, INT64_C(8)) - size);
 
-            avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+            avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
         } else if (!memcmp(guid, ff_w64_guid_fact, 16)) {
             int64_t samples;
 

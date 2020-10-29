@@ -52,14 +52,14 @@ static int fits_read_header(AVFormatContext *s)
     AVStream *st;
     FITSContext * fits = s->priv_data;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id = AV_CODEC_ID_FITS;
 
-    avpriv_set_pts_info(st, 64, fits->framerate.den, fits->framerate.num);
+    avpriv_set_pts_info_ijk(st, 64, fits->framerate.den, fits->framerate.num);
     fits->pts = 0;
     fits->first_image = 1;
     return 0;

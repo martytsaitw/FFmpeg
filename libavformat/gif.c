@@ -125,7 +125,7 @@ static int gif_write_header(AVFormatContext *s)
 
     video_par = s->streams[0]->codecpar;
 
-    avpriv_set_pts_info(s->streams[0], 64, 1, 100);
+    avpriv_set_pts_info_ijk(s->streams[0], 64, 1, 100);
     if (avpriv_set_systematic_pal2(palette, video_par->format) < 0) {
         av_assert0(video_par->format == AV_PIX_FMT_PAL8);
         /* delay header writing: we wait for the first palette to put it

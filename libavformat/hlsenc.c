@@ -747,9 +747,9 @@ static int hls_mux_init(AVFormatContext *s, VariantStream *vs)
         else
             loc = oc;
 
-        if (!(st = avformat_new_stream(loc, NULL)))
+        if (!(st = avformat_new_stream_ijk(loc, NULL)))
             return AVERROR(ENOMEM);
-        avcodec_parameters_copy(st->codecpar, vs->streams[i]->codecpar);
+        avcodec_parameters_copy_ijk(st->codecpar, vs->streams[i]->codecpar);
         if (!oc->oformat->codec_tag ||
             av_codec_get_id (oc->oformat->codec_tag, vs->streams[i]->codecpar->codec_tag) == st->codecpar->codec_id ||
             av_codec_get_tag(oc->oformat->codec_tag, vs->streams[i]->codecpar->codec_id) <= 0) {
@@ -2114,7 +2114,7 @@ static int hls_write_header(AVFormatContext *s)
                 inner_st = NULL;
                 continue;
             }
-            avpriv_set_pts_info(outer_st, inner_st->pts_wrap_bits, inner_st->time_base.num, inner_st->time_base.den);
+            avpriv_set_pts_info_ijk(outer_st, inner_st->pts_wrap_bits, inner_st->time_base.num, inner_st->time_base.den);
             write_codec_attr(outer_st, vs);
 
         }

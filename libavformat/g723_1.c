@@ -35,7 +35,7 @@ static av_cold int g723_1_init(AVFormatContext *s)
 {
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -45,7 +45,7 @@ static av_cold int g723_1_init(AVFormatContext *s)
     st->codecpar->channels       = 1;
     st->codecpar->sample_rate    = 8000;
 
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
     st->start_time = 0;
 
     return 0;

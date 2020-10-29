@@ -79,7 +79,7 @@ static int read_header(AVFormatContext *s)
     /* Audio streams are added if audio packets are found */
     s->ctx_flags |= AVFMTCTX_NOHEADER;
 
-    video = avformat_new_stream(s, NULL);
+    video = avformat_new_stream_ijk(s, NULL);
     if (!video)
         return AVERROR(ENOMEM);
 
@@ -89,7 +89,7 @@ static int read_header(AVFormatContext *s)
     video->codecpar->height = 192;
     /* 4:3 320x200 with 8 empty lines */
     video->sample_aspect_ratio = (AVRational) { 5, 6 };
-    avpriv_set_pts_info(video, 64, 2, 25);
+    avpriv_set_pts_info_ijk(video, 64, 2, 25);
     video->nb_frames = framecount;
     video->duration = framecount;
     video->start_time = 0;
@@ -117,7 +117,7 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
         datasize = avio_rl16(pb);
         if (datasize > 42) {
             if (!c93->audio) {
-                c93->audio = avformat_new_stream(s, NULL);
+                c93->audio = avformat_new_stream_ijk(s, NULL);
                 if (!c93->audio)
                     return AVERROR(ENOMEM);
                 c93->audio->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;

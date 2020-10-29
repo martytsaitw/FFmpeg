@@ -80,8 +80,8 @@ static int read_header(AVFormatContext *s)
 
     avio_skip(pb, 80);
 
-    ast = avformat_new_stream(s, NULL);
-    vst = avformat_new_stream(s, NULL);
+    ast = avformat_new_stream_ijk(s, NULL);
+    vst = avformat_new_stream_ijk(s, NULL);
     if (!ast || !vst)
         return AVERROR(ENOMEM);
 
@@ -93,7 +93,7 @@ static int read_header(AVFormatContext *s)
     vst->duration           =
     vst->nb_frames          =
     ast->nb_index_entries   = avio_rl16(pb);
-    avpriv_set_pts_info(vst, 64, avio_rl16(pb), 1000);
+    avpriv_set_pts_info_ijk(vst, 64, avio_rl16(pb), 1000);
 
     avio_skip(pb, 4);
 
@@ -103,7 +103,7 @@ static int read_header(AVFormatContext *s)
     ast->codecpar->sample_rate    = avio_rl16(pb);
     ast->codecpar->channels       = 1;
     ast->codecpar->channel_layout = AV_CH_LAYOUT_MONO;
-    avpriv_set_pts_info(ast, 64, 1, ast->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(ast, 64, 1, ast->codecpar->sample_rate);
 
     avio_skip(pb, 10);
 

@@ -77,7 +77,7 @@ static int msnwc_tcp_read_header(AVFormatContext *ctx)
     AVCodecParameters *par;
     AVStream *st;
 
-    st = avformat_new_stream(ctx, NULL);
+    st = avformat_new_stream_ijk(ctx, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -86,7 +86,7 @@ static int msnwc_tcp_read_header(AVFormatContext *ctx)
     par->codec_id   = AV_CODEC_ID_MIMIC;
     par->codec_tag  = MKTAG('M', 'L', '2', '0');
 
-    avpriv_set_pts_info(st, 32, 1, 1000);
+    avpriv_set_pts_info_ijk(st, 32, 1, 1000);
 
     /* Some files start with "connected\r\n\r\n".
      * So skip until we find the first byte of struct size */

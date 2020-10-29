@@ -42,7 +42,7 @@ static int avr_read_header(AVFormatContext *s)
     uint16_t chan, sign, bps;
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -83,7 +83,7 @@ static int avr_read_header(AVFormatContext *s)
 
     st->codecpar->block_align = bps * st->codecpar->channels / 8;
 
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
     return 0;
 }
 

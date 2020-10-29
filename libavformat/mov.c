@@ -195,7 +195,7 @@ static int mov_read_covr(MOVContext *c, AVIOContext *pb, int type, int len)
         return 0;
     }
 
-    st = avformat_new_stream(c->fc, NULL);
+    st = avformat_new_stream_ijk(c->fc, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     sc = av_mallocz(sizeof(*sc));
@@ -4128,7 +4128,7 @@ static int mov_read_trak(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     MOVStreamContext *sc;
     int ret;
 
-    st = avformat_new_stream(c->fc, NULL);
+    st = avformat_new_stream_ijk(c->fc, NULL);
     if (!st) return AVERROR(ENOMEM);
     st->id = c->fc->nb_streams;
     sc = av_mallocz(sizeof(MOVStreamContext));
@@ -4160,7 +4160,7 @@ static int mov_read_trak(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 
     fix_timescale(c, sc);
 
-    avpriv_set_pts_info(st, 64, 1, sc->time_scale);
+    avpriv_set_pts_info_ijk(st, 64, 1, sc->time_scale);
 
     mov_build_index(c, st);
 

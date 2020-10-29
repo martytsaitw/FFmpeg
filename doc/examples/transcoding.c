@@ -126,7 +126,7 @@ static int open_output_file(const char *filename)
 
 
     for (i = 0; i < ifmt_ctx->nb_streams; i++) {
-        out_stream = avformat_new_stream(ofmt_ctx, NULL);
+        out_stream = avformat_new_stream_ijk(ofmt_ctx, NULL);
         if (!out_stream) {
             av_log(NULL, AV_LOG_ERROR, "Failed allocating output stream\n");
             return AVERROR_UNKNOWN;
@@ -193,7 +193,7 @@ static int open_output_file(const char *filename)
             return AVERROR_INVALIDDATA;
         } else {
             /* if this stream must be remuxed */
-            ret = avcodec_parameters_copy(out_stream->codecpar, in_stream->codecpar);
+            ret = avcodec_parameters_copy_ijk(out_stream->codecpar, in_stream->codecpar);
             if (ret < 0) {
                 av_log(NULL, AV_LOG_ERROR, "Copying parameters for stream #%u failed\n", i);
                 return ret;

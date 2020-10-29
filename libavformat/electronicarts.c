@@ -495,7 +495,7 @@ static int init_video_stream(AVFormatContext *s, VideoProperties *video)
         return 0;
 
     /* initialize the video decoder stream */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     video->stream_index = st->index;
@@ -509,7 +509,7 @@ static int init_video_stream(AVFormatContext *s, VideoProperties *video)
     st->codecpar->height      = video->height;
     st->duration           = st->nb_frames = video->nb_frames;
     if (video->time_base.num)
-        avpriv_set_pts_info(st, 64, video->time_base.num, video->time_base.den);
+        avpriv_set_pts_info_ijk(st, 64, video->time_base.num, video->time_base.den);
     st->r_frame_rate       =
     st->avg_frame_rate     = av_inv_q(video->time_base);
     return 0;
@@ -547,10 +547,10 @@ static int ea_read_header(AVFormatContext *s)
         }
 
         /* initialize the audio decoder stream */
-        st = avformat_new_stream(s, NULL);
+        st = avformat_new_stream_ijk(s, NULL);
         if (!st)
             return AVERROR(ENOMEM);
-        avpriv_set_pts_info(st, 33, 1, ea->sample_rate);
+        avpriv_set_pts_info_ijk(st, 33, 1, ea->sample_rate);
         st->codecpar->codec_type            = AVMEDIA_TYPE_AUDIO;
         st->codecpar->codec_id              = ea->audio_codec;
         st->codecpar->codec_tag             = 0;   /* no tag */

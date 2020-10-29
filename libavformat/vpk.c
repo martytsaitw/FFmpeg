@@ -45,7 +45,7 @@ static int vpk_read_header(AVFormatContext *s)
     AVStream *st;
 
     vpk->current_block = 0;
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -67,7 +67,7 @@ static int vpk_read_header(AVFormatContext *s)
     vpk->block_count       = (st->duration + (samples_per_block - 1)) / samples_per_block;
     vpk->last_block_size   = (st->duration % samples_per_block) * 16 * st->codecpar->channels / 28;
     avio_skip(s->pb, offset - avio_tell(s->pb));
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }

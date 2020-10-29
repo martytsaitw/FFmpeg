@@ -340,7 +340,7 @@ static int ape_read_header(AVFormatContext * s)
            ape->compressiontype);
 
     /* now we are ready: build format streams */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -356,7 +356,7 @@ static int ape_read_header(AVFormatContext * s)
     st->nb_frames = ape->totalframes;
     st->start_time = 0;
     st->duration  = total_blocks;
-    avpriv_set_pts_info(st, 64, 1, ape->samplerate);
+    avpriv_set_pts_info_ijk(st, 64, 1, ape->samplerate);
 
     if (ff_alloc_extradata(st->codecpar, APE_EXTRADATA_SIZE))
         return AVERROR(ENOMEM);

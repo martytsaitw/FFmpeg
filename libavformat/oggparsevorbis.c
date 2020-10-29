@@ -368,7 +368,7 @@ static int vorbis_header(AVFormatContext *s, int idx)
 
         if (srate > 0) {
             st->codecpar->sample_rate = srate;
-            avpriv_set_pts_info(st, 64, 1, srate);
+            avpriv_set_pts_info_ijk(st, 64, 1, srate);
         }
     } else if (os->buf[os->pstart] == 3) {
         if (vorbis_update_metadata(s, idx) >= 0 && priv->len[1] > 10) {

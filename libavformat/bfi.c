@@ -57,12 +57,12 @@ static int bfi_read_header(AVFormatContext * s)
     int fps, chunk_header;
 
     /* Initialize the video codec... */
-    vstream = avformat_new_stream(s, NULL);
+    vstream = avformat_new_stream_ijk(s, NULL);
     if (!vstream)
         return AVERROR(ENOMEM);
 
     /* Initialize the audio codec... */
-    astream = avformat_new_stream(s, NULL);
+    astream = avformat_new_stream_ijk(s, NULL);
     if (!astream)
         return AVERROR(ENOMEM);
 
@@ -94,7 +94,7 @@ static int bfi_read_header(AVFormatContext * s)
     }
 
     /* Set up the video codec... */
-    avpriv_set_pts_info(vstream, 32, 1, fps);
+    avpriv_set_pts_info_ijk(vstream, 32, 1, fps);
     vstream->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     vstream->codecpar->codec_id   = AV_CODEC_ID_BFI;
     vstream->codecpar->format     = AV_PIX_FMT_PAL8;
@@ -110,7 +110,7 @@ static int bfi_read_header(AVFormatContext * s)
     astream->codecpar->bit_rate        =
         (int64_t)astream->codecpar->sample_rate * astream->codecpar->bits_per_coded_sample;
     avio_seek(pb, chunk_header - 3, SEEK_SET);
-    avpriv_set_pts_info(astream, 64, 1, astream->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(astream, 64, 1, astream->codecpar->sample_rate);
     return 0;
 }
 

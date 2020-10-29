@@ -64,12 +64,12 @@ static int64_t read_ts(char **line, int *duration)
 static int pjs_read_header(AVFormatContext *s)
 {
     PJSContext *pjs = s->priv_data;
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     int res = 0;
 
     if (!st)
         return AVERROR(ENOMEM);
-    avpriv_set_pts_info(st, 64, 1, 10);
+    avpriv_set_pts_info_ijk(st, 64, 1, 10);
     st->codecpar->codec_type = AVMEDIA_TYPE_SUBTITLE;
     st->codecpar->codec_id   = AV_CODEC_ID_PJS;
 

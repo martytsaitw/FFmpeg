@@ -279,7 +279,7 @@ static int open_slave(AVFormatContext *avf, char *slave, TeeSlave *tee_slave)
         }
         tee_slave->stream_map[i] = stream_count++;
 
-        if (!(st2 = avformat_new_stream(avf2, NULL))) {
+        if (!(st2 = avformat_new_stream_ijk(avf2, NULL))) {
             ret = AVERROR(ENOMEM);
             goto end;
         }
@@ -371,12 +371,12 @@ static int open_slave(AVFormatContext *avf, char *slave, TeeSlave *tee_slave)
         }
 
         tee_slave->bsfs[target_stream]->time_base_in = avf->streams[i]->time_base;
-        ret = avcodec_parameters_copy(tee_slave->bsfs[target_stream]->par_in,
+        ret = avcodec_parameters_copy_ijk(tee_slave->bsfs[target_stream]->par_in,
                                       avf->streams[i]->codecpar);
         if (ret < 0)
             goto end;
 
-        ret = av_bsf_init(tee_slave->bsfs[target_stream]);
+        ret = av_bsf_init_ijk(tee_slave->bsfs[target_stream]);
         if (ret < 0) {
             av_log(avf, AV_LOG_ERROR,
             "Failed to initialize bitstream filter(s): %s\n",

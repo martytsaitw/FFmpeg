@@ -159,11 +159,11 @@ static int lrc_read_header(AVFormatContext *s)
     AVBPrint line;
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if(!st) {
         return AVERROR(ENOMEM);
     }
-    avpriv_set_pts_info(st, 64, 1, 1000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000);
     lrc->ts_offset = 0;
     st->codecpar->codec_type = AVMEDIA_TYPE_SUBTITLE;
     st->codecpar->codec_id   = AV_CODEC_ID_TEXT;

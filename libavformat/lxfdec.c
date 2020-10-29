@@ -200,14 +200,14 @@ static int get_packet_header(AVFormatContext *s)
         //use audio packet size to determine video standard
         //for NTSC we have one 8008-sample audio frame per five video frames
         if (samples == LXF_SAMPLERATE * 5005 / 30000) {
-            avpriv_set_pts_info(s->streams[0], 64, 1001, 30000);
+            avpriv_set_pts_info_ijk(s->streams[0], 64, 1001, 30000);
         } else {
             //assume PAL, but warn if we don't have 1920 samples
             if (samples != LXF_SAMPLERATE / 25)
                 av_log(s, AV_LOG_WARNING,
                        "video doesn't seem to be PAL or NTSC. guessing PAL\n");
 
-            avpriv_set_pts_info(s->streams[0], 64, 1, 25);
+            avpriv_set_pts_info_ijk(s->streams[0], 64, 1, 25);
         }
 
         //TODO: warning if track mask != (1 << channels) - 1?
@@ -247,7 +247,7 @@ static int lxf_read_header(AVFormatContext *s)
     if ((ret = avio_read(pb, header_data, LXF_HEADER_DATA_SIZE)) != LXF_HEADER_DATA_SIZE)
         return ret < 0 ? ret : AVERROR_EOF;
 
-    if (!(st = avformat_new_stream(s, NULL)))
+    if (!(st = avformat_new_stream_ijk(s, NULL)))
         return AVERROR(ENOMEM);
 
     st->duration          = AV_RL32(&header_data[32]);
@@ -274,14 +274,14 @@ static int lxf_read_header(AVFormatContext *s)
         av_log(s, AV_LOG_WARNING, "VBI data not yet supported\n");
 
     if ((lxf->channels = 1 << (disk_params >> 4 & 3) + 1)) {
-        if (!(st = avformat_new_stream(s, NULL)))
+        if (!(st = avformat_new_stream_ijk(s, NULL)))
             return AVERROR(ENOMEM);
 
         st->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
         st->codecpar->sample_rate = LXF_SAMPLERATE;
         st->codecpar->channels    = lxf->channels;
 
-        avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+        avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
     }
 
     avio_skip(s->pb, lxf->extended_size);

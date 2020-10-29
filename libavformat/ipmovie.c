@@ -248,10 +248,10 @@ static int load_ipmovie_packet(IPMVEContext *s, AVIOContext *pb,
 static int init_audio(AVFormatContext *s)
 {
     IPMVEContext *ipmovie = s->priv_data;
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
-    avpriv_set_pts_info(st, 32, 1, ipmovie->audio_sample_rate);
+    avpriv_set_pts_info_ijk(st, 32, 1, ipmovie->audio_sample_rate);
     ipmovie->audio_stream_index = st->index;
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id = ipmovie->audio_type;
@@ -678,10 +678,10 @@ static int ipmovie_read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
 
     /* initialize the stream decoders */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
-    avpriv_set_pts_info(st, 63, 1, 1000000);
+    avpriv_set_pts_info_ijk(st, 63, 1, 1000000);
     ipmovie->video_stream_index = st->index;
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id = AV_CODEC_ID_INTERPLAY_VIDEO;

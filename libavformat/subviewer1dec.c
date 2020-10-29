@@ -45,11 +45,11 @@ static int subviewer1_read_header(AVFormatContext *s)
     int delay = 0;
     AVPacket *sub = NULL;
     SubViewer1Context *subviewer1 = s->priv_data;
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
 
     if (!st)
         return AVERROR(ENOMEM);
-    avpriv_set_pts_info(st, 64, 1, 1);
+    avpriv_set_pts_info_ijk(st, 64, 1, 1);
     st->codecpar->codec_type = AVMEDIA_TYPE_SUBTITLE;
     st->codecpar->codec_id   = AV_CODEC_ID_SUBVIEWER1;
 

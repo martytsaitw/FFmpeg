@@ -41,7 +41,7 @@ static int read_header(AVFormatContext *s)
     avio_rl16(s->pb); // version
     avio_rl16(s->pb); // header size
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -62,7 +62,7 @@ static int read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
     }
 
-    avpriv_set_pts_info(st, 64, time_base.num, time_base.den);
+    avpriv_set_pts_info_ijk(st, 64, time_base.num, time_base.den);
 
     return 0;
 }

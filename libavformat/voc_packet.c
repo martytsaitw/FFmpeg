@@ -61,7 +61,7 @@ ff_voc_get_packet(AVFormatContext *s, AVPacket *pkt, AVStream *st, int max_size)
                 par->sample_rate = 1000000 / (256 - avio_r8(pb));
                 if (sample_rate)
                     par->sample_rate = sample_rate;
-                avpriv_set_pts_info(st, 64, 1, par->sample_rate);
+                avpriv_set_pts_info_ijk(st, 64, 1, par->sample_rate);
                 par->channels = channels;
                 par->bits_per_coded_sample = av_get_bits_per_sample(par->codec_id);
             } else
@@ -87,7 +87,7 @@ ff_voc_get_packet(AVFormatContext *s, AVPacket *pkt, AVStream *st, int max_size)
         case VOC_TYPE_NEW_VOICE_DATA:
             if (!par->sample_rate) {
                 par->sample_rate = avio_rl32(pb);
-                avpriv_set_pts_info(st, 64, 1, par->sample_rate);
+                avpriv_set_pts_info_ijk(st, 64, 1, par->sample_rate);
                 par->bits_per_coded_sample = avio_r8(pb);
                 par->channels = avio_r8(pb);
             } else

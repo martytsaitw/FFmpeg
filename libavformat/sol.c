@@ -107,7 +107,7 @@ static int sol_read_header(AVFormatContext *s)
     else id = 0;
 
     /* now we are ready: build format streams */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return -1;
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -117,7 +117,7 @@ static int sol_read_header(AVFormatContext *s)
     st->codecpar->channel_layout = channels == 1 ? AV_CH_LAYOUT_MONO :
                                                    AV_CH_LAYOUT_STEREO;
     st->codecpar->sample_rate = rate;
-    avpriv_set_pts_info(st, 64, 1, rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, rate);
     return 0;
 }
 

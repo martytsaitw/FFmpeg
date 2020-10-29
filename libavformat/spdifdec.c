@@ -214,7 +214,7 @@ int ff_spdif_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     if (!s->nb_streams) {
         /* first packet, create a stream */
-        AVStream *st = avformat_new_stream(s, NULL);
+        AVStream *st = avformat_new_stream_ijk(s, NULL);
         if (!st) {
             av_packet_unref(pkt);
             return AVERROR(ENOMEM);

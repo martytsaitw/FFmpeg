@@ -2093,7 +2093,7 @@ static int open_dummy_for_component(AVFormatContext *s, struct representation *p
         pls->last_seq_no = calc_max_seg_no(pls, s->priv_data);
     }
 
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     if (!st) {
         ret = AVERROR(ENOMEM);
         goto fail;
@@ -2126,15 +2126,15 @@ static int open_demux_for_component(AVFormatContext *s, struct representation *p
         goto fail;
     }
     for (i = 0; i < pls->ctx->nb_streams; i++) {
-        AVStream *st = avformat_new_stream(s, NULL);
+        AVStream *st = avformat_new_stream_ijk(s, NULL);
         AVStream *ist = pls->ctx->streams[i];
         if (!st) {
             ret = AVERROR(ENOMEM);
             goto fail;
         }
         st->id = i;
-        avcodec_parameters_copy(st->codecpar, pls->ctx->streams[i]->codecpar);
-        avpriv_set_pts_info(st, ist->pts_wrap_bits, ist->time_base.num, ist->time_base.den);
+        avcodec_parameters_copy_ijk(st->codecpar, pls->ctx->streams[i]->codecpar);
+        avpriv_set_pts_info_ijk(st, ist->pts_wrap_bits, ist->time_base.num, ist->time_base.den);
     }
 
     return 0;

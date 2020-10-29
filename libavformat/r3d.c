@@ -53,7 +53,7 @@ static int read_atom(AVFormatContext *s, Atom *atom)
 
 static int r3d_read_red1(AVFormatContext *s)
 {
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     R3DContext *r3d = s->priv_data;
     char filename[258];
     int tmp;
@@ -73,7 +73,7 @@ static int r3d_read_red1(AVFormatContext *s)
     av_log(s, AV_LOG_TRACE, "unknown1 %d\n", tmp);
 
     tmp = avio_rb32(s->pb);
-    avpriv_set_pts_info(st, 32, 1, tmp);
+    avpriv_set_pts_info_ijk(st, 32, 1, tmp);
 
     tmp = avio_rb32(s->pb); // filenum
     av_log(s, AV_LOG_TRACE, "filenum %d\n", tmp);
@@ -281,13 +281,13 @@ static int r3d_read_reda(AVFormatContext *s, AVPacket *pkt, Atom *atom)
     int ret;
 
     if (s->nb_streams < 2) {
-        st = avformat_new_stream(s, NULL);
+        st = avformat_new_stream_ijk(s, NULL);
         if (!st)
             return AVERROR(ENOMEM);
         st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
         st->codecpar->codec_id = AV_CODEC_ID_PCM_S32BE;
         st->codecpar->channels = r3d->audio_channels;
-        avpriv_set_pts_info(st, 32, 1, s->streams[0]->time_base.den);
+        avpriv_set_pts_info_ijk(st, 32, 1, s->streams[0]->time_base.den);
     } else {
         st = s->streams[1];
     }

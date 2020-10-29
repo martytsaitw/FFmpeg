@@ -48,7 +48,7 @@ static int vc1test_write_header(AVFormatContext *s)
         avio_wl32(pb, s->streams[0]->avg_frame_rate.den);
     else
         avio_wl32(pb, 0xFFFFFFFF); //variable framerate
-    avpriv_set_pts_info(s->streams[0], 32, 1, 1000);
+    avpriv_set_pts_info_ijk(s->streams[0], 32, 1, 1000);
 
     return 0;
 }

@@ -41,7 +41,7 @@ static int nsp_read_header(AVFormatContext *s)
     int64_t pos;
 
     avio_skip(s->pb, 12);
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 

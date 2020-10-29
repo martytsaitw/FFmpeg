@@ -64,7 +64,7 @@ static int celt_header(AVFormatContext *s, int idx)
         st->codecpar->sample_rate    = sample_rate;
         st->codecpar->channels       = nb_channels;
         if (sample_rate)
-            avpriv_set_pts_info(st, 64, 1, sample_rate);
+            avpriv_set_pts_info_ijk(st, 64, 1, sample_rate);
 
         if (os->private) {
             av_free(priv);

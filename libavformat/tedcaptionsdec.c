@@ -292,12 +292,12 @@ static av_cold int tedcaptions_read_header(AVFormatContext *avf)
         tc->subs.subs[i].pts += tc->start_time;
 
     last = &tc->subs.subs[tc->subs.nb_subs - 1];
-    st = avformat_new_stream(avf, NULL);
+    st = avformat_new_stream_ijk(avf, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type     = AVMEDIA_TYPE_SUBTITLE;
     st->codecpar->codec_id       = AV_CODEC_ID_TEXT;
-    avpriv_set_pts_info(st, 64, 1, 1000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000);
     st->probe_packets = 0;
     st->start_time    = 0;
     st->duration      = last->pts + last->duration;

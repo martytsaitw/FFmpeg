@@ -1961,7 +1961,7 @@ static int mxf_add_metadata_stream(MXFContext *mxf, MXFTrack *track)
     if (!component)
         return 0;
 
-    st = avformat_new_stream(mxf->fc, NULL);
+    st = avformat_new_stream_ijk(mxf->fc, NULL);
     if (!st) {
         av_log(mxf->fc, AV_LOG_ERROR, "could not allocate metadata stream\n");
         return AVERROR(ENOMEM);
@@ -2117,7 +2117,7 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
             continue;
         }
 
-        st = avformat_new_stream(mxf->fc, NULL);
+        st = avformat_new_stream_ijk(mxf->fc, NULL);
         if (!st) {
             av_log(mxf->fc, AV_LOG_ERROR, "could not allocate stream\n");
             ret = AVERROR(ENOMEM);
@@ -2148,7 +2148,7 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
                    material_track->edit_rate.den, st->index);
             material_track->edit_rate = (AVRational){25, 1};
         }
-        avpriv_set_pts_info(st, 64, material_track->edit_rate.den, material_track->edit_rate.num);
+        avpriv_set_pts_info_ijk(st, 64, material_track->edit_rate.den, material_track->edit_rate.num);
 
         /* ensure SourceTrack EditRate == MaterialTrack EditRate since only
          * the former is accessible via st->priv_data */
@@ -2312,13 +2312,13 @@ static int mxf_parse_structural_metadata(MXFContext *mxf)
 
             if (descriptor->sample_rate.den > 0) {
                 st->codecpar->sample_rate = descriptor->sample_rate.num / descriptor->sample_rate.den;
-                avpriv_set_pts_info(st, 64, descriptor->sample_rate.den, descriptor->sample_rate.num);
+                avpriv_set_pts_info_ijk(st, 64, descriptor->sample_rate.den, descriptor->sample_rate.num);
             } else {
                 av_log(mxf->fc, AV_LOG_WARNING, "invalid sample rate (%d/%d) "
                        "found for stream #%d, time base forced to 1/48000\n",
                        descriptor->sample_rate.num, descriptor->sample_rate.den,
                        st->index);
-                avpriv_set_pts_info(st, 64, 1, 48000);
+                avpriv_set_pts_info_ijk(st, 64, 1, 48000);
             }
 
             /* if duration is set, rescale it from EditRate to SampleRate */

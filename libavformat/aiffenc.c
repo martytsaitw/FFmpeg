@@ -199,7 +199,7 @@ static int aiff_write_header(AVFormatContext *s)
     avio_wb32(pb, 0);                    /* Data offset */
     avio_wb32(pb, 0);                    /* Block-size (block align) */
 
-    avpriv_set_pts_info(s->streams[aiff->audio_stream_idx], 64, 1,
+    avpriv_set_pts_info_ijk(s->streams[aiff->audio_stream_idx], 64, 1,
                         s->streams[aiff->audio_stream_idx]->codecpar->sample_rate);
 
     /* Data is starting here */

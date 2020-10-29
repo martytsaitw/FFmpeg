@@ -166,7 +166,7 @@ fail:
     return ret;
 }
 
-static int copy_stream_props(AVStream *st, AVStream *source_st)
+static int copy_stream_props_ijk(AVStream *st, AVStream *source_st)
 {
     int ret;
 
@@ -185,12 +185,12 @@ static int copy_stream_props(AVStream *st, AVStream *source_st)
                source_st->codecpar->extradata_size);
         return 0;
     }
-    if ((ret = avcodec_parameters_copy(st->codecpar, source_st->codecpar)) < 0)
+    if ((ret = avcodec_parameters_copy_ijk(st->codecpar, source_st->codecpar)) < 0)
         return ret;
     st->r_frame_rate        = source_st->r_frame_rate;
     st->avg_frame_rate      = source_st->avg_frame_rate;
     st->sample_aspect_ratio = source_st->sample_aspect_ratio;
-    avpriv_set_pts_info(st, 64, source_st->time_base.num, source_st->time_base.den);
+    avpriv_set_pts_info_ijk(st, 64, source_st->time_base.num, source_st->time_base.den);
 
     av_dict_copy(&st->metadata, source_st->metadata, 0);
     return 0;
@@ -212,26 +212,26 @@ static int detect_stream_specific(AVFormatContext *avf, int idx)
             return 0;
         av_log(cat->avf, AV_LOG_INFO,
                "Auto-inserting h264_mp4toannexb bitstream filter\n");
-        filter = av_bsf_get_by_name("h264_mp4toannexb");
+        filter = av_bsf_get_by_name_ijk("h264_mp4toannexb");
         if (!filter) {
             av_log(avf, AV_LOG_ERROR, "h264_mp4toannexb bitstream filter "
                    "required for H.264 streams\n");
             return AVERROR_BSF_NOT_FOUND;
         }
-        ret = av_bsf_alloc(filter, &bsf);
+        ret = av_bsf_alloc_ijk(filter, &bsf);
         if (ret < 0)
             return ret;
         cs->bsf = bsf;
 
-        ret = avcodec_parameters_copy(bsf->par_in, st->codecpar);
+        ret = avcodec_parameters_copy_ijk(bsf->par_in, st->codecpar);
         if (ret < 0)
            return ret;
 
-        ret = av_bsf_init(bsf);
+        ret = av_bsf_init_ijk(bsf);
         if (ret < 0)
             return ret;
 
-        ret = avcodec_parameters_copy(st->codecpar, bsf->par_out);
+        ret = avcodec_parameters_copy_ijk(st->codecpar, bsf->par_out);
         if (ret < 0)
             return ret;
     }
@@ -248,10 +248,10 @@ static int match_streams_one_to_one(AVFormatContext *avf)
         if (i < avf->nb_streams) {
             st = avf->streams[i];
         } else {
-            if (!(st = avformat_new_stream(avf, NULL)))
+            if (!(st = avformat_new_stream_ijk(avf, NULL)))
                 return AVERROR(ENOMEM);
         }
-        if ((ret = copy_stream_props(st, cat->avf->streams[i])) < 0)
+        if ((ret = copy_stream_props_ijk(st, cat->avf->streams[i])) < 0)
             return ret;
         cat->cur_file->streams[i].out_stream_index = i;
     }
@@ -271,7 +271,7 @@ static int match_streams_exact_id(AVFormatContext *avf)
                 av_log(avf, AV_LOG_VERBOSE,
                        "Match slave stream #%d with stream #%d id 0x%x\n",
                        i, j, st->id);
-                if ((ret = copy_stream_props(avf->streams[j], st)) < 0)
+                if ((ret = copy_stream_props_ijk(avf->streams[j], st)) < 0)
                     return ret;
                 cat->cur_file->streams[i].out_stream_index = j;
             }
@@ -403,7 +403,7 @@ static int open_file(AVFormatContext *avf, unsigned fileno)
     if ((ret = match_streams(avf)) < 0)
         return ret;
     if (file->inpoint != AV_NOPTS_VALUE) {
-       if ((ret = avformat_seek_file(cat->avf, -1, INT64_MIN, file->inpoint, file->inpoint, 0)) < 0)
+       if ((ret = avformat_seek_file_ijk(cat->avf, -1, INT64_MIN, file->inpoint, file->inpoint, 0)) < 0)
            return ret;
     }
     return 0;
@@ -498,7 +498,7 @@ static int concat_read_header(AVFormatContext *avf, AVDictionary **options)
             }
             av_freep(&metadata);
         } else if (!strcmp(keyword, "stream")) {
-            if (!avformat_new_stream(avf, NULL))
+            if (!avformat_new_stream_ijk(avf, NULL))
                 FAIL(AVERROR(ENOMEM));
         } else if (!strcmp(keyword, "exact_stream_id")) {
             if (!avf->nb_streams) {
@@ -751,7 +751,7 @@ static int try_seek(AVFormatContext *avf, int stream,
         rescale_interval(AV_TIME_BASE_Q, cat->avf->streams[stream]->time_base,
                          &min_ts, &ts, &max_ts);
     }
-    return avformat_seek_file(cat->avf, stream, min_ts, ts, max_ts, flags);
+    return avformat_seek_file_ijk(cat->avf, stream, min_ts, ts, max_ts, flags);
 }
 
 static int real_seek(AVFormatContext *avf, int stream,

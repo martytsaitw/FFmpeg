@@ -111,7 +111,7 @@ static int qt_rtp_parse_packet(AVFormatContext *s, PayloadContext *qt,
             (st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO &&
                  tag != MKTAG('s','o','u','n')))
             return AVERROR_INVALIDDATA;
-        avpriv_set_pts_info(st, 32, 1, avio_rb32(&pb));
+        avpriv_set_pts_info_ijk(st, 32, 1, avio_rb32(&pb));
 
         if (pos + data_len > len)
             return AVERROR_INVALIDDATA;

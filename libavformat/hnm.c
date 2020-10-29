@@ -105,7 +105,7 @@ static int hnm_read_header(AVFormatContext *s)
     else
         hnm->version = 0x40;
 
-    if (!(vst = avformat_new_stream(s, NULL)))
+    if (!(vst = avformat_new_stream_ijk(s, NULL)))
         return AVERROR(ENOMEM);
 
     vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
@@ -120,7 +120,7 @@ static int hnm_read_header(AVFormatContext *s)
 
     vst->start_time = 0;
 
-    avpriv_set_pts_info(vst, 33, 1, HNM4_FRAME_FPS);
+    avpriv_set_pts_info_ijk(vst, 33, 1, HNM4_FRAME_FPS);
 
     return 0;
 }

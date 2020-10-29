@@ -84,7 +84,7 @@ static int adx_read_header(AVFormatContext *s)
     ADXDemuxerContext *c = s->priv_data;
     AVCodecParameters *par;
 
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     par = s->streams[0]->codecpar;
@@ -118,7 +118,7 @@ static int adx_read_header(AVFormatContext *s)
     par->codec_id    = s->iformat->raw_codec_id;
     par->bit_rate    = (int64_t)par->sample_rate * par->channels * BLOCK_SIZE * 8LL / BLOCK_SAMPLES;
 
-    avpriv_set_pts_info(st, 64, BLOCK_SAMPLES, par->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, BLOCK_SAMPLES, par->sample_rate);
 
     return 0;
 }

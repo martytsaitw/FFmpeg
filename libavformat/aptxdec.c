@@ -37,7 +37,7 @@ typedef struct AptXDemuxerContext {
 static AVStream *aptx_read_header_common(AVFormatContext *s)
 {
     AptXDemuxerContext *s1 = s->priv_data;
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return NULL;
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;

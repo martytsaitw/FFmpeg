@@ -288,11 +288,11 @@ static int xmv_process_packet_header(AVFormatContext *s)
     xmv->video.has_extradata = (data[3] & 0x80) != 0;
 
     if (!xmv->video.created) {
-        AVStream *vst = avformat_new_stream(s, NULL);
+        AVStream *vst = avformat_new_stream_ijk(s, NULL);
         if (!vst)
             return AVERROR(ENOMEM);
 
-        avpriv_set_pts_info(vst, 32, 1, 1000);
+        avpriv_set_pts_info_ijk(vst, 32, 1, 1000);
 
         vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
         vst->codecpar->codec_id   = AV_CODEC_ID_WMV2;
@@ -333,7 +333,7 @@ static int xmv_process_packet_header(AVFormatContext *s)
             return AVERROR(EIO);
 
         if (!packet->created) {
-            AVStream *ast = avformat_new_stream(s, NULL);
+            AVStream *ast = avformat_new_stream_ijk(s, NULL);
             if (!ast)
                 return AVERROR(ENOMEM);
 
@@ -346,7 +346,7 @@ static int xmv_process_packet_header(AVFormatContext *s)
             ast->codecpar->bit_rate              = packet->bit_rate;
             ast->codecpar->block_align           = 36 * packet->channels;
 
-            avpriv_set_pts_info(ast, 32, packet->block_samples, packet->sample_rate);
+            avpriv_set_pts_info_ijk(ast, 32, packet->block_samples, packet->sample_rate);
 
             packet->stream_index = ast->index;
 

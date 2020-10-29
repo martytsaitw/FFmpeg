@@ -101,7 +101,7 @@ static int wsd_read_header(AVFormatContext *s)
     uint32_t text_offset, data_offset, channel_assign;
     char playback_time[AV_TIMECODE_STR_SIZE];
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 

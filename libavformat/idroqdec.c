@@ -125,10 +125,10 @@ static int roq_read_packet(AVFormatContext *s,
 
         case RoQ_INFO:
             if (roq->video_stream_index == -1) {
-                AVStream *st = avformat_new_stream(s, NULL);
+                AVStream *st = avformat_new_stream_ijk(s, NULL);
                 if (!st)
                     return AVERROR(ENOMEM);
-                avpriv_set_pts_info(st, 63, 1, roq->frame_rate);
+                avpriv_set_pts_info_ijk(st, 63, 1, roq->frame_rate);
                 roq->video_stream_index = st->index;
                 st->codecpar->codec_type   = AVMEDIA_TYPE_VIDEO;
                 st->codecpar->codec_id     = AV_CODEC_ID_ROQ;
@@ -176,10 +176,10 @@ static int roq_read_packet(AVFormatContext *s,
         case RoQ_SOUND_MONO:
         case RoQ_SOUND_STEREO:
             if (roq->audio_stream_index == -1) {
-                AVStream *st = avformat_new_stream(s, NULL);
+                AVStream *st = avformat_new_stream_ijk(s, NULL);
                 if (!st)
                     return AVERROR(ENOMEM);
-                avpriv_set_pts_info(st, 32, 1, RoQ_AUDIO_SAMPLE_RATE);
+                avpriv_set_pts_info_ijk(st, 32, 1, RoQ_AUDIO_SAMPLE_RATE);
                 roq->audio_stream_index = st->index;
                 st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
                 st->codecpar->codec_id = AV_CODEC_ID_ROQ_DPCM;

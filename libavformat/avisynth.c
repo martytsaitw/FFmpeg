@@ -245,7 +245,7 @@ static int avisynth_create_stream_video(AVFormatContext *s, AVStream *st)
     st->start_time        = 0;
     st->duration          = avs->vi->num_frames;
     st->nb_frames         = avs->vi->num_frames;
-    avpriv_set_pts_info(st, 32, avs->vi->fps_denominator, avs->vi->fps_numerator);
+    avpriv_set_pts_info_ijk(st, 32, avs->vi->fps_denominator, avs->vi->fps_numerator);
 
     switch (avs->vi->pixel_type) {
 #ifdef USING_AVISYNTH
@@ -466,7 +466,7 @@ static int avisynth_create_stream_audio(AVFormatContext *s, AVStream *st)
     st->codecpar->sample_rate = avs->vi->audio_samples_per_second;
     st->codecpar->channels    = avs->vi->nchannels;
     st->duration              = avs->vi->num_audio_samples;
-    avpriv_set_pts_info(st, 64, 1, avs->vi->audio_samples_per_second);
+    avpriv_set_pts_info_ijk(st, 64, 1, avs->vi->audio_samples_per_second);
 
     switch (avs->vi->sample_type) {
     case AVS_SAMPLE_INT8:
@@ -501,7 +501,7 @@ static int avisynth_create_stream(AVFormatContext *s)
     int id = 0;
 
     if (avs_has_video(avs->vi)) {
-        st = avformat_new_stream(s, NULL);
+        st = avformat_new_stream_ijk(s, NULL);
         if (!st)
             return AVERROR_UNKNOWN;
         st->id = id++;
@@ -509,7 +509,7 @@ static int avisynth_create_stream(AVFormatContext *s)
             return ret;
     }
     if (avs_has_audio(avs->vi)) {
-        st = avformat_new_stream(s, NULL);
+        st = avformat_new_stream_ijk(s, NULL);
         if (!st)
             return AVERROR_UNKNOWN;
         st->id = id++;

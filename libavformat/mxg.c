@@ -45,14 +45,14 @@ static int mxg_read_header(AVFormatContext *s)
     MXGContext *mxg = s->priv_data;
 
     /* video parameters will be extracted from the compressed bitstream */
-    video_st = avformat_new_stream(s, NULL);
+    video_st = avformat_new_stream_ijk(s, NULL);
     if (!video_st)
         return AVERROR(ENOMEM);
     video_st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     video_st->codecpar->codec_id = AV_CODEC_ID_MXPEG;
-    avpriv_set_pts_info(video_st, 64, 1, 1000000);
+    avpriv_set_pts_info_ijk(video_st, 64, 1, 1000000);
 
-    audio_st = avformat_new_stream(s, NULL);
+    audio_st = avformat_new_stream_ijk(s, NULL);
     if (!audio_st)
         return AVERROR(ENOMEM);
     audio_st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -62,7 +62,7 @@ static int mxg_read_header(AVFormatContext *s)
     audio_st->codecpar->sample_rate = 8000;
     audio_st->codecpar->bits_per_coded_sample = 8;
     audio_st->codecpar->block_align = 1;
-    avpriv_set_pts_info(audio_st, 64, 1, 1000000);
+    avpriv_set_pts_info_ijk(audio_st, 64, 1, 1000000);
 
     mxg->soi_ptr = mxg->buffer_ptr = mxg->buffer = 0;
     mxg->buffer_size = 0;

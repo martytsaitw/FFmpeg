@@ -54,7 +54,7 @@ static int frm_read_probe(AVProbeData *p)
 static int frm_read_header(AVFormatContext *avctx)
 {
     AVIOContext *pb = avctx->pb;
-    AVStream *st = avformat_new_stream(avctx, 0);
+    AVStream *st = avformat_new_stream_ijk(avctx, 0);
     if (!st)
         return AVERROR(ENOMEM);
 

@@ -957,18 +957,18 @@ static av_cold int cuvid_decode_init(AVCodecContext *avctx)
 
     if (avctx->codec->id == AV_CODEC_ID_H264 || avctx->codec->id == AV_CODEC_ID_HEVC) {
         if (avctx->codec->id == AV_CODEC_ID_H264)
-            bsf = av_bsf_get_by_name("h264_mp4toannexb");
+            bsf = av_bsf_get_by_name_ijk("h264_mp4toannexb");
         else
-            bsf = av_bsf_get_by_name("hevc_mp4toannexb");
+            bsf = av_bsf_get_by_name_ijk("hevc_mp4toannexb");
 
         if (!bsf) {
             ret = AVERROR_BSF_NOT_FOUND;
             goto error;
         }
-        if (ret = av_bsf_alloc(bsf, &ctx->bsf)) {
+        if (ret = av_bsf_alloc_ijk(bsf, &ctx->bsf)) {
             goto error;
         }
-        if (((ret = avcodec_parameters_from_context_ijk(ctx->bsf->par_in, avctx)) < 0) || ((ret = av_bsf_init(ctx->bsf)) < 0)) {
+        if (((ret = avcodec_parameters_from_context_ijk(ctx->bsf->par_in, avctx)) < 0) || ((ret = av_bsf_init_ijk(ctx->bsf)) < 0)) {
             av_bsf_free(&ctx->bsf);
             goto error;
         }

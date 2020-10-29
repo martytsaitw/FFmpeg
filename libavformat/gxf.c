@@ -107,7 +107,7 @@ static int get_sindex(AVFormatContext *s, int id, int format) {
     i = ff_find_stream_index(s, id);
     if (i >= 0)
         return i;
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->id = id;
@@ -435,7 +435,7 @@ static int gxf_header(AVFormatContext *s) {
         main_timebase = (AVRational){1001, 60000};
     for (i = 0; i < s->nb_streams; i++) {
         AVStream *st = s->streams[i];
-        avpriv_set_pts_info(st, 32, main_timebase.num, main_timebase.den);
+        avpriv_set_pts_info_ijk(st, 32, main_timebase.num, main_timebase.den);
     }
     return 0;
 }

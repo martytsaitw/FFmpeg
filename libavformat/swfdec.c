@@ -176,7 +176,7 @@ static int swf_read_header(AVFormatContext *s)
 static AVStream *create_new_audio_stream(AVFormatContext *s, int id, int info)
 {
     int sample_rate_code, sample_size_code;
-    AVStream *ast = avformat_new_stream(s, NULL);
+    AVStream *ast = avformat_new_stream_ijk(s, NULL);
     if (!ast)
         return NULL;
     ast->id = id;
@@ -195,7 +195,7 @@ static AVStream *create_new_audio_stream(AVFormatContext *s, int id, int info)
     if (!sample_size_code && ast->codecpar->codec_id == AV_CODEC_ID_PCM_S16LE)
         ast->codecpar->codec_id = AV_CODEC_ID_PCM_U8;
     ast->codecpar->sample_rate = 44100 >> (3 - sample_rate_code);
-    avpriv_set_pts_info(ast, 64, 1, ast->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(ast, 64, 1, ast->codecpar->sample_rate);
     return ast;
 }
 
@@ -235,13 +235,13 @@ static int swf_read_packet(AVFormatContext *s, AVPacket *pkt)
             avio_rl16(pb);
             avio_r8(pb);
             /* Check for FLV1 */
-            vst = avformat_new_stream(s, NULL);
+            vst = avformat_new_stream_ijk(s, NULL);
             if (!vst)
                 return AVERROR(ENOMEM);
             vst->id = ch_id;
             vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
             vst->codecpar->codec_id = ff_codec_get_id(ff_swf_codec_tags, avio_r8(pb));
-            avpriv_set_pts_info(vst, 16, 256, swf->frame_rate);
+            avpriv_set_pts_info_ijk(vst, 16, 256, swf->frame_rate);
             len -= 8;
         } else if (tag == TAG_STREAMHEAD || tag == TAG_STREAMHEAD2) {
             /* streaming found */
@@ -372,7 +372,7 @@ static int swf_read_packet(AVFormatContext *s, AVPacket *pkt)
                     break;
             }
             if (i == s->nb_streams) {
-                vst = avformat_new_stream(s, NULL);
+                vst = avformat_new_stream_ijk(s, NULL);
                 if (!vst) {
                     res = AVERROR(ENOMEM);
                     goto bitmap_end;
@@ -380,7 +380,7 @@ static int swf_read_packet(AVFormatContext *s, AVPacket *pkt)
                 vst->id = -3; /* -3 to avoid clash with video stream and audio stream */
                 vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
                 vst->codecpar->codec_id = AV_CODEC_ID_RAWVIDEO;
-                avpriv_set_pts_info(vst, 64, 256, swf->frame_rate);
+                avpriv_set_pts_info_ijk(vst, 64, 256, swf->frame_rate);
                 st = vst;
             }
 
@@ -471,13 +471,13 @@ bitmap_end_skip:
                     break;
             }
             if (i == s->nb_streams) {
-                vst = avformat_new_stream(s, NULL);
+                vst = avformat_new_stream_ijk(s, NULL);
                 if (!vst)
                     return AVERROR(ENOMEM);
                 vst->id = -2; /* -2 to avoid clash with video stream and audio stream */
                 vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
                 vst->codecpar->codec_id = AV_CODEC_ID_MJPEG;
-                avpriv_set_pts_info(vst, 64, 256, swf->frame_rate);
+                avpriv_set_pts_info_ijk(vst, 64, 256, swf->frame_rate);
                 st = vst;
             }
             avio_rl16(pb); /* BITMAP_ID */

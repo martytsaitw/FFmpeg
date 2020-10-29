@@ -58,7 +58,7 @@ static int lvf_read_header(AVFormatContext *s)
 
         switch (id) {
         case MKTAG('0', '0', 'f', 'm'):
-            st = avformat_new_stream(s, 0);
+            st = avformat_new_stream_ijk(s, 0);
             if (!st)
                 return AVERROR(ENOMEM);
 
@@ -70,10 +70,10 @@ static int lvf_read_header(AVFormatContext *s)
             st->codecpar->codec_tag  = avio_rl32(s->pb);
             st->codecpar->codec_id   = ff_codec_get_id(ff_codec_bmp_tags,
                                                        st->codecpar->codec_tag);
-            avpriv_set_pts_info(st, 32, 1, 1000);
+            avpriv_set_pts_info_ijk(st, 32, 1, 1000);
             break;
         case MKTAG('0', '1', 'f', 'm'):
-            st = avformat_new_stream(s, 0);
+            st = avformat_new_stream_ijk(s, 0);
             if (!st)
                 return AVERROR(ENOMEM);
 
@@ -85,7 +85,7 @@ static int lvf_read_header(AVFormatContext *s)
             st->codecpar->bits_per_coded_sample = avio_r8(s->pb);
             st->codecpar->codec_id    = ff_codec_get_id(ff_codec_wav_tags,
                                                         st->codecpar->codec_tag);
-            avpriv_set_pts_info(st, 32, 1, 1000);
+            avpriv_set_pts_info_ijk(st, 32, 1, 1000);
             break;
         case 0:
             avio_seek(s->pb, 2048 + 8, SEEK_SET);

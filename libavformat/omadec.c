@@ -425,7 +425,7 @@ static int oma_read_header(AVFormatContext *s)
 
     codec_params = AV_RB24(&buf[33]);
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -470,7 +470,7 @@ static int oma_read_header(AVFormatContext *s)
         AV_WL16(&edata[10], 1);             // always 1
         // AV_WL16(&edata[12], 0);          // always 0
 
-        avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+        avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
         break;
     case OMA_CODECID_ATRAC3P:
         channel_id = (codec_params >> 10) & 7;
@@ -489,7 +489,7 @@ static int oma_read_header(AVFormatContext *s)
         }
         st->codecpar->sample_rate = samplerate;
         st->codecpar->bit_rate    = samplerate * framesize / (2048 / 8);
-        avpriv_set_pts_info(st, 64, 1, samplerate);
+        avpriv_set_pts_info_ijk(st, 64, 1, samplerate);
         break;
     case OMA_CODECID_MP3:
         st->need_parsing = AVSTREAM_PARSE_FULL_RAW;
@@ -505,13 +505,13 @@ static int oma_read_header(AVFormatContext *s)
         st->codecpar->bit_rate = st->codecpar->sample_rate * 32;
         st->codecpar->bits_per_coded_sample =
             av_get_bits_per_sample(st->codecpar->codec_id);
-        avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+        avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
         break;
     case OMA_CODECID_ATRAC3AL:
         st->codecpar->channels    = 2;
         st->codecpar->channel_layout = AV_CH_LAYOUT_STEREO;
         st->codecpar->sample_rate = 44100;
-        avpriv_set_pts_info(st, 64, 1, 44100);
+        avpriv_set_pts_info_ijk(st, 64, 1, 44100);
         oc->read_packet = aal_read_packet;
         framesize = 4096;
         break;
@@ -519,7 +519,7 @@ static int oma_read_header(AVFormatContext *s)
         st->codecpar->channel_layout = AV_CH_LAYOUT_STEREO;
         st->codecpar->channels       = 2;
         st->codecpar->sample_rate = 44100;
-        avpriv_set_pts_info(st, 64, 1, 44100);
+        avpriv_set_pts_info_ijk(st, 64, 1, 44100);
         oc->read_packet = aal_read_packet;
         framesize = 4096;
         break;

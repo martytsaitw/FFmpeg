@@ -106,7 +106,7 @@ static int read_frame(BVID_DemuxContext *vid, AVIOContext *pb, AVPacket *pkt,
     AVStream *st;
 
     if (vid->video_index < 0) {
-        st = avformat_new_stream(s, NULL);
+        st = avformat_new_stream_ijk(s, NULL);
         if (!st)
             return AVERROR(ENOMEM);
         vid->video_index = st->index;
@@ -115,7 +115,7 @@ static int read_frame(BVID_DemuxContext *vid, AVIOContext *pb, AVPacket *pkt,
                                   "having no audio packet before the first "
                                   "video packet");
         }
-        avpriv_set_pts_info(st, 64, 185, vid->sample_rate);
+        avpriv_set_pts_info_ijk(st, 64, 185, vid->sample_rate);
         st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
         st->codecpar->codec_id   = AV_CODEC_ID_BETHSOFTVID;
         st->codecpar->width      = vid->width;
@@ -241,7 +241,7 @@ static int vid_read_packet(AVFormatContext *s,
             vid->sample_rate = 1000000 / (256 - avio_r8(pb));
         case AUDIO_BLOCK:
             if (vid->audio_index < 0) {
-                AVStream *st = avformat_new_stream(s, NULL);
+                AVStream *st = avformat_new_stream_ijk(s, NULL);
                 if (!st)
                     return AVERROR(ENOMEM);
                 vid->audio_index                 = st->index;
@@ -253,7 +253,7 @@ static int vid_read_packet(AVFormatContext *s,
                 st->codecpar->sample_rate           = vid->sample_rate;
                 st->codecpar->bit_rate              = 8 * st->codecpar->sample_rate;
                 st->start_time                   = 0;
-                avpriv_set_pts_info(st, 64, 1, vid->sample_rate);
+                avpriv_set_pts_info_ijk(st, 64, 1, vid->sample_rate);
             }
             audio_length = avio_rl16(pb);
             if ((ret_value = av_get_packet(pb, pkt, audio_length)) != audio_length) {

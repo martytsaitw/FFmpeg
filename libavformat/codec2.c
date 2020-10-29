@@ -81,14 +81,14 @@ static int codec2_read_header_common(AVFormatContext *s, AVStream *st)
         return AVERROR_INVALIDDATA;
     }
 
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }
 
 static int codec2_read_header(AVFormatContext *s)
 {
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     int ret, version;
 
     if (!st) {
@@ -184,7 +184,7 @@ static int codec2raw_read_header(AVFormatContext *s)
         return AVERROR(EINVAL);
     }
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st) {
         return AVERROR(ENOMEM);
     }

@@ -146,7 +146,7 @@ static int cdxl_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     if (cdxl->read_chunk && audio_size) {
         if (cdxl->audio_stream_index == -1) {
-            AVStream *st = avformat_new_stream(s, NULL);
+            AVStream *st = avformat_new_stream_ijk(s, NULL);
             if (!st)
                 return AVERROR(ENOMEM);
 
@@ -163,7 +163,7 @@ static int cdxl_read_packet(AVFormatContext *s, AVPacket *pkt)
             st->codecpar->sample_rate   = cdxl->sample_rate;
             st->start_time           = 0;
             cdxl->audio_stream_index = st->index;
-            avpriv_set_pts_info(st, 64, 1, cdxl->sample_rate);
+            avpriv_set_pts_info_ijk(st, 64, 1, cdxl->sample_rate);
         }
 
         ret = av_get_packet(pb, pkt, audio_size);
@@ -175,7 +175,7 @@ static int cdxl_read_packet(AVFormatContext *s, AVPacket *pkt)
         cdxl->read_chunk  = 0;
     } else {
         if (cdxl->video_stream_index == -1) {
-            AVStream *st = avformat_new_stream(s, NULL);
+            AVStream *st = avformat_new_stream_ijk(s, NULL);
             if (!st)
                 return AVERROR(ENOMEM);
 
@@ -196,9 +196,9 @@ static int cdxl_read_packet(AVFormatContext *s, AVPacket *pkt)
             st->start_time           = 0;
             cdxl->video_stream_index = st->index;
             if (cdxl->framerate)
-                avpriv_set_pts_info(st, 64, cdxl->fps.den, cdxl->fps.num);
+                avpriv_set_pts_info_ijk(st, 64, cdxl->fps.den, cdxl->fps.num);
             else
-                avpriv_set_pts_info(st, 64, 1, cdxl->sample_rate);
+                avpriv_set_pts_info_ijk(st, 64, 1, cdxl->sample_rate);
         }
 
         if (av_new_packet(pkt, video_size + CDXL_HEADER_SIZE) < 0)

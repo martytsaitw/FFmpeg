@@ -147,13 +147,13 @@ static int read_header_openmpt(AVFormatContext *s)
     add_meta(s, "comment", openmpt_module_get_metadata(openmpt->module, "message"));
     add_meta(s, "date",    openmpt_module_get_metadata(openmpt->module, "date"));
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st) {
         openmpt_module_destroy(openmpt->module);
         openmpt->module = NULL;
         return AVERROR(ENOMEM);
     }
-    avpriv_set_pts_info(st, 64, 1, AV_TIME_BASE);
+    avpriv_set_pts_info_ijk(st, 64, 1, AV_TIME_BASE);
     st->duration = llrint(openmpt->duration*AV_TIME_BASE);
 
     st->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;

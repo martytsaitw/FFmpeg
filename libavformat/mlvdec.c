@@ -280,7 +280,7 @@ static int read_header(AVFormatContext *avctx)
     nb_audio_frames = avio_rl32(pb);
 
     if (nb_video_frames && mlv->class[0]) {
-        vst = avformat_new_stream(avctx, NULL);
+        vst = avformat_new_stream_ijk(avctx, NULL);
         if (!vst)
             return AVERROR(ENOMEM);
         vst->id = 0;
@@ -311,7 +311,7 @@ static int read_header(AVFormatContext *avctx)
     }
 
     if (nb_audio_frames && mlv->class[1]) {
-        ast = avformat_new_stream(avctx, NULL);
+        ast = avformat_new_stream_ijk(avctx, NULL);
         if (!ast)
             return AVERROR(ENOMEM);
         ast->id = 1;
@@ -322,14 +322,14 @@ static int read_header(AVFormatContext *avctx)
             avpriv_request_sample(avctx, "unknown audio class");
 
         ast->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
-        avpriv_set_pts_info(ast, 33, 1, ast->codecpar->sample_rate);
+        avpriv_set_pts_info_ijk(ast, 33, 1, ast->codecpar->sample_rate);
     }
 
     if (vst) {
        AVRational framerate;
        framerate.num = avio_rl32(pb);
        framerate.den = avio_rl32(pb);
-       avpriv_set_pts_info(vst, 64, framerate.den, framerate.num);
+       avpriv_set_pts_info_ijk(vst, 64, framerate.den, framerate.num);
     } else
        avio_skip(pb, 8);
 

@@ -111,13 +111,13 @@ static int gif_read_header(AVFormatContext *s)
     if (width == 0 || height == 0)
         return AVERROR_INVALIDDATA;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
     /* GIF format operates with time in "hundredths of second",
      * therefore timebase is 1/100 */
-    avpriv_set_pts_info(st, 64, 1, 100);
+    avpriv_set_pts_info_ijk(st, 64, 1, 100);
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id   = AV_CODEC_ID_GIF;
     st->codecpar->width      = width;

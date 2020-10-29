@@ -721,7 +721,7 @@ static int flv_write_header(AVFormatContext *s)
                    av_get_media_type_string(par->codec_type), i);
             return AVERROR(EINVAL);
         }
-        avpriv_set_pts_info(s->streams[i], 32, 1, 1000); /* 32 bit pts in ms */
+        avpriv_set_pts_info_ijk(s->streams[i], 32, 1, 1000); /* 32 bit pts in ms */
 
         sc = av_mallocz(sizeof(FLVStreamContext));
         if (!sc)

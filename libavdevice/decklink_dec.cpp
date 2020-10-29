@@ -1026,7 +1026,7 @@ av_cold int ff_decklink_read_header(AVFormatContext *avctx)
 #endif
 
     /* Setup streams. */
-    st = avformat_new_stream(avctx, NULL);
+    st = avformat_new_stream_ijk(avctx, NULL);
     if (!st) {
         av_log(avctx, AV_LOG_ERROR, "Cannot add stream\n");
         ret = AVERROR(ENOMEM);
@@ -1036,10 +1036,10 @@ av_cold int ff_decklink_read_header(AVFormatContext *avctx)
     st->codecpar->codec_id    = cctx->audio_depth == 32 ? AV_CODEC_ID_PCM_S32LE : AV_CODEC_ID_PCM_S16LE;
     st->codecpar->sample_rate = bmdAudioSampleRate48kHz;
     st->codecpar->channels    = cctx->audio_channels;
-    avpriv_set_pts_info(st, 64, 1, 1000000);  /* 64 bits pts in us */
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000000);  /* 64 bits pts in us */
     ctx->audio_st=st;
 
-    st = avformat_new_stream(avctx, NULL);
+    st = avformat_new_stream_ijk(avctx, NULL);
     if (!st) {
         av_log(avctx, AV_LOG_ERROR, "Cannot add stream\n");
         ret = AVERROR(ENOMEM);
@@ -1104,12 +1104,12 @@ av_cold int ff_decklink_read_header(AVFormatContext *avctx)
         break;
     }
 
-    avpriv_set_pts_info(st, 64, 1, 1000000);  /* 64 bits pts in us */
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000000);  /* 64 bits pts in us */
 
     ctx->video_st=st;
 
     if (ctx->teletext_lines) {
-        st = avformat_new_stream(avctx, NULL);
+        st = avformat_new_stream_ijk(avctx, NULL);
         if (!st) {
             av_log(avctx, AV_LOG_ERROR, "Cannot add stream\n");
             ret = AVERROR(ENOMEM);
@@ -1119,7 +1119,7 @@ av_cold int ff_decklink_read_header(AVFormatContext *avctx)
         st->time_base.den         = ctx->bmd_tb_den;
         st->time_base.num         = ctx->bmd_tb_num;
         st->codecpar->codec_id    = AV_CODEC_ID_DVB_TELETEXT;
-        avpriv_set_pts_info(st, 64, 1, 1000000);  /* 64 bits pts in us */
+        avpriv_set_pts_info_ijk(st, 64, 1, 1000000);  /* 64 bits pts in us */
         ctx->teletext_st = st;
     }
 

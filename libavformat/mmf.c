@@ -121,7 +121,7 @@ static int mmf_write_header(AVFormatContext *s)
 
     mmf->awapos = ff_start_tag(pb, "Awa\x01");
 
-    avpriv_set_pts_info(s->streams[0], 64, 1, s->streams[0]->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(s->streams[0], 64, 1, s->streams[0]->codecpar->sample_rate);
 
     avio_flush(pb);
 
@@ -258,7 +258,7 @@ static int mmf_read_header(AVFormatContext *s)
     }
     mmf->data_end = avio_tell(pb) + size;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -271,7 +271,7 @@ static int mmf_read_header(AVFormatContext *s)
     st->codecpar->bit_rate              = st->codecpar->sample_rate *
                                           st->codecpar->bits_per_coded_sample;
 
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }

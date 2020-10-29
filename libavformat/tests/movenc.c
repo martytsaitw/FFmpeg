@@ -191,7 +191,7 @@ static void init_fps(int bf, int audio_preroll, int fps)
     ctx->pb->write_data_type = io_write_data_type;
     ctx->flags |= AVFMT_FLAG_BITEXACT;
 
-    st = avformat_new_stream(ctx, NULL);
+    st = avformat_new_stream_ijk(ctx, NULL);
     if (!st)
         exit(1);
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
@@ -207,7 +207,7 @@ static void init_fps(int bf, int audio_preroll, int fps)
     memcpy(st->codecpar->extradata, h264_extradata, sizeof(h264_extradata));
     video_st = st;
 
-    st = avformat_new_stream(ctx, NULL);
+    st = avformat_new_stream_ijk(ctx, NULL);
     if (!st)
         exit(1);
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;

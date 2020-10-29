@@ -111,7 +111,7 @@ static av_cold int rl2_read_header(AVFormatContext *s)
     def_sound_size = avio_rl16(pb);
 
     /** setup video stream */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if(!st)
          return AVERROR(ENOMEM);
 
@@ -140,7 +140,7 @@ static av_cold int rl2_read_header(AVFormatContext *s)
         pts_num = def_sound_size;
         pts_den = rate;
 
-        st = avformat_new_stream(s, NULL);
+        st = avformat_new_stream_ijk(s, NULL);
         if (!st)
             return AVERROR(ENOMEM);
         st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -153,10 +153,10 @@ static av_cold int rl2_read_header(AVFormatContext *s)
             st->codecpar->bits_per_coded_sample;
         st->codecpar->block_align = st->codecpar->channels *
             st->codecpar->bits_per_coded_sample / 8;
-        avpriv_set_pts_info(st,32,1,rate);
+        avpriv_set_pts_info_ijk(st,32,1,rate);
     }
 
-    avpriv_set_pts_info(s->streams[0], 32, pts_num, pts_den);
+    avpriv_set_pts_info_ijk(s->streams[0], 32, pts_num, pts_den);
 
     chunk_size =   av_malloc(frame_count * sizeof(uint32_t));
     audio_size =   av_malloc(frame_count * sizeof(uint32_t));

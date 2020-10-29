@@ -46,7 +46,7 @@ static int read_header(AVFormatContext *s)
         return AVERROR(EIO);
     avio_skip(pb, 20);
 
-    st = avformat_new_stream(s, 0);
+    st = avformat_new_stream_ijk(s, 0);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -62,7 +62,7 @@ static int read_header(AVFormatContext *s)
     st->codecpar->codec_tag  = avio_rb32(pb);
     st->codecpar->codec_id   = ff_codec_get_id(ff_codec_bmp_tags,
                                                st->codecpar->codec_tag);
-    avpriv_set_pts_info(st, 64, fps.den, fps.num);
+    avpriv_set_pts_info_ijk(st, 64, fps.den, fps.num);
     avio_skip(pb, 20);
 
     return 0;

@@ -60,7 +60,7 @@ static int voc_read_header(AVFormatContext *s)
 static int voc_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     if (!s->nb_streams) {
-        AVStream *st = avformat_new_stream(s, NULL);
+        AVStream *st = avformat_new_stream_ijk(s, NULL);
         if (!st)
             return AVERROR(ENOMEM);
         st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;

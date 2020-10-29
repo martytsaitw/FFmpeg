@@ -667,7 +667,7 @@ static int add_video_stream(AVFormatContext *avctx)
     AVStream *st;
     AVCodecParameters *codecpar;
 
-    st = avformat_new_stream(avctx, NULL);
+    st = avformat_new_stream_ijk(avctx, NULL);
     if (!st) {
         return AVERROR(ENOMEM);
     }
@@ -687,7 +687,7 @@ static int add_video_stream(AVFormatContext *avctx)
     codecpar->width = ctx->width;
     codecpar->height = ctx->height;
 
-    avpriv_set_pts_info(st, 64, 1, VIDEO_TIMEBASE_ANDROID);
+    avpriv_set_pts_info_ijk(st, 64, 1, VIDEO_TIMEBASE_ANDROID);
 
     return add_display_matrix(avctx, st);
 }

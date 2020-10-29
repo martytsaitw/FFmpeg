@@ -184,7 +184,7 @@ static int open_output_file(const char *filename,
     }
 
     /* Create a new audio stream in the output file container. */
-    if (!(stream = avformat_new_stream(*output_format_context, NULL))) {
+    if (!(stream = avformat_new_stream_ijk(*output_format_context, NULL))) {
         fprintf(stderr, "Could not create new stream\n");
         error = AVERROR(ENOMEM);
         goto cleanup;

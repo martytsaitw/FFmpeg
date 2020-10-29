@@ -50,7 +50,7 @@ static int read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
     }
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -72,7 +72,7 @@ static int read_header(AVFormatContext *s)
     if (av_image_check_size(st->codecpar->width, st->codecpar->height, 0, s) < 0)
         return AVERROR_INVALIDDATA;
 
-    avpriv_set_pts_info(st, 64, 1, avio_rb16(pb));
+    avpriv_set_pts_info_ijk(st, 64, 1, avio_rb16(pb));
 
     avio_seek(pb, 0, SEEK_SET);
 

@@ -76,7 +76,7 @@ static int read_header(AVFormatContext *avctx)
 {
     TtyDemuxContext *s = avctx->priv_data;
     int ret = 0;
-    AVStream *st = avformat_new_stream(avctx, NULL);
+    AVStream *st = avformat_new_stream_ijk(avctx, NULL);
 
     if (!st) {
         ret = AVERROR(ENOMEM);
@@ -88,7 +88,7 @@ static int read_header(AVFormatContext *avctx)
 
     st->codecpar->width  = s->width;
     st->codecpar->height = s->height;
-    avpriv_set_pts_info(st, 60, s->framerate.den, s->framerate.num);
+    avpriv_set_pts_info_ijk(st, 60, s->framerate.den, s->framerate.num);
     st->avg_frame_rate = s->framerate;
 
     /* simulate tty display speed */

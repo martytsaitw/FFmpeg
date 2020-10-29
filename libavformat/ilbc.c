@@ -76,7 +76,7 @@ static int ilbc_read_header(AVFormatContext *s)
 
     avio_read(pb, header, 9);
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_id = AV_CODEC_ID_ILBC;
@@ -84,7 +84,7 @@ static int ilbc_read_header(AVFormatContext *s)
     st->codecpar->channels = 1;
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->start_time = 0;
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
     if (!memcmp(header, mode20_header, sizeof(mode20_header) - 1)) {
         st->codecpar->block_align = 38;
         st->codecpar->bit_rate = 15200;

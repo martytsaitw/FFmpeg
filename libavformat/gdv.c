@@ -77,7 +77,7 @@ static int gdv_read_header(AVFormatContext *ctx)
     avio_skip(pb, 4);
     size_id = avio_rl16(pb);
 
-    vst = avformat_new_stream(ctx, 0);
+    vst = avformat_new_stream_ijk(ctx, 0);
     if (!vst)
         return AVERROR(ENOMEM);
 
@@ -88,7 +88,7 @@ static int gdv_read_header(AVFormatContext *ctx)
     fps = avio_rl16(pb);
     snd_flags = avio_rl16(pb);
     if (snd_flags & 1) {
-        ast = avformat_new_stream(ctx, 0);
+        ast = avformat_new_stream_ijk(ctx, 0);
         if (!ast)
             return AVERROR(ENOMEM);
 
@@ -103,7 +103,7 @@ static int gdv_read_header(AVFormatContext *ctx)
             ast->codecpar->codec_id = (snd_flags & 4) ? AV_CODEC_ID_PCM_S16LE : AV_CODEC_ID_PCM_U8;
         }
 
-        avpriv_set_pts_info(ast, 64, 1, ast->codecpar->sample_rate);
+        avpriv_set_pts_info_ijk(ast, 64, 1, ast->codecpar->sample_rate);
         gdv->audio_size = (ast->codecpar->sample_rate / fps) *
                            ast->codecpar->channels * (1 + !!(snd_flags & 4)) / (1 + !!(snd_flags & 8));
         gdv->is_audio = 1;
@@ -131,7 +131,7 @@ static int gdv_read_header(AVFormatContext *ctx)
         vst->codecpar->height = FixedSize[i].height;
     }
 
-    avpriv_set_pts_info(vst, 64, 1, fps);
+    avpriv_set_pts_info_ijk(vst, 64, 1, fps);
 
     if (vid_depth & 1) {
         int i;

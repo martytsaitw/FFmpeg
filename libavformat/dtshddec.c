@@ -60,7 +60,7 @@ static int dtshd_read_header(AVFormatContext *s)
     int ret;
     char *value;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -134,7 +134,7 @@ skip:
 
 break_loop:
     if (st->codecpar->sample_rate)
-        avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+        avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }

@@ -159,7 +159,7 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
         ret = avformat_alloc_output_context2_ijk(&fmt, NULL, img->muxer, s->url);
         if (ret < 0)
             return ret;
-        st = avformat_new_stream(fmt, NULL);
+        st = avformat_new_stream_ijk(fmt, NULL);
         if (!st) {
             avformat_free_context(fmt);
             return AVERROR(ENOMEM);
@@ -168,7 +168,7 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
 
         fmt->pb = pb[0];
         if ((ret = av_packet_ref(&pkt2, pkt))                             < 0 ||
-            (ret = avcodec_parameters_copy(st->codecpar, s->streams[0]->codecpar)) < 0 ||
+            (ret = avcodec_parameters_copy_ijk(st->codecpar, s->streams[0]->codecpar)) < 0 ||
             (ret = avformat_write_header(fmt, NULL))                      < 0 ||
             (ret = av_interleaved_write_frame(fmt, &pkt2))                < 0 ||
             (ret = av_write_trailer(fmt))                                 < 0) {

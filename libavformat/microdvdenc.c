@@ -39,7 +39,7 @@ static int microdvd_write_header(struct AVFormatContext *s)
         avio_flush(s->pb);
     }
 
-    avpriv_set_pts_info(s->streams[0], 64, framerate.num, framerate.den);
+    avpriv_set_pts_info_ijk(s->streams[0], 64, framerate.num, framerate.den);
     return 0;
 }
 

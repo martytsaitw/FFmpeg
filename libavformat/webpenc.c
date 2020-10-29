@@ -46,7 +46,7 @@ static int webp_write_header(AVFormatContext *s)
         av_log(s, AV_LOG_ERROR, "Only WebP is supported\n");
         return AVERROR(EINVAL);
     }
-    avpriv_set_pts_info(st, 24, 1, 1000);
+    avpriv_set_pts_info_ijk(st, 24, 1, 1000);
 
     return 0;
 }

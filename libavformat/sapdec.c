@@ -170,13 +170,13 @@ static int sap_read_header(AVFormatContext *s)
     if (sap->sdp_ctx->ctx_flags & AVFMTCTX_NOHEADER)
         s->ctx_flags |= AVFMTCTX_NOHEADER;
     for (i = 0; i < sap->sdp_ctx->nb_streams; i++) {
-        AVStream *st = avformat_new_stream(s, NULL);
+        AVStream *st = avformat_new_stream_ijk(s, NULL);
         if (!st) {
             ret = AVERROR(ENOMEM);
             goto fail;
         }
         st->id = i;
-        avcodec_parameters_copy(st->codecpar, sap->sdp_ctx->streams[i]->codecpar);
+        avcodec_parameters_copy_ijk(st->codecpar, sap->sdp_ctx->streams[i]->codecpar);
         st->time_base = sap->sdp_ctx->streams[i]->time_base;
     }
 
@@ -219,13 +219,13 @@ static int sap_fetch_packet(AVFormatContext *s, AVPacket *pkt)
     if (s->ctx_flags & AVFMTCTX_NOHEADER) {
         while (sap->sdp_ctx->nb_streams > s->nb_streams) {
             int i = s->nb_streams;
-            AVStream *st = avformat_new_stream(s, NULL);
+            AVStream *st = avformat_new_stream_ijk(s, NULL);
             if (!st) {
                 av_packet_unref(pkt);
                 return AVERROR(ENOMEM);
             }
             st->id = i;
-            avcodec_parameters_copy(st->codecpar, sap->sdp_ctx->streams[i]->codecpar);
+            avcodec_parameters_copy_ijk(st->codecpar, sap->sdp_ctx->streams[i]->codecpar);
             st->time_base = sap->sdp_ctx->streams[i]->time_base;
         }
     }

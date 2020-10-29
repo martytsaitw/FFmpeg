@@ -50,7 +50,7 @@ static int lrc_write_header(AVFormatContext *s)
                avcodec_get_name(s->streams[0]->codecpar->codec_id));
         return AVERROR(EINVAL);
     }
-    avpriv_set_pts_info(s->streams[0], 64, 1, 100);
+    avpriv_set_pts_info_ijk(s->streams[0], 64, 1, 100);
 
     ff_standardize_creation_time(s);
     ff_metadata_conv_ctx(s, ff_lrc_metadata_conv, NULL);

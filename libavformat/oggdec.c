@@ -290,13 +290,13 @@ static int ogg_new_stream(AVFormatContext *s, uint32_t serial)
         return AVERROR(ENOMEM);
 
     /* Create the associated AVStream */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st) {
         av_freep(&os->buf);
         return AVERROR(ENOMEM);
     }
     st->id = idx;
-    avpriv_set_pts_info(st, 64, 1, 1000000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000000);
 
     ogg->nstreams++;
     return idx;

@@ -49,7 +49,7 @@ static int adp_read_header(AVFormatContext *s)
 {
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -62,7 +62,7 @@ static int adp_read_header(AVFormatContext *s)
     if (s->pb->seekable & AVIO_SEEKABLE_NORMAL)
         st->duration          = av_get_audio_frame_duration2(st->codecpar, avio_size(s->pb));
 
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }

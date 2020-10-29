@@ -41,12 +41,12 @@ static int txd_probe(AVProbeData * pd) {
 static int txd_read_header(AVFormatContext *s) {
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id = AV_CODEC_ID_TXD;
-    avpriv_set_pts_info(st, 64, 1, 5);
+    avpriv_set_pts_info_ijk(st, 64, 1, 5);
     st->avg_frame_rate = av_inv_q(st->time_base);
     /* the parameters will be extracted from the compressed bitstream */
 

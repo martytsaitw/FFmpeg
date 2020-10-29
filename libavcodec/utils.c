@@ -1979,7 +1979,7 @@ static void codec_parameters_reset(AVCodecParameters *par)
     par->level               = FF_LEVEL_UNKNOWN;
 }
 
-AVCodecParameters *avcodec_parameters_alloc(void)
+AVCodecParameters *avcodec_parameters_alloc_ijk(void)
 {
     AVCodecParameters *par = av_mallocz(sizeof(*par));
 
@@ -2000,7 +2000,7 @@ void avcodec_parameters_free(AVCodecParameters **ppar)
     av_freep(ppar);
 }
 
-int avcodec_parameters_copy(AVCodecParameters *dst, const AVCodecParameters *src)
+int avcodec_parameters_copy_ijk(AVCodecParameters *dst, const AVCodecParameters *src)
 {
     codec_parameters_reset(dst);
     memcpy(dst, src, sizeof(*dst));

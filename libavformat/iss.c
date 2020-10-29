@@ -104,7 +104,7 @@ static av_cold int iss_read_header(AVFormatContext *s)
 
     iss->sample_start_pos = avio_tell(pb);
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -123,7 +123,7 @@ static av_cold int iss_read_header(AVFormatContext *s)
     st->codecpar->bit_rate = st->codecpar->channels * st->codecpar->sample_rate
                                       * st->codecpar->bits_per_coded_sample;
     st->codecpar->block_align = iss->packet_size;
-    avpriv_set_pts_info(st, 32, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 32, 1, st->codecpar->sample_rate);
 
     return 0;
 }

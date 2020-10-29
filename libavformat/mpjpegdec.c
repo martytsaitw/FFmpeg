@@ -147,14 +147,14 @@ static int mpjpeg_read_header(AVFormatContext *s)
     if (strncmp(boundary, "--", 2))
         return AVERROR_INVALIDDATA;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id   = AV_CODEC_ID_MJPEG;
 
-    avpriv_set_pts_info(st, 60, 1, 25);
+    avpriv_set_pts_info_ijk(st, 60, 1, 25);
 
     avio_seek(s->pb, pos, SEEK_SET);
 

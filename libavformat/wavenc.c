@@ -350,7 +350,7 @@ static int wav_write_header(AVFormatContext *s)
             return ret;
     }
 
-    avpriv_set_pts_info(s->streams[0], 64, 1, s->streams[0]->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(s->streams[0], 64, 1, s->streams[0]->codecpar->sample_rate);
     wav->maxpts = wav->last_duration = 0;
     wav->minpts = INT64_MAX;
 

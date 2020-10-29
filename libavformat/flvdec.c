@@ -135,7 +135,7 @@ static void add_keyframes_index(AVFormatContext *s)
 static AVStream *create_stream(AVFormatContext *s, int codec_type)
 {
     FLVContext *flv   = s->priv_data;
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return NULL;
     st->codecpar->codec_type = codec_type;
@@ -154,7 +154,7 @@ static AVStream *create_stream(AVFormatContext *s, int codec_type)
     }
 
 
-    avpriv_set_pts_info(st, 32, 1, 1000); /* 32 bit pts in ms */
+    avpriv_set_pts_info_ijk(st, 32, 1, 1000); /* 32 bit pts in ms */
     flv->last_keyframe_stream_index = s->nb_streams - 1;
     add_keyframes_index(s);
     return st;
@@ -1136,7 +1136,7 @@ retry_duration:
             flv->last_channels    =
             channels              = st->codecpar->channels;
         } else {
-            AVCodecParameters *par = avcodec_parameters_alloc();
+            AVCodecParameters *par = avcodec_parameters_alloc_ijk();
             if (!par) {
                 ret = AVERROR(ENOMEM);
                 goto leave;

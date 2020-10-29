@@ -194,7 +194,7 @@ static int nuv_header(AVFormatContext *s)
     avio_rl32(pb); // keyframe distance (?)
 
     if (v_packs) {
-        vst = avformat_new_stream(s, NULL);
+        vst = avformat_new_stream_ijk(s, NULL);
         if (!vst)
             return AVERROR(ENOMEM);
         ctx->v_id = vst->index;
@@ -214,12 +214,12 @@ static int nuv_header(AVFormatContext *s)
         vst->r_frame_rate =
 #endif
         vst->avg_frame_rate = av_d2q(fps, 60000);
-        avpriv_set_pts_info(vst, 32, 1, 1000);
+        avpriv_set_pts_info_ijk(vst, 32, 1, 1000);
     } else
         ctx->v_id = -1;
 
     if (a_packs) {
-        ast = avformat_new_stream(s, NULL);
+        ast = avformat_new_stream_ijk(s, NULL);
         if (!ast)
             return AVERROR(ENOMEM);
         ctx->a_id = ast->index;
@@ -232,7 +232,7 @@ static int nuv_header(AVFormatContext *s)
         ast->codecpar->bit_rate              = 2 * 2 * 44100 * 8;
         ast->codecpar->block_align           = 2 * 2;
         ast->codecpar->bits_per_coded_sample = 16;
-        avpriv_set_pts_info(ast, 32, 1, 1000);
+        avpriv_set_pts_info_ijk(ast, 32, 1, 1000);
     } else
         ctx->a_id = -1;
 

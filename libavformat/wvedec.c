@@ -34,7 +34,7 @@ static int wve_read_header(AVFormatContext *s)
 {
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -46,7 +46,7 @@ static int wve_read_header(AVFormatContext *s)
     st->codecpar->channels    = 1;
     st->codecpar->bits_per_coded_sample = av_get_bits_per_sample(st->codecpar->codec_id);
     st->codecpar->block_align = st->codecpar->bits_per_coded_sample * st->codecpar->channels / 8;
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
     avio_skip(s->pb, 10);
 
     return 0;

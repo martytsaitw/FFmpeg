@@ -227,7 +227,7 @@ static int aiff_read_header(AVFormatContext *s)
 
     filesize -= 4;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -358,7 +358,7 @@ got_sound:
     }
 
     /* Now positioned, get the sound data start and end */
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
     st->start_time = 0;
     st->duration = st->nb_frames * aiff->block_duration;
 

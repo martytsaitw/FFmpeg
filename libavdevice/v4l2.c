@@ -829,7 +829,7 @@ static int v4l2_read_header(AVFormatContext *ctx)
     enum AVPixelFormat pix_fmt = AV_PIX_FMT_NONE;
     struct v4l2_input input = { 0 };
 
-    st = avformat_new_stream(ctx, NULL);
+    st = avformat_new_stream_ijk(ctx, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -884,7 +884,7 @@ static int v4l2_read_header(AVFormatContext *ctx)
         goto fail;
     }
 
-    avpriv_set_pts_info(st, 64, 1, 1000000); /* 64 bits pts in us */
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000000); /* 64 bits pts in us */
 
     if (s->pixel_format) {
         const AVCodecDescriptor *desc = avcodec_descriptor_get_by_name(s->pixel_format);

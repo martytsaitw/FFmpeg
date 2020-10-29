@@ -613,7 +613,7 @@ skip:
         goto redo;
     }
     /* no stream found: add a new stream */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         goto skip;
     st->id                = startcode;
@@ -805,7 +805,7 @@ static int vobsub_read_header(AVFormatContext *s)
             }
 
             if (!st || st->id != stream_id) {
-                st = avformat_new_stream(s, NULL);
+                st = avformat_new_stream_ijk(s, NULL);
                 if (!st) {
                     ret = AVERROR(ENOMEM);
                     goto end;
@@ -813,7 +813,7 @@ static int vobsub_read_header(AVFormatContext *s)
                 st->id = stream_id;
                 st->codecpar->codec_type = AVMEDIA_TYPE_SUBTITLE;
                 st->codecpar->codec_id   = AV_CODEC_ID_DVD_SUBTITLE;
-                avpriv_set_pts_info(st, 64, 1, 1000);
+                avpriv_set_pts_info_ijk(st, 64, 1, 1000);
                 av_dict_set(&st->metadata, "language", id, 0);
                 if (alt[0])
                     av_dict_set(&st->metadata, "title", alt, 0);
@@ -992,7 +992,7 @@ static int vobsub_read_seek(AVFormatContext *s, int stream_index,
 
     /* Rescale requested timestamps based on the first stream (timebase is the
      * same for all subtitles stream within a .idx/.sub). Rescaling is done just
-     * like in avformat_seek_file(). */
+     * like in avformat_seek_file_ijk(). */
     if (stream_index == -1 && s->nb_streams != 1) {
         int i, ret = 0;
         AVRational time_base = s->streams[0]->time_base;

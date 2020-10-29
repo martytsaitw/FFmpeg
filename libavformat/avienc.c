@@ -401,7 +401,7 @@ static int avi_write_header(AVFormatContext *s)
             au_byterate = 600;
             au_scale    = 1;
         }
-        avpriv_set_pts_info(st, 64, au_scale, au_byterate);
+        avpriv_set_pts_info_ijk(st, 64, au_scale, au_byterate);
         if (par->codec_id == AV_CODEC_ID_XSUB)
             au_scale = au_byterate = 0;
 

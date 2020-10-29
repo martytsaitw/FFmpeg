@@ -162,7 +162,7 @@ static int aa_read_header(AVFormatContext *s)
     av_log(s, AV_LOG_DEBUG, "\n");
 
     /* decoder setup */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st) {
         av_freep(&c->tea_ctx);
         return AVERROR(ENOMEM);

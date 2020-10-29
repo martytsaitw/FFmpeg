@@ -70,7 +70,7 @@ static int smjpeg_write_header(AVFormatContext *s)
             avio_w8(pb, par->bits_per_coded_sample);
             avio_w8(pb, par->channels);
             avio_wl32(pb, tag);
-            avpriv_set_pts_info(st, 32, 1, 1000);
+            avpriv_set_pts_info_ijk(st, 32, 1, 1000);
         } else if (par->codec_type == AVMEDIA_TYPE_VIDEO) {
             tag = ff_codec_get_tag(ff_codec_smjpeg_video_tags, par->codec_id);
             if (!tag) {
@@ -83,7 +83,7 @@ static int smjpeg_write_header(AVFormatContext *s)
             avio_wb16(pb, par->width);
             avio_wb16(pb, par->height);
             avio_wl32(pb, tag);
-            avpriv_set_pts_info(st, 32, 1, 1000);
+            avpriv_set_pts_info_ijk(st, 32, 1, 1000);
         }
     }
 

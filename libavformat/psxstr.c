@@ -192,10 +192,10 @@ static int str_read_packet(AVFormatContext *s,
 
                 if(str->channels[channel].video_stream_index < 0){
                     /* allocate a new AVStream */
-                    st = avformat_new_stream(s, NULL);
+                    st = avformat_new_stream_ijk(s, NULL);
                     if (!st)
                         return AVERROR(ENOMEM);
-                    avpriv_set_pts_info(st, 64, 1, 15);
+                    avpriv_set_pts_info_ijk(st, 64, 1, 15);
 
                     str->channels[channel].video_stream_index = st->index;
 
@@ -242,7 +242,7 @@ static int str_read_packet(AVFormatContext *s,
             if(str->channels[channel].audio_stream_index < 0){
                 int fmt = sector[0x13];
                 /* allocate a new AVStream */
-                st = avformat_new_stream(s, NULL);
+                st = avformat_new_stream_ijk(s, NULL);
                 if (!st)
                     return AVERROR(ENOMEM);
 
@@ -262,7 +262,7 @@ static int str_read_packet(AVFormatContext *s,
             //    st->codecpar->bit_rate = 0; //FIXME;
                 st->codecpar->block_align = 128;
 
-                avpriv_set_pts_info(st, 64, 18 * 224 / st->codecpar->channels,
+                avpriv_set_pts_info_ijk(st, 64, 18 * 224 / st->codecpar->channels,
                                     st->codecpar->sample_rate);
                 st->start_time = 0;
             }

@@ -346,7 +346,7 @@ static av_cold int mpeg_mux_init(AVFormatContext *ctx)
             goto fail;
         st->priv_data = stream;
 
-        avpriv_set_pts_info(st, 64, 1, 90000);
+        avpriv_set_pts_info_ijk(st, 64, 1, 90000);
 
         switch (st->codecpar->codec_type) {
         case AVMEDIA_TYPE_AUDIO:

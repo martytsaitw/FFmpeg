@@ -388,11 +388,11 @@ static int hds_write_header(AVFormatContext *s)
         }
         s->streams[i]->id = c->nb_streams;
 
-        if (!(st = avformat_new_stream(ctx, NULL))) {
+        if (!(st = avformat_new_stream_ijk(ctx, NULL))) {
             ret = AVERROR(ENOMEM);
             goto fail;
         }
-        avcodec_parameters_copy(st->codecpar, s->streams[i]->codecpar);
+        avcodec_parameters_copy_ijk(st->codecpar, s->streams[i]->codecpar);
         st->codecpar->codec_tag = 0;
         st->sample_aspect_ratio = s->streams[i]->sample_aspect_ratio;
         st->time_base = s->streams[i]->time_base;

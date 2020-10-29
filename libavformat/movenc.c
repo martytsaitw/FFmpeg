@@ -5649,7 +5649,7 @@ static int mov_create_chapter_track(AVFormatContext *s, int tracknum)
     track->mode = mov->mode;
     track->tag = MKTAG('t','e','x','t');
     track->timescale = MOV_TIMESCALE;
-    track->par = avcodec_parameters_alloc();
+    track->par = avcodec_parameters_alloc_ijk();
     if (!track->par)
         return AVERROR(ENOMEM);
     track->par->codec_type = AVMEDIA_TYPE_SUBTITLE;
@@ -5765,7 +5765,7 @@ static int mov_create_timecode_track(AVFormatContext *s, int index, int src_inde
     track->st = src_st;
 
     /* encode context: tmcd data stream */
-    track->par = avcodec_parameters_alloc();
+    track->par = avcodec_parameters_alloc_ijk();
     if (!track->par)
         return AVERROR(ENOMEM);
     track->par->codec_type = AVMEDIA_TYPE_DATA;
@@ -6230,7 +6230,7 @@ static int mov_init(AVFormatContext *s)
         if (mov->mode == MODE_ISM)
             track->timescale = 10000000;
 
-        avpriv_set_pts_info(st, 64, 1, track->timescale);
+        avpriv_set_pts_info_ijk(st, 64, 1, track->timescale);
 
         if (mov->encryption_scheme == MOV_ENC_CENC_AES_CTR) {
             ret = ff_mov_cenc_init(&track->cenc, mov->encryption_key,

@@ -67,7 +67,7 @@ static int initialize_fifo_tst_muxer_chain(AVFormatContext **oc)
         return EXIT_FAILURE;
     }
 
-    s = avformat_new_stream(*oc, NULL);
+    s = avformat_new_stream_ijk(*oc, NULL);
     if (!s) {
         fprintf(stderr, "Failed to create stream: %s\n",
                 av_err2str(ret));

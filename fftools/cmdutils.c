@@ -1933,7 +1933,7 @@ static void show_help_filter(const char *name)
 
 static void show_help_bsf(const char *name)
 {
-    const AVBitStreamFilter *bsf = av_bsf_get_by_name(name);
+    const AVBitStreamFilter *bsf = av_bsf_get_by_name_ijk(name);
 
     if (!bsf) {
         av_log(NULL, AV_LOG_ERROR, "Unknown bit stream filter '%s'.\n", name);

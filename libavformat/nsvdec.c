@@ -410,7 +410,7 @@ static int nsv_parse_NSVs_header(AVFormatContext *s)
         nsv->vheight = vwidth;
         if (vtag != T_NONE) {
             int i;
-            st = avformat_new_stream(s, NULL);
+            st = avformat_new_stream_ijk(s, NULL);
             if (!st)
                 goto fail;
 
@@ -426,7 +426,7 @@ static int nsv_parse_NSVs_header(AVFormatContext *s)
             st->codecpar->height = vheight;
             st->codecpar->bits_per_coded_sample = 24; /* depth XXX */
 
-            avpriv_set_pts_info(st, 64, framerate.den, framerate.num);
+            avpriv_set_pts_info_ijk(st, 64, framerate.den, framerate.num);
             st->start_time = 0;
             st->duration = av_rescale(nsv->duration, framerate.num, 1000*framerate.den);
 
@@ -441,7 +441,7 @@ static int nsv_parse_NSVs_header(AVFormatContext *s)
             }
         }
         if (atag != T_NONE) {
-            st = avformat_new_stream(s, NULL);
+            st = avformat_new_stream_ijk(s, NULL);
             if (!st)
                 goto fail;
 
@@ -457,7 +457,7 @@ static int nsv_parse_NSVs_header(AVFormatContext *s)
             st->need_parsing = AVSTREAM_PARSE_FULL; /* for PCM we will read a chunk later and put correct info */
 
             /* set timebase to common denominator of ms and framerate */
-            avpriv_set_pts_info(st, 64, 1, framerate.num*1000);
+            avpriv_set_pts_info_ijk(st, 64, 1, framerate.num*1000);
             st->start_time = 0;
             st->duration = (int64_t)nsv->duration * framerate.num;
         }

@@ -69,7 +69,7 @@ static int read_header(AVFormatContext *s)
 
     int min,sec,msec;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -88,7 +88,7 @@ static int read_header(AVFormatContext *s)
 
     st->codecpar->frame_size=80;
     st->codecpar->channels=1;
-    avpriv_set_pts_info(st, 64, 1, 100);
+    avpriv_set_pts_info_ijk(st, 64, 1, 100);
 
     st->codecpar->codec_id=AV_CODEC_ID_G729;
 

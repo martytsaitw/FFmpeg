@@ -84,7 +84,7 @@ static int adts_aac_read_header(AVFormatContext *s)
     AVStream *st;
     uint16_t state;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -113,7 +113,7 @@ static int adts_aac_read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
 
     // LCM of all possible ADTS sample rates
-    avpriv_set_pts_info(st, 64, 1, 28224000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 28224000);
 
     return 0;
 }

@@ -364,7 +364,7 @@ static av_cold int kmsgrab_read_header(AVFormatContext *avctx)
         goto fail;
     }
 
-    stream = avformat_new_stream(avctx, NULL);
+    stream = avformat_new_stream_ijk(avctx, NULL);
     if (!stream) {
         err = AVERROR(ENOMEM);
         goto fail;
@@ -376,7 +376,7 @@ static av_cold int kmsgrab_read_header(AVFormatContext *avctx)
     stream->codecpar->height     = fb->height;
     stream->codecpar->format     = AV_PIX_FMT_DRM_PRIME;
 
-    avpriv_set_pts_info(stream, 64, 1, 1000000);
+    avpriv_set_pts_info_ijk(stream, 64, 1, 1000000);
 
     ctx->frames_ref = av_hwframe_ctx_alloc(ctx->device_ref);
     if (!ctx->frames_ref) {

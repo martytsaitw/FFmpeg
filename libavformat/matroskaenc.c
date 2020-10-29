@@ -2305,10 +2305,10 @@ static int mkv_check_new_extra_data(AVFormatContext *s, AVPacket *pkt)
                        pkt->stream_index);
                 return AVERROR(EINVAL);
             }
-            codecpriv_par = avcodec_parameters_alloc();
+            codecpriv_par = avcodec_parameters_alloc_ijk();
             if (!codecpriv_par)
                 return AVERROR(ENOMEM);
-            ret = avcodec_parameters_copy(codecpriv_par, par);
+            ret = avcodec_parameters_copy_ijk(codecpriv_par, par);
             if (ret < 0) {
                 avcodec_parameters_free(&codecpriv_par);
                 return ret;
@@ -2672,7 +2672,7 @@ static int mkv_init(struct AVFormatContext *s)
 
     for (i = 0; i < s->nb_streams; i++) {
         // ms precision is the de-facto standard timescale for mkv files
-        avpriv_set_pts_info(s->streams[i], 64, 1, 1000);
+        avpriv_set_pts_info_ijk(s->streams[i], 64, 1, 1000);
     }
 
     return 0;

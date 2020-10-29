@@ -2358,7 +2358,7 @@ static int read_interval_packets(WriterContext *w, InputFile *ifile,
 
         av_log(NULL, AV_LOG_VERBOSE, "Seeking to read interval start point %s\n",
                av_ts2timestr(target, &AV_TIME_BASE_Q));
-        if ((ret = avformat_seek_file(fmt_ctx, -1, -INT64_MAX, target, INT64_MAX, 0)) < 0) {
+        if ((ret = avformat_seek_file_ijk(fmt_ctx, -1, -INT64_MAX, target, INT64_MAX, 0)) < 0) {
             av_log(NULL, AV_LOG_ERROR, "Could not seek to position %"PRId64": %s\n",
                    interval->start, av_err2str(ret));
             goto end;

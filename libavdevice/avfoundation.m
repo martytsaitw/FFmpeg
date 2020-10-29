@@ -540,7 +540,7 @@ static int get_video_config(AVFormatContext *s)
     AVFContext *ctx = (AVFContext*)s->priv_data;
     CVImageBufferRef image_buffer;
     CGSize image_buffer_size;
-    AVStream* stream = avformat_new_stream(s, NULL);
+    AVStream* stream = avformat_new_stream_ijk(s, NULL);
 
     if (!stream) {
         return 1;
@@ -555,7 +555,7 @@ static int get_video_config(AVFormatContext *s)
 
     ctx->video_stream_index = stream->index;
 
-    avpriv_set_pts_info(stream, 64, 1, avf_time_base);
+    avpriv_set_pts_info_ijk(stream, 64, 1, avf_time_base);
 
     image_buffer      = CMSampleBufferGetImageBuffer(ctx->current_frame);
     image_buffer_size = CVImageBufferGetEncodedSize(image_buffer);
@@ -578,7 +578,7 @@ static int get_audio_config(AVFormatContext *s)
 {
     AVFContext *ctx = (AVFContext*)s->priv_data;
     CMFormatDescriptionRef format_desc;
-    AVStream* stream = avformat_new_stream(s, NULL);
+    AVStream* stream = avformat_new_stream_ijk(s, NULL);
 
     if (!stream) {
         return 1;
@@ -593,7 +593,7 @@ static int get_audio_config(AVFormatContext *s)
 
     ctx->audio_stream_index = stream->index;
 
-    avpriv_set_pts_info(stream, 64, 1, avf_time_base);
+    avpriv_set_pts_info_ijk(stream, 64, 1, avf_time_base);
 
     format_desc = CMSampleBufferGetFormatDescription(ctx->current_audio_frame);
     const AudioStreamBasicDescription *basic_desc = CMAudioFormatDescriptionGetStreamBasicDescription(format_desc);

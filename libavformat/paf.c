@@ -94,7 +94,7 @@ static int read_header(AVFormatContext *s)
 
     avio_skip(pb, 132);
 
-    vst = avformat_new_stream(s, 0);
+    vst = avformat_new_stream_ijk(s, 0);
     if (!vst)
         return AVERROR(ENOMEM);
 
@@ -111,9 +111,9 @@ static int read_header(AVFormatContext *s)
     vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     vst->codecpar->codec_tag  = 0;
     vst->codecpar->codec_id   = AV_CODEC_ID_PAF_VIDEO;
-    avpriv_set_pts_info(vst, 64, 1, 10);
+    avpriv_set_pts_info_ijk(vst, 64, 1, 10);
 
-    ast = avformat_new_stream(s, 0);
+    ast = avformat_new_stream_ijk(s, 0);
     if (!ast)
         return AVERROR(ENOMEM);
 
@@ -124,7 +124,7 @@ static int read_header(AVFormatContext *s)
     ast->codecpar->channels       = 2;
     ast->codecpar->channel_layout = AV_CH_LAYOUT_STEREO;
     ast->codecpar->sample_rate    = 22050;
-    avpriv_set_pts_info(ast, 64, 1, 22050);
+    avpriv_set_pts_info_ijk(ast, 64, 1, 22050);
 
     p->buffer_size    = avio_rl32(pb);
     p->preload_count  = avio_rl32(pb);

@@ -134,7 +134,7 @@ static int read_header(AVFormatContext *s)
         get_line(s->pb, line, sizeof(line));
 
         if (!memcmp(line, ID_STREAM, strlen(ID_STREAM))) {
-            AVStream *st = avformat_new_stream(s, NULL);
+            AVStream *st = avformat_new_stream_ijk(s, NULL);
 
             if (!st)
                 return AVERROR(ENOMEM);

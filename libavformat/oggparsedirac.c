@@ -56,7 +56,7 @@ static int dirac_header(AVFormatContext *s, int idx)
         st->sample_aspect_ratio = dsh->sample_aspect_ratio;
 
     // Dirac in Ogg always stores timestamps as though the video were interlaced
-    avpriv_set_pts_info(st, 64, dsh->framerate.den, 2 * dsh->framerate.num);
+    avpriv_set_pts_info_ijk(st, 64, dsh->framerate.den, 2 * dsh->framerate.num);
 
     av_freep(&dsh);
     return 1;
@@ -95,7 +95,7 @@ static int old_dirac_header(AVFormatContext *s, int idx)
 
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id = AV_CODEC_ID_DIRAC;
-    avpriv_set_pts_info(st, 64, AV_RB32(buf+12), AV_RB32(buf+8));
+    avpriv_set_pts_info_ijk(st, 64, AV_RB32(buf+12), AV_RB32(buf+8));
     return 1;
 }
 

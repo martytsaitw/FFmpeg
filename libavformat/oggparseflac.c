@@ -69,7 +69,7 @@ flac_header (AVFormatContext * s, int idx)
         if (!samplerate)
             return AVERROR_INVALIDDATA;
 
-        avpriv_set_pts_info(st, 64, 1, samplerate);
+        avpriv_set_pts_info_ijk(st, 64, 1, samplerate);
     } else if (mdt == FLAC_METADATA_TYPE_VORBIS_COMMENT) {
         ff_vorbis_stream_comment(s, st, os->buf + os->pstart + 4, os->psize - 4);
     }
@@ -112,7 +112,7 @@ old_flac_header (AVFormatContext * s, int idx)
     av_parser_close(parser);
 
     if (avctx->sample_rate) {
-        avpriv_set_pts_info(st, 64, 1, avctx->sample_rate);
+        avpriv_set_pts_info_ijk(st, 64, 1, avctx->sample_rate);
         avcodec_free_context(&avctx);
         return 0;
     }

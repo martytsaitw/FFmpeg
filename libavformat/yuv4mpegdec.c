@@ -250,13 +250,13 @@ static int yuv4_read_header(AVFormatContext *s)
         aspectd = 1;
     }
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->width  = width;
     st->codecpar->height = height;
     av_reduce(&raten, &rated, raten, rated, (1UL << 31) - 1);
-    avpriv_set_pts_info(st, 64, rated, raten);
+    avpriv_set_pts_info_ijk(st, 64, rated, raten);
     st->avg_frame_rate                = av_inv_q(st->time_base);
     st->codecpar->format              = pix_fmt;
     st->codecpar->codec_type          = AVMEDIA_TYPE_VIDEO;

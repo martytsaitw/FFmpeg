@@ -228,7 +228,7 @@ static int wv_read_header(AVFormatContext *s)
     }
 
     /* now we are ready: build format streams */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type            = AVMEDIA_TYPE_AUDIO;
@@ -237,7 +237,7 @@ static int wv_read_header(AVFormatContext *s)
     st->codecpar->channel_layout        = wc->chmask;
     st->codecpar->sample_rate           = wc->rate;
     st->codecpar->bits_per_coded_sample = wc->bpp;
-    avpriv_set_pts_info(st, 64, 1, wc->rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, wc->rate);
     st->start_time = 0;
     if (wc->header.total_samples != 0xFFFFFFFFu)
         st->duration = wc->header.total_samples;

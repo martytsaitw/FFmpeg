@@ -154,7 +154,7 @@ int main(int argc, char **argv)
     /* Create output device streams */
     for (i = 0; i < nb_streams; i++) {
         st = &streams[i];
-        if (!(st->stream = avformat_new_stream(st->mux, NULL))) {
+        if (!(st->stream = avformat_new_stream_ijk(st->mux, NULL))) {
             ret = AVERROR(ENOMEM);
             av_log(NULL, AV_LOG_ERROR, "Failed to create output stream\n");
             goto fail;

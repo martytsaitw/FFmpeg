@@ -127,7 +127,7 @@ static int srt_read_header(AVFormatContext *s)
 {
     SRTContext *srt = s->priv_data;
     AVBPrint buf;
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     int res = 0;
     char line[4096], line_cache[4096];
     int has_event_info = 0;
@@ -137,7 +137,7 @@ static int srt_read_header(AVFormatContext *s)
 
     if (!st)
         return AVERROR(ENOMEM);
-    avpriv_set_pts_info(st, 64, 1, 1000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000);
     st->codecpar->codec_type = AVMEDIA_TYPE_SUBTITLE;
     st->codecpar->codec_id   = AV_CODEC_ID_SUBRIP;
 

@@ -439,7 +439,7 @@ static int ogg_build_vp8_headers(AVFormatContext *s, AVStream *st,
         av_log(s, AV_LOG_DEBUG, "Changing time base from %d/%d to %d/%d\n",
                st->time_base.num, st->time_base.den,
                st->r_frame_rate.den, st->r_frame_rate.num);
-        avpriv_set_pts_info(st, 64, st->r_frame_rate.den, st->r_frame_rate.num);
+        avpriv_set_pts_info_ijk(st, 64, st->r_frame_rate.den, st->r_frame_rate.num);
     }
     bytestream_put_be32(&p, st->time_base.den);
     bytestream_put_be32(&p, st->time_base.num);
@@ -499,9 +499,9 @@ static int ogg_init(AVFormatContext *s)
         if (st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
             if (st->codecpar->codec_id == AV_CODEC_ID_OPUS)
                 /* Opus requires a fixed 48kHz clock */
-                avpriv_set_pts_info(st, 64, 1, 48000);
+                avpriv_set_pts_info_ijk(st, 64, 1, 48000);
             else
-                avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+                avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
         }
 
         if (st->codecpar->codec_id != AV_CODEC_ID_VORBIS &&
@@ -605,7 +605,7 @@ static int ogg_init(AVFormatContext *s)
                 if (st->time_base.num != num || st->time_base.den != den) {
                     av_log(s, AV_LOG_DEBUG, "Changing time base from %d/%d to %d/%d\n",
                            st->time_base.num, st->time_base.den, num, den);
-                    avpriv_set_pts_info(st, 64, num, den);
+                    avpriv_set_pts_info_ijk(st, 64, num, den);
                 }
                 /** KFGSHIFT is the width of the less significant section of the granule position
                     The less significant section is the frame count since the last keyframe */

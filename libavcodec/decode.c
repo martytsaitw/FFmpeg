@@ -203,7 +203,7 @@ static int bsfs_init(AVCodecContext *avctx)
             goto fail;
         }
 
-        filter = av_bsf_get_by_name(bsf);
+        filter = av_bsf_get_by_name_ijk(bsf);
         if (!filter) {
             av_log(avctx, AV_LOG_ERROR, "A non-existing bitstream filter %s "
                    "requested by a decoder. This is a bug, please report it.\n",
@@ -222,7 +222,7 @@ static int bsfs_init(AVCodecContext *avctx)
         s->bsfs = tmp;
         s->nb_bsfs++;
 
-        ret = av_bsf_alloc(filter, &s->bsfs[s->nb_bsfs - 1]);
+        ret = av_bsf_alloc_ijk(filter, &s->bsfs[s->nb_bsfs - 1]);
         if (ret < 0)
             goto fail;
 
@@ -235,13 +235,13 @@ static int bsfs_init(AVCodecContext *avctx)
                                                   avctx);
         } else {
             s->bsfs[s->nb_bsfs - 1]->time_base_in = s->bsfs[s->nb_bsfs - 2]->time_base_out;
-            ret = avcodec_parameters_copy(s->bsfs[s->nb_bsfs - 1]->par_in,
+            ret = avcodec_parameters_copy_ijk(s->bsfs[s->nb_bsfs - 1]->par_in,
                                           s->bsfs[s->nb_bsfs - 2]->par_out);
         }
         if (ret < 0)
             goto fail;
 
-        ret = av_bsf_init(s->bsfs[s->nb_bsfs - 1]);
+        ret = av_bsf_init_ijk(s->bsfs[s->nb_bsfs - 1]);
         if (ret < 0)
             goto fail;
     }

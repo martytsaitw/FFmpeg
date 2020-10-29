@@ -54,7 +54,7 @@ static int rso_read_header(AVFormatContext *s)
     }
 
     /* now we are ready: build format streams */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -67,7 +67,7 @@ static int rso_read_header(AVFormatContext *s)
     st->codecpar->sample_rate  = rate;
     st->codecpar->block_align  = 1;
 
-    avpriv_set_pts_info(st, 64, 1, rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, rate);
 
     return 0;
 }

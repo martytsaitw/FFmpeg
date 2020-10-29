@@ -92,7 +92,7 @@ static int amr_read_header(AVFormatContext *s)
 
     avio_read(pb, header, 6);
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     if (memcmp(header, AMR_header, 6)) {
@@ -112,7 +112,7 @@ static int amr_read_header(AVFormatContext *s)
     st->codecpar->channels   = 1;
     st->codecpar->channel_layout = AV_CH_LAYOUT_MONO;
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }
@@ -208,7 +208,7 @@ static int amrnb_probe(AVProbeData *p)
 
 static int amrnb_read_header(AVFormatContext *s)
 {
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_id       = AV_CODEC_ID_AMR_NB;
@@ -216,7 +216,7 @@ static int amrnb_read_header(AVFormatContext *s)
     st->codecpar->channels       = 1;
     st->codecpar->channel_layout = AV_CH_LAYOUT_MONO;
     st->codecpar->codec_type     = AVMEDIA_TYPE_AUDIO;
-    avpriv_set_pts_info(st, 64, 1, 8000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 8000);
 
     return 0;
 }
@@ -265,7 +265,7 @@ static int amrwb_probe(AVProbeData *p)
 
 static int amrwb_read_header(AVFormatContext *s)
 {
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_id       = AV_CODEC_ID_AMR_WB;
@@ -273,7 +273,7 @@ static int amrwb_read_header(AVFormatContext *s)
     st->codecpar->channels       = 1;
     st->codecpar->channel_layout = AV_CH_LAYOUT_MONO;
     st->codecpar->codec_type     = AVMEDIA_TYPE_AUDIO;
-    avpriv_set_pts_info(st, 64, 1, 16000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 16000);
 
     return 0;
 }

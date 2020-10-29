@@ -51,7 +51,7 @@ static int srt_write_header(AVFormatContext *avf)
                avcodec_get_name(avf->streams[0]->codecpar->codec_id));
         return AVERROR(EINVAL);
     }
-    avpriv_set_pts_info(avf->streams[0], 64, 1, 1000);
+    avpriv_set_pts_info_ijk(avf->streams[0], 64, 1, 1000);
     srt->index = 1;
     return 0;
 }

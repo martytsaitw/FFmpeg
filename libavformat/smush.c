@@ -138,13 +138,13 @@ static int smush_read_header(AVFormatContext *ctx)
         return AVERROR_INVALIDDATA;
     }
 
-    vst = avformat_new_stream(ctx, 0);
+    vst = avformat_new_stream_ijk(ctx, 0);
     if (!vst)
         return AVERROR(ENOMEM);
 
     smush->video_stream_index = vst->index;
 
-    avpriv_set_pts_info(vst, 64, 1, 15);
+    avpriv_set_pts_info_ijk(vst, 64, 1, 15);
 
     vst->start_time        = 0;
     vst->duration          =
@@ -166,7 +166,7 @@ static int smush_read_header(AVFormatContext *ctx)
     }
 
     if (got_audio) {
-        ast = avformat_new_stream(ctx, 0);
+        ast = avformat_new_stream_ijk(ctx, 0);
         if (!ast)
             return AVERROR(ENOMEM);
 
@@ -179,7 +179,7 @@ static int smush_read_header(AVFormatContext *ctx)
         ast->codecpar->sample_rate = sample_rate;
         ast->codecpar->channels    = channels;
 
-        avpriv_set_pts_info(ast, 64, 1, ast->codecpar->sample_rate);
+        avpriv_set_pts_info_ijk(ast, 64, 1, ast->codecpar->sample_rate);
     }
 
     return 0;

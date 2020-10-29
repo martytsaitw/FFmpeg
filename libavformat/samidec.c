@@ -49,7 +49,7 @@ static int sami_probe(AVProbeData *p)
 static int sami_read_header(AVFormatContext *s)
 {
     SAMIContext *sami = s->priv_data;
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     AVBPrint buf, hdr_buf;
     char c = 0;
     int res = 0, got_first_sync_point = 0;
@@ -58,7 +58,7 @@ static int sami_read_header(AVFormatContext *s)
 
     if (!st)
         return AVERROR(ENOMEM);
-    avpriv_set_pts_info(st, 64, 1, 1000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000);
     st->codecpar->codec_type = AVMEDIA_TYPE_SUBTITLE;
     st->codecpar->codec_id   = AV_CODEC_ID_SAMI;
 

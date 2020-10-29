@@ -454,7 +454,7 @@ int64_t ff_gen_search(AVFormatContext *s, int stream_index,
  * @param pts_num time base numerator
  * @param pts_den time base denominator
  */
-void avpriv_set_pts_info(AVStream *s, int pts_wrap_bits,
+void avpriv_set_pts_info_ijk(AVStream *s, int pts_wrap_bits,
                          unsigned int pts_num, unsigned int pts_den);
 
 /**

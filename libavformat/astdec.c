@@ -43,7 +43,7 @@ static int ast_read_header(AVFormatContext *s)
     int depth;
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -73,7 +73,7 @@ static int ast_read_header(AVFormatContext *s)
     st->start_time         = 0;
     st->duration           = avio_rb32(s->pb);
     avio_skip(s->pb, 40);
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }

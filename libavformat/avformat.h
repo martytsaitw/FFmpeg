@@ -204,7 +204,7 @@
  *   "pb" field must be set to an opened IO context, either returned from
  *   avio_open2() or a custom one.
  * - Unless the format is of the AVFMT_NOSTREAMS type, at least one stream must
- *   be created with the avformat_new_stream() function. The caller should fill
+ *   be created with the avformat_new_stream_ijk() function. The caller should fill
  *   the @ref AVStream.codecpar "stream codec parameters" information, such as the
  *   codec @ref AVCodecParameters.codec_type "type", @ref AVCodecParameters.codec_id
  *   "id" and other parameters (e.g. width / height, the pixel or sample format,
@@ -213,7 +213,7 @@
  *   that the timebase actually used by the muxer can be different, as will be
  *   described later).
  * - It is advised to manually initialize only the relevant fields in
- *   AVCodecParameters, rather than using @ref avcodec_parameters_copy() during
+ *   AVCodecParameters, rather than using @ref avcodec_parameters_copy_ijk() during
  *   remuxing: there is no guarantee that the codec context values remain valid
  *   for both input and output format contexts.
  * - The caller may fill in additional information, such as @ref
@@ -697,7 +697,7 @@ typedef struct AVInputFormat {
 
     /**
      * Read the format header and initialize the AVFormatContext
-     * structure. Return 0 if OK. 'avformat_new_stream' should be
+     * structure. Return 0 if OK. 'avformat_new_stream_ijk' should be
      * called to create new streams.
      */
     int (*read_header)(struct AVFormatContext *);
@@ -709,7 +709,7 @@ typedef struct AVInputFormat {
 
     /**
      * Read one packet and put it in 'pkt'. pts and flags are also
-     * set. 'avformat_new_stream' can be called only if the flag
+     * set. 'avformat_new_stream_ijk' can be called only if the flag
      * AVFMTCTX_NOHEADER is used and only in the calling thread (not in a
      * background thread).
      * @return 0 on success, < 0 on error.
@@ -1008,7 +1008,7 @@ typedef struct AVStream {
 
     /**
      * Codec parameters associated with this stream. Allocated and freed by
-     * libavformat in avformat_new_stream() and avformat_free_context()
+     * libavformat in avformat_new_stream_ijk() and avformat_free_context()
      * respectively.
      *
      * - demuxing: filled by libavformat on stream creation or in
@@ -1392,12 +1392,12 @@ typedef struct AVFormatContext {
     /**
      * Number of elements in AVFormatContext.streams.
      *
-     * Set by avformat_new_stream(), must not be modified by any other code.
+     * Set by avformat_new_stream_ijk(), must not be modified by any other code.
      */
     unsigned int nb_streams;
     /**
      * A list of all streams in the file. New streams are created with
-     * avformat_new_stream().
+     * avformat_new_stream_ijk().
      *
      * - demuxing: streams are created by libavformat in avformat_open_input_ijk().
      *             If AVFMTCTX_NOHEADER is set in ctx_flags, then new streams may also
@@ -2150,7 +2150,7 @@ const AVClass *avformat_get_class_ijk(void);
  * When muxing, should be called by the user before avformat_write_header().
  *
  * User is required to call avcodec_close() and avformat_free_context() to
- * clean up the allocation by avformat_new_stream().
+ * clean up the allocation by avformat_new_stream_ijk().
  *
  * @param s media file handle
  * @param c If non-NULL, the AVCodecContext corresponding to the new stream
@@ -2159,7 +2159,7 @@ const AVClass *avformat_get_class_ijk(void);
  *
  * @return newly created stream or NULL on error.
  */
-AVStream *avformat_new_stream(AVFormatContext *s, const AVCodec *c);
+AVStream *avformat_new_stream_ijk(AVFormatContext *s, const AVCodec *c);
 
 /**
  * Wrap an existing array as stream side data.
@@ -2454,7 +2454,7 @@ int av_seek_frame(AVFormatContext *s, int stream_index, int64_t timestamp,
  *       Thus do not use this yet. It may change at any time, do not expect
  *       ABI compatibility yet!
  */
-int avformat_seek_file(AVFormatContext *s, int stream_index, int64_t min_ts, int64_t ts, int64_t max_ts, int flags);
+int avformat_seek_file_ijk(AVFormatContext *s, int stream_index, int64_t min_ts, int64_t ts, int64_t max_ts, int flags);
 
 /**
  * Discard all internally buffered data. This can be useful when dealing with

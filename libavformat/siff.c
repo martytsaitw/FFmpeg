@@ -75,7 +75,7 @@ static int siff_probe(AVProbeData *p)
 static int create_audio_stream(AVFormatContext *s, SIFFContext *c)
 {
     AVStream *ast;
-    ast = avformat_new_stream(s, NULL);
+    ast = avformat_new_stream_ijk(s, NULL);
     if (!ast)
         return AVERROR(ENOMEM);
     ast->codecpar->codec_type            = AVMEDIA_TYPE_AUDIO;
@@ -84,7 +84,7 @@ static int create_audio_stream(AVFormatContext *s, SIFFContext *c)
     ast->codecpar->channel_layout        = AV_CH_LAYOUT_MONO;
     ast->codecpar->bits_per_coded_sample = 8;
     ast->codecpar->sample_rate           = c->rate;
-    avpriv_set_pts_info(ast, 16, 1, c->rate);
+    avpriv_set_pts_info_ijk(ast, 16, 1, c->rate);
     ast->start_time                   = 0;
     return 0;
 }
@@ -120,7 +120,7 @@ static int siff_parse_vbv1(AVFormatContext *s, SIFFContext *c, AVIOContext *pb)
 
     avio_skip(pb, 16); // zeroes
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
@@ -131,7 +131,7 @@ static int siff_parse_vbv1(AVFormatContext *s, SIFFContext *c, AVIOContext *pb)
     st->codecpar->format     = AV_PIX_FMT_PAL8;
     st->nb_frames            =
     st->duration             = c->frames;
-    avpriv_set_pts_info(st, 16, 1, 12);
+    avpriv_set_pts_info_ijk(st, 16, 1, 12);
 
     c->cur_frame = 0;
     c->has_video = 1;

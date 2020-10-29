@@ -37,7 +37,7 @@ static int ads_read_header(AVFormatContext *s)
     int align, codec, size;
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -64,7 +64,7 @@ static int ads_read_header(AVFormatContext *s)
     size = avio_rl32(s->pb);
     if (st->codecpar->codec_id == AV_CODEC_ID_ADPCM_PSX)
         st->duration = (size - 0x40) / 16 / st->codecpar->channels * 28;
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }

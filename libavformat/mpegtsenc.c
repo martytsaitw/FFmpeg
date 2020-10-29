@@ -856,7 +856,7 @@ static int mpegts_init(AVFormatContext *s)
         st->priv_data = ts_st;
 
         ts_st->user_tb = st->time_base;
-        avpriv_set_pts_info(st, 33, 1, 90000);
+        avpriv_set_pts_info_ijk(st, 33, 1, 90000);
 
         ts_st->payload = av_mallocz(ts->pes_payload_size);
         if (!ts_st->payload) {
@@ -926,11 +926,11 @@ static int mpegts_init(AVFormatContext *s)
                 ret = AVERROR(EINVAL);
                 goto fail;
             }
-            if (!(ast = avformat_new_stream(ts_st->amux, NULL))) {
+            if (!(ast = avformat_new_stream_ijk(ts_st->amux, NULL))) {
                 ret = AVERROR(ENOMEM);
                 goto fail;
             }
-            ret = avcodec_parameters_copy(ast->codecpar, st->codecpar);
+            ret = avcodec_parameters_copy_ijk(ast->codecpar, st->codecpar);
             if (ret != 0)
                 goto fail;
             ast->time_base = st->time_base;

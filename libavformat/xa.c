@@ -69,7 +69,7 @@ static int xa_read_header(AVFormatContext *s)
     AVStream *st;
 
     /*Set up the XA Audio Decoder*/
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -90,7 +90,7 @@ static int xa_read_header(AVFormatContext *s)
     st->codecpar->bit_rate = av_clip(15LL * st->codecpar->channels * 8 *
                                   st->codecpar->sample_rate / 28, 0, INT_MAX);
 
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
     st->start_time = 0;
 
     return 0;

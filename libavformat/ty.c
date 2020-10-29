@@ -311,15 +311,15 @@ static int ty_read_header(AVFormatContext *s)
         ty->tivo_type == TIVO_TYPE_UNKNOWN)
         return AVERROR(EIO);
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id   = AV_CODEC_ID_MPEG2VIDEO;
     st->need_parsing         = AVSTREAM_PARSE_FULL_RAW;
-    avpriv_set_pts_info(st, 64, 1, 90000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 90000);
 
-    ast = avformat_new_stream(s, NULL);
+    ast = avformat_new_stream_ijk(s, NULL);
     if (!ast)
         return AVERROR(ENOMEM);
     ast->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -330,7 +330,7 @@ static int ty_read_header(AVFormatContext *s)
     } else {
         ast->codecpar->codec_id = AV_CODEC_ID_AC3;
     }
-    avpriv_set_pts_info(ast, 64, 1, 90000);
+    avpriv_set_pts_info_ijk(ast, 64, 1, 90000);
 
     ty->first_chunk = 1;
 

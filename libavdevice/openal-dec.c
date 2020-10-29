@@ -147,13 +147,13 @@ static int read_header(AVFormatContext *ctx)
     if (error = al_get_error(ad->device, &error_msg)) goto fail;
 
     /* Create stream */
-    if (!(st = avformat_new_stream(ctx, NULL))) {
+    if (!(st = avformat_new_stream_ijk(ctx, NULL))) {
         error = AVERROR(ENOMEM);
         goto fail;
     }
 
     /* We work in microseconds */
-    avpriv_set_pts_info(st, 64, 1, 1000000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000000);
 
     /* Set codec parameters */
     par = st->codecpar;

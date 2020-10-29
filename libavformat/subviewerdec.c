@@ -69,7 +69,7 @@ static int read_ts(const char *s, int64_t *start, int *duration)
 static int subviewer_read_header(AVFormatContext *s)
 {
     SubViewerContext *subviewer = s->priv_data;
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     AVBPrint header;
     int res = 0, new_event = 1;
     int64_t pts_start = AV_NOPTS_VALUE;
@@ -78,7 +78,7 @@ static int subviewer_read_header(AVFormatContext *s)
 
     if (!st)
         return AVERROR(ENOMEM);
-    avpriv_set_pts_info(st, 64, 1, 100);
+    avpriv_set_pts_info_ijk(st, 64, 1, 100);
     st->codecpar->codec_type = AVMEDIA_TYPE_SUBTITLE;
     st->codecpar->codec_id   = AV_CODEC_ID_SUBVIEWER;
 

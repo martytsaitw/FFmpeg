@@ -57,7 +57,7 @@ static int threedostr_read_header(AVFormatContext *s)
                 return AVERROR_INVALIDDATA;
             avio_skip(s->pb, 24);
 
-            st = avformat_new_stream(s, NULL);
+            st = avformat_new_stream_ijk(s, NULL);
             if (!st)
                 return AVERROR(ENOMEM);
 
@@ -103,7 +103,7 @@ static int threedostr_read_header(AVFormatContext *s)
         return AVERROR_PATCHWELCOME;
     }
 
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }

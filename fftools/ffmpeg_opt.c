@@ -1129,7 +1129,7 @@ static int open_input_file(OptionsContext *o, const char *filename)
                 seek_timestamp -= 3*AV_TIME_BASE / 23;
             }
         }
-        ret = avformat_seek_file(ic, -1, INT64_MIN, seek_timestamp, seek_timestamp, 0);
+        ret = avformat_seek_file_ijk(ic, -1, INT64_MIN, seek_timestamp, seek_timestamp, 0);
         if (ret < 0) {
             av_log(NULL, AV_LOG_WARNING, "%s: could not seek to position %0.3f\n",
                    filename, (double)timestamp / AV_TIME_BASE);
@@ -1301,7 +1301,7 @@ static int choose_encoder(OptionsContext *o, AVFormatContext *s, OutputStream *o
 static OutputStream *new_output_stream(OptionsContext *o, AVFormatContext *oc, enum AVMediaType type, int source_index)
 {
     OutputStream *ost;
-    AVStream *st = avformat_new_stream(oc, NULL);
+    AVStream *st = avformat_new_stream_ijk(oc, NULL);
     int idx      = oc->nb_streams - 1, ret = 0;
     const char *bsfs = NULL, *time_base = NULL;
     char *next, *codec_tag = NULL;
@@ -1340,7 +1340,7 @@ static OutputStream *new_output_stream(OptionsContext *o, AVFormatContext *oc, e
     }
     ost->enc_ctx->codec_type = type;
 
-    ost->ref_par = avcodec_parameters_alloc();
+    ost->ref_par = avcodec_parameters_alloc_ijk();
     if (!ost->ref_par) {
         av_log(NULL, AV_LOG_ERROR, "Error allocating the encoding parameters.\n");
         exit_program(1);
@@ -1431,7 +1431,7 @@ static OutputStream *new_output_stream(OptionsContext *o, AVFormatContext *oc, e
         if (!bsf_name)
             exit_program(1);
 
-        filter = av_bsf_get_by_name(bsf_name);
+        filter = av_bsf_get_by_name_ijk(bsf_name);
         if (!filter) {
             av_log(NULL, AV_LOG_FATAL, "Unknown bitstream filter %s\n", bsf_name);
             exit_program(1);
@@ -1443,7 +1443,7 @@ static OutputStream *new_output_stream(OptionsContext *o, AVFormatContext *oc, e
         if (!ost->bsf_ctx)
             exit_program(1);
 
-        ret = av_bsf_alloc(filter, &ost->bsf_ctx[ost->nb_bitstream_filters]);
+        ret = av_bsf_alloc_ijk(filter, &ost->bsf_ctx[ost->nb_bitstream_filters]);
         if (ret < 0) {
             av_log(NULL, AV_LOG_ERROR, "Error allocating a bitstream filter context\n");
             exit_program(1);

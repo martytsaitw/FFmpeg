@@ -82,7 +82,7 @@ static int sds_read_header(AVFormatContext *ctx)
     AVIOContext *pb = ctx->pb;
     AVStream *st;
 
-    st = avformat_new_stream(ctx, NULL);
+    st = avformat_new_stream_ijk(ctx, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -114,7 +114,7 @@ static int sds_read_header(AVFormatContext *ctx)
     st->codecpar->sample_rate = sample_period ? 1000000000 / sample_period : 16000;
     st->duration = (avio_size(pb) - 21) / (127) * s->size / 4;
 
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }

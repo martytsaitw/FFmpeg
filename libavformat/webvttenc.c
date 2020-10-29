@@ -54,7 +54,7 @@ static int webvtt_write_header(AVFormatContext *ctx)
         return AVERROR(EINVAL);
     }
 
-    avpriv_set_pts_info(s, 64, 1, 1000);
+    avpriv_set_pts_info_ijk(s, 64, 1, 1000);
 
     avio_printf(pb, "WEBVTT\n");
     avio_flush(pb);

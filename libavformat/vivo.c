@@ -126,8 +126,8 @@ static int vivo_read_header(AVFormatContext *s)
     int64_t duration = 0;
     char *end_value;
 
-    vst = avformat_new_stream(s, NULL);
-    ast = avformat_new_stream(s, NULL);
+    vst = avformat_new_stream_ijk(s, NULL);
+    ast = avformat_new_stream_ijk(s, NULL);
     if (!ast || !vst)
         return AVERROR(ENOMEM);
 
@@ -216,8 +216,8 @@ static int vivo_read_header(AVFormatContext *s)
         }
     }
 
-    avpriv_set_pts_info(ast, 64, 1, ast->codecpar->sample_rate);
-    avpriv_set_pts_info(vst, 64, fps.num, fps.den);
+    avpriv_set_pts_info_ijk(ast, 64, 1, ast->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(vst, 64, fps.num, fps.den);
     if (duration)
         s->duration = av_rescale(duration, 1000, 1);
 

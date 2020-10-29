@@ -1748,14 +1748,14 @@ static int set_stream_info_from_input_stream(AVStream *st, struct playlist *pls,
 {
     int err;
 
-    err = avcodec_parameters_copy(st->codecpar, ist->codecpar);
+    err = avcodec_parameters_copy_ijk(st->codecpar, ist->codecpar);
     if (err < 0)
         return err;
 
     if (pls->is_id3_timestamped) /* custom timestamps via id3 */
-        avpriv_set_pts_info(st, 33, 1, MPEG_TIME_BASE);
+        avpriv_set_pts_info_ijk(st, 33, 1, MPEG_TIME_BASE);
     else
-        avpriv_set_pts_info(st, ist->pts_wrap_bits, ist->time_base.num, ist->time_base.den);
+        avpriv_set_pts_info_ijk(st, ist->pts_wrap_bits, ist->time_base.num, ist->time_base.den);
 
     st->internal->need_context_update = 1;
 
@@ -1769,7 +1769,7 @@ static int update_streams_from_subdemuxer(AVFormatContext *s, struct playlist *p
 
     while (pls->n_main_streams < pls->ctx->nb_streams) {
         int ist_idx = pls->n_main_streams;
-        AVStream *st = avformat_new_stream(s, NULL);
+        AVStream *st = avformat_new_stream_ijk(s, NULL);
         AVStream *ist = pls->ctx->streams[ist_idx];
 
         if (!st)

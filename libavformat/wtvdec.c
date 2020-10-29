@@ -443,7 +443,7 @@ static void get_attachment(AVFormatContext *s, AVIOContext *pb, int length)
     if (!filesize)
         goto done;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         goto done;
     av_dict_set(&st->metadata, "title", description, 0);
@@ -613,7 +613,7 @@ static AVStream * new_stream(AVFormatContext *s, AVStream *st, int sid, int code
         WtvStream *wst = av_mallocz(sizeof(WtvStream));
         if (!wst)
             return NULL;
-        st = avformat_new_stream(s, NULL);
+        st = avformat_new_stream_ijk(s, NULL);
         if (!st) {
             av_free(wst);
             return NULL;
@@ -623,7 +623,7 @@ static AVStream * new_stream(AVFormatContext *s, AVStream *st, int sid, int code
     }
     st->codecpar->codec_type = codec_type;
     st->need_parsing      = AVSTREAM_PARSE_FULL;
-    avpriv_set_pts_info(st, 64, 1, 10000000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 10000000);
     return st;
 }
 

@@ -57,7 +57,7 @@ static int tak_read_header(AVFormatContext *s)
     uint8_t *buffer = NULL;
     int ret;
 
-    st = avformat_new_stream(s, 0);
+    st = avformat_new_stream_ijk(s, 0);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -155,7 +155,7 @@ static int tak_read_header(AVFormatContext *s)
             st->codecpar->sample_rate           = ti.sample_rate;
             st->codecpar->channels              = ti.channels;
             st->start_time                   = 0;
-            avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+            avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
             st->codecpar->extradata             = buffer;
             st->codecpar->extradata_size        = size - 3;
             buffer                           = NULL;

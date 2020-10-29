@@ -119,7 +119,7 @@ static int daala_header(AVFormatContext *s, int idx)
             timebase.num = 1;
             timebase.den = 30;
         }
-        avpriv_set_pts_info(st, 64, timebase.den, timebase.num);
+        avpriv_set_pts_info_ijk(st, 64, timebase.den, timebase.num);
 
         hdr->frame_duration = bytestream2_get_ne32(&gb);
         hdr->gpshift = bytestream2_get_byte(&gb);

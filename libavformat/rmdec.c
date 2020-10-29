@@ -322,7 +322,7 @@ int ff_rm_read_mdpr_codecdata(AVFormatContext *s, AVIOContext *pb,
     if (codec_data_size == 0)
         return 0;
 
-    avpriv_set_pts_info(st, 64, 1, 1000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000);
     codec_pos = avio_tell(pb);
     v = avio_rb32(pb);
 
@@ -479,7 +479,7 @@ static int rm_read_header_old(AVFormatContext *s)
     AVStream *st;
 
     rm->old_format = 1;
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return -1;
     st->priv_data = ff_rm_alloc_rmstream();
@@ -504,7 +504,7 @@ static int rm_read_multi(AVFormatContext *s, AVIOContext *pb,
     for (i = 0; i < number_of_mdpr; i++) {
         AVStream *st2;
         if (i > 0) {
-            st2 = avformat_new_stream(s, NULL);
+            st2 = avformat_new_stream_ijk(s, NULL);
             if (!st2) {
                 ret = AVERROR(ENOMEM);
                 return ret;
@@ -585,7 +585,7 @@ static int rm_read_header(AVFormatContext *s)
             rm_read_metadata(s, pb, 1);
             break;
         case MKTAG('M', 'D', 'P', 'R'):
-            st = avformat_new_stream(s, NULL);
+            st = avformat_new_stream_ijk(s, NULL);
             if (!st) {
                 ret = AVERROR(ENOMEM);
                 goto fail;
@@ -1240,7 +1240,7 @@ static int ivr_read_header(AVFormatContext *s)
     }
 
     for (n = 0; n < nb_streams; n++) {
-        st = avformat_new_stream(s, NULL);
+        st = avformat_new_stream_ijk(s, NULL);
         if (!st)
             return AVERROR(ENOMEM);
         st->priv_data = ff_rm_alloc_rmstream();

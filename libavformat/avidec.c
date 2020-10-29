@@ -568,7 +568,7 @@ static int avi_read_header(AVFormatContext *s)
                 break;
             } else {
                 stream_index++;
-                st = avformat_new_stream(s, NULL);
+                st = avformat_new_stream_ijk(s, NULL);
                 if (!st)
                     goto fail;
 
@@ -662,7 +662,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
                     ast->scale = 1;
                 }
             }
-            avpriv_set_pts_info(st, 64, ast->scale, ast->rate);
+            avpriv_set_pts_info_ijk(st, 64, ast->scale, ast->rate);
 
             ast->cum_len  = avio_rl32(pb); /* start */
             st->nb_frames = avio_rl32(pb);
@@ -1114,9 +1114,9 @@ static int read_gab2_sub(AVFormatContext *s, AVStream *st, AVPacket *pkt)
             if (ast->sub_ctx->nb_streams != 1)
                 goto error;
             ff_read_packet(ast->sub_ctx, &ast->sub_pkt);
-            avcodec_parameters_copy(st->codecpar, ast->sub_ctx->streams[0]->codecpar);
+            avcodec_parameters_copy_ijk(st->codecpar, ast->sub_ctx->streams[0]->codecpar);
             time_base = ast->sub_ctx->streams[0]->time_base;
-            avpriv_set_pts_info(st, 64, time_base.num, time_base.den);
+            avpriv_set_pts_info_ijk(st, 64, time_base.num, time_base.den);
         }
         ast->sub_buffer = pkt->data;
         memset(pkt, 0, sizeof(*pkt));
@@ -1770,8 +1770,8 @@ static void seek_subtitle(AVStream *st, AVStream *st2, int64_t timestamp)
     AVIStream *ast2 = st2->priv_data;
     int64_t ts2     = av_rescale_q(timestamp, st->time_base, st2->time_base);
     av_packet_unref(&ast2->sub_pkt);
-    if (avformat_seek_file(ast2->sub_ctx, 0, INT64_MIN, ts2, ts2, 0) >= 0 ||
-        avformat_seek_file(ast2->sub_ctx, 0, ts2, ts2, INT64_MAX, 0) >= 0)
+    if (avformat_seek_file_ijk(ast2->sub_ctx, 0, INT64_MIN, ts2, ts2, 0) >= 0 ||
+        avformat_seek_file_ijk(ast2->sub_ctx, 0, ts2, ts2, INT64_MAX, 0) >= 0)
         ff_read_packet(ast2->sub_ctx, &ast2->sub_pkt);
 }
 

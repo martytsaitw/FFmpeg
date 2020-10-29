@@ -57,7 +57,7 @@ static int rsd_read_header(AVFormatContext *s)
     AVIOContext *pb = s->pb;
     int i, ret, version, start = 0x800;
     AVCodecParameters *par;
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
 
     if (!st)
         return AVERROR(ENOMEM);
@@ -162,7 +162,7 @@ static int rsd_read_header(AVFormatContext *s)
         st->duration = avio_rb32(pb);
     }
 
-    avpriv_set_pts_info(st, 64, 1, par->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, par->sample_rate);
 
     return 0;
 }

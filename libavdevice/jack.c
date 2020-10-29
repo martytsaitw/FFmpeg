@@ -242,7 +242,7 @@ static int audio_read_header(AVFormatContext *context)
     if ((test = start_jack(context)))
         return test;
 
-    stream = avformat_new_stream(context, NULL);
+    stream = avformat_new_stream_ijk(context, NULL);
     if (!stream) {
         stop_jack(self);
         return AVERROR(ENOMEM);
@@ -257,7 +257,7 @@ static int audio_read_header(AVFormatContext *context)
     stream->codecpar->sample_rate  = self->sample_rate;
     stream->codecpar->channels     = self->nports;
 
-    avpriv_set_pts_info(stream, 64, 1, 1000000);  /* 64 bits pts in us */
+    avpriv_set_pts_info_ijk(stream, 64, 1, 1000000);  /* 64 bits pts in us */
     return 0;
 }
 

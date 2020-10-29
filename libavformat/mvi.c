@@ -46,11 +46,11 @@ static int read_header(AVFormatContext *s)
     AVStream *ast, *vst;
     unsigned int version, frames_count, msecs_per_frame, player_version;
 
-    ast = avformat_new_stream(s, NULL);
+    ast = avformat_new_stream_ijk(s, NULL);
     if (!ast)
         return AVERROR(ENOMEM);
 
-    vst = avformat_new_stream(s, NULL);
+    vst = avformat_new_stream_ijk(s, NULL);
     if (!vst)
         return AVERROR(ENOMEM);
 
@@ -80,7 +80,7 @@ static int read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
     }
 
-    avpriv_set_pts_info(ast, 64, 1, ast->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(ast, 64, 1, ast->codecpar->sample_rate);
     ast->codecpar->codec_type      = AVMEDIA_TYPE_AUDIO;
     ast->codecpar->codec_id        = AV_CODEC_ID_PCM_U8;
     ast->codecpar->channels        = 1;
@@ -88,7 +88,7 @@ static int read_header(AVFormatContext *s)
     ast->codecpar->bits_per_coded_sample = 8;
     ast->codecpar->bit_rate        = ast->codecpar->sample_rate * 8;
 
-    avpriv_set_pts_info(vst, 64, msecs_per_frame, 1000000);
+    avpriv_set_pts_info_ijk(vst, 64, msecs_per_frame, 1000000);
     vst->avg_frame_rate    = av_inv_q(vst->time_base);
     vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     vst->codecpar->codec_id   = AV_CODEC_ID_MOTIONPIXELS;

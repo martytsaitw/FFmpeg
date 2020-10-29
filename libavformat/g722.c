@@ -28,7 +28,7 @@ static int g722_read_header(AVFormatContext *s)
 {
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -42,7 +42,7 @@ static int g722_read_header(AVFormatContext *s)
 
     av_assert0(st->codecpar->bits_per_coded_sample > 0);
 
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
     return 0;
 }
 

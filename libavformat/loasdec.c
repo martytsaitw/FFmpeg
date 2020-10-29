@@ -69,7 +69,7 @@ static int loas_read_header(AVFormatContext *s)
 {
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -78,7 +78,7 @@ static int loas_read_header(AVFormatContext *s)
     st->need_parsing = AVSTREAM_PARSE_FULL_RAW;
 
     //LCM of all possible AAC sample rates
-    avpriv_set_pts_info(st, 64, 1, 28224000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 28224000);
 
     return 0;
 }

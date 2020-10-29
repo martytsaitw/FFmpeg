@@ -75,10 +75,10 @@ static int tmv_read_header(AVFormatContext *s)
     if (avio_rl32(pb) != TMV_TAG)
         return -1;
 
-    if (!(vst = avformat_new_stream(s, NULL)))
+    if (!(vst = avformat_new_stream_ijk(s, NULL)))
         return AVERROR(ENOMEM);
 
-    if (!(ast = avformat_new_stream(s, NULL)))
+    if (!(ast = avformat_new_stream_ijk(s, NULL)))
         return AVERROR(ENOMEM);
 
     ast->codecpar->sample_rate = avio_rl16(pb);
@@ -123,7 +123,7 @@ static int tmv_read_header(AVFormatContext *s)
     ast->codecpar->bits_per_coded_sample = 8;
     ast->codecpar->bit_rate              = ast->codecpar->sample_rate *
                                            ast->codecpar->bits_per_coded_sample;
-    avpriv_set_pts_info(ast, 32, 1, ast->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(ast, 32, 1, ast->codecpar->sample_rate);
 
     fps.num = ast->codecpar->sample_rate * ast->codecpar->channels;
     fps.den = tmv->audio_chunk_size;
@@ -134,7 +134,7 @@ static int tmv_read_header(AVFormatContext *s)
     vst->codecpar->format     = AV_PIX_FMT_PAL8;
     vst->codecpar->width      = char_cols * 8;
     vst->codecpar->height     = char_rows * 8;
-    avpriv_set_pts_info(vst, 32, fps.den, fps.num);
+    avpriv_set_pts_info_ijk(vst, 32, fps.den, fps.num);
 
     if (features & TMV_PADDING)
         tmv->padding =

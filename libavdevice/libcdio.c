@@ -58,7 +58,7 @@ static av_cold int read_header(AVFormatContext *ctx)
     int ret, i;
     char *err = NULL;
 
-    if (!(st = avformat_new_stream(ctx, NULL)))
+    if (!(st = avformat_new_stream_ijk(ctx, NULL)))
         return AVERROR(ENOMEM);
     s->drive = cdio_cddap_identify(ctx->url, CDDA_MESSAGE_LOGIT, &err);
     if (!s->drive) {
@@ -97,7 +97,7 @@ static av_cold int read_header(AVFormatContext *ctx)
         st->duration           = s->drive->audio_last_sector - s->drive->audio_first_sector;
     else if (s->drive->tracks)
         st->duration = s->drive->disc_toc[s->drive->tracks].dwStartSector;
-    avpriv_set_pts_info(st, 64, CDIO_CD_FRAMESIZE_RAW, 2 * st->codecpar->channels * st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, CDIO_CD_FRAMESIZE_RAW, 2 * st->codecpar->channels * st->codecpar->sample_rate);
 
     for (i = 0; i < s->drive->tracks; i++) {
         char title[16];

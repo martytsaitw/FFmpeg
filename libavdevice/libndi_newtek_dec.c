@@ -182,7 +182,7 @@ static int ndi_create_video_stream(AVFormatContext *avctx, NDIlib_video_frame_t 
     AVRational tmp;
     struct NDIContext *ctx = avctx->priv_data;
 
-    st = avformat_new_stream(avctx, NULL);
+    st = avformat_new_stream_ijk(avctx, NULL);
     if (!st) {
         av_log(avctx, AV_LOG_ERROR, "Cannot add video stream\n");
         return AVERROR(ENOMEM);
@@ -225,7 +225,7 @@ static int ndi_create_video_stream(AVFormatContext *avctx, NDIlib_video_frame_t 
         return AVERROR(EINVAL);
     }
 
-    avpriv_set_pts_info(st, 64, 1, NDI_TIME_BASE);
+    avpriv_set_pts_info_ijk(st, 64, 1, NDI_TIME_BASE);
 
     ctx->video_st = st;
 
@@ -237,7 +237,7 @@ static int ndi_create_audio_stream(AVFormatContext *avctx, NDIlib_audio_frame_t 
     AVStream *st;
     struct NDIContext *ctx = avctx->priv_data;
 
-    st = avformat_new_stream(avctx, NULL);
+    st = avformat_new_stream_ijk(avctx, NULL);
     if (!st) {
         av_log(avctx, AV_LOG_ERROR, "Cannot add audio stream\n");
         return AVERROR(ENOMEM);
@@ -248,7 +248,7 @@ static int ndi_create_audio_stream(AVFormatContext *avctx, NDIlib_audio_frame_t 
     st->codecpar->sample_rate       = a->sample_rate;
     st->codecpar->channels          = a->no_channels;
 
-    avpriv_set_pts_info(st, 64, 1, NDI_TIME_BASE);
+    avpriv_set_pts_info_ijk(st, 64, 1, NDI_TIME_BASE);
 
     ctx->audio_st = st;
 

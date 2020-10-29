@@ -181,7 +181,7 @@ static int avs_read_packet(AVFormatContext * s, AVPacket * pkt)
 
             case AVS_VIDEO:
                 if (!avs->st_video) {
-                    avs->st_video = avformat_new_stream(s, NULL);
+                    avs->st_video = avformat_new_stream_ijk(s, NULL);
                     if (!avs->st_video)
                         return AVERROR(ENOMEM);
                     avs->st_video->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
@@ -200,7 +200,7 @@ static int avs_read_packet(AVFormatContext * s, AVPacket * pkt)
 
             case AVS_AUDIO:
                 if (!avs->st_audio) {
-                    avs->st_audio = avformat_new_stream(s, NULL);
+                    avs->st_audio = avformat_new_stream_ijk(s, NULL);
                     if (!avs->st_audio)
                         return AVERROR(ENOMEM);
                     avs->st_audio->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;

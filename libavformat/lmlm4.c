@@ -63,14 +63,14 @@ static int lmlm4_read_header(AVFormatContext *s)
 {
     AVStream *st;
 
-    if (!(st = avformat_new_stream(s, NULL)))
+    if (!(st = avformat_new_stream_ijk(s, NULL)))
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id   = AV_CODEC_ID_MPEG4;
     st->need_parsing      = AVSTREAM_PARSE_HEADERS;
-    avpriv_set_pts_info(st, 64, 1001, 30000);
+    avpriv_set_pts_info_ijk(st, 64, 1001, 30000);
 
-    if (!(st = avformat_new_stream(s, NULL)))
+    if (!(st = avformat_new_stream_ijk(s, NULL)))
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id   = AV_CODEC_ID_MP2;

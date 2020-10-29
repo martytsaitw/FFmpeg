@@ -102,13 +102,13 @@ static int thp_read_header(AVFormatContext *s)
                 break;
 
             /* Video component.  */
-            st = avformat_new_stream(s, NULL);
+            st = avformat_new_stream_ijk(s, NULL);
             if (!st)
                 return AVERROR(ENOMEM);
 
             /* The denominator and numerator are switched because 1/fps
                is required.  */
-            avpriv_set_pts_info(st, 64, thp->fps.den, thp->fps.num);
+            avpriv_set_pts_info_ijk(st, 64, thp->fps.den, thp->fps.num);
             st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
             st->codecpar->codec_id = AV_CODEC_ID_THP;
             st->codecpar->codec_tag = 0;  /* no fourcc */
@@ -127,7 +127,7 @@ static int thp_read_header(AVFormatContext *s)
                 break;
 
             /* Audio component.  */
-            st = avformat_new_stream(s, NULL);
+            st = avformat_new_stream_ijk(s, NULL);
             if (!st)
                 return AVERROR(ENOMEM);
 
@@ -138,7 +138,7 @@ static int thp_read_header(AVFormatContext *s)
             st->codecpar->sample_rate = avio_rb32(pb); /* Frequency.  */
             st->duration           = avio_rb32(pb);
 
-            avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+            avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
             thp->audio_stream_index = st->index;
             thp->has_audio = 1;

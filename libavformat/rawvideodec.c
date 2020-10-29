@@ -41,7 +41,7 @@ static int rawvideo_read_header(AVFormatContext *ctx)
     AVStream *st;
     int packet_size;
 
-    st = avformat_new_stream(ctx, NULL);
+    st = avformat_new_stream_ijk(ctx, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -55,7 +55,7 @@ static int rawvideo_read_header(AVFormatContext *ctx)
         return AVERROR(EINVAL);
     }
 
-    avpriv_set_pts_info(st, 64, s->framerate.den, s->framerate.num);
+    avpriv_set_pts_info_ijk(st, 64, s->framerate.den, s->framerate.num);
 
     st->codecpar->width  = s->width;
     st->codecpar->height = s->height;

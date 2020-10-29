@@ -2817,7 +2817,7 @@ static int read_thread(void *arg)
         /* add the stream start time */
         if (ic->start_time != AV_NOPTS_VALUE)
             timestamp += ic->start_time;
-        ret = avformat_seek_file(ic, -1, INT64_MIN, timestamp, INT64_MAX, 0);
+        ret = avformat_seek_file_ijk(ic, -1, INT64_MIN, timestamp, INT64_MAX, 0);
         if (ret < 0) {
             av_log(NULL, AV_LOG_WARNING, "%s: could not seek to position %0.3f\n",
                     is->filename, (double)timestamp / AV_TIME_BASE);
@@ -2925,7 +2925,7 @@ static int read_thread(void *arg)
 // FIXME the +-2 is due to rounding being not done in the correct direction in generation
 //      of the seek_pos/seek_rel variables
 
-            ret = avformat_seek_file(is->ic, -1, seek_min, seek_target, seek_max, is->seek_flags);
+            ret = avformat_seek_file_ijk(is->ic, -1, seek_min, seek_target, seek_max, is->seek_flags);
             if (ret < 0) {
                 av_log(NULL, AV_LOG_ERROR,
                        "%s: error while seeking\n", is->ic->url);

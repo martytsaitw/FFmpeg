@@ -88,7 +88,7 @@ static int wsvqa_read_header(AVFormatContext *s)
     int fps;
 
     /* initialize the video decoder stream */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->start_time = 0;
@@ -113,7 +113,7 @@ static int wsvqa_read_header(AVFormatContext *s)
         av_log(s, AV_LOG_ERROR, "invalid fps: %d\n", fps);
         return AVERROR_INVALIDDATA;
     }
-    avpriv_set_pts_info(st, 64, 1, fps);
+    avpriv_set_pts_info_ijk(st, 64, 1, fps);
 
     wsvqa->version      = AV_RL16(&header[ 0]);
     wsvqa->sample_rate  = AV_RL16(&header[24]);
@@ -184,7 +184,7 @@ static int wsvqa_read_packet(AVFormatContext *s,
             case SND1_TAG:
             case SND2_TAG:
                 if (wsvqa->audio_stream_index == -1) {
-                    AVStream *st = avformat_new_stream(s, NULL);
+                    AVStream *st = avformat_new_stream_ijk(s, NULL);
                     if (!st)
                         return AVERROR(ENOMEM);
 
@@ -200,7 +200,7 @@ static int wsvqa_read_packet(AVFormatContext *s,
                     st->codecpar->channels = wsvqa->channels;
                     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
 
-                    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+                    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
                     switch (chunk_type) {
                     case SND0_TAG:

@@ -51,7 +51,7 @@ typedef struct {
 static AVStream * init_stream(AVFormatContext *s)
 {
     BinDemuxContext *bin = s->priv_data;
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return NULL;
     st->codecpar->codec_tag   = 0;
@@ -62,7 +62,7 @@ static AVStream * init_stream(AVFormatContext *s)
         st->codecpar->height = (25<<4);
     }
 
-    avpriv_set_pts_info(st, 60, bin->framerate.den, bin->framerate.num);
+    avpriv_set_pts_info_ijk(st, 60, bin->framerate.den, bin->framerate.num);
 
     /* simulate tty display speed */
     bin->chars_per_frame = av_clip(av_q2d(st->time_base) * bin->chars_per_frame, 1, INT_MAX);

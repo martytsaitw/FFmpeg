@@ -54,7 +54,7 @@ int ff_raw_read_partial_packet(AVFormatContext *s, AVPacket *pkt)
 
 int ff_raw_audio_read_header(AVFormatContext *s)
 {
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -74,7 +74,7 @@ int ff_raw_video_read_header(AVFormatContext *s)
     int ret = 0;
 
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st) {
         ret = AVERROR(ENOMEM);
         goto fail;
@@ -85,7 +85,7 @@ int ff_raw_video_read_header(AVFormatContext *s)
     st->need_parsing = AVSTREAM_PARSE_FULL_RAW;
 
     st->internal->avctx->framerate = s1->framerate;
-    avpriv_set_pts_info(st, 64, 1, 1200000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 1200000);
 
 fail:
     return ret;
@@ -93,7 +93,7 @@ fail:
 
 int ff_raw_data_read_header(AVFormatContext *s)
 {
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_DATA;

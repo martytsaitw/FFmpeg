@@ -3893,7 +3893,7 @@ typedef struct AVSubtitle {
  * This struct describes the properties of an encoded stream.
  *
  * sizeof(AVCodecParameters) is not a part of the public ABI, this struct must
- * be allocated with avcodec_parameters_alloc() and freed with
+ * be allocated with avcodec_parameters_alloc_ijk() and freed with
  * avcodec_parameters_free().
  */
 typedef struct AVCodecParameters {
@@ -4190,7 +4190,7 @@ int avcodec_copy_context(AVCodecContext *dest, const AVCodecContext *src);
  * (unknown/invalid/0). The returned struct must be freed with
  * avcodec_parameters_free().
  */
-AVCodecParameters *avcodec_parameters_alloc(void);
+AVCodecParameters *avcodec_parameters_alloc_ijk(void);
 
 /**
  * Free an AVCodecParameters instance and everything associated with it and
@@ -4204,7 +4204,7 @@ void avcodec_parameters_free(AVCodecParameters **par);
  *
  * @return >= 0 on success, a negative AVERROR code on failure.
  */
-int avcodec_parameters_copy(AVCodecParameters *dst, const AVCodecParameters *src);
+int avcodec_parameters_copy_ijk(AVCodecParameters *dst, const AVCodecParameters *src);
 
 /**
  * Fill the parameters struct based on the values from the supplied codec
@@ -5700,7 +5700,7 @@ typedef struct AVBSFInternal AVBSFInternal;
 /**
  * The bitstream filter state.
  *
- * This struct must be allocated with av_bsf_alloc() and freed with
+ * This struct must be allocated with av_bsf_alloc_ijk() and freed with
  * av_bsf_free().
  *
  * The fields in the struct will only be changed (by the caller or by the
@@ -5732,26 +5732,26 @@ typedef struct AVBSFContext {
 
     /**
      * Parameters of the input stream. This field is allocated in
-     * av_bsf_alloc(), it needs to be filled by the caller before
-     * av_bsf_init().
+     * av_bsf_alloc_ijk(), it needs to be filled by the caller before
+     * av_bsf_init_ijk().
      */
     AVCodecParameters *par_in;
 
     /**
      * Parameters of the output stream. This field is allocated in
-     * av_bsf_alloc(), it is set by the filter in av_bsf_init().
+     * av_bsf_alloc_ijk(), it is set by the filter in av_bsf_init_ijk().
      */
     AVCodecParameters *par_out;
 
     /**
      * The timebase used for the timestamps of the input packets. Set by the
-     * caller before av_bsf_init().
+     * caller before av_bsf_init_ijk().
      */
     AVRational time_base_in;
 
     /**
      * The timebase used for the timestamps of the output packets. Set by the
-     * filter in av_bsf_init().
+     * filter in av_bsf_init_ijk().
      */
     AVRational time_base_out;
 } AVBSFContext;
@@ -5800,7 +5800,7 @@ attribute_deprecated
 void av_register_bitstream_filter(AVBitStreamFilter *bsf);
 /**
  * @deprecated the old bitstream filtering API (using AVBitStreamFilterContext)
- * is deprecated. Use av_bsf_get_by_name(), av_bsf_alloc(), and av_bsf_init()
+ * is deprecated. Use av_bsf_get_by_name_ijk(), av_bsf_alloc_ijk(), and av_bsf_init_ijk()
  * from the new bitstream filtering API (using AVBSFContext).
  */
 attribute_deprecated
@@ -5835,7 +5835,7 @@ const AVBitStreamFilter *av_bitstream_filter_next(const AVBitStreamFilter *f);
  * @return a bitstream filter with the specified name or NULL if no such
  *         bitstream filter exists.
  */
-const AVBitStreamFilter *av_bsf_get_by_name(const char *name);
+const AVBitStreamFilter *av_bsf_get_by_name_ijk(const char *name);
 
 /**
  * Iterate over all registered bitstream filters.
@@ -5855,7 +5855,7 @@ const AVBitStreamFilter *av_bsf_next(void **opaque);
 /**
  * Allocate a context for a given bitstream filter. The caller must fill in the
  * context parameters as described in the documentation and then call
- * av_bsf_init() before sending any data to the filter.
+ * av_bsf_init_ijk() before sending any data to the filter.
  *
  * @param filter the filter for which to allocate an instance.
  * @param ctx a pointer into which the pointer to the newly-allocated context
@@ -5864,13 +5864,13 @@ const AVBitStreamFilter *av_bsf_next(void **opaque);
  *
  * @return 0 on success, a negative AVERROR code on failure
  */
-int av_bsf_alloc(const AVBitStreamFilter *filter, AVBSFContext **ctx);
+int av_bsf_alloc_ijk(const AVBitStreamFilter *filter, AVBSFContext **ctx);
 
 /**
  * Prepare the filter for use, after all the parameters and options have been
  * set.
  */
-int av_bsf_init(AVBSFContext *ctx);
+int av_bsf_init_ijk(AVBSFContext *ctx);
 
 /**
  * Submit a packet for filtering.
@@ -5977,7 +5977,7 @@ int av_bsf_list_append2(AVBSFList *lst, const char * bsf_name, AVDictionary **op
  *
  * This function will transform @ref AVBSFList to single @ref AVBSFContext,
  * so the whole chain of bitstream filters can be treated as single filter
- * freshly allocated by av_bsf_alloc().
+ * freshly allocated by av_bsf_alloc_ijk().
  * If the call is successful, @ref AVBSFList structure is freed and lst
  * will be set to NULL. In case of failure, caller is responsible for
  * freeing the structure by av_bsf_list_free()
@@ -5994,7 +5994,7 @@ int av_bsf_list_finalize(AVBSFList **lst, AVBSFContext **bsf);
  * Parse string describing list of bitstream filters and create single
  * @ref AVBSFContext describing the whole chain of bitstream filters.
  * Resulting @ref AVBSFContext can be treated as any other @ref AVBSFContext freshly
- * allocated by av_bsf_alloc().
+ * allocated by av_bsf_alloc_ijk().
  *
  * @param      str String describing chain of bitstream filters in format
  *                 `bsf1[=opt1=val1:opt2=val2][,bsf2]`

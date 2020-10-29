@@ -106,7 +106,7 @@ static int read_header(AVFormatContext *s)
     avio_skip(pb, length - 10);  /* unknown data */
 
     /* video stream */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
@@ -114,11 +114,11 @@ static int read_header(AVFormatContext *s)
     st->codecpar->codec_tag = 0;  /* no fourcc */
     st->codecpar->width = width;
     st->codecpar->height = height;
-    avpriv_set_pts_info(st, 64, 1, frame_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, frame_rate);
 
     /* audio stream */
     if (length == MM_HEADER_LEN_AV) {
-        st = avformat_new_stream(s, NULL);
+        st = avformat_new_stream_ijk(s, NULL);
         if (!st)
             return AVERROR(ENOMEM);
         st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -127,7 +127,7 @@ static int read_header(AVFormatContext *s)
         st->codecpar->channels = 1;
         st->codecpar->channel_layout = AV_CH_LAYOUT_MONO;
         st->codecpar->sample_rate = 8000;
-        avpriv_set_pts_info(st, 64, 1, 8000); /* 8000 hz */
+        avpriv_set_pts_info_ijk(st, 64, 1, 8000); /* 8000 hz */
     }
 
     mm->audio_pts = 0;

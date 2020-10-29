@@ -54,7 +54,7 @@ AVBitStreamFilterContext *av_bitstream_filter_init(const char *name)
     BSFCompatContext         *priv = NULL;
     const AVBitStreamFilter *bsf;
 
-    bsf = av_bsf_get_by_name(name);
+    bsf = av_bsf_get_by_name_ijk(name);
     if (!bsf)
         return NULL;
 
@@ -104,7 +104,7 @@ int av_bitstream_filter_filter(AVBitStreamFilterContext *bsfc,
     int ret;
 
     if (!priv->ctx) {
-        ret = av_bsf_alloc(bsfc->filter, &priv->ctx);
+        ret = av_bsf_alloc_ijk(bsfc->filter, &priv->ctx);
         if (ret < 0)
             return ret;
 
@@ -126,7 +126,7 @@ int av_bitstream_filter_filter(AVBitStreamFilterContext *bsfc,
                 return ret;
         }
 
-        ret = av_bsf_init(priv->ctx);
+        ret = av_bsf_init_ijk(priv->ctx);
         if (ret < 0)
             return ret;
     }

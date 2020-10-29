@@ -117,10 +117,10 @@ static int ass_read_header(AVFormatContext *s)
     FFTextReader tr;
     ff_text_init_avio(s, &tr, s->pb);
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
-    avpriv_set_pts_info(st, 64, 1, 100);
+    avpriv_set_pts_info_ijk(st, 64, 1, 100);
     st->codecpar->codec_type = AVMEDIA_TYPE_SUBTITLE;
     st->codecpar->codec_id   = AV_CODEC_ID_ASS;
 

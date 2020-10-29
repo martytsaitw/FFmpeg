@@ -194,7 +194,7 @@ static int decklink_setup_video(AVFormatContext *avctx, AVStream *st)
     ctx->frames_buffer_available_spots = ctx->frames_buffer;
 
     /* The device expects the framerate to be fixed. */
-    avpriv_set_pts_info(st, 64, st->time_base.num, st->time_base.den);
+    avpriv_set_pts_info_ijk(st, 64, st->time_base.num, st->time_base.den);
 
     ctx->video = 1;
 
@@ -234,7 +234,7 @@ static int decklink_setup_audio(AVFormatContext *avctx, AVStream *st)
     }
 
     /* The device expects the sample rate to be fixed. */
-    avpriv_set_pts_info(st, 64, 1, c->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, c->sample_rate);
     ctx->channels = c->channels;
 
     ctx->audio = 1;

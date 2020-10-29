@@ -65,7 +65,7 @@ static int redspark_read_header(AVFormatContext *s)
     uint8_t header[HEADER_SIZE];
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     par = st->codecpar;
@@ -123,7 +123,7 @@ static int redspark_read_header(AVFormatContext *s)
         bytestream2_skipu(&gbc, 14);
     }
 
-    avpriv_set_pts_info(st, 64, 1, par->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, par->sample_rate);
 
     return ret;
 }

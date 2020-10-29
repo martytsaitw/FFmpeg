@@ -37,7 +37,7 @@ static int acm_read_header(AVFormatContext *s)
     AVStream *st;
     int ret;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -58,7 +58,7 @@ static int acm_read_header(AVFormatContext *s)
     st->start_time         = 0;
     st->duration           = AV_RL32(st->codecpar->extradata +  4) / st->codecpar->channels;
     st->need_parsing       = AVSTREAM_PARSE_FULL_RAW;
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }

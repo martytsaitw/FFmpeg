@@ -255,10 +255,10 @@ static int dv_extract_audio_info(DVDemuxContext *c, const uint8_t *frame)
     /* Dynamic handling of the audio streams in DV */
     for (i = 0; i < ach; i++) {
         if (!c->ast[i]) {
-            c->ast[i] = avformat_new_stream(c->fctx, NULL);
+            c->ast[i] = avformat_new_stream_ijk(c->fctx, NULL);
             if (!c->ast[i])
                 break;
-            avpriv_set_pts_info(c->ast[i], 64, 1, 30000);
+            avpriv_set_pts_info_ijk(c->ast[i], 64, 1, 30000);
             c->ast[i]->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
             c->ast[i]->codecpar->codec_id   = AV_CODEC_ID_PCM_S16LE;
 
@@ -287,7 +287,7 @@ static int dv_extract_video_info(DVDemuxContext *c, const uint8_t *frame)
 
     par = c->vst->codecpar;
 
-    avpriv_set_pts_info(c->vst, 64, c->sys->time_base.num,
+    avpriv_set_pts_info_ijk(c->vst, 64, c->sys->time_base.num,
                         c->sys->time_base.den);
     c->vst->avg_frame_rate = av_inv_q(c->vst->time_base);
 
@@ -329,7 +329,7 @@ DVDemuxContext *avpriv_dv_init_demux(AVFormatContext *s)
     if (!c)
         return NULL;
 
-    c->vst = avformat_new_stream(s, NULL);
+    c->vst = avformat_new_stream_ijk(s, NULL);
     if (!c->vst) {
         av_free(c);
         return NULL;

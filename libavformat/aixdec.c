@@ -57,7 +57,7 @@ static int aix_read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
     avio_skip(s->pb, 7);
     for (i = 0; i < nb_streams; i++) {
-        AVStream *st = avformat_new_stream(s, NULL);
+        AVStream *st = avformat_new_stream_ijk(s, NULL);
 
         if (!st)
             return AVERROR(ENOMEM);
@@ -65,7 +65,7 @@ static int aix_read_header(AVFormatContext *s)
         st->codecpar->codec_id    = AV_CODEC_ID_ADPCM_ADX;
         st->codecpar->sample_rate = avio_rb32(s->pb);
         st->codecpar->channels    = avio_r8(s->pb);
-        avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+        avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
         avio_skip(s->pb, 3);
     }
 

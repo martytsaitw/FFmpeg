@@ -165,11 +165,11 @@ static int asfrtp_parse_sdp_line(AVFormatContext *s, int stream_index,
 
             for (i = 0; i < rt->asf_ctx->nb_streams; i++) {
                 if (s->streams[stream_index]->id == rt->asf_ctx->streams[i]->id) {
-                    avcodec_parameters_copy(s->streams[stream_index]->codecpar,
+                    avcodec_parameters_copy_ijk(s->streams[stream_index]->codecpar,
                                             rt->asf_ctx->streams[i]->codecpar);
                     s->streams[stream_index]->need_parsing =
                         rt->asf_ctx->streams[i]->need_parsing;
-                    avpriv_set_pts_info(s->streams[stream_index], 32, 1, 1000);
+                    avpriv_set_pts_info_ijk(s->streams[stream_index], 32, 1, 1000);
                 }
            }
         }

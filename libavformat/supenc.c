@@ -79,7 +79,7 @@ static int sup_write_header(AVFormatContext *s)
         return AVERROR(EINVAL);
     }
 
-    avpriv_set_pts_info(s->streams[0], 32, 1, 90000);
+    avpriv_set_pts_info_ijk(s->streams[0], 32, 1, 90000);
 
     return 0;
 }

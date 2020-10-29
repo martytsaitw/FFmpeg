@@ -49,7 +49,7 @@ static int pvf_read_header(AVFormatContext *s)
         bps <= 0 || bps > INT_MAX / FF_SANE_NB_CHANNELS || sample_rate <= 0)
         return AVERROR_INVALIDDATA;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -60,7 +60,7 @@ static int pvf_read_header(AVFormatContext *s)
     st->codecpar->bits_per_coded_sample = bps;
     st->codecpar->block_align = bps * st->codecpar->channels / 8;
 
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }

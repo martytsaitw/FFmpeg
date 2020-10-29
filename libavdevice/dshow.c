@@ -941,7 +941,7 @@ dshow_add_device(AVFormatContext *avctx,
     AVStream *st;
     int ret = AVERROR(EIO);
 
-    st = avformat_new_stream(avctx, NULL);
+    st = avformat_new_stream_ijk(avctx, NULL);
     if (!st) {
         ret = AVERROR(ENOMEM);
         goto error;
@@ -1021,7 +1021,7 @@ dshow_add_device(AVFormatContext *avctx,
         par->channels    = fx->nChannels;
     }
 
-    avpriv_set_pts_info(st, 64, 1, 10000000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 10000000);
 
     ret = 0;
 

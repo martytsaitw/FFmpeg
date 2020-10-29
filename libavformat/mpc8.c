@@ -245,7 +245,7 @@ static int mpc8_read_header(AVFormatContext *s)
     c->samples = ffio_read_varlen(pb);
     ffio_read_varlen(pb); //silence samples at the beginning
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -257,7 +257,7 @@ static int mpc8_read_header(AVFormatContext *s)
 
     st->codecpar->channels = (st->codecpar->extradata[1] >> 4) + 1;
     st->codecpar->sample_rate = mpc8_rate[st->codecpar->extradata[0] >> 5];
-    avpriv_set_pts_info(st, 32, 1152  << (st->codecpar->extradata[1]&3)*2, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 32, 1152  << (st->codecpar->extradata[1]&3)*2, st->codecpar->sample_rate);
     st->start_time = 0;
     st->duration = c->samples / (1152 << (st->codecpar->extradata[1]&3)*2);
     size -= avio_tell(pb) - pos;

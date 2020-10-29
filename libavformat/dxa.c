@@ -90,7 +90,7 @@ static int dxa_read_header(AVFormatContext *s)
     h = avio_rb16(pb);
     c->has_sound = 0;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -103,14 +103,14 @@ static int dxa_read_header(AVFormatContext *s)
         avio_skip(pb, 16);
         fsize = avio_rl32(pb);
 
-        ast = avformat_new_stream(s, NULL);
+        ast = avformat_new_stream_ijk(s, NULL);
         if (!ast)
             return AVERROR(ENOMEM);
         ret = ff_get_wav_header(s, pb, ast->codecpar, fsize, 0);
         if (ret < 0)
             return ret;
         if (ast->codecpar->sample_rate > 0)
-            avpriv_set_pts_info(ast, 64, 1, ast->codecpar->sample_rate);
+            avpriv_set_pts_info_ijk(ast, 64, 1, ast->codecpar->sample_rate);
         // find 'data' chunk
         while(avio_tell(pb) < c->vidpos && !avio_feof(pb)){
             tag = avio_rl32(pb);
@@ -132,7 +132,7 @@ static int dxa_read_header(AVFormatContext *s)
     st->codecpar->width      = w;
     st->codecpar->height     = h;
     av_reduce(&den, &num, den, num, (1UL<<31)-1);
-    avpriv_set_pts_info(st, 33, num, den);
+    avpriv_set_pts_info_ijk(st, 33, num, den);
     /* flags & 0x80 means that image is interlaced,
      * flags & 0x40 means that image has double height
      * either way set true height

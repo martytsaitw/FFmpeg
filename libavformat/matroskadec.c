@@ -2196,7 +2196,7 @@ static int matroska_parse_tracks(AVFormatContext *s)
             }
         }
 
-        st = track->stream = avformat_new_stream(s, NULL);
+        st = track->stream = avformat_new_stream_ijk(s, NULL);
         if (!st) {
             av_free(key_id_base64);
             return AVERROR(ENOMEM);
@@ -2430,7 +2430,7 @@ static int matroska_parse_tracks(AVFormatContext *s)
 
         if (track->time_scale < 0.01)
             track->time_scale = 1.0;
-        avpriv_set_pts_info(st, 64, matroska->time_scale * track->time_scale,
+        avpriv_set_pts_info_ijk(st, 64, matroska->time_scale * track->time_scale,
                             1000 * 1000 * 1000);    /* 64 bit pts in ns */
 
         /* convert the delay from ns to the track timebase */
@@ -2664,7 +2664,7 @@ static int matroska_read_header(AVFormatContext *s)
               attachments[j].bin.data && attachments[j].bin.size > 0)) {
             av_log(matroska->ctx, AV_LOG_ERROR, "incomplete attachment\n");
         } else {
-            AVStream *st = avformat_new_stream(s, NULL);
+            AVStream *st = avformat_new_stream_ijk(s, NULL);
             if (!st)
                 break;
             av_dict_set(&st->metadata, "filename", attachments[j].filename, 0);

@@ -105,7 +105,7 @@ static void add_stream(OutputStream *ost, AVFormatContext *oc,
         exit(1);
     }
 
-    ost->st = avformat_new_stream(oc, NULL);
+    ost->st = avformat_new_stream_ijk(oc, NULL);
     if (!ost->st) {
         fprintf(stderr, "Could not allocate stream\n");
         exit(1);

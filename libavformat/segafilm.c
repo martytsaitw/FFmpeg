@@ -146,7 +146,7 @@ static int film_read_header(AVFormatContext *s)
 
     /* initialize the decoder streams */
     if (film->video_type) {
-        st = avformat_new_stream(s, NULL);
+        st = avformat_new_stream_ijk(s, NULL);
         if (!st)
             return AVERROR(ENOMEM);
         film->video_stream_index = st->index;
@@ -167,7 +167,7 @@ static int film_read_header(AVFormatContext *s)
     }
 
     if (film->audio_type) {
-        st = avformat_new_stream(s, NULL);
+        st = avformat_new_stream_ijk(s, NULL);
         if (!st)
             return AVERROR(ENOMEM);
         film->audio_stream_index = st->index;
@@ -207,9 +207,9 @@ static int film_read_header(AVFormatContext *s)
     for (i = 0; i < s->nb_streams; i++) {
         st = s->streams[i];
         if (st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)
-            avpriv_set_pts_info(st, 33, 1, film->base_clock);
+            avpriv_set_pts_info_ijk(st, 33, 1, film->base_clock);
         else
-            avpriv_set_pts_info(st, 64, 1, film->audio_samplerate);
+            avpriv_set_pts_info_ijk(st, 64, 1, film->audio_samplerate);
     }
 
     audio_frame_counter = video_frame_counter = 0;

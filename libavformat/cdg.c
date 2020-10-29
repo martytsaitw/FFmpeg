@@ -35,7 +35,7 @@ static int read_header(AVFormatContext *s)
     AVStream *vst;
     int ret;
 
-    vst = avformat_new_stream(s, NULL);
+    vst = avformat_new_stream_ijk(s, NULL);
     if (!vst)
         return AVERROR(ENOMEM);
 
@@ -43,7 +43,7 @@ static int read_header(AVFormatContext *s)
     vst->codecpar->codec_id   = AV_CODEC_ID_CDGRAPHICS;
 
     /// 75 sectors/sec * 4 packets/sector = 300 packets/sec
-    avpriv_set_pts_info(vst, 32, 1, 300);
+    avpriv_set_pts_info_ijk(vst, 32, 1, 300);
 
     ret = avio_size(s->pb);
     if (ret < 0) {

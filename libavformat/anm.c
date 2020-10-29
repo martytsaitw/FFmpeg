@@ -97,7 +97,7 @@ static int read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
 
     /* video stream */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
@@ -128,7 +128,7 @@ static int read_header(AVFormatContext *s)
 
     avio_skip(pb, 32); /* record_types */
     st->nb_frames = avio_rl32(pb);
-    avpriv_set_pts_info(st, 64, 1, avio_rl16(pb));
+    avpriv_set_pts_info_ijk(st, 64, 1, avio_rl16(pb));
     avio_skip(pb, 58);
 
     /* color cycling and palette data */

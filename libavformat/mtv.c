@@ -160,11 +160,11 @@ static int mtv_read_header(AVFormatContext *s)
 
     // video - raw rgb565
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if(!st)
         return AVERROR(ENOMEM);
 
-    avpriv_set_pts_info(st, 64, 1, mtv->video_fps);
+    avpriv_set_pts_info_ijk(st, 64, 1, mtv->video_fps);
     st->codecpar->codec_type      = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id        = AV_CODEC_ID_RAWVIDEO;
     st->codecpar->format          = AV_PIX_FMT_RGB565BE;
@@ -175,11 +175,11 @@ static int mtv_read_header(AVFormatContext *s)
 
     // audio - mp3
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if(!st)
         return AVERROR(ENOMEM);
 
-    avpriv_set_pts_info(st, 64, 1, MTV_AUDIO_SAMPLING_RATE);
+    avpriv_set_pts_info_ijk(st, 64, 1, MTV_AUDIO_SAMPLING_RATE);
     st->codecpar->codec_type      = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id        = AV_CODEC_ID_MP3;
     st->codecpar->bit_rate        = mtv->audio_br;

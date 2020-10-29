@@ -421,7 +421,7 @@ static int asf_write_header1(AVFormatContext *s, int64_t file_size,
         AVDictionaryEntry *entry;
         par = s->streams[n]->codecpar;
 
-        avpriv_set_pts_info(s->streams[n], 32, 1, 1000); /* 32 bit pts in ms */
+        avpriv_set_pts_info_ijk(s->streams[n], 32, 1, 1000); /* 32 bit pts in ms */
 
         bit_rate += par->bit_rate;
         if (   par->codec_type == AVMEDIA_TYPE_VIDEO

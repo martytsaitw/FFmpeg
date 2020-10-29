@@ -119,7 +119,7 @@ int ff_flac_parse_picture(AVFormatContext *s, uint8_t *buf, int buf_size)
         goto fail;
     }
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st) {
         RETURN_ERROR(AVERROR(ENOMEM));
     }

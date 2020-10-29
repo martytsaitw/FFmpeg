@@ -85,7 +85,7 @@ static int smjpeg_read_header(AVFormatContext *s)
             hlength = avio_rb32(pb);
             if (hlength < 8)
                 return AVERROR_INVALIDDATA;
-            ast = avformat_new_stream(s, 0);
+            ast = avformat_new_stream_ijk(s, 0);
             if (!ast)
                 return AVERROR(ENOMEM);
             ast->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
@@ -97,7 +97,7 @@ static int smjpeg_read_header(AVFormatContext *s)
                                                          ast->codecpar->codec_tag);
             ast->duration           = duration;
             sc->audio_stream_index  = ast->index;
-            avpriv_set_pts_info(ast, 32, 1, 1000);
+            avpriv_set_pts_info_ijk(ast, 32, 1, 1000);
             avio_skip(pb, hlength - 8);
             break;
         case SMJPEG_VID:
@@ -108,7 +108,7 @@ static int smjpeg_read_header(AVFormatContext *s)
             hlength = avio_rb32(pb);
             if (hlength < 12)
                 return AVERROR_INVALIDDATA;
-            vst = avformat_new_stream(s, 0);
+            vst = avformat_new_stream_ijk(s, 0);
             if (!vst)
                 return AVERROR(ENOMEM);
             vst->nb_frames            = avio_rb32(pb);
@@ -120,7 +120,7 @@ static int smjpeg_read_header(AVFormatContext *s)
                                                         vst->codecpar->codec_tag);
             vst->duration          = duration;
             sc->video_stream_index = vst->index;
-            avpriv_set_pts_info(vst, 32, 1, 1000);
+            avpriv_set_pts_info_ijk(vst, 32, 1, 1000);
             avio_skip(pb, hlength - 12);
             break;
         case SMJPEG_HEND:

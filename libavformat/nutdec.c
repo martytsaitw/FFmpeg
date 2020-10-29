@@ -347,7 +347,7 @@ static int decode_main_header(NUTContext *nut)
         goto fail;
     }
     for (i = 0; i < stream_count; i++)
-        avformat_new_stream(s, NULL);
+        avformat_new_stream_ijk(s, NULL);
 
     return 0;
 fail:
@@ -455,7 +455,7 @@ static int decode_stream_header(NUTContext *nut)
         goto fail;
     }
     stc->time_base = &nut->time_base[stc->time_base_id];
-    avpriv_set_pts_info(s->streams[stream_id], 63, stc->time_base->num,
+    avpriv_set_pts_info_ijk(s->streams[stream_id], 63, stc->time_base->num,
                         stc->time_base->den);
     return 0;
 fail:

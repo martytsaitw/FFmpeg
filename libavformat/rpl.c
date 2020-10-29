@@ -142,7 +142,7 @@ static int rpl_read_header(AVFormatContext *s)
     av_dict_set(&s->metadata, "author"   , line, 0);
 
     // video headers
-    vst = avformat_new_stream(s, NULL);
+    vst = avformat_new_stream_ijk(s, NULL);
     if (!vst)
         return AVERROR(ENOMEM);
     vst->codecpar->codec_type      = AVMEDIA_TYPE_VIDEO;
@@ -152,7 +152,7 @@ static int rpl_read_header(AVFormatContext *s)
     vst->codecpar->bits_per_coded_sample = read_line_and_int(pb, &error);  // video bits per sample
     error |= read_line(pb, line, sizeof(line));                   // video frames per second
     fps = read_fps(line, &error);
-    avpriv_set_pts_info(vst, 32, fps.den, fps.num);
+    avpriv_set_pts_info_ijk(vst, 32, fps.den, fps.num);
 
     // Figure out the video codec
     switch (vst->codecpar->codec_tag) {
@@ -181,7 +181,7 @@ static int rpl_read_header(AVFormatContext *s)
     // samples, though. This code will ignore additional tracks.
     audio_format = read_line_and_int(pb, &error);  // audio format ID
     if (audio_format) {
-        ast = avformat_new_stream(s, NULL);
+        ast = avformat_new_stream_ijk(s, NULL);
         if (!ast)
             return AVERROR(ENOMEM);
         ast->codecpar->codec_type      = AVMEDIA_TYPE_AUDIO;
@@ -224,7 +224,7 @@ static int rpl_read_header(AVFormatContext *s)
         if (ast->codecpar->codec_id == AV_CODEC_ID_NONE)
             avpriv_request_sample(s, "Audio format %"PRId32,
                                   audio_format);
-        avpriv_set_pts_info(ast, 32, 1, ast->codecpar->bit_rate);
+        avpriv_set_pts_info_ijk(ast, 32, 1, ast->codecpar->bit_rate);
     } else {
         for (i = 0; i < 3; i++)
             error |= read_line(pb, line, sizeof(line));

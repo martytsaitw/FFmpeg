@@ -95,7 +95,7 @@ static int read_header(AVFormatContext *s)
         if (avio_seek(pb, 6 + i * 16, SEEK_SET) < 0)
             break;
 
-        st = avformat_new_stream(s, NULL);
+        st = avformat_new_stream_ijk(s, NULL);
         if (!st)
             return AVERROR(ENOMEM);
 

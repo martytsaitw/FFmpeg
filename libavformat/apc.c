@@ -42,7 +42,7 @@ static int apc_read_header(AVFormatContext *s)
     avio_rl32(pb); /* _APC */
     avio_rl32(pb); /* 1.20 */
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 

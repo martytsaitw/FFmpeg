@@ -95,7 +95,7 @@ static int wsaud_read_header(AVFormatContext *s)
     codec       = header[11];
 
     /* initialize the audio decoder stream */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -116,7 +116,7 @@ static int wsaud_read_header(AVFormatContext *s)
         avpriv_request_sample(s, "Unknown codec: %d", codec);
         return AVERROR_PATCHWELCOME;
     }
-    avpriv_set_pts_info(st, 64, 1, sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, sample_rate);
     st->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
     st->codecpar->channels    = channels;
     st->codecpar->channel_layout = channels == 1 ? AV_CH_LAYOUT_MONO :

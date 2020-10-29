@@ -190,7 +190,7 @@ static int dec_enc(AVPacket *pkt, AVCodec *enc_codec)
                 goto fail;
             }
 
-            if (!(ost = avformat_new_stream(ofmt_ctx, enc_codec))) {
+            if (!(ost = avformat_new_stream_ijk(ofmt_ctx, enc_codec))) {
                 fprintf(stderr, "Failed to allocate stream for output format.\n");
                 ret = AVERROR(ENOMEM);
                 goto fail;

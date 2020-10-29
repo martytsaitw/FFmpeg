@@ -123,7 +123,7 @@ static int dss_read_header(AVFormatContext *s)
     AVStream *st;
     int ret, version;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -163,7 +163,7 @@ static int dss_read_header(AVFormatContext *s)
     st->codecpar->channel_layout = AV_CH_LAYOUT_MONO;
     st->codecpar->channels       = 1;
 
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
     st->start_time = 0;
 
     /* Jump over header */

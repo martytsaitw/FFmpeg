@@ -352,7 +352,7 @@ static int mp3_read_header(AVFormatContext *s)
     s->metadata = s->internal->id3v2_meta;
     s->internal->id3v2_meta = NULL;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -362,7 +362,7 @@ static int mp3_read_header(AVFormatContext *s)
     st->start_time = 0;
 
     // lcm of all mp3 sample rates
-    avpriv_set_pts_info(st, 64, 1, 14112000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 14112000);
 
     s->pb->maxsize = -1;
     off = avio_tell(s->pb);

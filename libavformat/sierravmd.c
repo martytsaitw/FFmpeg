@@ -113,10 +113,10 @@ static int vmd_read_header(AVFormatContext *s)
             vmd->is_indeo3 = 0;
         }
         /* start up the decoders */
-        vst = avformat_new_stream(s, NULL);
+        vst = avformat_new_stream_ijk(s, NULL);
         if (!vst)
             return AVERROR(ENOMEM);
-        avpriv_set_pts_info(vst, 33, 1, 10);
+        avpriv_set_pts_info_ijk(vst, 33, 1, 10);
         vmd->video_stream_index = vst->index;
         vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
         vst->codecpar->codec_id = vmd->is_indeo3 ? AV_CODEC_ID_INDEO3 : AV_CODEC_ID_VMDVIDEO;
@@ -135,7 +135,7 @@ static int vmd_read_header(AVFormatContext *s)
     /* if sample rate is 0, assume no audio */
     vmd->sample_rate = AV_RL16(&vmd->vmd_header[804]);
     if (vmd->sample_rate) {
-        st = avformat_new_stream(s, NULL);
+        st = avformat_new_stream_ijk(s, NULL);
         if (!st)
             return AVERROR(ENOMEM);
         vmd->audio_stream_index = st->index;
@@ -171,8 +171,8 @@ static int vmd_read_header(AVFormatContext *s)
         den = st->codecpar->sample_rate * st->codecpar->channels;
         av_reduce(&num, &den, num, den, (1UL<<31)-1);
         if (vst)
-            avpriv_set_pts_info(vst, 33, num, den);
-        avpriv_set_pts_info(st, 33, num, den);
+            avpriv_set_pts_info_ijk(vst, 33, num, den);
+        avpriv_set_pts_info_ijk(st, 33, num, den);
     }
 
     toc_offset = AV_RL32(&vmd->vmd_header[812]);

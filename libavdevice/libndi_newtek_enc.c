@@ -147,7 +147,7 @@ static int ndi_setup_audio(AVFormatContext *avctx, AVStream *st)
     ctx->audio->no_channels = c->channels;
     ctx->audio->reference_level = ctx->reference_level;
 
-    avpriv_set_pts_info(st, 64, 1, NDI_TIME_BASE);
+    avpriv_set_pts_info_ijk(st, 64, 1, NDI_TIME_BASE);
 
     return 0;
 }
@@ -223,7 +223,7 @@ static int ndi_setup_video(AVFormatContext *avctx, AVStream *st)
     else
         ctx->video->picture_aspect_ratio = (double)st->codecpar->width/st->codecpar->height;
 
-    avpriv_set_pts_info(st, 64, 1, NDI_TIME_BASE);
+    avpriv_set_pts_info_ijk(st, 64, 1, NDI_TIME_BASE);
 
     return 0;
 }

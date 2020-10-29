@@ -61,12 +61,12 @@ static int rtp_mpegts_write_header(AVFormatContext *s)
     mpegts_ctx->oformat   = mpegts_format;
     mpegts_ctx->max_delay = s->max_delay;
     for (i = 0; i < s->nb_streams; i++) {
-        AVStream* st = avformat_new_stream(mpegts_ctx, NULL);
+        AVStream* st = avformat_new_stream_ijk(mpegts_ctx, NULL);
         if (!st)
             goto fail;
         st->time_base           = s->streams[i]->time_base;
         st->sample_aspect_ratio = s->streams[i]->sample_aspect_ratio;
-        avcodec_parameters_copy(st->codecpar, s->streams[i]->codecpar);
+        avcodec_parameters_copy_ijk(st->codecpar, s->streams[i]->codecpar);
     }
     if ((ret = avio_open_dyn_buf(&mpegts_ctx->pb)) < 0)
         goto fail;
@@ -84,7 +84,7 @@ static int rtp_mpegts_write_header(AVFormatContext *s)
         goto fail;
     }
     rtp_ctx->oformat = rtp_format;
-    st = avformat_new_stream(rtp_ctx, NULL);
+    st = avformat_new_stream_ijk(rtp_ctx, NULL);
     if (!st) {
         ret = AVERROR(ENOMEM);
         goto fail;

@@ -46,7 +46,7 @@ static int scc_write_header(AVFormatContext *avf)
                avcodec_get_name(avf->streams[0]->codecpar->codec_id));
         return AVERROR(EINVAL);
     }
-    avpriv_set_pts_info(avf->streams[0], 64, 1, 1000);
+    avpriv_set_pts_info_ijk(avf->streams[0], 64, 1, 1000);
     avio_printf(avf->pb, "Scenarist_SCC V1.0\n");
 
     scc->prev_h = scc->prev_m = scc->prev_s = scc->prev_f = -1;

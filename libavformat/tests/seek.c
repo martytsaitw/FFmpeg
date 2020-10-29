@@ -113,8 +113,8 @@ int main(int argc, char **argv)
     }
 
     if(seekfirst != AV_NOPTS_VALUE){
-        if(firstback)   avformat_seek_file(ic, -1, INT64_MIN, seekfirst, seekfirst, 0);
-        else            avformat_seek_file(ic, -1, seekfirst, seekfirst, INT64_MAX, 0);
+        if(firstback)   avformat_seek_file_ijk(ic, -1, INT64_MIN, seekfirst, seekfirst, 0);
+        else            avformat_seek_file_ijk(ic, -1, seekfirst, seekfirst, INT64_MAX, 0);
     }
     for(i=0; ; i++){
         AVPacket pkt = { 0 };
@@ -146,8 +146,8 @@ int main(int argc, char **argv)
             timestamp= av_rescale_q(timestamp, AV_TIME_BASE_Q, st->time_base);
         }
         //FIXME fully test the new seek API
-        if(i&1) ret = avformat_seek_file(ic, stream_id, INT64_MIN, timestamp, timestamp, 0);
-        else    ret = avformat_seek_file(ic, stream_id, timestamp, timestamp, INT64_MAX, 0);
+        if(i&1) ret = avformat_seek_file_ijk(ic, stream_id, INT64_MIN, timestamp, timestamp, 0);
+        else    ret = avformat_seek_file_ijk(ic, stream_id, timestamp, timestamp, INT64_MAX, 0);
         ts_str(ts_buf, timestamp, stream_id < 0 ? AV_TIME_BASE_Q : st->time_base);
         printf("ret:%-10s st:%2d flags:%d  ts:%s\n", ret_str(ret), stream_id, i&1, ts_buf);
     }

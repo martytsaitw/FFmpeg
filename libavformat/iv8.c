@@ -41,14 +41,14 @@ static int read_header(AVFormatContext *s)
 {
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id = AV_CODEC_ID_MPEG4;
     st->need_parsing = AVSTREAM_PARSE_FULL;
-    avpriv_set_pts_info(st, 64, 1, 90000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 90000);
 
     return 0;
 

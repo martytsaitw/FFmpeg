@@ -78,7 +78,7 @@ const AVClass *av_bsf_get_class(void)
     return &bsf_class;
 }
 
-int av_bsf_alloc(const AVBitStreamFilter *filter, AVBSFContext **pctx)
+int av_bsf_alloc_ijk(const AVBitStreamFilter *filter, AVBSFContext **pctx)
 {
     AVBSFContext *ctx;
     int ret;
@@ -90,8 +90,8 @@ int av_bsf_alloc(const AVBitStreamFilter *filter, AVBSFContext **pctx)
     ctx->av_class = &bsf_class;
     ctx->filter   = filter;
 
-    ctx->par_in  = avcodec_parameters_alloc();
-    ctx->par_out = avcodec_parameters_alloc();
+    ctx->par_in  = avcodec_parameters_alloc_ijk();
+    ctx->par_out = avcodec_parameters_alloc_ijk();
     if (!ctx->par_in || !ctx->par_out) {
         ret = AVERROR(ENOMEM);
         goto fail;
@@ -131,7 +131,7 @@ fail:
     return ret;
 }
 
-int av_bsf_init(AVBSFContext *ctx)
+int av_bsf_init_ijk(AVBSFContext *ctx)
 {
     int ret, i;
 
@@ -157,7 +157,7 @@ int av_bsf_init(AVBSFContext *ctx)
 
     /* initialize output parameters to be the same as input
      * init below might overwrite that */
-    ret = avcodec_parameters_copy(ctx->par_out, ctx->par_in);
+    ret = avcodec_parameters_copy_ijk(ctx->par_out, ctx->par_in);
     if (ret < 0)
         return ret;
 
@@ -262,13 +262,13 @@ static int bsf_list_init(AVBSFContext *bsf)
     AVRational tb = bsf->time_base_in;
 
     for (i = 0; i < lst->nb_bsfs; ++i) {
-        ret = avcodec_parameters_copy(lst->bsfs[i]->par_in, cod_par);
+        ret = avcodec_parameters_copy_ijk(lst->bsfs[i]->par_in, cod_par);
         if (ret < 0)
             goto fail;
 
         lst->bsfs[i]->time_base_in = tb;
 
-        ret = av_bsf_init(lst->bsfs[i]);
+        ret = av_bsf_init_ijk(lst->bsfs[i]);
         if (ret < 0)
             goto fail;
 
@@ -277,7 +277,7 @@ static int bsf_list_init(AVBSFContext *bsf)
     }
 
     bsf->time_base_out = tb;
-    ret = avcodec_parameters_copy(bsf->par_out, cod_par);
+    ret = avcodec_parameters_copy_ijk(bsf->par_out, cod_par);
 
 fail:
     return ret;
@@ -425,11 +425,11 @@ int av_bsf_list_append2(AVBSFList *lst, const char *bsf_name, AVDictionary ** op
     const AVBitStreamFilter *filter;
     AVBSFContext *bsf;
 
-    filter = av_bsf_get_by_name(bsf_name);
+    filter = av_bsf_get_by_name_ijk(bsf_name);
     if (!filter)
         return AVERROR_BSF_NOT_FOUND;
 
-    ret = av_bsf_alloc(filter, &bsf);
+    ret = av_bsf_alloc_ijk(filter, &bsf);
     if (ret < 0)
         return ret;
 
@@ -460,7 +460,7 @@ int av_bsf_list_finalize(AVBSFList **lst, AVBSFContext **bsf)
         goto end;
     }
 
-    ret = av_bsf_alloc(&ff_list_bsf, bsf);
+    ret = av_bsf_alloc_ijk(&ff_list_bsf, bsf);
     if (ret < 0)
         return ret;
 
@@ -543,5 +543,5 @@ end:
 
 int av_bsf_get_null_filter(AVBSFContext **bsf)
 {
-    return av_bsf_alloc(&ff_list_bsf, bsf);
+    return av_bsf_alloc_ijk(&ff_list_bsf, bsf);
 }

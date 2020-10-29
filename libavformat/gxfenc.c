@@ -738,7 +738,7 @@ static int gxf_write_header(AVFormatContext *s)
             }
             sc->track_type = 2;
             sc->sample_rate = st->codecpar->sample_rate;
-            avpriv_set_pts_info(st, 64, 1, sc->sample_rate);
+            avpriv_set_pts_info_ijk(st, 64, 1, sc->sample_rate);
             sc->sample_size = 16;
             sc->frame_rate_index = -2;
             sc->lines_index = -2;
@@ -770,7 +770,7 @@ static int gxf_write_header(AVFormatContext *s)
             }
             if (!tcr)
                 tcr = av_dict_get(st->metadata, "timecode", NULL, 0);
-            avpriv_set_pts_info(st, 64, gxf->time_base.num, gxf->time_base.den);
+            avpriv_set_pts_info_ijk(st, 64, gxf->time_base.num, gxf->time_base.den);
             if (gxf_find_lines_index(st) < 0)
                 sc->lines_index = -1;
             sc->sample_size = st->codecpar->bit_rate;
