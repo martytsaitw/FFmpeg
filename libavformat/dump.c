@@ -450,7 +450,7 @@ static void dump_sidedata(void *ctx, AVStream *st, const char *indent)
 }
 
 /* "user interface" functions */
-static void dump_stream_format(AVFormatContext *ic, int i,
+static void dump_stream_format_ijk(AVFormatContext *ic, int i,
                                int index, int is_output)
 {
     char buf[256];
@@ -558,7 +558,7 @@ static void dump_stream_format(AVFormatContext *ic, int i,
     dump_sidedata(NULL, st, "    ");
 }
 
-void av_dump_format(AVFormatContext *ic, int index,
+void av_dump_format_ijk(AVFormatContext *ic, int index,
                     const char *url, int is_output)
 {
     int i;
@@ -627,7 +627,7 @@ void av_dump_format(AVFormatContext *ic, int index,
                    name ? name->value : "");
             dump_metadata(NULL, ic->programs[j]->metadata, "    ");
             for (k = 0; k < ic->programs[j]->nb_stream_indexes; k++) {
-                dump_stream_format(ic, ic->programs[j]->stream_index[k],
+                dump_stream_format_ijk(ic, ic->programs[j]->stream_index[k],
                                    index, is_output);
                 printed[ic->programs[j]->stream_index[k]] = 1;
             }
@@ -639,7 +639,7 @@ void av_dump_format(AVFormatContext *ic, int index,
 
     for (i = 0; i < ic->nb_streams; i++)
         if (!printed[i])
-            dump_stream_format(ic, i, index, is_output);
+            dump_stream_format_ijk(ic, i, index, is_output);
 
     av_free(printed);
 }

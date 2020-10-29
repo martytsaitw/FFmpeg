@@ -59,7 +59,7 @@ fail:
     av_log(s, AV_LOG_WARNING,
            "Unable to initialize hinting of stream %d\n", src_index);
     avcodec_parameters_free(&track->par);
-    /* Set a default timescale, to avoid crashes in av_dump_format */
+    /* Set a default timescale, to avoid crashes in av_dump_format_ijk */
     track->timescale = 90000;
     return ret;
 }

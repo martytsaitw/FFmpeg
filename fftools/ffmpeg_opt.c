@@ -1140,7 +1140,7 @@ static int open_input_file(OptionsContext *o, const char *filename)
     add_input_streams(o, ic);
 
     /* dump the file content */
-    av_dump_format(ic, nb_input_files, filename, 0);
+    av_dump_format_ijk(ic, nb_input_files, filename, 0);
 
     GROW_ARRAY(input_files, nb_input_files);
     f = av_mallocz(sizeof(*f));
@@ -2334,7 +2334,7 @@ loop_end:
 #endif
 
     if (!oc->nb_streams && !(oc->oformat->flags & AVFMT_NOSTREAMS)) {
-        av_dump_format(oc, nb_output_files - 1, oc->url, 1);
+        av_dump_format_ijk(oc, nb_output_files - 1, oc->url, 1);
         av_log(NULL, AV_LOG_ERROR, "Output file #%d does not contain any stream\n", nb_output_files - 1);
         exit_program(1);
     }

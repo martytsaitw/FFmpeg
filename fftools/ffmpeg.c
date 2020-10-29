@@ -2972,7 +2972,7 @@ static int check_init_output_file(OutputFile *of, int file_index)
     //assert_avoptions(of->opts);
     of->header_written = 1;
 
-    av_dump_format(of->ctx, file_index, of->ctx->url, 1);
+    av_dump_format_ijk(of->ctx, file_index, of->ctx->url, 1);
 
     if (sdp_filename || want_sdp)
         print_sdp();

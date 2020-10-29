@@ -141,7 +141,7 @@ int main(int argc, char **argv)
 
     open_codec_context(fmt_ctx, AVMEDIA_TYPE_VIDEO);
 
-    av_dump_format(fmt_ctx, 0, src_filename, 0);
+    av_dump_format_ijk(fmt_ctx, 0, src_filename, 0);
 
     if (!video_stream) {
         fprintf(stderr, "Could not find video stream in the input, aborting\n");

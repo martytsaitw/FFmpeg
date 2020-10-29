@@ -2864,7 +2864,7 @@ static int open_input_file(InputFile *ifile, const char *filename)
         }
     }
 
-    av_dump_format(fmt_ctx, 0, filename, 0);
+    av_dump_format_ijk(fmt_ctx, 0, filename, 0);
 
     ifile->streams = av_mallocz_array(fmt_ctx->nb_streams,
                                       sizeof(*ifile->streams));
