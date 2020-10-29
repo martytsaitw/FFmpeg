@@ -776,7 +776,7 @@ int avresample_read(AVAudioResampleContext *avr, uint8_t **output, int nb_sample
     return av_audio_fifo_read(avr->out_fifo, (void**)output, nb_samples);
 }
 
-unsigned avresample_version(void)
+unsigned avresample_version_ijk(void)
 {
     return LIBAVRESAMPLE_VERSION_INT;
 }

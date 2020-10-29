@@ -39,7 +39,7 @@
 /**
  * Return the LIBPOSTPROC_VERSION_INT constant.
  */
-unsigned postproc_version(void);
+unsigned postproc_version_ijk(void);
 
 /**
  * Return the libpostproc build-time configuration.

@@ -42,7 +42,7 @@
  *
  * Return the LIBSWSCALE_VERSION_INT constant.
  */
-unsigned swscale_version(void);
+unsigned swscale_version_ijk(void);
 
 /**
  * Return the libswscale build-time configuration.

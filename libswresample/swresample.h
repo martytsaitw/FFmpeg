@@ -495,7 +495,7 @@ int swr_get_out_samples(struct SwrContext *s, int in_samples);
  *
  * @returns     the unsigned int-typed version
  */
-unsigned swresample_version(void);
+unsigned swresample_version_ijk(void);
 
 /**
  * Return the swr build-time configuration.

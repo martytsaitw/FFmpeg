@@ -53,7 +53,7 @@
 /**
  * Return the LIBAVDEVICE_VERSION_INT constant.
  */
-unsigned avdevice_version(void);
+unsigned avdevice_version_ijk(void);
 
 /**
  * Return the libavdevice build-time configuration.

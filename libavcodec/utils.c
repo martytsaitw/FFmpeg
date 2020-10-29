@@ -1387,7 +1387,7 @@ const char *avcodec_profile_name(enum AVCodecID codec_id, int profile)
     return NULL;
 }
 
-unsigned avcodec_version(void)
+unsigned avcodec_version_ijk(void)
 {
 //    av_assert0(AV_CODEC_ID_V410==164);
     av_assert0(AV_CODEC_ID_PCM_S8_PLANAR==65563);

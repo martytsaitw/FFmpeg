@@ -52,7 +52,7 @@
 /**
  * Return the LIBAVFILTER_VERSION_INT constant.
  */
-unsigned avfilter_version(void);
+unsigned avfilter_version_ijk(void);
 
 /**
  * Return the libavfilter build-time configuration.

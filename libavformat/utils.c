@@ -67,7 +67,7 @@ static AVMutex avformat_mutex = AV_MUTEX_INITIALIZER;
  * various utility functions for use within FFmpeg
  */
 
-unsigned avformat_version(void)
+unsigned avformat_version_ijk(void)
 {
     av_assert0(LIBAVFORMAT_VERSION_MICRO >= 100);
     return LIBAVFORMAT_VERSION_INT;

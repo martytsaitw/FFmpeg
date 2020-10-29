@@ -35,7 +35,7 @@ const char *av_version_info(void)
     return FFMPEG_VERSION;
 }
 
-unsigned avutil_version(void)
+unsigned avutil_version_ijk(void)
 {
     static int checks_done;
     if (checks_done)

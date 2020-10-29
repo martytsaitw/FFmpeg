@@ -145,7 +145,7 @@ enum attribute_deprecated AVResampleDitherMethod {
  * Return the LIBAVRESAMPLE_VERSION_INT constant.
  */
 attribute_deprecated
-unsigned avresample_version(void);
+unsigned avresample_version_ijk(void);
 
 /**
  *

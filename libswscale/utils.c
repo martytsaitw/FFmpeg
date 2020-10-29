@@ -72,7 +72,7 @@ static void sws_printVec2(SwsVector *a, AVClass *log_ctx, int log_level);
 
 static void handle_formats(SwsContext *c);
 
-unsigned swscale_version(void)
+unsigned swscale_version_ijk(void)
 {
     av_assert0(LIBSWSCALE_VERSION_MICRO >= 100);
     return LIBSWSCALE_VERSION_INT;

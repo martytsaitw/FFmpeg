@@ -2027,7 +2027,7 @@ typedef struct AVPacketList {
 /**
  * Return the LIBAVFORMAT_VERSION_INT constant.
  */
-unsigned avformat_version(void);
+unsigned avformat_version_ijk(void);
 
 /**
  * Return the libavformat build-time configuration.

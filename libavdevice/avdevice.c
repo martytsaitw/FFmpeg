@@ -61,7 +61,7 @@ const AVOption av_device_capabilities[] = {
 #undef V
 #undef OFFSET
 
-unsigned avdevice_version(void)
+unsigned avdevice_version_ijk(void)
 {
     av_assert0(LIBAVDEVICE_VERSION_MICRO >= 100);
     return LIBAVDEVICE_VERSION_INT;

@@ -4071,7 +4071,7 @@ AVCodec *av_codec_next(const AVCodec *c);
 /**
  * Return the LIBAVCODEC_VERSION_INT constant.
  */
-unsigned avcodec_version(void);
+unsigned avcodec_version_ijk(void);
 
 /**
  * Return the libavcodec build-time configuration.

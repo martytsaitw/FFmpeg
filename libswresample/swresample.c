@@ -32,7 +32,7 @@
 #include "libavutil/ffversion.h"
 const char swr_ffversion[] = "FFmpeg version " FFMPEG_VERSION;
 
-unsigned swresample_version(void)
+unsigned swresample_version_ijk(void)
 {
     av_assert0(LIBSWRESAMPLE_VERSION_MICRO >= 100);
     return LIBSWRESAMPLE_VERSION_INT;

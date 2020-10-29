@@ -74,7 +74,7 @@ void ff_tlog_ref(void *ctx, AVFrame *ref, int end)
     ff_tlog(ctx, "]%s", end ? "\n" : "");
 }
 
-unsigned avfilter_version(void)
+unsigned avfilter_version_ijk(void)
 {
     av_assert0(LIBAVFILTER_VERSION_MICRO >= 100);
     return LIBAVFILTER_VERSION_INT;

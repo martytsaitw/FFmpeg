@@ -168,7 +168,7 @@
 /**
  * Return the LIBAVUTIL_VERSION_INT constant.
  */
-unsigned avutil_version(void);
+unsigned avutil_version_ijk(void);
 
 /**
  * Return an informative version string. This usually is the actual release
