@@ -361,7 +361,7 @@ static int set_codec_from_probe_data(AVFormatContext *s, AVStream *st,
         { 0 }
     };
     int score;
-    AVInputFormat *fmt = av_probe_input_format3(pd, 1, &score);
+    AVInputFormat *fmt = av_probe_input_format3_ijk(pd, 1, &score);
 
     if (fmt) {
         int i;
@@ -427,7 +427,7 @@ static int init_input(AVFormatContext *s, const char *filename,
     if (s->pb) {
         s->flags |= AVFMT_FLAG_CUSTOM_IO;
         if (!s->iformat)
-            return av_probe_input_buffer2(s->pb, &s->iformat, filename,
+            return av_probe_input_buffer2_ijk(s->pb, &s->iformat, filename,
                                          s, 0, s->format_probesize);
         else if (s->iformat->flags & AVFMT_NOFILE)
             av_log(s, AV_LOG_WARNING, "Custom AVIOContext makes no sense and "
@@ -436,7 +436,7 @@ static int init_input(AVFormatContext *s, const char *filename,
     }
 
     if ((s->iformat && s->iformat->flags & AVFMT_NOFILE) ||
-        (!s->iformat && (s->iformat = av_probe_input_format2(&pd, 0, &score))))
+        (!s->iformat && (s->iformat = av_probe_input_format2_ijk(&pd, 0, &score))))
         return score;
 
     if ((ret = s->io_open(s, &s->pb, filename, AVIO_FLAG_READ | s->avio_flags, options)) < 0)
@@ -444,7 +444,7 @@ static int init_input(AVFormatContext *s, const char *filename,
 
     if (s->iformat)
         return 0;
-    return av_probe_input_buffer2(s->pb, &s->iformat, filename,
+    return av_probe_input_buffer2_ijk(s->pb, &s->iformat, filename,
                                  s, 0, s->format_probesize);
 }
 

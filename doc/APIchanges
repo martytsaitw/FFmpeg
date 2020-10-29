@@ -2846,7 +2846,7 @@ lavd 54.4.100 / 54.0.0, lavfi 3.5.0
   Add interlaced and top_field_first fields to AVFilterPicRef.
 
 2010-05-01 - 8e2ee18 - lavf 52.62.0 - probe function
-  Add av_probe_input_format2 to API, it allows ignoring probe
+  Add av_probe_input_format2_ijk to API, it allows ignoring probe
   results below given score and returns the actual probe score.
 
 2010-04-01 - 3dd6180 - lavf 52.61.0 - metadata API

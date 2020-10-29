@@ -1094,7 +1094,7 @@ static int read_gab2_sub(AVFormatContext *s, AVStream *st, AVPacket *pkt)
         if (!pd.buf)
             goto error;
         memcpy(pd.buf, pb->buf_ptr, size);
-        sub_demuxer = av_probe_input_format2(&pd, 1, &score);
+        sub_demuxer = av_probe_input_format2_ijk(&pd, 1, &score);
         av_freep(&pd.buf);
         if (!sub_demuxer)
             goto error;

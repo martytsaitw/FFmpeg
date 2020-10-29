@@ -125,7 +125,7 @@ AVInputFormat *av_find_input_format(const char *short_name)
     return NULL;
 }
 
-AVInputFormat *av_probe_input_format3(AVProbeData *pd, int is_opened,
+AVInputFormat *av_probe_input_format3_ijk(AVProbeData *pd, int is_opened,
                                       int *score_ret)
 {
     AVProbeData lpd = *pd;
@@ -202,10 +202,10 @@ AVInputFormat *av_probe_input_format3(AVProbeData *pd, int is_opened,
     return fmt;
 }
 
-AVInputFormat *av_probe_input_format2(AVProbeData *pd, int is_opened, int *score_max)
+AVInputFormat *av_probe_input_format2_ijk(AVProbeData *pd, int is_opened, int *score_max)
 {
     int score_ret;
-    AVInputFormat *fmt = av_probe_input_format3(pd, is_opened, &score_ret);
+    AVInputFormat *fmt = av_probe_input_format3_ijk(pd, is_opened, &score_ret);
     if (score_ret > *score_max) {
         *score_max = score_ret;
         return fmt;
@@ -216,10 +216,10 @@ AVInputFormat *av_probe_input_format2(AVProbeData *pd, int is_opened, int *score
 AVInputFormat *av_probe_input_format(AVProbeData *pd, int is_opened)
 {
     int score = 0;
-    return av_probe_input_format2(pd, is_opened, &score);
+    return av_probe_input_format2_ijk(pd, is_opened, &score);
 }
 
-int av_probe_input_buffer2(AVIOContext *pb, AVInputFormat **fmt,
+int av_probe_input_buffer2_ijk(AVIOContext *pb, AVInputFormat **fmt,
                           const char *filename, void *logctx,
                           unsigned int offset, unsigned int max_probe_size)
 {
@@ -285,7 +285,7 @@ int av_probe_input_buffer2(AVIOContext *pb, AVInputFormat **fmt,
         memset(pd.buf + pd.buf_size, 0, AVPROBE_PADDING_SIZE);
 
         /* Guess file format. */
-        *fmt = av_probe_input_format2(&pd, 1, &score);
+        *fmt = av_probe_input_format2_ijk(&pd, 1, &score);
         if (*fmt) {
             /* This can only be true in the last iteration. */
             if (score <= AVPROBE_SCORE_RETRY) {
@@ -321,6 +321,6 @@ int av_probe_input_buffer(AVIOContext *pb, AVInputFormat **fmt,
                           const char *filename, void *logctx,
                           unsigned int offset, unsigned int max_probe_size)
 {
-    int ret = av_probe_input_buffer2(pb, fmt, filename, logctx, offset, max_probe_size);
+    int ret = av_probe_input_buffer2_ijk(pb, fmt, filename, logctx, offset, max_probe_size);
     return ret < 0 ? ret : 0;
 }

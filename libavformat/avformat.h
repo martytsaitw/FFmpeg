@@ -665,7 +665,7 @@ typedef struct AVInputFormat {
     /**
      * Comma-separated list of mime types.
      * It is used check for matching mime types while probing.
-     * @see av_probe_input_format2
+     * @see av_probe_input_format2_ijk
      */
     const char *mime_type;
 
@@ -2254,7 +2254,7 @@ AVInputFormat *av_probe_input_format(AVProbeData *pd, int is_opened);
  *                  If the score is <= AVPROBE_SCORE_MAX / 4 it is recommended
  *                  to retry with a larger probe buffer.
  */
-AVInputFormat *av_probe_input_format2(AVProbeData *pd, int is_opened, int *score_max);
+AVInputFormat *av_probe_input_format2_ijk(AVProbeData *pd, int is_opened, int *score_max);
 
 /**
  * Guess the file format.
@@ -2263,7 +2263,7 @@ AVInputFormat *av_probe_input_format2(AVProbeData *pd, int is_opened, int *score
  *                  demuxers with or without AVFMT_NOFILE are probed.
  * @param score_ret The score of the best detection.
  */
-AVInputFormat *av_probe_input_format3(AVProbeData *pd, int is_opened, int *score_ret);
+AVInputFormat *av_probe_input_format3_ijk(AVProbeData *pd, int is_opened, int *score_ret);
 
 /**
  * Probe a bytestream to determine the input format. Each time a probe returns
@@ -2281,12 +2281,12 @@ AVInputFormat *av_probe_input_format3(AVProbeData *pd, int is_opened, int *score
  *         the maximal score is AVPROBE_SCORE_MAX
  * AVERROR code otherwise
  */
-int av_probe_input_buffer2(AVIOContext *pb, AVInputFormat **fmt,
+int av_probe_input_buffer2_ijk(AVIOContext *pb, AVInputFormat **fmt,
                            const char *url, void *logctx,
                            unsigned int offset, unsigned int max_probe_size);
 
 /**
- * Like av_probe_input_buffer2() but returns 0 on success
+ * Like av_probe_input_buffer2_ijk() but returns 0 on success
  */
 int av_probe_input_buffer(AVIOContext *pb, AVInputFormat **fmt,
                           const char *url, void *logctx,
