@@ -349,7 +349,7 @@ void ff_mp4_parse_es_descr(AVIOContext *pb, int *es_id);
 
 int ff_mov_read_esds(AVFormatContext *fc, AVIOContext *pb);
 
-int ff_mov_read_stsd_entries(MOVContext *c, AVIOContext *pb, int entries);
+int ff_mov_read_stsd_entries_ijk(MOVContext *c, AVIOContext *pb, int entries);
 void ff_mov_write_chan(AVIOContext *pb, int64_t channel_layout);
 
 #define FF_MOV_FLAG_MFRA_AUTO -1

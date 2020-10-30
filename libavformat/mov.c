@@ -2054,7 +2054,7 @@ static void mov_parse_stsd_video(MOVContext *c, AVIOContext *pb,
     unsigned int len;
 
     /* The first 16 bytes of the video sample description are already
-     * read in ff_mov_read_stsd_entries() */
+     * read in ff_mov_read_stsd_entries_ijk() */
     stsd_start = avio_tell(pb) - 16;
 
     avio_rb16(pb); /* version */
@@ -2449,7 +2449,7 @@ static int mov_skip_multiple_stsd(MOVContext *c, AVIOContext *pb,
     return 0;
 }
 
-int ff_mov_read_stsd_entries(MOVContext *c, AVIOContext *pb, int entries)
+int ff_mov_read_stsd_entries_ijk(MOVContext *c, AVIOContext *pb, int entries)
 {
     AVStream *st;
     MOVStreamContext *sc;
@@ -2584,7 +2584,7 @@ static int mov_read_stsd(MOVContext *c, AVIOContext *pb, MOVAtom atom)
         goto fail;
     }
 
-    ret = ff_mov_read_stsd_entries(c, pb, entries);
+    ret = ff_mov_read_stsd_entries_ijk(c, pb, entries);
     if (ret < 0)
         goto fail;
 

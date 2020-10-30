@@ -138,10 +138,10 @@ static int qt_rtp_parse_packet(AVFormatContext *s, PayloadContext *qt,
                     st->priv_data = priv_data;
                     return AVERROR(ENOMEM);
                 }
-                /* ff_mov_read_stsd_entries updates stream s->nb_streams-1,
+                /* ff_mov_read_stsd_entries_ijk updates stream s->nb_streams-1,
                  * so set it temporarily to indicate which stream to update. */
                 s->nb_streams = st->index + 1;
-                ff_mov_read_stsd_entries(mc, &pb, 1);
+                ff_mov_read_stsd_entries_ijk(mc, &pb, 1);
                 qt->bytes_per_frame = msc->bytes_per_frame;
                 av_free(msc);
                 av_free(mc);
