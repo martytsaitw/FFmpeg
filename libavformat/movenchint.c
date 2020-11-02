@@ -58,7 +58,7 @@ int ff_mov_init_hinting(AVFormatContext *s, int index, int src_index)
 fail:
     av_log(s, AV_LOG_WARNING,
            "Unable to initialize hinting of stream %d\n", src_index);
-    avcodec_parameters_free(&track->par);
+    avcodec_parameters_free_ijk(&track->par);
     /* Set a default timescale, to avoid crashes in av_dump_format_ijk */
     track->timescale = 90000;
     return ret;
@@ -460,7 +460,7 @@ void ff_mov_close_hinting(MOVTrack *track)
 {
     AVFormatContext *rtp_ctx = track->rtp_ctx;
 
-    avcodec_parameters_free(&track->par);
+    avcodec_parameters_free_ijk(&track->par);
     sample_queue_free(&track->sample_queue);
     if (!rtp_ctx)
         return;
@@ -468,5 +468,5 @@ void ff_mov_close_hinting(MOVTrack *track)
         av_write_trailer(rtp_ctx);
         ffio_free_dyn_buf(&rtp_ctx->pb);
     }
-    avformat_free_context(rtp_ctx);
+    avformat_free_context_ijk(rtp_ctx);
 }

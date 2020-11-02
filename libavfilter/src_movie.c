@@ -341,7 +341,7 @@ static av_cold void movie_uninit(AVFilterContext *ctx)
     for (i = 0; i < ctx->nb_outputs; i++) {
         av_freep(&ctx->output_pads[i].name);
         if (movie->st[i].st)
-            avcodec_free_context(&movie->st[i].codec_ctx);
+            avcodec_free_context_ijk(&movie->st[i].codec_ctx);
     }
     av_freep(&movie->st);
     av_freep(&movie->out_index);

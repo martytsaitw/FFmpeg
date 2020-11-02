@@ -2032,7 +2032,7 @@ static int reopen_demux_for_component(AVFormatContext *s, struct representation 
     avio_ctx_buffer  = av_malloc(INITIAL_BUFFER_SIZE);
     if (!avio_ctx_buffer ) {
         ret = AVERROR(ENOMEM);
-        avformat_free_context(pls->ctx);
+        avformat_free_context_ijk(pls->ctx);
         pls->ctx = NULL;
         goto fail;
     }
@@ -2052,7 +2052,7 @@ static int reopen_demux_for_component(AVFormatContext *s, struct representation 
     ret = av_probe_input_buffer(&pls->pb, &in_fmt, "", NULL, 0, 0);
     if (ret < 0) {
         av_log(s, AV_LOG_ERROR, "Error when loading first fragment, playlist %d\n", (int)pls->rep_idx);
-        avformat_free_context(pls->ctx);
+        avformat_free_context_ijk(pls->ctx);
         pls->ctx = NULL;
         goto fail;
     }

@@ -51,8 +51,8 @@ void av_bsf_free(AVBSFContext **pctx)
     av_freep(&ctx->internal);
     av_freep(&ctx->priv_data);
 
-    avcodec_parameters_free(&ctx->par_in);
-    avcodec_parameters_free(&ctx->par_out);
+    avcodec_parameters_free_ijk(&ctx->par_in);
+    avcodec_parameters_free_ijk(&ctx->par_out);
 
     av_freep(pctx);
 }

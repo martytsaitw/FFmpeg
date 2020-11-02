@@ -6599,7 +6599,7 @@ static int mov_read_close(AVFormatContext *s)
     }
 
     if (mov->dv_demux) {
-        avformat_free_context(mov->dv_fctx);
+        avformat_free_context_ijk(mov->dv_fctx);
         mov->dv_fctx = NULL;
     }
 

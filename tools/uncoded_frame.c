@@ -264,7 +264,7 @@ fail:
             if (st->mux) {
                 if (st->mux->pb)
                     avio_closep(&st->mux->pb);
-                avformat_free_context(st->mux);
+                avformat_free_context_ijk(st->mux);
             }
         }
     }

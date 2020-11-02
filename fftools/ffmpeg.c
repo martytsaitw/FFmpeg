@@ -533,7 +533,7 @@ static void ffmpeg_cleanup(int ret)
         s = of->ctx;
         if (s && s->oformat && !(s->oformat->flags & AVFMT_NOFILE))
             avio_closep(&s->pb);
-        avformat_free_context(s);
+        avformat_free_context_ijk(s);
         av_dict_free(&of->opts);
 
         av_freep(&output_files[i]);
@@ -562,8 +562,8 @@ static void ffmpeg_cleanup(int ret)
 
         av_dict_free(&ost->sws_dict);
 
-        avcodec_free_context(&ost->enc_ctx);
-        avcodec_parameters_free(&ost->ref_par);
+        avcodec_free_context_ijk(&ost->enc_ctx);
+        avcodec_parameters_free_ijk(&ost->ref_par);
 
         if (ost->muxing_queue) {
             while (av_fifo_size(ost->muxing_queue)) {
@@ -595,7 +595,7 @@ static void ffmpeg_cleanup(int ret)
         av_freep(&ist->hwaccel_device);
         av_freep(&ist->dts_buffer);
 
-        avcodec_free_context(&ist->dec_ctx);
+        avcodec_free_context_ijk(&ist->dec_ctx);
 
         av_freep(&input_streams[i]);
     }

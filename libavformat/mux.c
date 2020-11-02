@@ -202,7 +202,7 @@ nomem:
     av_log(s, AV_LOG_ERROR, "Out of memory\n");
     ret = AVERROR(ENOMEM);
 error:
-    avformat_free_context(s);
+    avformat_free_context_ijk(s);
     return ret;
 }
 

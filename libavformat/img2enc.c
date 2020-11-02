@@ -161,7 +161,7 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
             return ret;
         st = avformat_new_stream_ijk(fmt, NULL);
         if (!st) {
-            avformat_free_context(fmt);
+            avformat_free_context_ijk(fmt);
             return AVERROR(ENOMEM);
         }
         st->id = pkt->stream_index;
@@ -173,11 +173,11 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
             (ret = av_interleaved_write_frame(fmt, &pkt2))                < 0 ||
             (ret = av_write_trailer(fmt))                                 < 0) {
             av_packet_unref_ijk(&pkt2);
-            avformat_free_context(fmt);
+            avformat_free_context_ijk(fmt);
             return ret;
         }
         av_packet_unref_ijk(&pkt2);
-        avformat_free_context(fmt);
+        avformat_free_context_ijk(fmt);
     } else {
         avio_write(pb[0], pkt->data, pkt->size);
     }

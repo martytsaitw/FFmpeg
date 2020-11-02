@@ -229,7 +229,7 @@ fail:
     if (ret < 0) {
         oc->streams = NULL;
         oc->nb_streams = 0;
-        avformat_free_context(oc);
+        avformat_free_context_ijk(oc);
     }
 
     return ret;
@@ -243,7 +243,7 @@ static int webm_chunk_write_trailer(AVFormatContext *s)
     chunk_end(s);
     oc->streams = NULL;
     oc->nb_streams = 0;
-    avformat_free_context(oc);
+    avformat_free_context_ijk(oc);
     return 0;
 }
 

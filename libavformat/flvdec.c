@@ -1145,7 +1145,7 @@ retry_duration:
             par->bits_per_coded_sample = bits_per_coded_sample;
             flv_set_audio_codec(s, st, par, flags & FLV_AUDIO_CODECID_MASK);
             sample_rate = par->sample_rate;
-            avcodec_parameters_free(&par);
+            avcodec_parameters_free_ijk(&par);
         }
     } else if (stream_type == FLV_STREAM_TYPE_VIDEO) {
         int ret = flv_set_video_codec(s, st, flags & FLV_VIDEO_CODECID_MASK, 1);

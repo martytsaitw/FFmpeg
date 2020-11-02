@@ -85,8 +85,8 @@ static void remove_extradata_close(AVBSFContext *ctx)
 {
     RemoveExtradataContext *s = ctx->priv_data;
 
-    avcodec_free_context(&s->avctx);
-    av_parser_close(s->parser);
+    avcodec_free_context_ijk(&s->avctx);
+    av_parser_close_ijk(s->parser);
 }
 
 #define OFFSET(x) offsetof(RemoveExtradataContext, x)

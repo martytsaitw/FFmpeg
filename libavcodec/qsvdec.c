@@ -465,8 +465,8 @@ int ff_qsv_decode_close(QSVContext *q)
     av_fifo_free(q->async_fifo);
     q->async_fifo = NULL;
 
-    av_parser_close(q->parser);
-    avcodec_free_context(&q->avctx_internal);
+    av_parser_close_ijk(q->parser);
+    avcodec_free_context_ijk(&q->avctx_internal);
 
     if (q->internal_session)
         MFXClose(q->internal_session);

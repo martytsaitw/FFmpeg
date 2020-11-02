@@ -387,7 +387,7 @@ int avdevice_dev_to_app_control_message(struct AVFormatContext *s,
  * fail:
  *  //clean up code
  *  avdevice_capabilities_free(&query, oc);
- *  avformat_free_context(oc);
+ *  avformat_free_context_ijk(oc);
  * @endcode
  */
 

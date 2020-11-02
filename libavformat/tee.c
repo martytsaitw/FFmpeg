@@ -140,7 +140,7 @@ static int close_slave(TeeSlave *tee_slave)
     av_freep(&tee_slave->bsfs);
 
     ff_format_io_close(avf, &avf->pb);
-    avformat_free_context(avf);
+    avformat_free_context_ijk(avf);
     tee_slave->avf = NULL;
     return ret;
 }

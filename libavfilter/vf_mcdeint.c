@@ -154,7 +154,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 {
     MCDeintContext *mcdeint = ctx->priv;
 
-    avcodec_free_context(&mcdeint->enc_ctx);
+    avcodec_free_context_ijk(&mcdeint->enc_ctx);
 }
 
 static int query_formats(AVFilterContext *ctx)

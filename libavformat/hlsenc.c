@@ -2416,7 +2416,7 @@ failed:
         }
         av_freep(&vs->basename);
         av_freep(&vs->base_output_dirname);
-        avformat_free_context(oc);
+        avformat_free_context_ijk(oc);
 
         vs->avf = NULL;
         hls_window(s, 1, vs);
@@ -2425,7 +2425,7 @@ failed:
         if (vtt_oc) {
             av_freep(&vs->vtt_basename);
             av_freep(&vs->vtt_m3u8_name);
-            avformat_free_context(vtt_oc);
+            avformat_free_context_ijk(vtt_oc);
         }
 
         hls_free_segments(vs->segments);
@@ -2779,9 +2779,9 @@ fail:
             av_freep(&vs->ccgroup);
             av_freep(&vs->baseurl);
             if (vs->avf)
-                avformat_free_context(vs->avf);
+                avformat_free_context_ijk(vs->avf);
             if (vs->vtt_avf)
-                avformat_free_context(vs->vtt_avf);
+                avformat_free_context_ijk(vs->vtt_avf);
         }
         for (i = 0; i < hls->nb_ccstreams; i++) {
             ClosedCaptionsStream *ccs = &hls->cc_streams[i];

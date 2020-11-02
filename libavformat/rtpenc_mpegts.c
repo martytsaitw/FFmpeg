@@ -35,11 +35,11 @@ static int rtp_mpegts_write_close(AVFormatContext *s)
     if (chain->mpegts_ctx) {
         av_write_trailer(chain->mpegts_ctx);
         ffio_free_dyn_buf(&chain->mpegts_ctx->pb);
-        avformat_free_context(chain->mpegts_ctx);
+        avformat_free_context_ijk(chain->mpegts_ctx);
     }
     if (chain->rtp_ctx) {
         av_write_trailer(chain->rtp_ctx);
-        avformat_free_context(chain->rtp_ctx);
+        avformat_free_context_ijk(chain->rtp_ctx);
     }
     return 0;
 }
@@ -102,10 +102,10 @@ static int rtp_mpegts_write_header(AVFormatContext *s)
 fail:
     if (mpegts_ctx) {
         ffio_free_dyn_buf(&mpegts_ctx->pb);
-        avformat_free_context(mpegts_ctx);
+        avformat_free_context_ijk(mpegts_ctx);
     }
     if (rtp_ctx)
-        avformat_free_context(rtp_ctx);
+        avformat_free_context_ijk(rtp_ctx);
     rtp_mpegts_write_close(s);
     return ret;
 }

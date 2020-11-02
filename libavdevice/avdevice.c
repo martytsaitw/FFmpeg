@@ -221,7 +221,7 @@ static int list_devices_for_context(AVFormatContext *s, AVDictionary *options,
     ret = avdevice_list_devices(s, device_list);
   fail:
     av_dict_free(&tmp);
-    avformat_free_context(s);
+    avformat_free_context_ijk(s);
     return ret;
 }
 

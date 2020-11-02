@@ -1960,7 +1960,7 @@ static int hls_read_header(AVFormatContext *s, AVDictionary **options)
         pls->read_buffer = av_malloc(INITIAL_BUFFER_SIZE);
         if (!pls->read_buffer){
             ret = AVERROR(ENOMEM);
-            avformat_free_context(pls->ctx);
+            avformat_free_context_ijk(pls->ctx);
             pls->ctx = NULL;
             goto fail;
         }
@@ -1975,7 +1975,7 @@ static int hls_read_header(AVFormatContext *s, AVDictionary **options)
              * avformat_open_input_ijk fails below, it frees and zeros the
              * context, so it doesn't need any special treatment like this. */
             av_log(s, AV_LOG_ERROR, "Error when loading first segment '%s'\n", pls->segments[0]->url);
-            avformat_free_context(pls->ctx);
+            avformat_free_context_ijk(pls->ctx);
             pls->ctx = NULL;
             goto fail;
         }

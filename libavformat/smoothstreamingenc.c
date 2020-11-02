@@ -184,7 +184,7 @@ static void ism_free(AVFormatContext *s)
         if (os->ctx && os->ctx->pb)
             avio_context_free(&os->ctx->pb);
         if (os->ctx)
-            avformat_free_context(os->ctx);
+            avformat_free_context_ijk(os->ctx);
         av_freep(&os->private_str);
         for (j = 0; j < os->nb_fragments; j++)
             av_freep(&os->fragments[j]);

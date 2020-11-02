@@ -673,7 +673,7 @@ static int decoder_decode_frame(Decoder *d, AVFrame *frame, AVSubtitle *sub) {
 
 static void decoder_destroy(Decoder *d) {
     av_packet_unref_ijk(&d->pkt);
-    avcodec_free_context(&d->avctx);
+    avcodec_free_context_ijk(&d->avctx);
 }
 
 static void frame_queue_unref_item(Frame *vp)
@@ -2684,7 +2684,7 @@ static int stream_component_open(VideoState *is, int stream_index)
     goto out;
 
 fail:
-    avcodec_free_context(&avctx);
+    avcodec_free_context_ijk(&avctx);
 out:
     av_dict_free(&opts);
 

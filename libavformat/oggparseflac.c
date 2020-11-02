@@ -109,19 +109,19 @@ old_flac_header (AVFormatContext * s, int idx)
                      &data, &size, os->buf + os->pstart, os->psize,
                      AV_NOPTS_VALUE, AV_NOPTS_VALUE, -1);
 
-    av_parser_close(parser);
+    av_parser_close_ijk(parser);
 
     if (avctx->sample_rate) {
         avpriv_set_pts_info_ijk(st, 64, 1, avctx->sample_rate);
-        avcodec_free_context(&avctx);
+        avcodec_free_context_ijk(&avctx);
         return 0;
     }
 
-    avcodec_free_context(&avctx);
+    avcodec_free_context_ijk(&avctx);
     return 1;
 fail:
-    av_parser_close(parser);
-    avcodec_free_context(&avctx);
+    av_parser_close_ijk(parser);
+    avcodec_free_context_ijk(&avctx);
     return ret;
 }
 

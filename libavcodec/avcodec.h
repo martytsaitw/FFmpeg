@@ -3894,7 +3894,7 @@ typedef struct AVSubtitle {
  *
  * sizeof(AVCodecParameters) is not a part of the public ABI, this struct must
  * be allocated with avcodec_parameters_alloc_ijk() and freed with
- * avcodec_parameters_free().
+ * avcodec_parameters_free_ijk().
  */
 typedef struct AVCodecParameters {
     /**
@@ -3914,7 +3914,7 @@ typedef struct AVCodecParameters {
      * Extra binary data needed for initializing the decoder, codec-dependent.
      *
      * Must be allocated with av_malloc() and will be freed by
-     * avcodec_parameters_free(). The allocated size of extradata must be at
+     * avcodec_parameters_free_ijk(). The allocated size of extradata must be at
      * least extradata_size + AV_INPUT_BUFFER_PADDING_SIZE, with the padding
      * bytes zeroed.
      */
@@ -4111,7 +4111,7 @@ void avcodec_register_all(void);
 
 /**
  * Allocate an AVCodecContext and set its fields to default values. The
- * resulting struct should be freed with avcodec_free_context().
+ * resulting struct should be freed with avcodec_free_context_ijk().
  *
  * @param codec if non-NULL, allocate private data and initialize defaults
  *              for the given codec. It is illegal to then call avcodec_open2()
@@ -4128,7 +4128,7 @@ AVCodecContext *avcodec_alloc_context3_ijk(const AVCodec *codec);
  * Free the codec context and everything associated with it and write NULL to
  * the provided pointer.
  */
-void avcodec_free_context(AVCodecContext **avctx);
+void avcodec_free_context_ijk(AVCodecContext **avctx);
 
 #if FF_API_GET_CONTEXT_DEFAULTS
 /**
@@ -4188,7 +4188,7 @@ int avcodec_copy_context(AVCodecContext *dest, const AVCodecContext *src);
 /**
  * Allocate a new AVCodecParameters and set its fields to default values
  * (unknown/invalid/0). The returned struct must be freed with
- * avcodec_parameters_free().
+ * avcodec_parameters_free_ijk().
  */
 AVCodecParameters *avcodec_parameters_alloc_ijk(void);
 
@@ -4196,7 +4196,7 @@ AVCodecParameters *avcodec_parameters_alloc_ijk(void);
  * Free an AVCodecParameters instance and everything associated with it and
  * write NULL to the supplied pointer.
  */
-void avcodec_parameters_free(AVCodecParameters **par);
+void avcodec_parameters_free_ijk(AVCodecParameters **par);
 
 /**
  * Copy the contents of src to dst. Any allocated fields in dst are freed and
@@ -4275,7 +4275,7 @@ int avcodec_open2(AVCodecContext *avctx, const AVCodec *codec, AVDictionary **op
  * the codec-specific data allocated in avcodec_alloc_context3_ijk() with a non-NULL
  * codec. Subsequent calls will do nothing.
  *
- * @note Do not use this function. Use avcodec_free_context() to destroy a
+ * @note Do not use this function. Use avcodec_free_context_ijk() to destroy a
  * codec context (either open or closed). Opening and closing a codec context
  * multiple times is not supported anymore -- use multiple codec contexts
  * instead.
@@ -5298,7 +5298,7 @@ int av_parser_change(AVCodecParserContext *s,
                      AVCodecContext *avctx,
                      uint8_t **poutbuf, int *poutbuf_size,
                      const uint8_t *buf, int buf_size, int keyframe);
-void av_parser_close(AVCodecParserContext *s);
+void av_parser_close_ijk(AVCodecParserContext *s);
 
 /**
  * @}

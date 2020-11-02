@@ -599,9 +599,9 @@ end:
     av_packet_unref_ijk(&packet);
     av_frame_free(&frame);
     for (i = 0; i < ifmt_ctx->nb_streams; i++) {
-        avcodec_free_context(&stream_ctx[i].dec_ctx);
+        avcodec_free_context_ijk(&stream_ctx[i].dec_ctx);
         if (ofmt_ctx && ofmt_ctx->nb_streams > i && ofmt_ctx->streams[i] && stream_ctx[i].enc_ctx)
-            avcodec_free_context(&stream_ctx[i].enc_ctx);
+            avcodec_free_context_ijk(&stream_ctx[i].enc_ctx);
         if (filter_ctx && filter_ctx[i].filter_graph)
             avfilter_graph_free(&filter_ctx[i].filter_graph);
     }
@@ -610,7 +610,7 @@ end:
     avformat_close_input(&ifmt_ctx);
     if (ofmt_ctx && !(ofmt_ctx->oformat->flags & AVFMT_NOFILE))
         avio_closep(&ofmt_ctx->pb);
-    avformat_free_context(ofmt_ctx);
+    avformat_free_context_ijk(ofmt_ctx);
 
     if (ret < 0)
         av_log(NULL, AV_LOG_ERROR, "Error occurred: %s\n", av_err2str(ret));

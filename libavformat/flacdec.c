@@ -301,7 +301,7 @@ static av_unused int64_t flac_read_timestamp(AVFormatContext *s, int stream_inde
         } else if (ret < 0)
             break;
     }
-    av_parser_close(parser);
+    av_parser_close_ijk(parser);
     return pts;
 }
 

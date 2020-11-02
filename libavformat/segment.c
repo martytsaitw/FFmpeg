@@ -237,7 +237,7 @@ static int segment_start(AVFormatContext *s, int write_header)
     int err = 0;
 
     if (write_header) {
-        avformat_free_context(oc);
+        avformat_free_context_ijk(oc);
         seg->avf = NULL;
         if ((err = segment_mux_init(s)) < 0)
             return err;
@@ -639,7 +639,7 @@ static void seg_free(AVFormatContext *s)
 {
     SegmentContext *seg = s->priv_data;
     ff_format_io_close(seg->avf, &seg->list_pb);
-    avformat_free_context(seg->avf);
+    avformat_free_context_ijk(seg->avf);
     seg->avf = NULL;
 }
 
@@ -994,7 +994,7 @@ fail:
         cur = next;
     }
 
-    avformat_free_context(oc);
+    avformat_free_context_ijk(oc);
     seg->avf = NULL;
     return ret;
 }

@@ -268,7 +268,7 @@ end:
     av_frame_free(&fr);
     avcodec_close(ctx);
     avformat_close_input(&fmt_ctx);
-    avcodec_free_context(&ctx);
+    avcodec_free_context_ijk(&ctx);
     return result;
 }
 

@@ -236,7 +236,7 @@ static int run_test(const TestCase *test)
 
 end:
     printf("%s: %s\n", test->test_name, ret < 0 ? "fail" : "ok");
-    avformat_free_context(oc);
+    avformat_free_context_ijk(oc);
     av_dict_free(&opts);
     return ret;
 }

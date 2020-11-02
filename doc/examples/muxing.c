@@ -541,7 +541,7 @@ static int write_video_frame(AVFormatContext *oc, OutputStream *ost)
 
 static void close_stream(AVFormatContext *oc, OutputStream *ost)
 {
-    avcodec_free_context(&ost->enc);
+    avcodec_free_context_ijk(&ost->enc);
     av_frame_free(&ost->frame);
     av_frame_free(&ost->tmp_frame);
     sws_freeContext(ost->sws_ctx);
@@ -661,7 +661,7 @@ int main(int argc, char **argv)
         avio_closep(&oc->pb);
 
     /* free the stream */
-    avformat_free_context(oc);
+    avformat_free_context_ijk(oc);
 
     return 0;
 }

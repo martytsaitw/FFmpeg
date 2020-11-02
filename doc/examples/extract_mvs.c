@@ -171,7 +171,7 @@ int main(int argc, char **argv)
     decode_packet(NULL);
 
 end:
-    avcodec_free_context(&video_dec_ctx);
+    avcodec_free_context_ijk(&video_dec_ctx);
     avformat_close_input(&fmt_ctx);
     av_frame_free(&frame);
     return ret < 0;

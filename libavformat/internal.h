@@ -498,7 +498,7 @@ int ff_read_packet(AVFormatContext *s, AVPacket *pkt);
 int ff_interleave_packet_per_dts(AVFormatContext *s, AVPacket *out,
                                  AVPacket *pkt, int flush);
 
-void ff_free_stream(AVFormatContext *s, AVStream *st);
+void ff_free_stream_ijk(AVFormatContext *s, AVStream *st);
 
 /**
  * Return the frame duration in seconds. Return 0 if not available.

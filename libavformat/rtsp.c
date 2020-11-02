@@ -384,7 +384,7 @@ static void parse_fmtp(AVFormatContext *s, RTSPState *rt,
     }
 }
 
-static void sdp_parse_line(AVFormatContext *s, SDPParseState *s1,
+static void sdp_parse_line_ijk(AVFormatContext *s, SDPParseState *s1,
                            int letter, const char *buf)
 {
     RTSPState *rt = s->priv_data;
@@ -709,7 +709,7 @@ int ff_sdp_parse_ijk(AVFormatContext *s, const char *content)
             p++;
         }
         *q = '\0';
-        sdp_parse_line(s, s1, letter, buf);
+        sdp_parse_line_ijk(s, s1, letter, buf);
     next_line:
         while (*p != '\n' && *p != '\0')
             p++;
@@ -748,7 +748,7 @@ void ff_rtsp_undo_setup_ijk(AVFormatContext *s, int send_packets)
                 } else {
                     avio_closep(&rtpctx->pb);
                 }
-                avformat_free_context(rtpctx);
+                avformat_free_context_ijk(rtpctx);
             } else if (CONFIG_RTPDEC && rt->transport == RTSP_TRANSPORT_RDT)
                 ff_rdt_parse_close(rtsp_st->transport_priv);
             else if (CONFIG_RTPDEC && rt->transport == RTSP_TRANSPORT_RTP)
@@ -2499,7 +2499,7 @@ static int rtp_read_header(AVFormatContext *s)
              par->codec_type == AVMEDIA_TYPE_VIDEO ? "video" : "audio",
              port, payload_type);
     av_log(s, AV_LOG_VERBOSE, "SDP:\n%s\n", sdp);
-    avcodec_parameters_free(&par);
+    avcodec_parameters_free_ijk(&par);
 
     ffio_init_context(&pb, sdp, strlen(sdp), 0, NULL, NULL, NULL, NULL);
     s->pb = &pb;
@@ -2514,7 +2514,7 @@ static int rtp_read_header(AVFormatContext *s)
     return ret;
 
 fail:
-    avcodec_parameters_free(&par);
+    avcodec_parameters_free_ijk(&par);
     if (in)
         ffurl_close(in);
     ff_network_close();

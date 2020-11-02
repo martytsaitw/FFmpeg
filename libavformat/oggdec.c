@@ -63,7 +63,7 @@ static int64_t ogg_calc_pts(AVFormatContext *s, int idx, int64_t *dts);
 static int ogg_new_stream(AVFormatContext *s, uint32_t serial);
 static int ogg_restore(AVFormatContext *s);
 
-static void free_stream(AVFormatContext *s, int i)
+static void free_stream_ijk(AVFormatContext *s, int i)
 {
     struct ogg *ogg = s->priv_data;
     struct ogg_stream *stream = &ogg->streams[i];
@@ -133,7 +133,7 @@ static int ogg_restore(AVFormatContext *s)
             av_freep(&stream->new_metadata);
 
             if (i >= ost->nstreams || !ost->streams[i].private) {
-                free_stream(s, i);
+                free_stream_ijk(s, i);
             }
         }
 
@@ -692,7 +692,7 @@ static int ogg_read_close(AVFormatContext *s)
     int i;
 
     for (i = 0; i < ogg->nstreams; i++) {
-        free_stream(s, i);
+        free_stream_ijk(s, i);
     }
 
     ogg->nstreams = 0;

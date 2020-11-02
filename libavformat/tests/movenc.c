@@ -346,7 +346,7 @@ static void finish(void)
 {
     av_write_trailer(ctx);
     avio_context_free(&ctx->pb);
-    avformat_free_context(ctx);
+    avformat_free_context_ijk(ctx);
     ctx = NULL;
 }
 

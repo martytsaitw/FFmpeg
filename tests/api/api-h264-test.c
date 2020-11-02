@@ -145,7 +145,7 @@ static int video_decode_example(const char *input_filename)
     av_frame_free(&fr);
     avcodec_close(ctx);
     avformat_close_input(&fmt_ctx);
-    avcodec_free_context(&ctx);
+    avcodec_free_context_ijk(&ctx);
     av_freep(&byte_buffer);
     return 0;
 }

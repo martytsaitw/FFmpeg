@@ -178,7 +178,7 @@ end:
     /* close output */
     if (ofmt_ctx && !(ofmt->flags & AVFMT_NOFILE))
         avio_closep(&ofmt_ctx->pb);
-    avformat_free_context(ofmt_ctx);
+    avformat_free_context_ijk(ofmt_ctx);
 
     av_freep(&stream_mapping);
 

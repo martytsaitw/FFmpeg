@@ -54,6 +54,6 @@ int ff_alloc_input_device_context(AVFormatContext **avctx, AVInputFormat *iforma
     *avctx = s;
     return 0;
   error:
-    avformat_free_context(s);
+    avformat_free_context_ijk(s);
     return ret;
 }

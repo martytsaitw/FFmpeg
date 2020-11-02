@@ -1505,7 +1505,7 @@ static int estimate_best_b_count(MpegEncContext *s)
         }
 
 fail:
-        avcodec_free_context(&c);
+        avcodec_free_context_ijk(&c);
         if (ret < 0)
             return ret;
     }

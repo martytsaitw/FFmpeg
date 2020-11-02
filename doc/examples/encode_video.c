@@ -189,7 +189,7 @@ int main(int argc, char **argv)
     fwrite(endcode, 1, sizeof(endcode), f);
     fclose(f);
 
-    avcodec_free_context(&c);
+    avcodec_free_context_ijk(&c);
     av_frame_free(&frame);
     av_packet_free(&pkt);
 

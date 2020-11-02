@@ -107,7 +107,7 @@ static int open_input_file(const char *filename,
     error = avcodec_parameters_to_context_ijk(avctx, (*input_format_context)->streams[0]->codecpar);
     if (error < 0) {
         avformat_close_input(input_format_context);
-        avcodec_free_context(&avctx);
+        avcodec_free_context_ijk(&avctx);
         return error;
     }
 
@@ -115,7 +115,7 @@ static int open_input_file(const char *filename,
     if ((error = avcodec_open2(avctx, input_codec, NULL)) < 0) {
         fprintf(stderr, "Could not open input codec (error '%s')\n",
                 av_err2str(error));
-        avcodec_free_context(&avctx);
+        avcodec_free_context_ijk(&avctx);
         avformat_close_input(input_format_context);
         return error;
     }
@@ -236,9 +236,9 @@ static int open_output_file(const char *filename,
     return 0;
 
 cleanup:
-    avcodec_free_context(&avctx);
+    avcodec_free_context_ijk(&avctx);
     avio_closep(&(*output_format_context)->pb);
-    avformat_free_context(*output_format_context);
+    avformat_free_context_ijk(*output_format_context);
     *output_format_context = NULL;
     return error < 0 ? error : AVERROR_EXIT;
 }
@@ -871,13 +871,13 @@ cleanup:
         av_audio_fifo_free(fifo);
     swr_free(&resample_context);
     if (output_codec_context)
-        avcodec_free_context(&output_codec_context);
+        avcodec_free_context_ijk(&output_codec_context);
     if (output_format_context) {
         avio_closep(&output_format_context->pb);
-        avformat_free_context(output_format_context);
+        avformat_free_context_ijk(output_format_context);
     }
     if (input_codec_context)
-        avcodec_free_context(&input_codec_context);
+        avcodec_free_context_ijk(&input_codec_context);
     if (input_format_context)
         avformat_close_input(&input_format_context);
 

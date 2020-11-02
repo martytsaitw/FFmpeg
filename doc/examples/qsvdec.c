@@ -261,7 +261,7 @@ finish:
     av_frame_free(&frame);
     av_frame_free(&sw_frame);
 
-    avcodec_free_context(&decoder_ctx);
+    avcodec_free_context_ijk(&decoder_ctx);
 
     av_buffer_unref(&decode.hw_device_ref);
 

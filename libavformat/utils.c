@@ -514,7 +514,7 @@ static int update_stream_avctx_ijk(AVFormatContext *s)
 
         /* close parser, because it depends on the codec */
         if (st->parser && st->internal->avctx->codec_id != st->codecpar->codec_id) {
-            av_parser_close(st->parser);
+            av_parser_close_ijk(st->parser);
             st->parser = NULL;
         }
 
@@ -697,7 +697,7 @@ fail:
     av_dict_free(&tmp2);
     if (s->pb && !(s->flags & AVFMT_FLAG_CUSTOM_IO))
         avio_closep(&s->pb);
-    avformat_free_context(s);
+    avformat_free_context_ijk(s);
     *ps = NULL;
     return ret;
 }
@@ -1551,7 +1551,7 @@ static int parse_packet(AVFormatContext *s, AVPacket *pkt, int stream_index)
 
     /* end of the stream => close and free the parser */
     if (pkt == &flush_pkt) {
-        av_parser_close(st->parser);
+        av_parser_close_ijk(st->parser);
         st->parser = NULL;
     }
 
@@ -1619,7 +1619,7 @@ static int read_frame_internal(AVFormatContext *s, AVPacket *pkt)
 
             /* close parser, because it depends on the codec */
             if (st->parser && st->internal->avctx->codec_id != st->codecpar->codec_id) {
-                av_parser_close(st->parser);
+                av_parser_close_ijk(st->parser);
                 st->parser = NULL;
             }
 
@@ -1969,7 +1969,7 @@ void ff_read_frame_flush(AVFormatContext *s)
         st = s->streams[i];
 
         if (st->parser) {
-            av_parser_close(st->parser);
+            av_parser_close_ijk(st->parser);
             st->parser = NULL;
         }
         st->last_IP_pts = AV_NOPTS_VALUE;
@@ -2849,7 +2849,7 @@ static void estimate_timings_from_pts(AVFormatContext *ic, int64_t old_offset)
                    "start time for stream %d is not set in estimate_timings_from_pts\n", i);
 
         if (st->parser) {
-            av_parser_close(st->parser);
+            av_parser_close_ijk(st->parser);
             st->parser = NULL;
         }
     }
@@ -4435,7 +4435,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     return 0;
 }
 
-static void free_stream(AVStream **pst)
+static void free_stream_ijk(AVStream **pst)
 {
     AVStream *st = *pst;
     int i;
@@ -4448,13 +4448,13 @@ static void free_stream(AVStream **pst)
     av_freep(&st->side_data);
 
     if (st->parser)
-        av_parser_close(st->parser);
+        av_parser_close_ijk(st->parser);
 
     if (st->attached_pic.data)
         av_packet_unref_ijk(&st->attached_pic);
 
     if (st->internal) {
-        avcodec_free_context(&st->internal->avctx);
+        avcodec_free_context_ijk(&st->internal->avctx);
         for (i = 0; i < st->internal->nb_bsfcs; i++) {
             av_bsf_free(&st->internal->bsfcs[i]);
             av_freep(&st->internal->bsfcs);
@@ -4466,12 +4466,12 @@ static void free_stream(AVStream **pst)
     av_freep(&st->internal);
 
     av_dict_free(&st->metadata);
-    avcodec_parameters_free(&st->codecpar);
+    avcodec_parameters_free_ijk(&st->codecpar);
     av_freep(&st->probe_data.buf);
     av_freep(&st->index_entries);
 #if FF_API_LAVF_AVCTX
 FF_DISABLE_DEPRECATION_WARNINGS
-    avcodec_free_context(&st->codec);
+    avcodec_free_context_ijk(&st->codec);
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
     av_freep(&st->priv_data);
@@ -4487,15 +4487,15 @@ FF_ENABLE_DEPRECATION_WARNINGS
     av_freep(pst);
 }
 
-void ff_free_stream(AVFormatContext *s, AVStream *st)
+void ff_free_stream_ijk(AVFormatContext *s, AVStream *st)
 {
     av_assert0(s->nb_streams>0);
     av_assert0(s->streams[ s->nb_streams - 1 ] == st);
 
-    free_stream(&s->streams[ --s->nb_streams ]);
+    free_stream_ijk(&s->streams[ --s->nb_streams ]);
 }
 
-void avformat_free_context(AVFormatContext *s)
+void avformat_free_context_ijk(AVFormatContext *s)
 {
     int i;
 
@@ -4509,7 +4509,7 @@ void avformat_free_context(AVFormatContext *s)
         av_opt_free(s->priv_data);
 
     for (i = s->nb_streams - 1; i >= 0; i--)
-        ff_free_stream(s, s->streams[i]);
+        ff_free_stream_ijk(s, s->streams[i]);
 
 
     for (i = s->nb_programs - 1; i >= 0; i--) {
@@ -4554,7 +4554,7 @@ void avformat_close_input(AVFormatContext **ps)
         if (s->iformat->read_close)
             s->iformat->read_close(s);
 
-    avformat_free_context(s);
+    avformat_free_context_ijk(s);
 
     *ps = NULL;
 
@@ -4656,7 +4656,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     s->streams[s->nb_streams++] = st;
     return st;
 fail:
-    free_stream(&st);
+    free_stream_ijk(&st);
     return NULL;
 }
 
@@ -5940,7 +5940,7 @@ AVCodecContext * create_video_decoder_from_codecpar (AVCodecParameters * codecpa
     avctx->extradata_size = codecpar->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE;
     avctx->extradata = av_mallocz(avctx->extradata_size);
     if (!avctx->extradata) {
-        avcodec_free_context(&avctx);
+        avcodec_free_context_ijk(&avctx);
         return NULL;
     }
     memcpy(avctx->extradata, codecpar->extradata, avctx->extradata_size);
@@ -5948,7 +5948,7 @@ AVCodecContext * create_video_decoder_from_codecpar (AVCodecParameters * codecpa
     //sizeof(HEVCDecoderConfigurationRecord) > sizeof(AVCDecoderConfigurationRecord) >= 7 bytes
     if (avctx->extradata_size < 7) {
         av_log(NULL, AV_LOG_ERROR, "Wrong video extradata length\n");
-        avcodec_free_context(&avctx);
+        avcodec_free_context_ijk(&avctx);
         return NULL;
     }
     
@@ -5980,7 +5980,7 @@ AVCodecContext * create_video_decoder_from_codecpar (AVCodecParameters * codecpa
             avctx->sample_aspect_ratio = sps->sar;
         } else{
             ff_h264_ps_uninit(&ps);
-            avcodec_free_context(&avctx);
+            avcodec_free_context_ijk(&avctx);
             return NULL;
         }
         
@@ -6018,7 +6018,7 @@ AVCodecContext * create_video_decoder_from_codecpar (AVCodecParameters * codecpa
         if ((ret = ff_hevc_decode_extradata(avctx->extradata, avctx->extradata_size, &ps, &sei,
                                             &is_avc, &nal_length_size,
                                             0, 1, avctx)) < 0) {
-            avcodec_free_context(&avctx);
+            avcodec_free_context_ijk(&avctx);
             return NULL;
         }
         for (i = 0; i < HEVC_MAX_PPS_COUNT; i++) {
@@ -6081,13 +6081,13 @@ AVCodecContext * create_video_decoder_from_codecpar (AVCodecParameters * codecpa
                 avctx->time_base = av_inv_q(av_mul_q(avctx->framerate, (AVRational){avctx->ticks_per_frame, 1}));
         } else{
             ff_hevc_ps_uninit(&ps);
-            avcodec_free_context(&avctx);
+            avcodec_free_context_ijk(&avctx);
             return NULL;
         }
         ff_hevc_ps_uninit(&ps);
     } else {
         av_log(NULL, AV_LOG_ERROR, "%s: unsupport codec id = %d\n", __func__, codecpar->codec_id);
-        avcodec_free_context(&avctx);
+        avcodec_free_context_ijk(&avctx);
         return NULL;
     }
     
@@ -6106,7 +6106,7 @@ AVCodecContext * create_video_decoder_from_codecpar (AVCodecParameters * codecpa
     if (avctx->width > FF_MAX_CODEC_WIDTH || avctx->height > FF_MAX_CODEC_HEIGHT ||
         avctx->width <= 0   || avctx->height <= 0) {
         av_log(NULL, AV_LOG_ERROR,  "Error resolution: %dx%d\n", avctx->width, avctx->height);
-        avcodec_free_context(&avctx);
+        avcodec_free_context_ijk(&avctx);
         return NULL;
     }
     
@@ -6133,7 +6133,7 @@ AVCodecContext * create_audio_decoder_from_codecpar (AVCodecParameters * codecpa
     avctx->extradata_size = codecpar->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE;
     avctx->extradata = av_mallocz(avctx->extradata_size);
     if (!avctx->extradata) {
-        avcodec_free_context(&avctx);
+        avcodec_free_context_ijk(&avctx);
         return NULL;
     }
     memcpy(avctx->extradata, codecpar->extradata, avctx->extradata_size);
@@ -6142,7 +6142,7 @@ AVCodecContext * create_audio_decoder_from_codecpar (AVCodecParameters * codecpa
     //sizeof(AudioSpecificConfig) >= 2
     if (avctx->extradata_size < 2) {
         av_log(NULL, AV_LOG_ERROR, "Wrong audio extradata length\n");
-        avcodec_free_context(&avctx);
+        avcodec_free_context_ijk(&avctx);
         return NULL;
     }
     
@@ -6150,7 +6150,7 @@ AVCodecContext * create_audio_decoder_from_codecpar (AVCodecParameters * codecpa
                                             avctx->extradata,
                                             avctx->extradata_size,
                                             1)) < 0) {
-        avcodec_free_context(&avctx);
+        avcodec_free_context_ijk(&avctx);
         return NULL;
     }
     
@@ -6171,7 +6171,7 @@ AVCodecContext * create_audio_decoder_from_codecpar (AVCodecParameters * codecpa
     if (avctx->sample_rate > FF_MAX_CODEC_SAMPLERATE ||
         avctx->sample_rate <= 0) {
         av_log(NULL, AV_LOG_ERROR,  "Error sample rate: %d\n", avctx->sample_rate);
-        avcodec_free_context(&avctx);
+        avcodec_free_context_ijk(&avctx);
         return NULL;
     }
     
@@ -6296,7 +6296,7 @@ int av_try_find_stream_info(AVFormatContext *ic, AVDictionary **options) {
 fail:
     for (int i = 0; i < IJK_PROBE_MAX_CTX_COUNT; i++) {
         if (avctx[i])
-            avcodec_free_context(&avctx[i]);
+            avcodec_free_context_ijk(&avctx[i]);
     }
     
     if (ret < 0) {

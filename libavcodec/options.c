@@ -168,7 +168,7 @@ AVCodecContext *avcodec_alloc_context3_ijk(const AVCodec *codec)
     return avctx;
 }
 
-void avcodec_free_context(AVCodecContext **pavctx)
+void avcodec_free_context_ijk(AVCodecContext **pavctx)
 {
     AVCodecContext *avctx = *pavctx;
 
@@ -491,8 +491,8 @@ static void test_copy(const AVCodec *c1, const AVCodec *c2)
         test_copy_print_codec(ctx2);
         avcodec_close(ctx1);
     }
-    avcodec_free_context(&ctx1);
-    avcodec_free_context(&ctx2);
+    avcodec_free_context_ijk(&ctx1);
+    avcodec_free_context_ijk(&ctx2);
 }
 
 int main(void)

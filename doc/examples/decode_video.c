@@ -177,8 +177,8 @@ int main(int argc, char **argv)
 
     fclose(f);
 
-    av_parser_close(parser);
-    avcodec_free_context(&c);
+    av_parser_close_ijk(parser);
+    avcodec_free_context_ijk(&c);
     av_frame_free(&frame);
     av_packet_free(&pkt);
 

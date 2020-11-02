@@ -108,7 +108,7 @@ int ff_load_image(uint8_t *data[4], int linesize[4],
 
 end:
     av_packet_unref_ijk(&pkt);
-    avcodec_free_context(&codec_ctx);
+    avcodec_free_context_ijk(&codec_ctx);
     avformat_close_input(&format_ctx);
     av_frame_free(&frame);
     av_dict_free(&opt);

@@ -83,7 +83,7 @@ static av_cold int tdsc_close(AVCodecContext *avctx)
     av_freep(&ctx->deflatebuffer);
     av_freep(&ctx->tilebuffer);
     av_freep(&ctx->cursor);
-    avcodec_free_context(&ctx->jpeg_avctx);
+    avcodec_free_context_ijk(&ctx->jpeg_avctx);
 
     return 0;
 }

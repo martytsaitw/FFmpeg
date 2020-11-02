@@ -232,7 +232,7 @@ int main(int argc, char **argv)
 
     av_frame_free(&frame);
     av_packet_free(&pkt);
-    avcodec_free_context(&c);
+    avcodec_free_context_ijk(&c);
 
     return 0;
 }

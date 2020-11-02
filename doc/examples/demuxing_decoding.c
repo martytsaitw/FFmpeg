@@ -376,8 +376,8 @@ int main (int argc, char **argv)
     }
 
 end:
-    avcodec_free_context(&video_dec_ctx);
-    avcodec_free_context(&audio_dec_ctx);
+    avcodec_free_context_ijk(&video_dec_ctx);
+    avcodec_free_context_ijk(&audio_dec_ctx);
     avformat_close_input(&fmt_ctx);
     if (video_dst_file)
         fclose(video_dst_file);

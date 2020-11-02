@@ -242,7 +242,7 @@
  * Once all the data has been written, the caller must call av_write_trailer()
  * to flush any buffered packets and finalize the output file, then close the IO
  * context (if any) and finally free the muxing context with
- * avformat_free_context().
+ * avformat_free_context_ijk().
  * @}
  *
  * @defgroup lavf_io I/O Read/Write
@@ -966,7 +966,7 @@ typedef struct AVStream {
      * - demuxing: Set by libavformat when the stream is created.
      * - muxing: May be set by the caller before avformat_write_header().
      *
-     * Freed by libavformat in avformat_free_context().
+     * Freed by libavformat in avformat_free_context_ijk().
      *
      * @see av_format_inject_global_side_data()
      */
@@ -1008,7 +1008,7 @@ typedef struct AVStream {
 
     /**
      * Codec parameters associated with this stream. Allocated and freed by
-     * libavformat in avformat_new_stream_ijk() and avformat_free_context()
+     * libavformat in avformat_new_stream_ijk() and avformat_free_context_ijk()
      * respectively.
      *
      * - demuxing: filled by libavformat on stream creation or in
@@ -1404,7 +1404,7 @@ typedef struct AVFormatContext {
      *             appear in av_read_frame().
      * - muxing: streams are created by the user before avformat_write_header().
      *
-     * Freed by libavformat in avformat_free_context().
+     * Freed by libavformat in avformat_free_context_ijk().
      */
     AVStream **streams;
 
@@ -1432,7 +1432,7 @@ typedef struct AVFormatContext {
      *           which is freeable by av_free(). Set to an empty string if it
      *           was NULL in avformat_init_output().
      *
-     * Freed by libavformat in avformat_free_context().
+     * Freed by libavformat in avformat_free_context_ijk().
      */
     char *url;
 
@@ -1574,7 +1574,7 @@ typedef struct AVFormatContext {
      * - demuxing: set by libavformat in avformat_open_input_ijk()
      * - muxing: may be set by the caller before avformat_write_header()
      *
-     * Freed by libavformat in avformat_free_context().
+     * Freed by libavformat in avformat_free_context_ijk().
      */
     AVDictionary *metadata;
 
@@ -2121,7 +2121,7 @@ const AVInputFormat *av_demuxer_iterate_ijk(void **opaque);
 
 /**
  * Allocate an AVFormatContext.
- * avformat_free_context() can be used to free the context and everything
+ * avformat_free_context_ijk() can be used to free the context and everything
  * allocated by the framework within it.
  */
 AVFormatContext *avformat_alloc_context_ijk(void);
@@ -2130,7 +2130,7 @@ AVFormatContext *avformat_alloc_context_ijk(void);
  * Free an AVFormatContext and all its streams.
  * @param s context to free
  */
-void avformat_free_context(AVFormatContext *s);
+void avformat_free_context_ijk(AVFormatContext *s);
 
 /**
  * Get the AVClass for AVFormatContext. It can be used in combination with
@@ -2149,7 +2149,7 @@ const AVClass *avformat_get_class_ijk(void);
  *
  * When muxing, should be called by the user before avformat_write_header().
  *
- * User is required to call avcodec_close() and avformat_free_context() to
+ * User is required to call avcodec_close() and avformat_free_context_ijk() to
  * clean up the allocation by avformat_new_stream_ijk().
  *
  * @param s media file handle
@@ -2206,7 +2206,7 @@ AVProgram *av_new_program(AVFormatContext *s, int id);
 
 /**
  * Allocate an AVFormatContext for an output format.
- * avformat_free_context() can be used to free the context and
+ * avformat_free_context_ijk() can be used to free the context and
  * everything allocated by the framework within it.
  *
  * @param *ctx is set to the created format context, or to NULL in

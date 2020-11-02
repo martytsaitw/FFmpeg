@@ -1042,7 +1042,7 @@ API changes, most recent first:
   See use av_stream_get_end_pts()
 
 2014-05-18 - 68c0518 / fd05602 - lavc 55.63.100 / 55.52.0 - avcodec.h
-  Add avcodec_free_context(). From now on it should be used for freeing
+  Add avcodec_free_context_ijk(). From now on it should be used for freeing
   AVCodecContext.
 
 2014-05-17 - 0eec06e / 1bd0bdc - lavu 52.84.100 / 54.5.0 - time.h
@@ -2434,8 +2434,8 @@ lavd 54.4.100 / 54.0.0, lavfi 3.5.0
 2011-02-06 - fe174fc - lavf 52.97.0 - avio.h
   Add flag for non-blocking protocols: URL_FLAG_NONBLOCK
 
-2011-02-04 - f124b08 - lavf 52.96.0 - avformat_free_context()
-  Add avformat_free_context() in avformat.h.
+2011-02-04 - f124b08 - lavf 52.96.0 - avformat_free_context_ijk()
+  Add avformat_free_context_ijk() in avformat.h.
 
 2011-02-03 - f5b82f4 - lavc 52.109.0 - add CODEC_ID_PRORES
   Add CODEC_ID_PRORES to avcodec.h.

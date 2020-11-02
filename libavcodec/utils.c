@@ -1989,7 +1989,7 @@ AVCodecParameters *avcodec_parameters_alloc_ijk(void)
     return par;
 }
 
-void avcodec_parameters_free(AVCodecParameters **ppar)
+void avcodec_parameters_free_ijk(AVCodecParameters **ppar)
 {
     AVCodecParameters *par = *ppar;
 

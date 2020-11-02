@@ -279,7 +279,7 @@ int main(int argc, char **argv)
     }
 end:
     avfilter_graph_free(&filter_graph);
-    avcodec_free_context(&dec_ctx);
+    avcodec_free_context_ijk(&dec_ctx);
     avformat_close_input(&fmt_ctx);
     av_frame_free(&frame);
     av_frame_free(&filt_frame);

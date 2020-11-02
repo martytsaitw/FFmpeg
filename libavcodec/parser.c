@@ -306,7 +306,7 @@ int av_parser_change(AVCodecParserContext *s, AVCodecContext *avctx,
     return 0;
 }
 
-void av_parser_close(AVCodecParserContext *s)
+void av_parser_close_ijk(AVCodecParserContext *s)
 {
     if (s) {
         if (s->parser->parser_close)

@@ -1831,7 +1831,7 @@ static void mpegts_deinit(AVFormatContext *s)
         if (ts_st) {
             av_freep(&ts_st->payload);
             if (ts_st->amux) {
-                avformat_free_context(ts_st->amux);
+                avformat_free_context_ijk(ts_st->amux);
                 ts_st->amux = NULL;
             }
         }

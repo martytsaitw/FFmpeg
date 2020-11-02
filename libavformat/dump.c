@@ -467,7 +467,7 @@ static void dump_stream_format_ijk(AVFormatContext *ic, int i,
 
     ret = avcodec_parameters_to_context_ijk(avctx, st->codecpar);
     if (ret < 0) {
-        avcodec_free_context(&avctx);
+        avcodec_free_context_ijk(&avctx);
         return;
     }
 
@@ -482,7 +482,7 @@ static void dump_stream_format_ijk(AVFormatContext *ic, int i,
     if (separator)
         av_opt_set(avctx, "dump_separator", separator, 0);
     avcodec_string(buf, sizeof(buf), avctx, is_output);
-    avcodec_free_context(&avctx);
+    avcodec_free_context_ijk(&avctx);
 
     av_log(NULL, AV_LOG_INFO, "    Stream #%d:%d", index, i);
 

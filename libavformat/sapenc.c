@@ -50,7 +50,7 @@ static int sap_write_close(AVFormatContext *s)
             continue;
         av_write_trailer(rtpctx);
         avio_closep(&rtpctx->pb);
-        avformat_free_context(rtpctx);
+        avformat_free_context_ijk(rtpctx);
         s->streams[i]->priv_data = NULL;
     }
 

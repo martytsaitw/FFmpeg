@@ -297,8 +297,8 @@ int main(int argc, char **argv)
 end:
     avformat_close_input(&ifmt_ctx);
     avformat_close_input(&ofmt_ctx);
-    avcodec_free_context(&decoder_ctx);
-    avcodec_free_context(&encoder_ctx);
+    avcodec_free_context_ijk(&decoder_ctx);
+    avcodec_free_context_ijk(&encoder_ctx);
     av_buffer_unref(&hw_device_ctx);
     return ret;
 }

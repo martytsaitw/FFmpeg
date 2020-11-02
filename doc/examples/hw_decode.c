@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
 
     if (output_file)
         fclose(output_file);
-    avcodec_free_context(&decoder_ctx);
+    avcodec_free_context_ijk(&decoder_ctx);
     avformat_close_input(&input_ctx);
     av_buffer_unref(&hw_device_ctx);
 

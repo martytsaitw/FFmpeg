@@ -2310,7 +2310,7 @@ static int mkv_check_new_extra_data(AVFormatContext *s, AVPacket *pkt)
                 return AVERROR(ENOMEM);
             ret = avcodec_parameters_copy_ijk(codecpriv_par, par);
             if (ret < 0) {
-                avcodec_parameters_free(&codecpriv_par);
+                avcodec_parameters_free_ijk(&codecpriv_par);
                 return ret;
             }
             memcpy(codecpriv_par->extradata, side_data, side_data_size);
@@ -2318,7 +2318,7 @@ static int mkv_check_new_extra_data(AVFormatContext *s, AVPacket *pkt)
             avio_seek(mkv->tracks_bc, track->codecpriv_offset, SEEK_SET);
             mkv_write_codecprivate(s, mkv->tracks_bc, codecpriv_par, 1, 0);
             avio_seek(mkv->tracks_bc, curpos, SEEK_SET);
-            avcodec_parameters_free(&codecpriv_par);
+            avcodec_parameters_free_ijk(&codecpriv_par);
         }
         break;
     default:

@@ -150,7 +150,7 @@ AVFormatContext *avformat_alloc_context_ijk(void)
 
     ic->internal = av_mallocz(sizeof(*ic->internal));
     if (!ic->internal) {
-        avformat_free_context(ic);
+        avformat_free_context_ijk(ic);
         return NULL;
     }
     ic->internal->offset = AV_NOPTS_VALUE;

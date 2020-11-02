@@ -123,7 +123,7 @@ int avcodec_dct_init(AVDCT *dsp)
     }
 #endif
 
-    avcodec_free_context(&avctx);
+    avcodec_free_context_ijk(&avctx);
 
     return 0;
 }
