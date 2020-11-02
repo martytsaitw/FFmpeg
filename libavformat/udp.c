@@ -1154,7 +1154,7 @@ static int udp_close(URLContext *h)
     return 0;
 }
 
-const URLProtocol ff_udp_protocol_ijk = {
+const URLProtocol ff_udp_ijk_protocol = {
     .name                = "udp",
     .url_open            = udp_open,
     .url_read            = udp_read,
