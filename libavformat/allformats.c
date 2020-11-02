@@ -493,7 +493,7 @@ extern AVInputFormat  ff_libopenmpt_demuxer;
 static const AVInputFormat * const *indev_list = NULL;
 static const AVOutputFormat * const *outdev_list = NULL;
 
-const AVOutputFormat *av_muxer_iterate(void **opaque)
+const AVOutputFormat *av_muxer_iterate_ijk(void **opaque)
 {
     static const uintptr_t size = sizeof(muxer_list)/sizeof(muxer_list[0]) - 1;
     uintptr_t i = (uintptr_t)*opaque;
@@ -591,7 +591,7 @@ AVOutputFormat *av_oformat_next(const AVOutputFormat *f)
         return f->next;
     else {
         void *opaque = NULL;
-        return (AVOutputFormat *)av_muxer_iterate(&opaque);
+        return (AVOutputFormat *)av_muxer_iterate_ijk(&opaque);
     }
 }
 

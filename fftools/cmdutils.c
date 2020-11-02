@@ -1308,7 +1308,7 @@ static int show_formats_devices(void *optctx, const char *opt, const char *arg, 
 
         if (muxdemuxers !=SHOW_DEMUXERS) {
             ofmt_opaque = NULL;
-            while ((ofmt = av_muxer_iterate(&ofmt_opaque))) {
+            while ((ofmt = av_muxer_iterate_ijk(&ofmt_opaque))) {
                 is_dev = is_device(ofmt->priv_class);
                 if (!is_dev && device_only)
                     continue;

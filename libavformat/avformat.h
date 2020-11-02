@@ -2106,7 +2106,7 @@ AVOutputFormat *av_oformat_next(const AVOutputFormat *f);
  * @return the next registered muxer or NULL when the iteration is
  *         finished
  */
-const AVOutputFormat *av_muxer_iterate(void **opaque);
+const AVOutputFormat *av_muxer_iterate_ijk(void **opaque);
 
 /**
  * Iterate over all registered demuxers.
