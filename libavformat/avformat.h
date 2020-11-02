@@ -3038,7 +3038,7 @@ AVRational av_guess_frame_rate(AVFormatContext *ctx, AVStream *stream, AVFrame *
 int avformat_match_stream_specifier(AVFormatContext *s, AVStream *st,
                                     const char *spec);
 
-int avformat_queue_attached_pictures(AVFormatContext *s);
+int avformat_queue_attached_pictures_ijk(AVFormatContext *s);
 
 #if FF_API_OLD_BSF
 /**

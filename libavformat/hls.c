@@ -1992,7 +1992,7 @@ static int hls_read_header(AVFormatContext *s, AVDictionary **options)
 
         if (pls->id3_deferred_extra && pls->ctx->nb_streams == 1) {
             ff_id3v2_parse_apic(pls->ctx, &pls->id3_deferred_extra);
-            avformat_queue_attached_pictures(pls->ctx);
+            avformat_queue_attached_pictures_ijk(pls->ctx);
             ff_id3v2_parse_priv(pls->ctx, &pls->id3_deferred_extra);
             ff_id3v2_free_extra_meta(&pls->id3_deferred_extra);
             pls->id3_deferred_extra = NULL;

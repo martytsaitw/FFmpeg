@@ -480,7 +480,7 @@ int ff_packet_list_put(AVPacketList **packet_buffer,
     return 0;
 }
 
-int avformat_queue_attached_pictures(AVFormatContext *s)
+int avformat_queue_attached_pictures_ijk(AVFormatContext *s)
 {
     int i, ret;
     for (i = 0; i < s->nb_streams; i++)
@@ -670,7 +670,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     }
     ff_id3v2_free_extra_meta(&id3v2_extra_meta);
 
-    if ((ret = avformat_queue_attached_pictures(s)) < 0)
+    if ((ret = avformat_queue_attached_pictures_ijk(s)) < 0)
         goto fail;
 
     if (!(s->flags&AVFMT_FLAG_PRIV_OPT) && s->pb && !s->internal->data_offset)
@@ -2571,7 +2571,7 @@ int av_seek_frame(AVFormatContext *s, int stream_index,
     ret = seek_frame_internal(s, stream_index, timestamp, flags);
 
     if (ret >= 0)
-        ret = avformat_queue_attached_pictures(s);
+        ret = avformat_queue_attached_pictures_ijk(s);
 
     return ret;
 }
@@ -2608,7 +2608,7 @@ int avformat_seek_file_ijk(AVFormatContext *s, int stream_index, int64_t min_ts,
                                      ts, max_ts, flags);
 
         if (ret >= 0)
-            ret = avformat_queue_attached_pictures(s);
+            ret = avformat_queue_attached_pictures_ijk(s);
         return ret;
     }
 
