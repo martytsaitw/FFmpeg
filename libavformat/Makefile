@@ -142,7 +142,7 @@ OBJS-$(CONFIG_CODEC2_DEMUXER)            += codec2.o rawdec.o pcm.o
 OBJS-$(CONFIG_CODEC2_MUXER)              += codec2.o rawenc.o
 OBJS-$(CONFIG_CODEC2RAW_DEMUXER)         += codec2.o rawdec.o pcm.o
 OBJS-$(CONFIG_CODEC2RAW_MUXER)           += rawenc.o
-OBJS-$(CONFIG_CONCAT_DEMUXER)            += concatdec.o
+OBJS-$(CONFIG_CONCAT_IJK_DEMUXER)        += concatdec.o
 OBJS-$(CONFIG_CRC_MUXER)                 += crcenc.o
 OBJS-$(CONFIG_DATA_DEMUXER)              += rawdec.o
 OBJS-$(CONFIG_DATA_MUXER)                += rawenc.o
@@ -305,7 +305,7 @@ OBJS-$(CONFIG_MLV_DEMUXER)               += mlvdec.o riffdec.o
 OBJS-$(CONFIG_MM_DEMUXER)                += mm.o
 OBJS-$(CONFIG_MMF_DEMUXER)               += mmf.o
 OBJS-$(CONFIG_MMF_MUXER)                 += mmf.o rawenc.o
-OBJS-$(CONFIG_MOV_DEMUXER)               += mov.o mov_chan.o mov_esds.o replaygain.o
+OBJS-$(CONFIG_MOV_IJK_DEMUXER)           += mov.o mov_chan.o mov_esds.o replaygain.o
 OBJS-$(CONFIG_MOV_MUXER)                 += movenc.o avc.o hevc.o vpcc.o \
                                             movenchint.o mov_chan.o rtp.o \
                                             movenccenc.o rawutils.o
@@ -449,7 +449,7 @@ OBJS-$(CONFIG_RTP_MUXER)                 += rtp.o         \
                                             rtpenc_vp9.o                \
                                             rtpenc_xiph.o \
                                             avc.o hevc.o
-OBJS-$(CONFIG_RTSP_DEMUXER)              += rtsp.o rtspdec.o httpauth.o \
+OBJS-$(CONFIG_RTSP_IJK_DEMUXER)          += rtsp.o rtspdec.o httpauth.o \
                                             urldecode.o
 OBJS-$(CONFIG_RTSP_MUXER)                += rtsp.o rtspenc.o httpauth.o \
                                             urldecode.o
