@@ -81,7 +81,7 @@ int ff_rtsp_setup_output_streams(AVFormatContext *s, const char *addr)
         return AVERROR_INVALIDDATA;
     }
     av_log(s, AV_LOG_VERBOSE, "SDP:\n%s\n", sdp);
-    ff_rtsp_send_cmd_with_content(s, "ANNOUNCE", rt->control_uri,
+    ff_rtsp_send_cmd_ijk_with_content(s, "ANNOUNCE", rt->control_uri,
                                   "Content-Type: application/sdp\r\n",
                                   reply, NULL, sdp, strlen(sdp));
     av_free(sdp);
@@ -116,7 +116,7 @@ static int rtsp_write_record(AVFormatContext *s)
 
     snprintf(cmd, sizeof(cmd),
              "Range: npt=0.000-\r\n");
-    ff_rtsp_send_cmd(s, "RECORD", rt->control_uri, cmd, reply, NULL);
+    ff_rtsp_send_cmd_ijk(s, "RECORD", rt->control_uri, cmd, reply, NULL);
     if (reply->status_code != RTSP_STATUS_OK)
         return ff_rtsp_averror(reply->status_code, -1);
     rt->state = RTSP_STATE_STREAMING;
@@ -127,13 +127,13 @@ static int rtsp_write_header(AVFormatContext *s)
 {
     int ret;
 
-    ret = ff_rtsp_connect(s);
+    ret = ff_rtsp_connect_ijk(s);
     if (ret)
         return ret;
 
     if (rtsp_write_record(s) < 0) {
-        ff_rtsp_close_streams(s);
-        ff_rtsp_close_connections(s);
+        ff_rtsp_close_streams_ijk(s);
+        ff_rtsp_close_connections_ijk(s);
         return AVERROR_INVALIDDATA;
     }
     return 0;
@@ -194,15 +194,15 @@ static int rtsp_write_packet(AVFormatContext *s, AVPacket *pkt)
         if (p.revents & POLLIN) {
             RTSPMessageHeader reply;
 
-            /* Don't let ff_rtsp_read_reply handle interleaved packets,
+            /* Don't let ff_rtsp_read_reply_ijk handle interleaved packets,
              * since it would block and wait for an RTSP reply on the socket
              * (which may not be coming any time soon) if it handles
              * interleaved packets internally. */
-            ret = ff_rtsp_read_reply(s, &reply, NULL, 1, NULL);
+            ret = ff_rtsp_read_reply_ijk(s, &reply, NULL, 1, NULL);
             if (ret < 0)
                 return AVERROR(EPIPE);
             if (ret == 1)
-                ff_rtsp_skip_packet(s);
+                ff_rtsp_skip_packet_ijk(s);
             /* XXX: parse message */
             if (rt->state != RTSP_STATE_STREAMING)
                 return AVERROR(EPIPE);
@@ -230,13 +230,13 @@ static int rtsp_write_close(AVFormatContext *s)
 
     // If we want to send RTCP_BYE packets, these are sent by av_write_trailer.
     // Thus call this on all streams before doing the teardown. This is
-    // done within ff_rtsp_undo_setup.
-    ff_rtsp_undo_setup(s, 1);
+    // done within ff_rtsp_undo_setup_ijk.
+    ff_rtsp_undo_setup_ijk(s, 1);
 
-    ff_rtsp_send_cmd_async(s, "TEARDOWN", rt->control_uri, NULL);
+    ff_rtsp_send_cmd_ijk_async_ijk(s, "TEARDOWN", rt->control_uri, NULL);
 
-    ff_rtsp_close_streams(s);
-    ff_rtsp_close_connections(s);
+    ff_rtsp_close_streams_ijk(s);
+    ff_rtsp_close_connections_ijk(s);
     ff_network_close();
     return 0;
 }
