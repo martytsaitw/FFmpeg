@@ -857,7 +857,7 @@ int ff_rtsp_open_transport_ctx_ijk(AVFormatContext *s, RTSPStream *rtsp_st)
     return 0;
 }
 
-#if CONFIG_RTSP_DEMUXER || CONFIG_RTSP_MUXER
+#if CONFIG_RTSP_IJK_DEMUXER || CONFIG_RTSP_MUXER
 static void rtsp_parse_range(int *min_ptr, int *max_ptr, const char **pp)
 {
     const char *q;
@@ -1875,7 +1875,7 @@ redirect:
         break;
     }
 
-    if (CONFIG_RTSP_DEMUXER && s->iformat)
+    if (CONFIG_RTSP_IJK_DEMUXER && s->iformat)
         err = ff_rtsp_setup_input_streams_ijk(s, reply);
     else if (CONFIG_RTSP_MUXER)
         err = ff_rtsp_setup_output_streams_ijk(s, host);
@@ -1929,7 +1929,7 @@ redirect:
     ff_network_close();
     return err;
 }
-#endif /* CONFIG_RTSP_DEMUXER || CONFIG_RTSP_MUXER */
+#endif /* CONFIG_RTSP_IJK_DEMUXER || CONFIG_RTSP_MUXER */
 
 #if CONFIG_RTPDEC
 static int parse_rtsp_message(AVFormatContext *s)
@@ -2021,7 +2021,7 @@ static int udp_read_packet(AVFormatContext *s, RTSPStream **prtsp_st,
                     j+=2;
                 }
             }
-#if CONFIG_RTSP_DEMUXER
+#if CONFIG_RTSP_IJK_DEMUXER
             if (rt->rtsp_hd && p[0].revents & POLLIN) {
                 if ((ret = parse_rtsp_message(s)) < 0) {
                     return ret;
@@ -2088,7 +2088,7 @@ static int read_packet(AVFormatContext *s,
 
     switch(rt->lower_transport) {
     default:
-#if CONFIG_RTSP_DEMUXER
+#if CONFIG_RTSP_IJK_DEMUXER
     case RTSP_LOWER_TRANSPORT_TCP:
         len = ff_rtsp_tcp_read_packet_ijk(s, rtsp_st, rt->recvbuf, RECVBUF_SIZE);
         break;
