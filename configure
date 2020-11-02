@@ -7203,8 +7203,8 @@ print_enabled_components libavfilter/filter_list.c AVFilter filter_list $FILTER_
 print_enabled_components libavcodec/codec_list.c AVCodec codec_list $CODEC_LIST
 print_enabled_components libavcodec/parser_list.c AVCodecParser parser_list $PARSER_LIST
 print_enabled_components libavcodec/bsf_list.c AVBitStreamFilter bitstream_filters $BSF_LIST
-print_enabled_components libavformat/demuxer_list_ijk.c AVInputFormat demuxer_list_ijk $DEMUXER_LIST
-print_enabled_components libavformat/muxer_list.c AVOutputFormat muxer_list $MUXER_LIST
+print_enabled_components libavformat/demuxer_list_ijk_ijk.c AVInputFormat demuxer_list_ijk_ijk $DEMUXER_LIST
+print_enabled_components libavformat/muxer_list_ijk.c AVOutputFormat muxer_list_ijk $MUXER_LIST
 print_enabled_components libavdevice/indev_list.c AVInputFormat indev_list $INDEV_LIST
 print_enabled_components libavdevice/outdev_list.c AVOutputFormat outdev_list $OUTDEV_LIST
 print_enabled_components libavformat/protocol_list.c URLProtocol url_protocols $PROTOCOL_LIST

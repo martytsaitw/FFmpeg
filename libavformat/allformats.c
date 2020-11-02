@@ -487,20 +487,20 @@ extern AVInputFormat  ff_libgme_demuxer;
 extern AVInputFormat  ff_libmodplug_demuxer;
 extern AVInputFormat  ff_libopenmpt_demuxer;
 
-#include "libavformat/muxer_list.c"
-#include "libavformat/demuxer_list_ijk.c"
+#include "libavformat/muxer_list_ijk.c"
+#include "libavformat/demuxer_list_ijk_ijk.c"
 
 static const AVInputFormat * const *indev_list = NULL;
 static const AVOutputFormat * const *outdev_list = NULL;
 
 const AVOutputFormat *av_muxer_iterate_ijk(void **opaque)
 {
-    static const uintptr_t size = sizeof(muxer_list)/sizeof(muxer_list[0]) - 1;
+    static const uintptr_t size = sizeof(muxer_list_ijk)/sizeof(muxer_list_ijk[0]) - 1;
     uintptr_t i = (uintptr_t)*opaque;
     const AVOutputFormat *f = NULL;
 
     if (i < size) {
-        f = muxer_list[i];
+        f = muxer_list_ijk[i];
     } else if (indev_list) {
         f = outdev_list[i - size];
     }
@@ -512,12 +512,12 @@ const AVOutputFormat *av_muxer_iterate_ijk(void **opaque)
 
 const AVInputFormat *av_demuxer_iterate_ijk(void **opaque)
 {
-    static const uintptr_t size = sizeof(demuxer_list_ijk)/sizeof(demuxer_list_ijk[0]) - 1;
+    static const uintptr_t size = sizeof(demuxer_list_ijk_ijk)/sizeof(demuxer_list_ijk_ijk[0]) - 1;
     uintptr_t i = (uintptr_t)*opaque;
     const AVInputFormat *f = NULL;
 
     if (i < size) {
-        f = demuxer_list_ijk[i];
+        f = demuxer_list_ijk_ijk[i];
     } else if (outdev_list) {
         f = indev_list[i - size];
     }
@@ -540,7 +540,7 @@ static void av_format_init_next(void)
 
     ff_mutex_lock(&avpriv_register_devices_mutex);
 
-    for (int i = 0; (out = (AVOutputFormat*)muxer_list[i]); i++) {
+    for (int i = 0; (out = (AVOutputFormat*)muxer_list_ijk[i]); i++) {
         if (prevout)
             prevout->next = out;
         prevout = out;
@@ -554,7 +554,7 @@ static void av_format_init_next(void)
         }
     }
 
-    for (int i = 0; (in = (AVInputFormat*)demuxer_list_ijk[i]); i++) {
+    for (int i = 0; (in = (AVInputFormat*)demuxer_list_ijk_ijk[i]); i++) {
         if (previn)
             previn->next = in;
         previn = in;
