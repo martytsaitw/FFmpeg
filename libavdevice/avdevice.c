@@ -89,7 +89,7 @@ static void *device_next(void *prev, int output,
                 break;
             pc = ((AVOutputFormat *)prev)->priv_class;
         } else {
-            if (!(prev = av_iformat_next(prev)))
+            if (!(prev = av_iformat_next_ijk(prev)))
                 break;
             pc = ((AVInputFormat *)prev)->priv_class;
         }

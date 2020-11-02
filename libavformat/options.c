@@ -61,7 +61,7 @@ static const AVClass *format_child_class_next(const AVClass *prev)
     if (!prev)
         return &ff_avio_class;
 
-    while ((ifmt = av_iformat_next(ifmt)))
+    while ((ifmt = av_iformat_next_ijk(ifmt)))
         if (ifmt->priv_class == prev)
             break;
 
@@ -70,7 +70,7 @@ static const AVClass *format_child_class_next(const AVClass *prev)
             if (ofmt->priv_class == prev)
                 break;
     if (!ofmt)
-        while (ifmt = av_iformat_next(ifmt))
+        while (ifmt = av_iformat_next_ijk(ifmt))
             if (ifmt->priv_class)
                 return ifmt->priv_class;
 

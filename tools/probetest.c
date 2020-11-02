@@ -40,7 +40,7 @@ static void probe(AVProbeData *pd, int type, int p, int size)
     int i = 0;
     AVInputFormat *fmt = NULL;
 
-    while ((fmt = av_iformat_next(fmt))) {
+    while ((fmt = av_iformat_next_ijk(fmt))) {
         if (fmt->flags & AVFMT_NOFILE)
             continue;
         if (fmt->read_probe &&
@@ -67,7 +67,7 @@ static void print_times(void)
     int i = 0;
     AVInputFormat *fmt = NULL;
 
-    while ((fmt = av_iformat_next(fmt))) {
+    while ((fmt = av_iformat_next_ijk(fmt))) {
         if (fmt->flags & AVFMT_NOFILE)
             continue;
         if (time_array[i] > 1000000) {

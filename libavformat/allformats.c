@@ -571,7 +571,7 @@ static void av_format_init_next(void)
     ff_mutex_unlock(&avpriv_register_devices_mutex);
 }
 
-AVInputFormat *av_iformat_next(const AVInputFormat *f)
+AVInputFormat *av_iformat_next_ijk(const AVInputFormat *f)
 {
     ff_thread_once(&av_format_next_init, av_format_init_next);
 

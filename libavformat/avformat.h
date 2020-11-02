@@ -43,7 +43,7 @@
  *
  * A supported input format is described by an AVInputFormat struct, conversely
  * an output format is described by AVOutputFormat. You can iterate over all
- * registered input/output formats using the av_iformat_next() /
+ * registered input/output formats using the av_iformat_next_ijk() /
  * av_oformat_next() functions. The protocols layer is not part of the public
  * API, so you can only get the names of supported protocols with the
  * avio_enum_protocols() function.
@@ -2086,7 +2086,7 @@ int avformat_network_deinit(void);
  * or NULL if f is the last one.
  */
 attribute_deprecated
-AVInputFormat  *av_iformat_next(const AVInputFormat  *f);
+AVInputFormat  *av_iformat_next_ijk(const AVInputFormat  *f);
 
 /**
  * If f is NULL, returns the first registered output format,

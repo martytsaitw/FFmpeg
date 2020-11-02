@@ -95,7 +95,7 @@ static void show_format_opts(void)
     show_opts(avformat_get_class_ijk());
 
     printf("@section Format-specific AVOptions\n");
-    while ((iformat = av_iformat_next(iformat))) {
+    while ((iformat = av_iformat_next_ijk(iformat))) {
         if (!iformat->priv_class)
             continue;
         printf("@subsection %s AVOptions\n", iformat->priv_class->class_name);
