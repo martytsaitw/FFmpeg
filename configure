@@ -7207,7 +7207,7 @@ print_enabled_components libavformat/demuxer_list_ijk_ijk.c AVInputFormat demuxe
 print_enabled_components libavformat/muxer_list_ijk.c AVOutputFormat muxer_list_ijk $MUXER_LIST
 print_enabled_components libavdevice/indev_list.c AVInputFormat indev_list $INDEV_LIST
 print_enabled_components libavdevice/outdev_list.c AVOutputFormat outdev_list $OUTDEV_LIST
-print_enabled_components libavformat/protocol_list.c URLProtocol url_protocols $PROTOCOL_LIST
+print_enabled_components libavformat/protocol_list.c URLProtocol url_protocols_ijk $PROTOCOL_LIST
 
 # Settings for pkg-config files
 
