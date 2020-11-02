@@ -474,7 +474,7 @@ typedef struct RTSPStream {
     char crypto_params[100];
 } RTSPStream;
 
-void ff_rtsp_parse_line(AVFormatContext *s,
+void ff_rtsp_parse_line_ijk(AVFormatContext *s,
                         RTSPMessageHeader *reply, const char *buf,
                         RTSPState *rt, const char *method);
 
@@ -483,7 +483,7 @@ void ff_rtsp_parse_line(AVFormatContext *s,
  *
  * @see rtsp_send_cmd_with_content_async
  */
-int ff_rtsp_send_cmd_async(AVFormatContext *s, const char *method,
+int ff_rtsp_send_cmd_async_ijk(AVFormatContext *s, const char *method,
                            const char *url, const char *headers);
 
 /**
@@ -502,7 +502,7 @@ int ff_rtsp_send_cmd_async(AVFormatContext *s, const char *method,
  *
  * @return zero if success, nonzero otherwise
  */
-int ff_rtsp_send_cmd_with_content(AVFormatContext *s,
+int ff_rtsp_send_cmd_with_content_ijk(AVFormatContext *s,
                                   const char *method, const char *url,
                                   const char *headers,
                                   RTSPMessageHeader *reply,
@@ -515,7 +515,7 @@ int ff_rtsp_send_cmd_with_content(AVFormatContext *s,
  *
  * @see rtsp_send_cmd_with_content
  */
-int ff_rtsp_send_cmd(AVFormatContext *s, const char *method,
+int ff_rtsp_send_cmd_ijk(AVFormatContext *s, const char *method,
                      const char *url, const char *headers,
                      RTSPMessageHeader *reply, unsigned char **content_ptr);
 
@@ -542,14 +542,14 @@ int ff_rtsp_send_cmd(AVFormatContext *s, const char *method,
  * @return 1 if a data packets is ready to be received, -1 on error,
  *          and 0 on success.
  */
-int ff_rtsp_read_reply(AVFormatContext *s, RTSPMessageHeader *reply,
+int ff_rtsp_read_reply_ijk(AVFormatContext *s, RTSPMessageHeader *reply,
                        unsigned char **content_ptr,
                        int return_on_interleaved_data, const char *method);
 
 /**
  * Skip a RTP/TCP interleaved packet.
  */
-void ff_rtsp_skip_packet(AVFormatContext *s);
+void ff_rtsp_skip_packet_ijk(AVFormatContext *s);
 
 /**
  * Connect to the RTSP server and set up the individual media streams.
@@ -560,82 +560,82 @@ void ff_rtsp_skip_packet(AVFormatContext *s);
  * @return 0 on success, < 0 on error. Cleans up all allocations done
  *          within the function on error.
  */
-int ff_rtsp_connect(AVFormatContext *s);
+int ff_rtsp_connect_ijk(AVFormatContext *s);
 
 /**
  * Close and free all streams within the RTSP (de)muxer
  *
  * @param s RTSP (de)muxer context
  */
-void ff_rtsp_close_streams(AVFormatContext *s);
+void ff_rtsp_close_streams_ijk(AVFormatContext *s);
 
 /**
  * Close all connection handles within the RTSP (de)muxer
  *
  * @param s RTSP (de)muxer context
  */
-void ff_rtsp_close_connections(AVFormatContext *s);
+void ff_rtsp_close_connections_ijk(AVFormatContext *s);
 
 /**
  * Get the description of the stream and set up the RTSPStream child
  * objects.
  */
-int ff_rtsp_setup_input_streams(AVFormatContext *s, RTSPMessageHeader *reply);
+int ff_rtsp_setup_input_streams_ijk(AVFormatContext *s, RTSPMessageHeader *reply);
 
 /**
  * Announce the stream to the server and set up the RTSPStream child
  * objects for each media stream.
  */
-int ff_rtsp_setup_output_streams(AVFormatContext *s, const char *addr);
+int ff_rtsp_setup_output_streams_ijk(AVFormatContext *s, const char *addr);
 
 /**
  * Parse RTSP commands (OPTIONS, PAUSE and TEARDOWN) during streaming in
  * listen mode.
  */
-int ff_rtsp_parse_streaming_commands(AVFormatContext *s);
+int ff_rtsp_parse_streaming_commands_ijk(AVFormatContext *s);
 
 /**
  * Parse an SDP description of streams by populating an RTSPState struct
  * within the AVFormatContext; also allocate the RTP streams and the
  * pollfd array used for UDP streams.
  */
-int ff_sdp_parse(AVFormatContext *s, const char *content);
+int ff_sdp_parse_ijk(AVFormatContext *s, const char *content);
 
 /**
  * Receive one RTP packet from an TCP interleaved RTSP stream.
  */
-int ff_rtsp_tcp_read_packet(AVFormatContext *s, RTSPStream **prtsp_st,
+int ff_rtsp_tcp_read_packet_ijk(AVFormatContext *s, RTSPStream **prtsp_st,
                             uint8_t *buf, int buf_size);
 
 /**
  * Send buffered packets over TCP.
  */
-int ff_rtsp_tcp_write_packet(AVFormatContext *s, RTSPStream *rtsp_st);
+int ff_rtsp_tcp_write_packet_ijk(AVFormatContext *s, RTSPStream *rtsp_st);
 
 /**
  * Receive one packet from the RTSPStreams set up in the AVFormatContext
  * (which should contain a RTSPState struct as priv_data).
  */
-int ff_rtsp_fetch_packet(AVFormatContext *s, AVPacket *pkt);
+int ff_rtsp_fetch_packet_ijk(AVFormatContext *s, AVPacket *pkt);
 
 /**
  * Do the SETUP requests for each stream for the chosen
  * lower transport mode.
  * @return 0 on success, <0 on error, 1 if protocol is unavailable
  */
-int ff_rtsp_make_setup_request(AVFormatContext *s, const char *host, int port,
+int ff_rtsp_make_setup_request_ijk(AVFormatContext *s, const char *host, int port,
                                int lower_transport, const char *real_challenge);
 
 /**
- * Undo the effect of ff_rtsp_make_setup_request, close the
+ * Undo the effect of ff_rtsp_make_setup_request_ijk, close the
  * transport_priv and rtp_handle fields.
  */
-void ff_rtsp_undo_setup(AVFormatContext *s, int send_packets);
+void ff_rtsp_undo_setup_ijk(AVFormatContext *s, int send_packets);
 
 /**
  * Open RTSP transport context.
  */
-int ff_rtsp_open_transport_ctx(AVFormatContext *s, RTSPStream *rtsp_st);
+int ff_rtsp_open_transport_ctx_ijk(AVFormatContext *s, RTSPStream *rtsp_st);
 
 extern const AVOption ff_rtsp_options[];
 
