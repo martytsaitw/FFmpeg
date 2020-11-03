@@ -166,6 +166,13 @@ OBJS = adler32.o                                                        \
        xga_font_data.o                                                  \
        xtea.o                                                           \
        tea.o                                                            \
+       fftools_cmdutils.o                 \
+       fftools_ffmpeg_filter.o            \
+       fftools_ffmpeg_hw.o                \
+       fftools_ffmpeg_opt.o               \
+       fftools_ffmpeg_videotoolbox.o      \
+       fftools_ffmpeg.o                   \
+       mobileffmpeg_exception.o
 
 OBJS-$(CONFIG_CUDA)                     += hwcontext_cuda.o
 OBJS-$(CONFIG_D3D11VA)                  += hwcontext_d3d11va.o
