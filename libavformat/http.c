@@ -1779,7 +1779,7 @@ static const AVClass flavor ## _context_class = {   \
 #if CONFIG_HTTP_PROTOCOL
 HTTP_CLASS(http);
 
-const URLProtocol ff_http_protocol_xij = {
+const URLProtocol ff_http_xij_protocol = {
     .name                = "http",
     .url_open2           = http_open,
     .url_accept          = http_accept,
