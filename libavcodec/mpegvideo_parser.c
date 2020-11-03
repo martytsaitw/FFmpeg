@@ -54,7 +54,7 @@ static void mpegvideo_extract_headers(AVCodecParserContext *s,
 
     while (buf < buf_end) {
         start_code= -1;
-        buf= avpriv_find_start_code(buf, buf_end, &start_code);
+        buf= avpriv_find_start_code_xij(buf, buf_end, &start_code);
         bytes_left = buf_end - buf;
         switch(start_code) {
         case PICTURE_START_CODE:
@@ -69,7 +69,7 @@ static void mpegvideo_extract_headers(AVCodecParserContext *s,
                 pc->width  = (buf[0] << 4) | (buf[1] >> 4);
                 pc->height = ((buf[1] & 0x0f) << 8) | buf[2];
                 if(!avctx->width || !avctx->height || !avctx->coded_width || !avctx->coded_height){
-                    set_dim_ret = ff_set_dimensions(avctx, pc->width, pc->height);
+                    set_dim_ret = ff_set_dimensions_xij(avctx, pc->width, pc->height);
                     did_set_size=1;
                 }
                 pix_fmt = AV_PIX_FMT_YUV420P;
@@ -105,7 +105,7 @@ static void mpegvideo_extract_headers(AVCodecParserContext *s,
                         pc->height = (pc->height& 0xFFF) | ( vert_size_ext << 12);
                         bit_rate = (bit_rate&0x3FFFF) | (bit_rate_ext << 18);
                         if(did_set_size)
-                            set_dim_ret = ff_set_dimensions(avctx, pc->width, pc->height);
+                            set_dim_ret = ff_set_dimensions_xij(avctx, pc->width, pc->height);
                         avctx->framerate.num = pc->frame_rate.num * (frame_rate_ext_n + 1);
                         avctx->framerate.den = pc->frame_rate.den * (frame_rate_ext_d + 1);
                         avctx->codec_id = AV_CODEC_ID_MPEG2VIDEO;
@@ -194,7 +194,7 @@ static int mpegvideo_parse(AVCodecParserContext *s,
     }else{
         next= ff_mpeg1_find_frame_end(pc, buf, buf_size, s);
 
-        if (ff_combine_frame(pc, next, &buf, &buf_size) < 0) {
+        if (ff_combine_frame_xij(pc, next, &buf, &buf_size) < 0) {
             *poutbuf = NULL;
             *poutbuf_size = 0;
             return buf_size;
@@ -241,6 +241,6 @@ AVCodecParser ff_mpegvideo_parser = {
     .priv_data_size = sizeof(struct MpvParseContext),
     .parser_init    = mpegvideo_parse_init,
     .parser_parse   = mpegvideo_parse,
-    .parser_close   = ff_parse_close,
+    .parser_close   = ff_parse_close_xij,
     .split          = mpegvideo_split,
 };

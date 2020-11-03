@@ -921,7 +921,7 @@ rtsp://@var{hostname}[:@var{port}]/@var{path}
 
 Options can be set on the @command{ffmpeg}/@command{ffplay} command
 line, or set in code via @code{AVOption}s or in
-@code{avformat_open_input}.
+@code{avformat_open_input_ijk}.
 
 The following options are supported.
 

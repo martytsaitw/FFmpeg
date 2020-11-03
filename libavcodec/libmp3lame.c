@@ -278,16 +278,16 @@ static int mp3lame_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
         // Check if subtraction resulted in an overflow
         if ((discard_padding < avctx->frame_size) != (avpkt->duration > 0)) {
             av_log(avctx, AV_LOG_ERROR, "discard padding overflow\n");
-            av_packet_unref(avpkt);
+            av_packet_unref_ijk(avpkt);
             av_free(avpkt);
             return AVERROR(EINVAL);
         }
         if ((!s->delay_sent && avctx->initial_padding > 0) || discard_padding > 0) {
-            uint8_t* side_data = av_packet_new_side_data(avpkt,
+            uint8_t* side_data = av_packet_new_side_data_xij(avpkt,
                                                          AV_PKT_DATA_SKIP_SAMPLES,
                                                          10);
             if(!side_data) {
-                av_packet_unref(avpkt);
+                av_packet_unref_ijk(avpkt);
                 av_free(avpkt);
                 return AVERROR(ENOMEM);
             }

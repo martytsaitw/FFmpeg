@@ -39,10 +39,10 @@ int ff_flac_write_header(AVIOContext *pb, uint8_t *extradata,
         return AVERROR_INVALIDDATA;
 
     /* write "fLaC" stream marker and first metadata block header */
-    avio_write(pb, header, 8);
+    avio_write_xij(pb, header, 8);
 
     /* write STREAMINFO */
-    avio_write(pb, extradata, FLAC_STREAMINFO_SIZE);
+    avio_write_xij(pb, extradata, FLAC_STREAMINFO_SIZE);
 
     return 0;
 }

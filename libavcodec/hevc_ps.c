@@ -74,7 +74,7 @@ static void remove_pps(HEVCParamSets *s, int id)
 {
     if (s->pps_list[id] && s->pps == (const HEVCPPS*)s->pps_list[id]->data)
         s->pps = NULL;
-    av_buffer_unref(&s->pps_list[id]);
+    av_buffer_unref_xij(&s->pps_list[id]);
 }
 
 static void remove_sps(HEVCParamSets *s, int id)
@@ -91,7 +91,7 @@ static void remove_sps(HEVCParamSets *s, int id)
 
         av_assert0(!(s->sps_list[id] && s->sps == (HEVCSPS*)s->sps_list[id]->data));
     }
-    av_buffer_unref(&s->sps_list[id]);
+    av_buffer_unref_xij(&s->sps_list[id]);
 }
 
 static void remove_vps(HEVCParamSets *s, int id)
@@ -105,7 +105,7 @@ static void remove_vps(HEVCParamSets *s, int id)
             if (s->sps_list[i] && ((HEVCSPS*)s->sps_list[i]->data)->vps_id == id)
                 remove_sps(s, i);
     }
-    av_buffer_unref(&s->vps_list[id]);
+    av_buffer_unref_xij(&s->vps_list[id]);
 }
 
 int ff_hevc_decode_short_term_rps(GetBitContext *gb, AVCodecContext *avctx,
@@ -420,7 +420,7 @@ int ff_hevc_decode_nal_vps(GetBitContext *gb, AVCodecContext *avctx,
     int vps_id = 0;
     ptrdiff_t nal_size;
     HEVCVPS *vps;
-    AVBufferRef *vps_buf = av_buffer_allocz(sizeof(*vps));
+    AVBufferRef *vps_buf = av_buffer_allocz_xij(sizeof(*vps));
 
     if (!vps_buf)
         return AVERROR(ENOMEM);
@@ -534,7 +534,7 @@ int ff_hevc_decode_nal_vps(GetBitContext *gb, AVCodecContext *avctx,
 
     if (ps->vps_list[vps_id] &&
         !memcmp(ps->vps_list[vps_id]->data, vps_buf->data, vps_buf->size)) {
-        av_buffer_unref(&vps_buf);
+        av_buffer_unref_xij(&vps_buf);
     } else {
         remove_vps(ps, vps_id);
         ps->vps_list[vps_id] = vps_buf;
@@ -543,7 +543,7 @@ int ff_hevc_decode_nal_vps(GetBitContext *gb, AVCodecContext *avctx,
     return 0;
 
 err:
-    av_buffer_unref(&vps_buf);
+    av_buffer_unref_xij(&vps_buf);
     return AVERROR_INVALIDDATA;
 }
 
@@ -1218,7 +1218,7 @@ int ff_hevc_decode_nal_sps(GetBitContext *gb, AVCodecContext *avctx,
                            HEVCParamSets *ps, int apply_defdispwin)
 {
     HEVCSPS *sps;
-    AVBufferRef *sps_buf = av_buffer_allocz(sizeof(*sps));
+    AVBufferRef *sps_buf = av_buffer_allocz_xij(sizeof(*sps));
     unsigned int sps_id;
     int ret;
     ptrdiff_t nal_size;
@@ -1244,7 +1244,7 @@ int ff_hevc_decode_nal_sps(GetBitContext *gb, AVCodecContext *avctx,
                             apply_defdispwin,
                             ps->vps_list, avctx);
     if (ret < 0) {
-        av_buffer_unref(&sps_buf);
+        av_buffer_unref_xij(&sps_buf);
         return ret;
     }
 
@@ -1263,7 +1263,7 @@ int ff_hevc_decode_nal_sps(GetBitContext *gb, AVCodecContext *avctx,
      * otherwise drop all PPSes that depend on it */
     if (ps->sps_list[sps_id] &&
         !memcmp(ps->sps_list[sps_id]->data, sps_buf->data, sps_buf->size)) {
-        av_buffer_unref(&sps_buf);
+        av_buffer_unref_xij(&sps_buf);
     } else {
         remove_sps(ps, sps_id);
         ps->sps_list[sps_id] = sps_buf;
@@ -1478,7 +1478,7 @@ int ff_hevc_decode_nal_pps(GetBitContext *gb, AVCodecContext *avctx,
     if (!pps)
         return AVERROR(ENOMEM);
 
-    pps_buf = av_buffer_create((uint8_t *)pps, sizeof(*pps),
+    pps_buf = av_buffer_create_ijk((uint8_t *)pps, sizeof(*pps),
                                hevc_pps_free, NULL, 0);
     if (!pps_buf) {
         av_freep(&pps);
@@ -1704,7 +1704,7 @@ int ff_hevc_decode_nal_pps(GetBitContext *gb, AVCodecContext *avctx,
     return 0;
 
 err:
-    av_buffer_unref(&pps_buf);
+    av_buffer_unref_xij(&pps_buf);
     return ret;
 }
 
@@ -1713,11 +1713,11 @@ void ff_hevc_ps_uninit(HEVCParamSets *ps)
     int i;
 
     for (i = 0; i < FF_ARRAY_ELEMS(ps->vps_list); i++)
-        av_buffer_unref(&ps->vps_list[i]);
+        av_buffer_unref_xij(&ps->vps_list[i]);
     for (i = 0; i < FF_ARRAY_ELEMS(ps->sps_list); i++)
-        av_buffer_unref(&ps->sps_list[i]);
+        av_buffer_unref_xij(&ps->sps_list[i]);
     for (i = 0; i < FF_ARRAY_ELEMS(ps->pps_list); i++)
-        av_buffer_unref(&ps->pps_list[i]);
+        av_buffer_unref_xij(&ps->pps_list[i]);
 
     ps->sps = NULL;
     ps->pps = NULL;

@@ -251,7 +251,7 @@ static av_cold void uninit(AVFilterContext *ctx)
             av_freep(&s->magnitudes[i]);
     }
     av_freep(&s->magnitudes);
-    av_frame_free(&s->outpicref);
+    av_frame_free_xij(&s->outpicref);
     av_audio_fifo_free(s->fifo);
     if (s->phases) {
         for (i = 0; i < s->nb_display_channels; i++)
@@ -418,7 +418,7 @@ static int config_output(AVFilterLink *outlink)
         s->win_scale = 1. / sqrt(s->win_scale);
 
         /* prepare the initial picref buffer (black frame) */
-        av_frame_free(&s->outpicref);
+        av_frame_free_xij(&s->outpicref);
         s->outpicref = outpicref =
             ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!outpicref)
@@ -738,7 +738,7 @@ static int plot_spectrum_column(AVFilterLink *inlink, AVFrame *insamples)
         }
     }
 
-    av_frame_make_writable(s->outpicref);
+    av_frame_make_writable_xij(s->outpicref);
     /* copy to output */
     if (s->orientation == VERTICAL) {
         if (s->sliding == SCROLL) {
@@ -808,7 +808,7 @@ static int plot_spectrum_column(AVFilterLink *inlink, AVFrame *insamples)
     if (s->orientation == HORIZONTAL && s->xpos >= s->h)
         s->xpos = 0;
     if (!s->single_pic && (s->sliding != FULLFRAME || s->xpos == 0)) {
-        ret = ff_filter_frame(outlink, av_frame_clone(s->outpicref));
+        ret = ff_filter_frame(outlink, av_frame_clone_xij(s->outpicref));
         if (ret < 0)
             return ret;
     }
@@ -859,7 +859,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
         s->pts = insamples->pts - av_audio_fifo_size(s->fifo);
 
     av_audio_fifo_write(s->fifo, (void **)insamples->extended_data, insamples->nb_samples);
-    av_frame_free(&insamples);
+    av_frame_free_xij(&insamples);
     while (av_audio_fifo_size(s->fifo) >= s->win_size) {
         fin = ff_get_audio_buffer(inlink, s->win_size);
         if (!fin) {
@@ -884,7 +884,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
             ctx->internal->execute(ctx, calc_channel_phases, NULL, NULL, s->nb_display_channels);
 
         ret = plot_spectrum_column(inlink, fin);
-        av_frame_free(&fin);
+        av_frame_free_xij(&fin);
         av_audio_fifo_drain(s->fifo, s->hop_size);
         if (ret < 0)
             goto fail;
@@ -892,7 +892,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
 
 fail:
     s->pts = AV_NOPTS_VALUE;
-    av_frame_free(&fin);
+    av_frame_free_xij(&fin);
     return ret;
 }
 
@@ -1047,7 +1047,7 @@ static int showspectrumpic_request_frame(AVFilterLink *outlink)
         while (x < sz) {
             ret = av_audio_fifo_peek(s->fifo, (void **)fin->extended_data, s->win_size);
             if (ret < 0) {
-                av_frame_free(&fin);
+                av_frame_free_xij(&fin);
                 return ret;
             }
 
@@ -1076,7 +1076,7 @@ static int showspectrumpic_request_frame(AVFilterLink *outlink)
             }
         }
 
-        av_frame_free(&fin);
+        av_frame_free_xij(&fin);
         s->outpicref->pts = 0;
 
         if (s->legend) {
@@ -1279,7 +1279,7 @@ static int showspectrumpic_filter_frame(AVFilterLink *inlink, AVFrame *insamples
     int ret;
 
     ret = av_audio_fifo_write(s->fifo, (void **)insamples->extended_data, insamples->nb_samples);
-    av_frame_free(&insamples);
+    av_frame_free_xij(&insamples);
     return ret;
 }
 

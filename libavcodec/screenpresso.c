@@ -56,7 +56,7 @@ static av_cold int screenpresso_close(AVCodecContext *avctx)
 {
     ScreenpressoContext *ctx = avctx->priv_data;
 
-    av_frame_free(&ctx->current);
+    av_frame_free_xij(&ctx->current);
     av_freep(&ctx->inflated_buf);
 
     return 0;
@@ -75,7 +75,7 @@ static av_cold int screenpresso_init(AVCodecContext *avctx)
     }
 
     /* Allocate current frame */
-    ctx->current = av_frame_alloc();
+    ctx->current = av_frame_alloc_ijk();
     if (!ctx->current)
         return AVERROR(ENOMEM);
 
@@ -145,7 +145,7 @@ static int screenpresso_decode_frame(AVCodecContext *avctx, void *data,
         return AVERROR_UNKNOWN;
     }
 
-    ret = ff_reget_buffer(avctx, ctx->current);
+    ret = ff_reget_buffer_xij(avctx, ctx->current);
     if (ret < 0)
         return ret;
 
@@ -166,7 +166,7 @@ static int screenpresso_decode_frame(AVCodecContext *avctx, void *data,
                           avctx->width * component_size, avctx->height);
 
     /* Frame is ready to be output */
-    ret = av_frame_ref(frame, ctx->current);
+    ret = av_frame_ref_xij(frame, ctx->current);
     if (ret < 0)
         return ret;
 

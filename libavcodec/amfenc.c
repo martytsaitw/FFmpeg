@@ -112,7 +112,7 @@ static int amf_load_library(AVCodecContext *avctx)
     AMFQueryVersion_Fn version_fun;
     AMF_RESULT         res;
 
-    ctx->delayed_frame = av_frame_alloc();
+    ctx->delayed_frame = av_frame_alloc_ijk();
     if (!ctx->delayed_frame) {
         return AVERROR(ENOMEM);
     }
@@ -267,7 +267,7 @@ static int amf_init_context(AVCodecContext *avctx)
             return AVERROR(ENOSYS);
         }
 
-        ctx->hw_frames_ctx = av_buffer_ref(avctx->hw_frames_ctx);
+        ctx->hw_frames_ctx = av_buffer_ref_ijk(avctx->hw_frames_ctx);
         if (!ctx->hw_frames_ctx)
             return AVERROR(ENOMEM);
 
@@ -298,7 +298,7 @@ static int amf_init_context(AVCodecContext *avctx)
             return AVERROR(ENOSYS);
         }
 
-        ctx->hw_device_ctx = av_buffer_ref(avctx->hw_device_ctx);
+        ctx->hw_device_ctx = av_buffer_ref_ijk(avctx->hw_device_ctx);
         if (!ctx->hw_device_ctx)
             return AVERROR(ENOMEM);
 
@@ -373,8 +373,8 @@ int av_cold ff_amf_encode_close(AVCodecContext *avctx)
         ctx->context->pVtbl->Release(ctx->context);
         ctx->context = NULL;
     }
-    av_buffer_unref(&ctx->hw_device_ctx);
-    av_buffer_unref(&ctx->hw_frames_ctx);
+    av_buffer_unref_xij(&ctx->hw_device_ctx);
+    av_buffer_unref_xij(&ctx->hw_frames_ctx);
 
     if (ctx->trace) {
         ctx->trace->pVtbl->UnregisterWriter(ctx->trace, FFMPEG_AMF_WRITER_ID);
@@ -388,7 +388,7 @@ int av_cold ff_amf_encode_close(AVCodecContext *avctx)
     ctx->factory = NULL;
     ctx->version = 0;
     ctx->delayed_drain = 0;
-    av_frame_free(&ctx->delayed_frame);
+    av_frame_free_xij(&ctx->delayed_frame);
     av_fifo_freep(&ctx->timestamp_list);
 
     return 0;
@@ -556,7 +556,7 @@ static AMFBuffer *amf_create_buffer_with_frame_ref(const AVFrame *frame, AMFCont
 
     res = context->pVtbl->AllocBuffer(context, AMF_MEMORY_HOST, sizeof(frame_ref), &frame_ref_storage_buffer);
     if (res == AMF_OK) {
-        frame_ref = av_frame_clone(frame);
+        frame_ref = av_frame_clone_xij(frame);
         if (frame_ref) {
             memcpy(frame_ref_storage_buffer->pVtbl->GetNative(frame_ref_storage_buffer), &frame_ref, sizeof(frame_ref));
         } else {
@@ -571,7 +571,7 @@ static void amf_release_buffer_with_frame_ref(AMFBuffer *frame_ref_storage_buffe
 {
     AVFrame *frame_ref;
     memcpy(&frame_ref, frame_ref_storage_buffer->pVtbl->GetNative(frame_ref_storage_buffer), sizeof(frame_ref));
-    av_frame_free(&frame_ref);
+    av_frame_free_xij(&frame_ref);
     frame_ref_storage_buffer->pVtbl->Release(frame_ref_storage_buffer);
 }
 
@@ -660,8 +660,8 @@ int ff_amf_send_frame(AVCodecContext *avctx, const AVFrame *frame)
             frame_ref_storage_buffer = amf_create_buffer_with_frame_ref(frame, ctx->context);
             AMF_RETURN_IF_FALSE(ctx, frame_ref_storage_buffer != NULL, AVERROR(ENOMEM), "create_buffer_with_frame_ref() returned NULL\n");
 
-            res = amf_set_property_buffer(surface, L"av_frame_ref", frame_ref_storage_buffer);
-            AMF_RETURN_IF_FALSE(ctx, res == AMF_OK, AVERROR_UNKNOWN, "SetProperty failed for \"av_frame_ref\" with error %d\n", res);
+            res = amf_set_property_buffer(surface, L"av_frame_ref_xij", frame_ref_storage_buffer);
+            AMF_RETURN_IF_FALSE(ctx, res == AMF_OK, AVERROR_UNKNOWN, "SetProperty failed for \"av_frame_ref_xij\" with error %d\n", res);
             ctx->hwsurfaces_in_queue++;
             frame_ref_storage_buffer->pVtbl->Release(frame_ref_storage_buffer);
         }
@@ -687,7 +687,7 @@ int ff_amf_send_frame(AVCodecContext *avctx, const AVFrame *frame)
             //store surface for later submission
             ctx->delayed_surface = surface;
             if (surface->pVtbl->GetMemoryType(surface) == AMF_MEMORY_DX11) {
-                av_frame_ref(ctx->delayed_frame, frame);
+                av_frame_ref_xij(ctx->delayed_frame, frame);
             }
         } else {
             surface->pVtbl->Release(surface);
@@ -726,10 +726,10 @@ int ff_amf_receive_packet(AVCodecContext *avctx, AVPacket *avpkt)
 
             buffer->pVtbl->Release(buffer);
 
-            if (data->pVtbl->HasProperty(data, L"av_frame_ref")) {
+            if (data->pVtbl->HasProperty(data, L"av_frame_ref_xij")) {
                 AMFBuffer *frame_ref_storage_buffer;
-                res = amf_get_property_buffer(data, L"av_frame_ref", &frame_ref_storage_buffer);
-                AMF_RETURN_IF_FALSE(ctx, res == AMF_OK, AVERROR_UNKNOWN, "GetProperty failed for \"av_frame_ref\" with error %d\n", res);
+                res = amf_get_property_buffer(data, L"av_frame_ref_xij", &frame_ref_storage_buffer);
+                AMF_RETURN_IF_FALSE(ctx, res == AMF_OK, AVERROR_UNKNOWN, "GetProperty failed for \"av_frame_ref_xij\" with error %d\n", res);
                 amf_release_buffer_with_frame_ref(frame_ref_storage_buffer);
                 ctx->hwsurfaces_in_queue--;
             }
@@ -744,7 +744,7 @@ int ff_amf_receive_packet(AVCodecContext *avctx, AVPacket *avpkt)
                     int64_t pts = ctx->delayed_surface->pVtbl->GetPts(ctx->delayed_surface);
                     ctx->delayed_surface->pVtbl->Release(ctx->delayed_surface);
                     ctx->delayed_surface = NULL;
-                    av_frame_unref(ctx->delayed_frame);
+                    av_frame_unref_xij(ctx->delayed_frame);
                     AMF_RETURN_IF_FALSE(ctx, res == AMF_OK, AVERROR_UNKNOWN, "Repeated SubmitInput() failed with error %d\n", res);
 
                     if ((ret = timestamp_queue_enqueue(avctx, pts)) < 0) {

@@ -45,7 +45,7 @@ static void get_token(AVIOContext *s, char *buf, int maxlen)
     int i = 0;
     char c;
 
-    while ((c = avio_r8(s))) {
+    while ((c = avio_r8_xij(s))) {
         if(c == ' ')
             break;
         if (i < maxlen-1)
@@ -53,7 +53,7 @@ static void get_token(AVIOContext *s, char *buf, int maxlen)
     }
 
     if(!c)
-        avio_r8(s);
+        avio_r8_xij(s);
 
     buf[i] = 0; /* Ensure null terminated, but may be truncated */
 }
@@ -104,7 +104,7 @@ static av_cold int iss_read_header(AVFormatContext *s)
 
     iss->sample_start_pos = avio_tell(pb);
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -123,7 +123,7 @@ static av_cold int iss_read_header(AVFormatContext *s)
     st->codecpar->bit_rate = st->codecpar->channels * st->codecpar->sample_rate
                                       * st->codecpar->bits_per_coded_sample;
     st->codecpar->block_align = iss->packet_size;
-    avpriv_set_pts_info(st, 32, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 32, 1, st->codecpar->sample_rate);
 
     return 0;
 }
@@ -131,7 +131,7 @@ static av_cold int iss_read_header(AVFormatContext *s)
 static int iss_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     IssDemuxContext *iss = s->priv_data;
-    int ret = av_get_packet(s->pb, pkt, iss->packet_size);
+    int ret = av_get_packet_xij(s->pb, pkt, iss->packet_size);
 
     if(ret != iss->packet_size)
         return AVERROR(EIO);

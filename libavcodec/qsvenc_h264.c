@@ -52,7 +52,7 @@ static int qsv_h264_set_encode_ctrl(AVCodecContext *avctx,
         size_t sei_size;
         int res;
 
-        res = ff_alloc_a53_sei(frame, sizeof(mfxPayload) + 2, (void**)&payload, &sei_size);
+        res = ff_alloc_a53_sei_xij(frame, sizeof(mfxPayload) + 2, (void**)&payload, &sei_size);
         if (res < 0 || !payload)
             return res;
 
@@ -60,7 +60,7 @@ static int qsv_h264_set_encode_ctrl(AVCodecContext *avctx,
         // SEI header
         sei_data[0] = 4;
         sei_data[1] = (mfxU8)sei_size; // size of SEI data
-        // SEI data filled in by ff_alloc_a53_sei
+        // SEI data filled in by ff_alloc_a53_sei_xij
 
         payload->BufSize = sei_size + 2;
         payload->NumBit = payload->BufSize * 8;

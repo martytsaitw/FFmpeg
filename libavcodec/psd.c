@@ -114,7 +114,7 @@ static int decode_header(PSDContext * s)
         return AVERROR_EXPERIMENTAL;
     }
 
-    if ((ret = ff_set_dimensions(s->avctx, s->width, s->height)) < 0)
+    if ((ret = ff_set_dimensions_xij(s->avctx, s->width, s->height)) < 0)
         return ret;
 
     s->channel_depth = bytestream2_get_be16(&s->gb);
@@ -394,7 +394,7 @@ static int decode_frame(AVCodecContext *avctx, void *data,
 
     s->uncompressed_size = s->line_size * s->height * s->channel_count;
 
-    if ((ret = ff_get_buffer(avctx, picture, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, picture, 0)) < 0)
         return ret;
 
     /* decode picture if need */

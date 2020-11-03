@@ -447,7 +447,7 @@ static void image_available(void *context, AImageReader *reader)
             goto error;
     }
 
-    ret = av_new_packet(&pkt, pkt_buffer_size);
+    ret = av_new_packet_ijk(&pkt, pkt_buffer_size);
     if (ret < 0) {
         av_log(avctx, AV_LOG_ERROR,
                "Failed to create new av packet, error: %s.\n", av_err2str(ret));
@@ -476,7 +476,7 @@ error:
                    ctx->input_queue_size);
         }
         if (pkt_buffer_size) {
-            av_packet_unref(&pkt);
+            av_packet_unref_ijk(&pkt);
         }
     }
 
@@ -649,7 +649,7 @@ static int add_display_matrix(AVFormatContext *avctx, AVStream *st)
         av_display_matrix_flip(display_matrix, 1, 0);
     }
 
-    side_data = av_stream_new_side_data(st,
+    side_data = av_stream_new_side_data_xij(st,
             AV_PKT_DATA_DISPLAYMATRIX, sizeof(display_matrix));
 
     if (!side_data) {
@@ -667,7 +667,7 @@ static int add_video_stream(AVFormatContext *avctx)
     AVStream *st;
     AVCodecParameters *codecpar;
 
-    st = avformat_new_stream(avctx, NULL);
+    st = avformat_new_stream_ijk(avctx, NULL);
     if (!st) {
         return AVERROR(ENOMEM);
     }
@@ -687,7 +687,7 @@ static int add_video_stream(AVFormatContext *avctx)
     codecpar->width = ctx->width;
     codecpar->height = ctx->height;
 
-    avpriv_set_pts_info(st, 64, 1, VIDEO_TIMEBASE_ANDROID);
+    avpriv_set_pts_info_ijk(st, 64, 1, VIDEO_TIMEBASE_ANDROID);
 
     return add_display_matrix(avctx, st);
 }
@@ -761,7 +761,7 @@ static int android_camera_read_close(AVFormatContext *avctx)
         AVPacket pkt;
         av_thread_message_queue_set_err_send(ctx->input_queue, AVERROR_EOF);
         while (av_thread_message_queue_recv(ctx->input_queue, &pkt, AV_THREAD_MESSAGE_NONBLOCK) >= 0) {
-            av_packet_unref(&pkt);
+            av_packet_unref_ijk(&pkt);
         }
         av_thread_message_queue_free(&ctx->input_queue);
     }

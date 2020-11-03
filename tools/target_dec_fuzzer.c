@@ -67,7 +67,7 @@ static AVCodec *AVCodecInitialize(enum AVCodecID codec_id)
 {
     AVCodec *res;
 
-    res = avcodec_find_decoder(codec_id);
+    res = avcodec_find_decoder_ijk(codec_id);
     if (!res)
         error("Failed to find decoder");
     return res;
@@ -119,7 +119,7 @@ static void FDBPrepare(FuzzDataBuffer *FDB, AVPacket *dst, const uint8_t *data,
     if (padd > AV_INPUT_BUFFER_PADDING_SIZE)
         padd = AV_INPUT_BUFFER_PADDING_SIZE;
     memset(FDB->data_ + size, 0, padd);
-    av_init_packet(dst);
+    av_init_packet_ijk(dst);
     dst->data = FDB->data_;
     dst->size = size;
 }
@@ -160,7 +160,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     case AVMEDIA_TYPE_SUBTITLE: decode_handler = subtitle_handler     ; break;
     }
 
-    AVCodecContext* ctx = avcodec_alloc_context3(NULL);
+    AVCodecContext* ctx = avcodec_alloc_context3_ijk(NULL);
     if (!ctx)
         error("Failed memory allocation");
 
@@ -186,7 +186,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
 
     FDBCreate(&buffer);
     int got_frame;
-    AVFrame *frame = av_frame_alloc();
+    AVFrame *frame = av_frame_alloc_ijk();
     if (!frame)
         error("Failed memory allocation");
 
@@ -223,7 +223,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
         }
     }
 
-    av_init_packet(&avpkt);
+    av_init_packet_ijk(&avpkt);
     avpkt.data = NULL;
     avpkt.size = 0;
 
@@ -233,7 +233,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     } while (got_frame == 1 && it++ < maxiteration);
 
     av_frame_free(&frame);
-    avcodec_free_context(&ctx);
+    avcodec_free_context_ijk(&ctx);
     av_freep(&ctx);
     FDBDesroy(&buffer);
     return 0;

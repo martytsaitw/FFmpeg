@@ -303,9 +303,9 @@ static av_cold int vp3_decode_end(AVCodecContext *avctx)
 
     /* release all frames */
     vp3_decode_flush(avctx);
-    av_frame_free(&s->current_frame.f);
-    av_frame_free(&s->last_frame.f);
-    av_frame_free(&s->golden_frame.f);
+    av_frame_free_xij(&s->current_frame.f);
+    av_frame_free_xij(&s->last_frame.f);
+    av_frame_free_xij(&s->golden_frame.f);
 
     if (avctx->internal->is_copy)
         return 0;
@@ -1711,14 +1711,14 @@ static av_cold int allocate_tables(AVCodecContext *avctx)
 
 static av_cold int init_frames(Vp3DecodeContext *s)
 {
-    s->current_frame.f = av_frame_alloc();
-    s->last_frame.f    = av_frame_alloc();
-    s->golden_frame.f  = av_frame_alloc();
+    s->current_frame.f = av_frame_alloc_ijk();
+    s->last_frame.f    = av_frame_alloc_ijk();
+    s->golden_frame.f  = av_frame_alloc_ijk();
 
     if (!s->current_frame.f || !s->last_frame.f || !s->golden_frame.f) {
-        av_frame_free(&s->current_frame.f);
-        av_frame_free(&s->last_frame.f);
-        av_frame_free(&s->golden_frame.f);
+        av_frame_free_xij(&s->current_frame.f);
+        av_frame_free_xij(&s->last_frame.f);
+        av_frame_free_xij(&s->golden_frame.f);
         return AVERROR(ENOMEM);
     }
 
@@ -1912,13 +1912,13 @@ static int update_frames(AVCodecContext *avctx)
 
     /* shuffle frames (last = current) */
     ff_thread_release_buffer(avctx, &s->last_frame);
-    ret = ff_thread_ref_frame(&s->last_frame, &s->current_frame);
+    ret = ff_thread_ref_frame_xij(&s->last_frame, &s->current_frame);
     if (ret < 0)
         goto fail;
 
     if (s->keyframe) {
         ff_thread_release_buffer(avctx, &s->golden_frame);
-        ret = ff_thread_ref_frame(&s->golden_frame, &s->current_frame);
+        ret = ff_thread_ref_frame_xij(&s->golden_frame, &s->current_frame);
     }
 
 fail:
@@ -1930,7 +1930,7 @@ static int ref_frame(Vp3DecodeContext *s, ThreadFrame *dst, ThreadFrame *src)
 {
     ff_thread_release_buffer(s->avctx, dst);
     if (src->f->data[0])
-        return ff_thread_ref_frame(dst, src);
+        return ff_thread_ref_frame_xij(dst, src);
     return 0;
 }
 
@@ -2131,7 +2131,7 @@ static int vp3_decode_frame(AVCodecContext *avctx,
                                      AV_GET_BUFFER_FLAG_REF) < 0)
                 goto error;
             ff_thread_release_buffer(avctx, &s->last_frame);
-            if ((ret = ff_thread_ref_frame(&s->last_frame,
+            if ((ret = ff_thread_ref_frame_xij(&s->last_frame,
                                            &s->golden_frame)) < 0)
                 goto error;
             ff_thread_report_progress(&s->last_frame, INT_MAX, 0);
@@ -2182,7 +2182,7 @@ static int vp3_decode_frame(AVCodecContext *avctx,
     vp3_draw_horiz_band(s, s->height);
 
     /* output frame, offset as needed */
-    if ((ret = av_frame_ref(data, s->current_frame.f)) < 0)
+    if ((ret = av_frame_ref_xij(data, s->current_frame.f)) < 0)
         return ret;
 
     frame->crop_left   = s->offset_x;
@@ -2204,7 +2204,7 @@ error:
     ff_thread_report_progress(&s->current_frame, INT_MAX, 0);
 
     if (!HAVE_THREADS || !(s->avctx->active_thread_type & FF_THREAD_FRAME))
-        av_frame_unref(s->current_frame.f);
+        av_frame_unref_xij(s->current_frame.f);
 
     return -1;
 }
@@ -2328,7 +2328,7 @@ static int theora_decode_header(AVCodecContext *avctx, GetBitContext *gb)
         av_reduce(&avctx->sample_aspect_ratio.num,
                   &avctx->sample_aspect_ratio.den,
                   aspect.num, aspect.den, 1 << 30);
-        ff_set_sar(avctx, avctx->sample_aspect_ratio);
+        ff_set_sar_xij(avctx, avctx->sample_aspect_ratio);
     }
 
     if (s->theora < 0x030200)
@@ -2349,7 +2349,7 @@ static int theora_decode_header(AVCodecContext *avctx, GetBitContext *gb)
     } else
         avctx->pix_fmt = AV_PIX_FMT_YUV420P;
 
-    ret = ff_set_dimensions(avctx, s->width, s->height);
+    ret = ff_set_dimensions_xij(avctx, s->width, s->height);
     if (ret < 0)
         return ret;
     if (!(avctx->flags2 & AV_CODEC_FLAG2_IGNORE_CROP)) {

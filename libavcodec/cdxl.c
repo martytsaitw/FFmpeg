@@ -267,7 +267,7 @@ static int cdxl_decode_frame(AVCodecContext *avctx, void *data,
         return AVERROR_PATCHWELCOME;
     }
 
-    if ((ret = ff_set_dimensions(avctx, w, h)) < 0)
+    if ((ret = ff_set_dimensions_xij(avctx, w, h)) < 0)
         return ret;
 
     if (c->format == CHUNKY)
@@ -292,12 +292,12 @@ static int cdxl_decode_frame(AVCodecContext *avctx, void *data,
         return AVERROR_PATCHWELCOME;
     }
 
-    if ((ret = ff_get_buffer(avctx, p, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, p, 0)) < 0)
         return ret;
     p->pict_type = AV_PICTURE_TYPE_I;
 
     if (encoding) {
-        av_fast_padded_malloc(&c->new_video, &c->new_video_size,
+        av_fast_padded_malloc_xij(&c->new_video, &c->new_video_size,
                               h * w + AV_INPUT_BUFFER_PADDING_SIZE);
         if (!c->new_video)
             return AVERROR(ENOMEM);

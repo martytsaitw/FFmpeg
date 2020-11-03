@@ -3277,7 +3277,7 @@ int ff_mpeg4_frame_end(AVCodecContext *avctx, const uint8_t *buf, int buf_size)
                        "Consider using the mpeg4_unpack_bframes bitstream filter without encoding but stream copy to fix it.\n");
                 ctx->showed_packed_warning = 1;
             }
-            av_fast_padded_malloc(&s->bitstream_buffer,
+            av_fast_padded_malloc_xij(&s->bitstream_buffer,
                            &s->allocated_bitstream_buffer_size,
                            buf_size - current_pos);
             if (!s->bitstream_buffer) {

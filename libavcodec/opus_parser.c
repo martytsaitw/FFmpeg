@@ -173,7 +173,7 @@ static int opus_parse(AVCodecParserContext *ctx, AVCodecContext *avctx,
     next = opus_find_frame_end(ctx, avctx, buf, buf_size, &header_len);
 
     if (s->ts_framing && next != AVERROR_INVALIDDATA &&
-        ff_combine_frame(pc, next, &buf, &buf_size) < 0) {
+        ff_combine_frame_xij(pc, next, &buf, &buf_size) < 0) {
         *poutbuf      = NULL;
         *poutbuf_size = 0;
         return buf_size;
@@ -194,5 +194,5 @@ AVCodecParser ff_opus_parser = {
     .codec_ids      = { AV_CODEC_ID_OPUS },
     .priv_data_size = sizeof(OpusParseContext),
     .parser_parse   = opus_parse,
-    .parser_close   = ff_parse_close
+    .parser_close   = ff_parse_close_xij
 };

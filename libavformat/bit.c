@@ -55,7 +55,7 @@ static int read_header(AVFormatContext *s)
 {
     AVStream* st;
 
-    st=avformat_new_stream(s, NULL);
+    st=avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -65,7 +65,7 @@ static int read_header(AVFormatContext *s)
     st->codecpar->block_align = 16;
     st->codecpar->channels=1;
 
-    avpriv_set_pts_info(st, 64, 1, 100);
+    avpriv_set_pts_info_ijk(st, 64, 1, 100);
     return 0;
 }
 
@@ -80,21 +80,21 @@ static int read_packet(AVFormatContext *s,
     int i, j, ret;
     int64_t pos= avio_tell(pb);
 
-    if(avio_feof(pb))
+    if(avio_feof_xij(pb))
         return AVERROR_EOF;
 
-    avio_rl16(pb); // sync word
-    packet_size = avio_rl16(pb) / 8;
+    avio_rl16_xij(pb); // sync word
+    packet_size = avio_rl16_xij(pb) / 8;
     if(packet_size > MAX_FRAME_SIZE)
         return AVERROR_INVALIDDATA;
 
-    ret = avio_read(pb, (uint8_t*)buf, (8 * packet_size) * sizeof(uint16_t));
+    ret = avio_read_xij(pb, (uint8_t*)buf, (8 * packet_size) * sizeof(uint16_t));
     if(ret<0)
         return ret;
     if(ret != 8 * packet_size * sizeof(uint16_t))
         return AVERROR(EIO);
 
-    if (av_new_packet(pkt, packet_size) < 0)
+    if (av_new_packet_ijk(pkt, packet_size) < 0)
         return AVERROR(ENOMEM);
 
     init_put_bits(&pbo, pkt->data, packet_size);
@@ -145,12 +145,12 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
     if (pkt->size != 10)
         return AVERROR(EINVAL);
 
-    avio_wl16(pb, SYNC_WORD);
-    avio_wl16(pb, 8 * pkt->size);
+    avio_wl16_xij(pb, SYNC_WORD);
+    avio_wl16_xij(pb, 8 * pkt->size);
 
     init_get_bits(&gb, pkt->data, 8 * pkt->size);
     for (i = 0; i < 8 * pkt->size; i++)
-        avio_wl16(pb, get_bits1(&gb) ? BIT_1 : BIT_0);
+        avio_wl16_xij(pb, get_bits1(&gb) ? BIT_1 : BIT_0);
 
     return 0;
 }

@@ -81,29 +81,29 @@ static int aa_read_header(AVFormatContext *s)
     AVStream *st;
 
     /* parse .aa header */
-    avio_skip(pb, 4); // file size
-    avio_skip(pb, 4); // magic string
-    toc_size = avio_rb32(pb); // TOC size
-    avio_skip(pb, 4); // unidentified integer
+    avio_skip_xij(pb, 4); // file size
+    avio_skip_xij(pb, 4); // magic string
+    toc_size = avio_rb32_xij(pb); // TOC size
+    avio_skip_xij(pb, 4); // unidentified integer
     if (toc_size > MAX_TOC_ENTRIES)
         return AVERROR_INVALIDDATA;
     for (i = 0; i < toc_size; i++) { // read TOC
-        avio_skip(pb, 4); // TOC entry index
-        TOC[i].offset = avio_rb32(pb); // block offset
-        TOC[i].size = avio_rb32(pb); // block size
+        avio_skip_xij(pb, 4); // TOC entry index
+        TOC[i].offset = avio_rb32_xij(pb); // block offset
+        TOC[i].size = avio_rb32_xij(pb); // block size
     }
-    avio_skip(pb, 24); // header termination block (ignored)
-    npairs = avio_rb32(pb); // read dictionary entries
+    avio_skip_xij(pb, 24); // header termination block (ignored)
+    npairs = avio_rb32_xij(pb); // read dictionary entries
     if (npairs > MAX_DICTIONARY_ENTRIES)
         return AVERROR_INVALIDDATA;
     for (i = 0; i < npairs; i++) {
         memset(val, 0, sizeof(val));
         memset(key, 0, sizeof(key));
-        avio_skip(pb, 1); // unidentified integer
-        nkey = avio_rb32(pb); // key string length
-        nval = avio_rb32(pb); // value string length
-        avio_get_str(pb, nkey, key, sizeof(key));
-        avio_get_str(pb, nval, val, sizeof(val));
+        avio_skip_xij(pb, 1); // unidentified integer
+        nkey = avio_rb32_xij(pb); // key string length
+        nval = avio_rb32_xij(pb); // value string length
+        avio_get_str_xij(pb, nkey, key, sizeof(key));
+        avio_get_str_xij(pb, nval, val, sizeof(val));
         if (!strcmp(key, "codec")) {
             av_log(s, AV_LOG_DEBUG, "Codec is <%s>\n", val);
             strncpy(codec_name, val, sizeof(codec_name) - 1);
@@ -162,7 +162,7 @@ static int aa_read_header(AVFormatContext *s)
     av_log(s, AV_LOG_DEBUG, "\n");
 
     /* decoder setup */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st) {
         av_freep(&c->tea_ctx);
         return AVERROR(ENOMEM);
@@ -196,7 +196,7 @@ static int aa_read_header(AVFormatContext *s)
         }
     }
     start = TOC[largest_idx].offset;
-    avio_seek(pb, start, SEEK_SET);
+    avio_seek_xij(pb, start, SEEK_SET);
     c->current_chapter_size = 0;
 
     return 0;
@@ -216,13 +216,13 @@ static int aa_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     // are we at the start of a chapter?
     if (c->current_chapter_size == 0) {
-        c->current_chapter_size = avio_rb32(s->pb);
+        c->current_chapter_size = avio_rb32_xij(s->pb);
         if (c->current_chapter_size == 0) {
             return AVERROR_EOF;
         }
         av_log(s, AV_LOG_DEBUG, "Chapter %d (%" PRId64 " bytes)\n", c->chapter_idx, c->current_chapter_size);
         c->chapter_idx = c->chapter_idx + 1;
-        avio_skip(s->pb, 4); // data start offset
+        avio_skip_xij(s->pb, 4); // data start offset
         c->current_codec_second_size = c->codec_second_size;
     }
 
@@ -234,7 +234,7 @@ static int aa_read_packet(AVFormatContext *s, AVPacket *pkt)
     // decrypt c->current_codec_second_size bytes
     blocks = c->current_codec_second_size / TEA_BLOCK_SIZE;
     for (i = 0; i < blocks; i++) {
-        avio_read(s->pb, src, TEA_BLOCK_SIZE);
+        avio_read_xij(s->pb, src, TEA_BLOCK_SIZE);
         av_tea_init(c->tea_ctx, c->file_key, 16);
         av_tea_crypt(c->tea_ctx, dst, src, 1, NULL, 1);
         memcpy(buf + written, dst, TEA_BLOCK_SIZE);
@@ -242,7 +242,7 @@ static int aa_read_packet(AVFormatContext *s, AVPacket *pkt)
     }
     trailing_bytes = c->current_codec_second_size % TEA_BLOCK_SIZE;
     if (trailing_bytes != 0) { // trailing bytes are left unencrypted!
-        avio_read(s->pb, src, trailing_bytes);
+        avio_read_xij(s->pb, src, trailing_bytes);
         memcpy(buf + written, src, trailing_bytes);
         written = written + trailing_bytes;
     }
@@ -252,7 +252,7 @@ static int aa_read_packet(AVFormatContext *s, AVPacket *pkt)
     if (c->current_chapter_size <= 0)
         c->current_chapter_size = 0;
 
-    ret = av_new_packet(pkt, written);
+    ret = av_new_packet_ijk(pkt, written);
     if (ret < 0)
         return ret;
     memcpy(pkt->data, buf, written);

@@ -42,20 +42,20 @@ static int ilbc_write_header(AVFormatContext *s)
     }
 
     if (par->block_align == 50) {
-        avio_write(pb, mode30_header, sizeof(mode30_header) - 1);
+        avio_write_xij(pb, mode30_header, sizeof(mode30_header) - 1);
     } else if (par->block_align == 38) {
-        avio_write(pb, mode20_header, sizeof(mode20_header) - 1);
+        avio_write_xij(pb, mode20_header, sizeof(mode20_header) - 1);
     } else {
         av_log(s, AV_LOG_ERROR, "Unsupported mode\n");
         return AVERROR(EINVAL);
     }
-    avio_flush(pb);
+    avio_flush_xij(pb);
     return 0;
 }
 
 static int ilbc_write_packet(AVFormatContext *s, AVPacket *pkt)
 {
-    avio_write(s->pb, pkt->data, pkt->size);
+    avio_write_xij(s->pb, pkt->data, pkt->size);
     return 0;
 }
 
@@ -74,9 +74,9 @@ static int ilbc_read_header(AVFormatContext *s)
     AVStream *st;
     uint8_t header[9];
 
-    avio_read(pb, header, 9);
+    avio_read_xij(pb, header, 9);
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_id = AV_CODEC_ID_ILBC;
@@ -84,7 +84,7 @@ static int ilbc_read_header(AVFormatContext *s)
     st->codecpar->channels = 1;
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->start_time = 0;
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
     if (!memcmp(header, mode20_header, sizeof(mode20_header) - 1)) {
         st->codecpar->block_align = 38;
         st->codecpar->bit_rate = 15200;
@@ -105,14 +105,14 @@ static int ilbc_read_packet(AVFormatContext *s,
     AVCodecParameters *par = s->streams[0]->codecpar;
     int ret;
 
-    if ((ret = av_new_packet(pkt, par->block_align)) < 0)
+    if ((ret = av_new_packet_ijk(pkt, par->block_align)) < 0)
         return ret;
 
     pkt->stream_index = 0;
     pkt->pos = avio_tell(s->pb);
     pkt->duration = par->block_align == 38 ? 160 : 240;
-    if ((ret = avio_read(s->pb, pkt->data, par->block_align)) != par->block_align) {
-        av_packet_unref(pkt);
+    if ((ret = avio_read_xij(s->pb, pkt->data, par->block_align)) != par->block_align) {
+        av_packet_unref_ijk(pkt);
         return ret < 0 ? ret : AVERROR(EIO);
     }
 

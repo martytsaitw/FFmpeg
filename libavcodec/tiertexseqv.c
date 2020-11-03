@@ -218,11 +218,11 @@ static av_cold int seqvideo_decode_init(AVCodecContext *avctx)
     seq->avctx = avctx;
     avctx->pix_fmt = AV_PIX_FMT_PAL8;
 
-    ret = ff_set_dimensions(avctx, 256, 128);
+    ret = ff_set_dimensions_xij(avctx, 256, 128);
     if (ret < 0)
         return ret;
 
-    seq->frame = av_frame_alloc();
+    seq->frame = av_frame_alloc_ijk();
     if (!seq->frame)
         return AVERROR(ENOMEM);
 
@@ -239,13 +239,13 @@ static int seqvideo_decode_frame(AVCodecContext *avctx,
 
     SeqVideoContext *seq = avctx->priv_data;
 
-    if ((ret = ff_reget_buffer(avctx, seq->frame)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, seq->frame)) < 0)
         return ret;
 
     if (seqvideo_decode(seq, buf, buf_size))
         return AVERROR_INVALIDDATA;
 
-    if ((ret = av_frame_ref(data, seq->frame)) < 0)
+    if ((ret = av_frame_ref_xij(data, seq->frame)) < 0)
         return ret;
     *got_frame       = 1;
 
@@ -256,7 +256,7 @@ static av_cold int seqvideo_decode_end(AVCodecContext *avctx)
 {
     SeqVideoContext *seq = avctx->priv_data;
 
-    av_frame_free(&seq->frame);
+    av_frame_free_xij(&seq->frame);
 
     return 0;
 }

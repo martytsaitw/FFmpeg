@@ -126,7 +126,7 @@ static int rfc4175_finalize_packet(PayloadContext *data, AVPacket *pkt,
    int ret;
 
    pkt->stream_index = stream_index;
-   ret = av_packet_from_data(pkt, data->frame, data->frame_size);
+   ret = av_packet_from_data_ijk(pkt, data->frame, data->frame_size);
    if (ret < 0) {
        av_freep(&data->frame);
    }

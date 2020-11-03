@@ -74,28 +74,28 @@ static int gdv_read_header(AVFormatContext *ctx)
     AVStream *vst, *ast;
     unsigned fps, snd_flags, vid_depth, size_id;
 
-    avio_skip(pb, 4);
-    size_id = avio_rl16(pb);
+    avio_skip_xij(pb, 4);
+    size_id = avio_rl16_xij(pb);
 
-    vst = avformat_new_stream(ctx, 0);
+    vst = avformat_new_stream_ijk(ctx, 0);
     if (!vst)
         return AVERROR(ENOMEM);
 
     vst->start_time        = 0;
     vst->duration          =
-    vst->nb_frames         = avio_rl16(pb);
+    vst->nb_frames         = avio_rl16_xij(pb);
 
-    fps = avio_rl16(pb);
-    snd_flags = avio_rl16(pb);
+    fps = avio_rl16_xij(pb);
+    snd_flags = avio_rl16_xij(pb);
     if (snd_flags & 1) {
-        ast = avformat_new_stream(ctx, 0);
+        ast = avformat_new_stream_ijk(ctx, 0);
         if (!ast)
             return AVERROR(ENOMEM);
 
         ast->start_time = 0;
         ast->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
         ast->codecpar->codec_tag   = 0;
-        ast->codecpar->sample_rate = avio_rl16(pb);
+        ast->codecpar->sample_rate = avio_rl16_xij(pb);
         ast->codecpar->channels    = 1 + !!(snd_flags & 2);
         if (snd_flags & 8) {
             ast->codecpar->codec_id = AV_CODEC_ID_GREMLIN_DPCM;
@@ -103,21 +103,21 @@ static int gdv_read_header(AVFormatContext *ctx)
             ast->codecpar->codec_id = (snd_flags & 4) ? AV_CODEC_ID_PCM_S16LE : AV_CODEC_ID_PCM_U8;
         }
 
-        avpriv_set_pts_info(ast, 64, 1, ast->codecpar->sample_rate);
+        avpriv_set_pts_info_ijk(ast, 64, 1, ast->codecpar->sample_rate);
         gdv->audio_size = (ast->codecpar->sample_rate / fps) *
                            ast->codecpar->channels * (1 + !!(snd_flags & 4)) / (1 + !!(snd_flags & 8));
         gdv->is_audio = 1;
     } else {
-        avio_skip(pb, 2);
+        avio_skip_xij(pb, 2);
     }
-    vid_depth = avio_rl16(pb);
-    avio_skip(pb, 4);
+    vid_depth = avio_rl16_xij(pb);
+    avio_skip_xij(pb, 4);
 
     vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     vst->codecpar->codec_id   = AV_CODEC_ID_GDV;
     vst->codecpar->codec_tag  = 0;
-    vst->codecpar->width      = avio_rl16(pb);
-    vst->codecpar->height     = avio_rl16(pb);
+    vst->codecpar->width      = avio_rl16_xij(pb);
+    vst->codecpar->height     = avio_rl16_xij(pb);
 
     if (vst->codecpar->width == 0 || vst->codecpar->height == 0) {
         int i;
@@ -131,15 +131,15 @@ static int gdv_read_header(AVFormatContext *ctx)
         vst->codecpar->height = FixedSize[i].height;
     }
 
-    avpriv_set_pts_info(vst, 64, 1, fps);
+    avpriv_set_pts_info_ijk(vst, 64, 1, fps);
 
     if (vid_depth & 1) {
         int i;
 
         for (i = 0; i < 256; i++) {
-            unsigned r = avio_r8(pb);
-            unsigned g = avio_r8(pb);
-            unsigned b = avio_r8(pb);
+            unsigned r = avio_r8_xij(pb);
+            unsigned g = avio_r8_xij(pb);
+            unsigned b = avio_r8_xij(pb);
             gdv->pal[i] = 0xFFU << 24 | r << 18 | g << 10 | b << 2;
         }
     }
@@ -155,11 +155,11 @@ static int gdv_read_packet(AVFormatContext *ctx, AVPacket *pkt)
     AVIOContext *pb = ctx->pb;
     int ret;
 
-    if (avio_feof(pb))
+    if (avio_feof_xij(pb))
         return pb->error ? pb->error : AVERROR_EOF;
 
     if (gdv->audio_size && gdv->is_audio) {
-        ret = av_get_packet(pb, pkt, gdv->audio_size);
+        ret = av_get_packet_xij(pb, pkt, gdv->audio_size);
         if (ret < 0)
             return ret;
         pkt->stream_index = 1;
@@ -167,19 +167,19 @@ static int gdv_read_packet(AVFormatContext *ctx, AVPacket *pkt)
     } else {
         uint8_t *pal;
 
-        if (avio_rl16(pb) != 0x1305)
+        if (avio_rl16_xij(pb) != 0x1305)
             return AVERROR_INVALIDDATA;
-        ret = av_get_packet(pb, pkt, 4 + avio_rl16(pb));
+        ret = av_get_packet_xij(pb, pkt, 4 + avio_rl16_xij(pb));
         if (ret < 0)
             return ret;
         pkt->stream_index = 0;
         gdv->is_audio = 1;
 
         if (gdv->is_first_video) {
-            pal = av_packet_new_side_data(pkt, AV_PKT_DATA_PALETTE,
+            pal = av_packet_new_side_data_xij(pkt, AV_PKT_DATA_PALETTE,
                                           AVPALETTE_SIZE);
             if (!pal) {
-                av_packet_unref(pkt);
+                av_packet_unref_ijk(pkt);
                 return AVERROR(ENOMEM);
             }
             memcpy(pal, gdv->pal, AVPALETTE_SIZE);

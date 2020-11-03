@@ -26,7 +26,7 @@ int ff_scale_image(uint8_t *dst_data[4], int dst_linesize[4],
                    void *log_ctx)
 {
     int ret;
-    struct SwsContext *sws_ctx = sws_getContext(src_w, src_h, src_pix_fmt,
+    struct SwsContext *sws_ctx = sws_getContext_xij(src_w, src_h, src_pix_fmt,
                                                 dst_w, dst_h, dst_pix_fmt,
                                                 0, NULL, NULL, NULL);
     if (!sws_ctx) {
@@ -45,6 +45,6 @@ int ff_scale_image(uint8_t *dst_data[4], int dst_linesize[4],
     sws_scale(sws_ctx, (const uint8_t * const*)src_data, src_linesize, 0, src_h, dst_data, dst_linesize);
 
 end:
-    sws_freeContext(sws_ctx);
+    sws_freeContext_xij(sws_ctx);
     return ret;
 }

@@ -37,7 +37,7 @@ typedef struct AptXDemuxerContext {
 static AVStream *aptx_read_header_common(AVFormatContext *s)
 {
     AptXDemuxerContext *s1 = s->priv_data;
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return NULL;
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -74,12 +74,12 @@ static int aptx_hd_read_header(AVFormatContext *s)
 
 static int aptx_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
-    return av_get_packet(s->pb, pkt, APTX_PACKET_SIZE);
+    return av_get_packet_xij(s->pb, pkt, APTX_PACKET_SIZE);
 }
 
 static int aptx_hd_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
-    return av_get_packet(s->pb, pkt, APTX_HD_PACKET_SIZE);
+    return av_get_packet_xij(s->pb, pkt, APTX_HD_PACKET_SIZE);
 }
 
 static const AVOption aptx_options[] = {

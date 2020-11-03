@@ -869,7 +869,7 @@ static int read_whole_file(AVIOContext *io, int max_size, char **rbuf)
                 goto fail;
             }
         }
-        r = avio_read(io, buf, bufsize - size - 1);
+        r = avio_read_xij(io, buf, bufsize - size - 1);
         if (r == AVERROR_EOF)
             break;
         if (r < 0)
@@ -1336,7 +1336,7 @@ static int encode_intervals(struct sbg_script *s, AVCodecParameters *par,
         if (edata_size < 0)
             return AVERROR(ENOMEM);
     }
-    if (ff_alloc_extradata(par, edata_size))
+    if (ff_alloc_extradata_xij(par, edata_size))
         return AVERROR(ENOMEM);
     edata = par->extradata;
 
@@ -1411,7 +1411,7 @@ static av_cold int sbg_read_header(AVFormatContext *avf)
     if (r < 0)
         goto fail;
 
-    st = avformat_new_stream(avf, NULL);
+    st = avformat_new_stream_ijk(avf, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type     = AVMEDIA_TYPE_AUDIO;
@@ -1420,7 +1420,7 @@ static av_cold int sbg_read_header(AVFormatContext *avf)
     st->codecpar->channel_layout = AV_CH_LAYOUT_STEREO;
     st->codecpar->sample_rate    = sbg->sample_rate;
     st->codecpar->frame_size     = sbg->frame_size;
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
     st->probe_packets = 0;
     st->start_time    = av_rescale(script.start_ts,
                                    sbg->sample_rate, AV_TIME_BASE);
@@ -1454,7 +1454,7 @@ static int sbg_read_packet(AVFormatContext *avf, AVPacket *packet)
                        end_ts);
     if (end_ts <= ts)
         return AVERROR_EOF;
-    if (av_new_packet(packet, 12) < 0)
+    if (av_new_packet_ijk(packet, 12) < 0)
         return AVERROR(ENOMEM);
     packet->dts = packet->pts = ts;
     packet->duration = end_ts - ts;

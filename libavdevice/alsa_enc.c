@@ -71,7 +71,7 @@ static av_cold int audio_write_header(AVFormatContext *s1)
                st->codecpar->sample_rate, sample_rate);
         goto fail;
     }
-    avpriv_set_pts_info(st, 64, 1, sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, sample_rate);
 
     return res;
 

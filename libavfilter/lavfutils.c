@@ -35,60 +35,60 @@ int ff_load_image(uint8_t *data[4], int linesize[4],
     AVPacket pkt;
     AVDictionary *opt=NULL;
 
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
 
-    iformat = av_find_input_format("image2pipe");
-    if ((ret = avformat_open_input(&format_ctx, filename, iformat, NULL)) < 0) {
+    iformat = av_find_input_format_xij("image2pipe");
+    if ((ret = avformat_open_input_ijk(&format_ctx, filename, iformat, NULL)) < 0) {
         av_log(log_ctx, AV_LOG_ERROR,
                "Failed to open input file '%s'\n", filename);
         return ret;
     }
 
-    if ((ret = avformat_find_stream_info(format_ctx, NULL)) < 0) {
+    if ((ret = avformat_find_stream_info_ijk(format_ctx, NULL)) < 0) {
         av_log(log_ctx, AV_LOG_ERROR, "Find stream info failed\n");
         return ret;
     }
 
     par = format_ctx->streams[0]->codecpar;
-    codec = avcodec_find_decoder(par->codec_id);
+    codec = avcodec_find_decoder_ijk(par->codec_id);
     if (!codec) {
         av_log(log_ctx, AV_LOG_ERROR, "Failed to find codec\n");
         ret = AVERROR(EINVAL);
         goto end;
     }
 
-    codec_ctx = avcodec_alloc_context3(codec);
+    codec_ctx = avcodec_alloc_context3_ijk(codec);
     if (!codec_ctx) {
         av_log(log_ctx, AV_LOG_ERROR, "Failed to alloc video decoder context\n");
         ret = AVERROR(ENOMEM);
         goto end;
     }
 
-    ret = avcodec_parameters_to_context(codec_ctx, par);
+    ret = avcodec_parameters_to_context_ijk(codec_ctx, par);
     if (ret < 0) {
         av_log(log_ctx, AV_LOG_ERROR, "Failed to copy codec parameters to decoder context\n");
         goto end;
     }
 
     av_dict_set(&opt, "thread_type", "slice", 0);
-    if ((ret = avcodec_open2(codec_ctx, codec, &opt)) < 0) {
+    if ((ret = avcodec_open2_xij(codec_ctx, codec, &opt)) < 0) {
         av_log(log_ctx, AV_LOG_ERROR, "Failed to open codec\n");
         goto end;
     }
 
-    if (!(frame = av_frame_alloc()) ) {
+    if (!(frame = av_frame_alloc_ijk()) ) {
         av_log(log_ctx, AV_LOG_ERROR, "Failed to alloc frame\n");
         ret = AVERROR(ENOMEM);
         goto end;
     }
 
-    ret = av_read_frame(format_ctx, &pkt);
+    ret = av_read_frame_ijk(format_ctx, &pkt);
     if (ret < 0) {
         av_log(log_ctx, AV_LOG_ERROR, "Failed to read frame from file\n");
         goto end;
     }
 
-    ret = avcodec_decode_video2(codec_ctx, frame, &frame_decoded, &pkt);
+    ret = avcodec_decode_video2_xij(codec_ctx, frame, &frame_decoded, &pkt);
     if (ret < 0 || !frame_decoded) {
         av_log(log_ctx, AV_LOG_ERROR, "Failed to decode image from file\n");
         if (ret >= 0)
@@ -107,10 +107,10 @@ int ff_load_image(uint8_t *data[4], int linesize[4],
     av_image_copy(data, linesize, (const uint8_t **)frame->data, frame->linesize, *pix_fmt, *w, *h);
 
 end:
-    av_packet_unref(&pkt);
-    avcodec_free_context(&codec_ctx);
-    avformat_close_input(&format_ctx);
-    av_frame_free(&frame);
+    av_packet_unref_ijk(&pkt);
+    avcodec_free_context_ijk(&codec_ctx);
+    avformat_close_input_xij(&format_ctx);
+    av_frame_free_xij(&frame);
     av_dict_free(&opt);
 
     if (ret < 0)

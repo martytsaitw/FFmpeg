@@ -447,7 +447,7 @@ static av_cold int gif_decode_init(AVCodecContext *avctx)
     s->avctx = avctx;
 
     avctx->pix_fmt = AV_PIX_FMT_RGB32;
-    s->frame = av_frame_alloc();
+    s->frame = av_frame_alloc_ijk();
     if (!s->frame)
         return AVERROR(ENOMEM);
     ff_lzw_decode_open(&s->lzw);
@@ -483,11 +483,11 @@ FF_ENABLE_DEPRECATION_WARNINGS
         if ((ret = gif_read_header1(s)) < 0)
             return ret;
 
-        if ((ret = ff_set_dimensions(avctx, s->screen_width, s->screen_height)) < 0)
+        if ((ret = ff_set_dimensions_xij(avctx, s->screen_width, s->screen_height)) < 0)
             return ret;
 
-        av_frame_unref(s->frame);
-        if ((ret = ff_get_buffer(avctx, s->frame, 0)) < 0)
+        av_frame_unref_xij(s->frame);
+        if ((ret = ff_get_buffer_xij(avctx, s->frame, 0)) < 0)
             return ret;
 
         av_fast_malloc(&s->idx_line, &s->idx_line_size, s->screen_width);
@@ -503,7 +503,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
             return AVERROR_INVALIDDATA;
         }
 
-        if ((ret = ff_reget_buffer(avctx, s->frame)) < 0)
+        if ((ret = ff_reget_buffer_xij(avctx, s->frame)) < 0)
             return ret;
 
         s->frame->pict_type = AV_PICTURE_TYPE_P;
@@ -514,7 +514,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     if (ret < 0)
         return ret;
 
-    if ((ret = av_frame_ref(data, s->frame)) < 0)
+    if ((ret = av_frame_ref_xij(data, s->frame)) < 0)
         return ret;
     *got_frame = 1;
 
@@ -526,7 +526,7 @@ static av_cold int gif_decode_close(AVCodecContext *avctx)
     GifState *s = avctx->priv_data;
 
     ff_lzw_decode_close(&s->lzw);
-    av_frame_free(&s->frame);
+    av_frame_free_xij(&s->frame);
     av_freep(&s->idx_line);
     av_freep(&s->stored_img);
 

@@ -32,7 +32,7 @@ struct AVBSFInternal {
     int eof;
 };
 
-void av_bsf_free(AVBSFContext **pctx)
+void av_bsf_free_xij(AVBSFContext **pctx)
 {
     AVBSFContext *ctx;
 
@@ -47,12 +47,12 @@ void av_bsf_free(AVBSFContext **pctx)
 
     av_opt_free(ctx);
 
-    av_packet_free(&ctx->internal->buffer_pkt);
+    av_packet_free_xij(&ctx->internal->buffer_pkt);
     av_freep(&ctx->internal);
     av_freep(&ctx->priv_data);
 
-    avcodec_parameters_free(&ctx->par_in);
-    avcodec_parameters_free(&ctx->par_out);
+    avcodec_parameters_free_ijk(&ctx->par_in);
+    avcodec_parameters_free_ijk(&ctx->par_out);
 
     av_freep(pctx);
 }
@@ -70,15 +70,15 @@ static const AVClass bsf_class = {
     .item_name        = av_default_item_name,
     .version          = LIBAVUTIL_VERSION_INT,
     .child_next       = bsf_child_next,
-    .child_class_next = ff_bsf_child_class_next,
+    .child_class_next = ff_bsf_child_class_next_xij,
 };
 
-const AVClass *av_bsf_get_class(void)
+const AVClass *av_bsf_get_class_xij(void)
 {
     return &bsf_class;
 }
 
-int av_bsf_alloc(const AVBitStreamFilter *filter, AVBSFContext **pctx)
+int av_bsf_alloc_ijk(const AVBitStreamFilter *filter, AVBSFContext **pctx)
 {
     AVBSFContext *ctx;
     int ret;
@@ -90,8 +90,8 @@ int av_bsf_alloc(const AVBitStreamFilter *filter, AVBSFContext **pctx)
     ctx->av_class = &bsf_class;
     ctx->filter   = filter;
 
-    ctx->par_in  = avcodec_parameters_alloc();
-    ctx->par_out = avcodec_parameters_alloc();
+    ctx->par_in  = avcodec_parameters_alloc_ijk();
+    ctx->par_out = avcodec_parameters_alloc_ijk();
     if (!ctx->par_in || !ctx->par_out) {
         ret = AVERROR(ENOMEM);
         goto fail;
@@ -103,7 +103,7 @@ int av_bsf_alloc(const AVBitStreamFilter *filter, AVBSFContext **pctx)
         goto fail;
     }
 
-    ctx->internal->buffer_pkt = av_packet_alloc();
+    ctx->internal->buffer_pkt = av_packet_alloc_ijk();
     if (!ctx->internal->buffer_pkt) {
         ret = AVERROR(ENOMEM);
         goto fail;
@@ -127,11 +127,11 @@ int av_bsf_alloc(const AVBitStreamFilter *filter, AVBSFContext **pctx)
     *pctx = ctx;
     return 0;
 fail:
-    av_bsf_free(&ctx);
+    av_bsf_free_xij(&ctx);
     return ret;
 }
 
-int av_bsf_init(AVBSFContext *ctx)
+int av_bsf_init_ijk(AVBSFContext *ctx)
 {
     int ret, i;
 
@@ -157,7 +157,7 @@ int av_bsf_init(AVBSFContext *ctx)
 
     /* initialize output parameters to be the same as input
      * init below might overwrite that */
-    ret = avcodec_parameters_copy(ctx->par_out, ctx->par_in);
+    ret = avcodec_parameters_copy_ijk(ctx->par_out, ctx->par_in);
     if (ret < 0)
         return ret;
 
@@ -172,7 +172,7 @@ int av_bsf_init(AVBSFContext *ctx)
     return 0;
 }
 
-int av_bsf_send_packet(AVBSFContext *ctx, AVPacket *pkt)
+int av_bsf_send_packet_ijk(AVBSFContext *ctx, AVPacket *pkt)
 {
     int ret;
 
@@ -190,20 +190,20 @@ int av_bsf_send_packet(AVBSFContext *ctx, AVPacket *pkt)
         ctx->internal->buffer_pkt->side_data_elems)
         return AVERROR(EAGAIN);
 
-    ret = av_packet_make_refcounted(pkt);
+    ret = av_packet_make_refcounted_xij(pkt);
     if (ret < 0)
         return ret;
-    av_packet_move_ref(ctx->internal->buffer_pkt, pkt);
+    av_packet_move_ref_xij(ctx->internal->buffer_pkt, pkt);
 
     return 0;
 }
 
-int av_bsf_receive_packet(AVBSFContext *ctx, AVPacket *pkt)
+int av_bsf_receive_packet_ijk(AVBSFContext *ctx, AVPacket *pkt)
 {
     return ctx->filter->filter(ctx, pkt);
 }
 
-int ff_bsf_get_packet(AVBSFContext *ctx, AVPacket **pkt)
+int ff_bsf_get_packet_xij(AVBSFContext *ctx, AVPacket **pkt)
 {
     AVBSFInternal *in = ctx->internal;
     AVPacket *tmp_pkt;
@@ -215,7 +215,7 @@ int ff_bsf_get_packet(AVBSFContext *ctx, AVPacket **pkt)
         !ctx->internal->buffer_pkt->side_data_elems)
         return AVERROR(EAGAIN);
 
-    tmp_pkt = av_packet_alloc();
+    tmp_pkt = av_packet_alloc_ijk();
     if (!tmp_pkt)
         return AVERROR(ENOMEM);
 
@@ -225,7 +225,7 @@ int ff_bsf_get_packet(AVBSFContext *ctx, AVPacket **pkt)
     return 0;
 }
 
-int ff_bsf_get_packet_ref(AVBSFContext *ctx, AVPacket *pkt)
+int ff_bsf_get_packet_ref_xij(AVBSFContext *ctx, AVPacket *pkt)
 {
     AVBSFInternal *in = ctx->internal;
 
@@ -236,7 +236,7 @@ int ff_bsf_get_packet_ref(AVBSFContext *ctx, AVPacket *pkt)
         !ctx->internal->buffer_pkt->side_data_elems)
         return AVERROR(EAGAIN);
 
-    av_packet_move_ref(pkt, ctx->internal->buffer_pkt);
+    av_packet_move_ref_xij(pkt, ctx->internal->buffer_pkt);
 
     return 0;
 }
@@ -262,13 +262,13 @@ static int bsf_list_init(AVBSFContext *bsf)
     AVRational tb = bsf->time_base_in;
 
     for (i = 0; i < lst->nb_bsfs; ++i) {
-        ret = avcodec_parameters_copy(lst->bsfs[i]->par_in, cod_par);
+        ret = avcodec_parameters_copy_ijk(lst->bsfs[i]->par_in, cod_par);
         if (ret < 0)
             goto fail;
 
         lst->bsfs[i]->time_base_in = tb;
 
-        ret = av_bsf_init(lst->bsfs[i]);
+        ret = av_bsf_init_ijk(lst->bsfs[i]);
         if (ret < 0)
             goto fail;
 
@@ -277,7 +277,7 @@ static int bsf_list_init(AVBSFContext *bsf)
     }
 
     bsf->time_base_out = tb;
-    ret = avcodec_parameters_copy(bsf->par_out, cod_par);
+    ret = avcodec_parameters_copy_ijk(bsf->par_out, cod_par);
 
 fail:
     return ret;
@@ -289,11 +289,11 @@ static int bsf_list_filter(AVBSFContext *bsf, AVPacket *out)
     int ret;
 
     if (!lst->nb_bsfs)
-        return ff_bsf_get_packet_ref(bsf, out);
+        return ff_bsf_get_packet_ref_xij(bsf, out);
 
     while (1) {
         if (lst->idx > lst->flushed_idx) {
-            ret = av_bsf_receive_packet(lst->bsfs[lst->idx-1], out);
+            ret = av_bsf_receive_packet_ijk(lst->bsfs[lst->idx-1], out);
             if (ret == AVERROR(EAGAIN)) {
                 /* no more packets from idx-1, try with previous */
                 ret = 0;
@@ -308,7 +308,7 @@ static int bsf_list_filter(AVBSFContext *bsf, AVPacket *out)
                 break;
             }
         } else {
-            ret = ff_bsf_get_packet_ref(bsf, out);
+            ret = ff_bsf_get_packet_ref_xij(bsf, out);
             if (ret == AVERROR_EOF) {
                 lst->idx = lst->flushed_idx;
             } else if (ret < 0)
@@ -318,13 +318,13 @@ static int bsf_list_filter(AVBSFContext *bsf, AVPacket *out)
         if (lst->idx < lst->nb_bsfs) {
             AVPacket *pkt;
             if (ret == AVERROR_EOF && lst->idx == lst->flushed_idx) {
-                /* ff_bsf_get_packet_ref returned EOF and idx is first
+                /* ff_bsf_get_packet_ref_xij returned EOF and idx is first
                  * filter of yet not flushed filter chain */
                 pkt = NULL;
             } else {
                 pkt = out;
             }
-            ret = av_bsf_send_packet(lst->bsfs[lst->idx], pkt);
+            ret = av_bsf_send_packet_ijk(lst->bsfs[lst->idx], pkt);
             if (ret < 0)
                 break;
             lst->idx++;
@@ -335,7 +335,7 @@ static int bsf_list_filter(AVBSFContext *bsf, AVPacket *out)
     }
 
     if (ret < 0)
-        av_packet_unref(out);
+        av_packet_unref_ijk(out);
 
     return ret;
 }
@@ -346,7 +346,7 @@ static void bsf_list_close(AVBSFContext *bsf)
     int i;
 
     for (i = 0; i < lst->nb_bsfs; ++i)
-        av_bsf_free(&lst->bsfs[i]);
+        av_bsf_free_xij(&lst->bsfs[i]);
     av_freep(&lst->bsfs);
     av_freep(&lst->item_name);
 }
@@ -382,7 +382,7 @@ static const AVClass bsf_list_class = {
         .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const AVBitStreamFilter ff_list_bsf = {
+const AVBitStreamFilter ff_list_bsf_xij = {
         .name           = "bsf_list",
         .priv_data_size = sizeof(BSFListContext),
         .priv_class     = &bsf_list_class,
@@ -396,12 +396,12 @@ struct AVBSFList {
     int nb_bsfs;
 };
 
-AVBSFList *av_bsf_list_alloc(void)
+AVBSFList *av_bsf_list_alloc_xij(void)
 {
     return av_mallocz(sizeof(AVBSFList));
 }
 
-void av_bsf_list_free(AVBSFList **lst)
+void av_bsf_list_free_xij(AVBSFList **lst)
 {
     int i;
 
@@ -409,27 +409,27 @@ void av_bsf_list_free(AVBSFList **lst)
         return;
 
     for (i = 0; i < (*lst)->nb_bsfs; ++i)
-        av_bsf_free(&(*lst)->bsfs[i]);
+        av_bsf_free_xij(&(*lst)->bsfs[i]);
     av_free((*lst)->bsfs);
     av_freep(lst);
 }
 
-int av_bsf_list_append(AVBSFList *lst, AVBSFContext *bsf)
+int av_bsf_list_append_xij(AVBSFList *lst, AVBSFContext *bsf)
 {
     return av_dynarray_add_nofree(&lst->bsfs, &lst->nb_bsfs, bsf);
 }
 
-int av_bsf_list_append2(AVBSFList *lst, const char *bsf_name, AVDictionary ** options)
+int av_bsf_list_append2_xij(AVBSFList *lst, const char *bsf_name, AVDictionary ** options)
 {
     int ret;
     const AVBitStreamFilter *filter;
     AVBSFContext *bsf;
 
-    filter = av_bsf_get_by_name(bsf_name);
+    filter = av_bsf_get_by_name_ijk(bsf_name);
     if (!filter)
         return AVERROR_BSF_NOT_FOUND;
 
-    ret = av_bsf_alloc(filter, &bsf);
+    ret = av_bsf_alloc_ijk(filter, &bsf);
     if (ret < 0)
         return ret;
 
@@ -439,16 +439,16 @@ int av_bsf_list_append2(AVBSFList *lst, const char *bsf_name, AVDictionary ** op
             goto end;
     }
 
-    ret = av_bsf_list_append(lst, bsf);
+    ret = av_bsf_list_append_xij(lst, bsf);
 
 end:
     if (ret < 0)
-        av_bsf_free(&bsf);
+        av_bsf_free_xij(&bsf);
 
     return ret;
 }
 
-int av_bsf_list_finalize(AVBSFList **lst, AVBSFContext **bsf)
+int av_bsf_list_finalize_xij(AVBSFList **lst, AVBSFContext **bsf)
 {
     int ret = 0;
     BSFListContext *ctx;
@@ -460,7 +460,7 @@ int av_bsf_list_finalize(AVBSFList **lst, AVBSFContext **bsf)
         goto end;
     }
 
-    ret = av_bsf_alloc(&ff_list_bsf, bsf);
+    ret = av_bsf_alloc_ijk(&ff_list_bsf_xij, bsf);
     if (ret < 0)
         return ret;
 
@@ -495,7 +495,7 @@ static int bsf_parse_single(const char *str, AVBSFList *bsf_lst)
             goto end;
     }
 
-    ret = av_bsf_list_append2(bsf_lst, bsf_name, &bsf_options);
+    ret = av_bsf_list_append2_xij(bsf_lst, bsf_name, &bsf_options);
 
     av_dict_free(&bsf_options);
 end:
@@ -503,16 +503,16 @@ end:
     return ret;
 }
 
-int av_bsf_list_parse_str(const char *str, AVBSFContext **bsf_lst)
+int av_bsf_list_parse_str_xij(const char *str, AVBSFContext **bsf_lst)
 {
     AVBSFList *lst;
     char *bsf_str, *buf, *dup, *saveptr;
     int ret;
 
     if (!str)
-        return av_bsf_get_null_filter(bsf_lst);
+        return av_bsf_get_null_filter_xij(bsf_lst);
 
-    lst = av_bsf_list_alloc();
+    lst = av_bsf_list_alloc_xij();
     if (!lst)
         return AVERROR(ENOMEM);
 
@@ -533,15 +533,15 @@ int av_bsf_list_parse_str(const char *str, AVBSFContext **bsf_lst)
         buf = NULL;
     }
 
-    ret = av_bsf_list_finalize(&lst, bsf_lst);
+    ret = av_bsf_list_finalize_xij(&lst, bsf_lst);
 end:
     if (ret < 0)
-        av_bsf_list_free(&lst);
+        av_bsf_list_free_xij(&lst);
     av_free(dup);
     return ret;
 }
 
-int av_bsf_get_null_filter(AVBSFContext **bsf)
+int av_bsf_get_null_filter_xij(AVBSFContext **bsf)
 {
-    return av_bsf_alloc(&ff_list_bsf, bsf);
+    return av_bsf_alloc_ijk(&ff_list_bsf_xij, bsf);
 }

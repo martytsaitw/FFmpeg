@@ -78,34 +78,34 @@ static int read_header(AVFormatContext *s)
     int64_t offset;
     int i;
 
-    avio_skip(pb, 80);
+    avio_skip_xij(pb, 80);
 
-    ast = avformat_new_stream(s, NULL);
-    vst = avformat_new_stream(s, NULL);
+    ast = avformat_new_stream_ijk(s, NULL);
+    vst = avformat_new_stream_ijk(s, NULL);
     if (!ast || !vst)
         return AVERROR(ENOMEM);
 
     vst->codecpar->codec_type  = AVMEDIA_TYPE_VIDEO;
     vst->codecpar->codec_id    = AV_CODEC_ID_JV;
     vst->codecpar->codec_tag   = 0; /* no fourcc */
-    vst->codecpar->width       = avio_rl16(pb);
-    vst->codecpar->height      = avio_rl16(pb);
+    vst->codecpar->width       = avio_rl16_xij(pb);
+    vst->codecpar->height      = avio_rl16_xij(pb);
     vst->duration           =
     vst->nb_frames          =
-    ast->nb_index_entries   = avio_rl16(pb);
-    avpriv_set_pts_info(vst, 64, avio_rl16(pb), 1000);
+    ast->nb_index_entries   = avio_rl16_xij(pb);
+    avpriv_set_pts_info_ijk(vst, 64, avio_rl16_xij(pb), 1000);
 
-    avio_skip(pb, 4);
+    avio_skip_xij(pb, 4);
 
     ast->codecpar->codec_type     = AVMEDIA_TYPE_AUDIO;
     ast->codecpar->codec_id       = AV_CODEC_ID_PCM_U8;
     ast->codecpar->codec_tag      = 0; /* no fourcc */
-    ast->codecpar->sample_rate    = avio_rl16(pb);
+    ast->codecpar->sample_rate    = avio_rl16_xij(pb);
     ast->codecpar->channels       = 1;
     ast->codecpar->channel_layout = AV_CH_LAYOUT_MONO;
-    avpriv_set_pts_info(ast, 64, 1, ast->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(ast, 64, 1, ast->codecpar->sample_rate);
 
-    avio_skip(pb, 10);
+    avio_skip_xij(pb, 10);
 
     ast->index_entries = av_malloc(ast->nb_index_entries *
                                    sizeof(*ast->index_entries));
@@ -122,14 +122,14 @@ static int read_header(AVFormatContext *s)
         JVFrame      *jvf = jv->frames + i;
 
         /* total frame size including audio, video, palette data and padding */
-        e->size      = avio_rl32(pb);
+        e->size      = avio_rl32_xij(pb);
         e->timestamp = i;
         e->pos       = offset;
         offset      += e->size;
 
-        jvf->audio_size   = avio_rl32(pb);
-        jvf->video_size   = avio_rl32(pb);
-        jvf->palette_size = avio_r8(pb) ? 768 : 0;
+        jvf->audio_size   = avio_rl32_xij(pb);
+        jvf->video_size   = avio_rl32_xij(pb);
+        jvf->palette_size = avio_r8_xij(pb) ? 768 : 0;
 
         if ((jvf->video_size | jvf->audio_size) & ~0xFFFFFF ||
             e->size - jvf->audio_size
@@ -144,11 +144,11 @@ static int read_header(AVFormatContext *s)
             jvf->palette_size = 0;
         }
 
-        if (avio_r8(pb))
+        if (avio_r8_xij(pb))
             av_log(s, AV_LOG_WARNING, "unsupported audio codec\n");
 
-        jvf->video_type = avio_r8(pb);
-        avio_skip(pb, 1);
+        jvf->video_type = avio_r8_xij(pb);
+        avio_skip_xij(pb, 1);
 
         e->timestamp = jvf->audio_size ? audio_pts : AV_NOPTS_VALUE;
         audio_pts   += jvf->audio_size;
@@ -166,7 +166,7 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
     AVIOContext *pb = s->pb;
     AVStream *ast = s->streams[0];
 
-    while (!avio_feof(s->pb) && jv->pts < ast->nb_index_entries) {
+    while (!avio_feof_xij(s->pb) && jv->pts < ast->nb_index_entries) {
         const AVIndexEntry *e   = ast->index_entries + jv->pts;
         const JVFrame      *jvf = jv->frames + jv->pts;
 
@@ -174,7 +174,7 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
         case JV_AUDIO:
             jv->state++;
             if (jvf->audio_size) {
-                if (av_get_packet(s->pb, pkt, jvf->audio_size) < 0)
+                if (av_get_packet_xij(s->pb, pkt, jvf->audio_size) < 0)
                     return AVERROR(ENOMEM);
                 pkt->stream_index = 0;
                 pkt->pts          = e->timestamp;
@@ -186,12 +186,12 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
             if (jvf->video_size || jvf->palette_size) {
                 int ret;
                 int size = jvf->video_size + jvf->palette_size;
-                if (av_new_packet(pkt, size + JV_PREAMBLE_SIZE))
+                if (av_new_packet_ijk(pkt, size + JV_PREAMBLE_SIZE))
                     return AVERROR(ENOMEM);
 
                 AV_WL32(pkt->data, jvf->video_size);
                 pkt->data[4] = jvf->video_type;
-                ret = avio_read(pb, pkt->data + JV_PREAMBLE_SIZE, size);
+                ret = avio_read_xij(pb, pkt->data + JV_PREAMBLE_SIZE, size);
                 if (ret < 0)
                     return ret;
                 if (ret < size) {
@@ -207,7 +207,7 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
                 return 0;
             }
         case JV_PADDING:
-            avio_skip(pb, FFMAX(e->size - jvf->audio_size - jvf->video_size
+            avio_skip_xij(pb, FFMAX(e->size - jvf->audio_size - jvf->video_size
                                         - jvf->palette_size, 0));
             jv->state = JV_AUDIO;
             jv->pts++;
@@ -232,7 +232,7 @@ static int read_seek(AVFormatContext *s, int stream_index,
 
     switch (stream_index) {
     case 0:
-        i = av_index_search_timestamp(ast, ts, flags);
+        i = av_index_search_timestamp_xij(ast, ts, flags);
         break;
     case 1:
         i = ts;
@@ -243,7 +243,7 @@ static int read_seek(AVFormatContext *s, int stream_index,
 
     if (i < 0 || i >= ast->nb_index_entries)
         return 0;
-    if (avio_seek(s->pb, ast->index_entries[i].pos, SEEK_SET) < 0)
+    if (avio_seek_xij(s->pb, ast->index_entries[i].pos, SEEK_SET) < 0)
         return -1;
 
     jv->state = JV_AUDIO;

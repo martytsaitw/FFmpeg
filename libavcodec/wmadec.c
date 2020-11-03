@@ -867,7 +867,7 @@ static int wma_decode_superframe(AVCodecContext *avctx, void *data,
 
     /* get output buffer */
     frame->nb_samples = nb_frames * s->frame_len;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
     samples        = (float **) frame->extended_data;
     samples_offset = 0;

@@ -28,7 +28,7 @@
 
 int ff_raw_write_packet(AVFormatContext *s, AVPacket *pkt)
 {
-    avio_write(s->pb, pkt->data, pkt->size);
+    avio_write_xij(s->pb, pkt->data, pkt->size);
     return 0;
 }
 
@@ -69,9 +69,9 @@ static int adx_write_trailer(AVFormatContext *s)
         int64_t file_size = avio_tell(pb);
         uint64_t sample_count = (file_size - 36) / par->channels / 18 * 32;
         if (sample_count <= UINT32_MAX) {
-            avio_seek(pb, 12, SEEK_SET);
-            avio_wb32(pb, sample_count);
-            avio_seek(pb, file_size, SEEK_SET);
+            avio_seek_xij(pb, 12, SEEK_SET);
+            avio_wb32_xij(pb, sample_count);
+            avio_seek_xij(pb, file_size, SEEK_SET);
         }
     }
 
@@ -307,7 +307,7 @@ static int h264_check_bitstream(struct AVFormatContext *s, const AVPacket *pkt)
     AVStream *st = s->streams[0];
     if (pkt->size >= 5 && AV_RB32(pkt->data) != 0x0000001 &&
                           AV_RB24(pkt->data) != 0x000001)
-        return ff_stream_add_bitstream_filter(st, "h264_mp4toannexb", NULL);
+        return ff_stream_add_bitstream_filter_xij(st, "h264_mp4toannexb", NULL);
     return 1;
 }
 
@@ -330,7 +330,7 @@ static int hevc_check_bitstream(struct AVFormatContext *s, const AVPacket *pkt)
     AVStream *st = s->streams[0];
     if (pkt->size >= 5 && AV_RB32(pkt->data) != 0x0000001 &&
                           AV_RB24(pkt->data) != 0x000001)
-        return ff_stream_add_bitstream_filter(st, "hevc_mp4toannexb", NULL);
+        return ff_stream_add_bitstream_filter_xij(st, "hevc_mp4toannexb", NULL);
     return 1;
 }
 

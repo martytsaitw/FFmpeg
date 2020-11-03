@@ -59,7 +59,7 @@
  */
 #if defined(ASSERT_LEVEL) && ASSERT_LEVEL > 1
 #define av_assert2(cond) av_assert0(cond)
-#define av_assert2_fpu() av_assert0_fpu()
+#define av_assert2_fpu() av_assert0_fpu_xij()
 #else
 #define av_assert2(cond) ((void)0)
 #define av_assert2_fpu() ((void)0)
@@ -70,6 +70,6 @@
  *
  * This will av_assert0() that the cpu is not in MMX state on X86
  */
-void av_assert0_fpu(void);
+void av_assert0_fpu_xij(void);
 
 #endif /* AVUTIL_AVASSERT_H */

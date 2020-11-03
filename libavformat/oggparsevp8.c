@@ -58,7 +58,7 @@ static int vp8_header(AVFormatContext *s, int idx)
         framerate.num               = AV_RB32(p + 18);
         framerate.den               = AV_RB32(p + 22);
 
-        avpriv_set_pts_info(st, 64, framerate.den, framerate.num);
+        avpriv_set_pts_info_ijk(st, 64, framerate.den, framerate.num);
         st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
         st->codecpar->codec_id   = AV_CODEC_ID_VP8;
         st->need_parsing      = AVSTREAM_PARSE_HEADERS;

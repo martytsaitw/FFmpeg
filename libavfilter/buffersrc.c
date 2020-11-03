@@ -112,8 +112,8 @@ int av_buffersrc_parameters_set(AVFilterContext *ctx, AVBufferSrcParameters *par
         if (param->frame_rate.num > 0 && param->frame_rate.den > 0)
             s->frame_rate = param->frame_rate;
         if (param->hw_frames_ctx) {
-            av_buffer_unref(&s->hw_frames_ctx);
-            s->hw_frames_ctx = av_buffer_ref(param->hw_frames_ctx);
+            av_buffer_unref_xij(&s->hw_frames_ctx);
+            s->hw_frames_ctx = av_buffer_ref_ijk(param->hw_frames_ctx);
             if (!s->hw_frames_ctx)
                 return AVERROR(ENOMEM);
         }
@@ -163,13 +163,13 @@ int attribute_align_arg av_buffersrc_add_frame_flags(AVFilterContext *ctx, AVFra
     if (!(flags & AV_BUFFERSRC_FLAG_KEEP_REF) || !frame)
         return av_buffersrc_add_frame_internal(ctx, frame, flags);
 
-    if (!(copy = av_frame_alloc()))
+    if (!(copy = av_frame_alloc_ijk()))
         return AVERROR(ENOMEM);
-    ret = av_frame_ref(copy, frame);
+    ret = av_frame_ref_xij(copy, frame);
     if (ret >= 0)
         ret = av_buffersrc_add_frame_internal(ctx, copy, flags);
 
-    av_frame_free(&copy);
+    av_frame_free_xij(&copy);
     return ret;
 }
 
@@ -228,23 +228,23 @@ static int av_buffersrc_add_frame_internal(AVFilterContext *ctx,
                                          sizeof(copy))) < 0)
         return ret;
 
-    if (!(copy = av_frame_alloc()))
+    if (!(copy = av_frame_alloc_ijk()))
         return AVERROR(ENOMEM);
 
     if (refcounted) {
-        av_frame_move_ref(copy, frame);
+        av_frame_move_ref_xij(copy, frame);
     } else {
-        ret = av_frame_ref(copy, frame);
+        ret = av_frame_ref_xij(copy, frame);
         if (ret < 0) {
-            av_frame_free(&copy);
+            av_frame_free_xij(&copy);
             return ret;
         }
     }
 
     if ((ret = av_fifo_generic_write(s->fifo, &copy, sizeof(copy), NULL)) < 0) {
         if (refcounted)
-            av_frame_move_ref(frame, copy);
-        av_frame_free(&copy);
+            av_frame_move_ref_xij(frame, copy);
+        av_frame_free_xij(&copy);
         return ret;
     }
 
@@ -384,9 +384,9 @@ static av_cold void uninit(AVFilterContext *ctx)
     while (s->fifo && av_fifo_size(s->fifo)) {
         AVFrame *frame;
         av_fifo_generic_read(s->fifo, &frame, sizeof(frame), NULL);
-        av_frame_free(&frame);
+        av_frame_free_xij(&frame);
     }
-    av_buffer_unref(&s->hw_frames_ctx);
+    av_buffer_unref_xij(&s->hw_frames_ctx);
     av_fifo_freep(&s->fifo);
 }
 
@@ -436,7 +436,7 @@ static int config_props(AVFilterLink *link)
         link->sample_aspect_ratio = c->pixel_aspect;
 
         if (c->hw_frames_ctx) {
-            link->hw_frames_ctx = av_buffer_ref(c->hw_frames_ctx);
+            link->hw_frames_ctx = av_buffer_ref_ijk(c->hw_frames_ctx);
             if (!link->hw_frames_ctx)
                 return AVERROR(ENOMEM);
         }

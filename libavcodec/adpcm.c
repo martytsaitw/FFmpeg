@@ -730,7 +730,7 @@ static int adpcm_decode_frame(AVCodecContext *avctx, void *data,
 
     /* get output buffer */
     frame->nb_samples = nb_samples;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
     samples = (int16_t *)frame->data[0];
     samples_p = (int16_t **)frame->extended_data;

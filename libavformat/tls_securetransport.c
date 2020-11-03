@@ -84,12 +84,12 @@ static int import_pem(URLContext *h, char *path, CFArrayRef *array)
         goto end;
     }
 
-    if ((ret = ffio_open_whitelist(&s, path, AVIO_FLAG_READ,
+    if ((ret = ffio_open_whitelist_xij(&s, path, AVIO_FLAG_READ,
                                    &h->interrupt_callback, NULL,
                                    h->protocol_whitelist, h->protocol_blacklist)) < 0)
         goto end;
 
-    if ((ret = avio_size(s)) < 0)
+    if ((ret = avio_size_xij(s)) < 0)
         goto end;
 
     if (ret == 0) {
@@ -102,7 +102,7 @@ static int import_pem(URLContext *h, char *path, CFArrayRef *array)
         goto end;
     }
 
-    if ((ret = avio_read(s, buf, ret)) < 0)
+    if ((ret = avio_read_xij(s, buf, ret)) < 0)
         goto end;
 
     data = CFDataCreate(kCFAllocatorDefault, buf, ret);
@@ -125,7 +125,7 @@ end:
     if (data)
         CFRelease(data);
     if (s)
-        avio_close(s);
+        avio_close_xij(s);
     return ret;
 #endif
 }

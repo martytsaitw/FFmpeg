@@ -86,7 +86,7 @@ static int au_read_annotation(AVFormatContext *s, int size)
     av_bprint_init(&bprint, 64, AV_BPRINT_SIZE_UNLIMITED);
 
     while (size-- > 0) {
-        c = avio_r8(pb);
+        c = avio_r8_xij(pb);
         switch(state) {
         case PARSE_KEY:
             if (c == '\0') {
@@ -144,34 +144,34 @@ static int au_read_header(AVFormatContext *s)
     enum AVCodecID codec;
     AVStream *st;
 
-    tag = avio_rl32(pb);
+    tag = avio_rl32_xij(pb);
     if (tag != MKTAG('.', 's', 'n', 'd'))
         return AVERROR_INVALIDDATA;
-    size = avio_rb32(pb); /* header size */
-    data_size = avio_rb32(pb); /* data size in bytes */
+    size = avio_rb32_xij(pb); /* header size */
+    data_size = avio_rb32_xij(pb); /* data size in bytes */
 
     if (data_size < 0 && data_size != AU_UNKNOWN_SIZE) {
         av_log(s, AV_LOG_ERROR, "Invalid negative data size '%d' found\n", data_size);
         return AVERROR_INVALIDDATA;
     }
 
-    id       = avio_rb32(pb);
-    rate     = avio_rb32(pb);
-    channels = avio_rb32(pb);
+    id       = avio_rb32_xij(pb);
+    rate     = avio_rb32_xij(pb);
+    channels = avio_rb32_xij(pb);
 
     if (size > 24) {
         /* parse annotation field to get metadata */
         au_read_annotation(s, size - 24);
     }
 
-    codec = ff_codec_get_id(codec_au_tags, id);
+    codec = ff_codec_get_id_xij(codec_au_tags, id);
 
     if (codec == AV_CODEC_ID_NONE) {
         avpriv_request_sample(s, "unknown or unsupported codec tag: %u", id);
         return AVERROR_PATCHWELCOME;
     }
 
-    bps = av_get_bits_per_sample(codec);
+    bps = av_get_bits_per_sample_xij(codec);
     if (codec == AV_CODEC_ID_ADPCM_G726LE) {
         if (id == MKBETAG('7','2','6','2')) {
             bps = 2;
@@ -195,7 +195,7 @@ static int au_read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
     }
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
@@ -210,7 +210,7 @@ static int au_read_header(AVFormatContext *s)
         st->duration = (((int64_t)data_size)<<3) / (st->codecpar->channels * (int64_t)bps);
 
     st->start_time = 0;
-    avpriv_set_pts_info(st, 64, 1, rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, rate);
 
     return 0;
 }
@@ -282,7 +282,7 @@ static int au_write_header(AVFormatContext *s)
         return AVERROR(EINVAL);
     }
 
-    par->codec_tag = ff_codec_get_tag(codec_au_tags, par->codec_id);
+    par->codec_tag = ff_codec_get_tag_xij(codec_au_tags, par->codec_id);
     if (!par->codec_tag) {
         av_log(s, AV_LOG_ERROR, "unsupported codec\n");
         return AVERROR(EINVAL);
@@ -299,18 +299,18 @@ static int au_write_header(AVFormatContext *s)
         }
     }
     ffio_wfourcc(pb, ".snd");                   /* magic number */
-    avio_wb32(pb, au->header_size);             /* header size */
-    avio_wb32(pb, AU_UNKNOWN_SIZE);             /* data size */
-    avio_wb32(pb, par->codec_tag);              /* codec ID */
-    avio_wb32(pb, par->sample_rate);
-    avio_wb32(pb, par->channels);
+    avio_wb32_xij(pb, au->header_size);             /* header size */
+    avio_wb32_xij(pb, AU_UNKNOWN_SIZE);             /* data size */
+    avio_wb32_xij(pb, par->codec_tag);              /* codec ID */
+    avio_wb32_xij(pb, par->sample_rate);
+    avio_wb32_xij(pb, par->channels);
     if (annotations != NULL) {
-        avio_write(pb, annotations, au->header_size - 24);
+        avio_write_xij(pb, annotations, au->header_size - 24);
         av_freep(&annotations);
     } else {
-        avio_wb64(pb, 0); /* annotation field */
+        avio_wb64_xij(pb, 0); /* annotation field */
     }
-    avio_flush(pb);
+    avio_flush_xij(pb);
 
     return 0;
 }
@@ -323,10 +323,10 @@ static int au_write_trailer(AVFormatContext *s)
 
     if ((s->pb->seekable & AVIO_SEEKABLE_NORMAL) && file_size < INT32_MAX) {
         /* update file size */
-        avio_seek(pb, 8, SEEK_SET);
-        avio_wb32(pb, (uint32_t)(file_size - au->header_size));
-        avio_seek(pb, file_size, SEEK_SET);
-        avio_flush(pb);
+        avio_seek_xij(pb, 8, SEEK_SET);
+        avio_wb32_xij(pb, (uint32_t)(file_size - au->header_size));
+        avio_seek_xij(pb, file_size, SEEK_SET);
+        avio_flush_xij(pb);
     }
 
     return 0;

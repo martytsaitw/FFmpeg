@@ -86,7 +86,7 @@ static void hex_log(AVFormatContext *s, int level,
     len = FFMIN(len, 16);
     if (av_log_get_level() < level)
         return;
-    ff_data_to_hex(buf, value, len, 1);
+    ff_data_to_hex_xij(buf, value, len, 1);
     buf[len << 1] = '\0';
     av_log(s, level, "%s: %s\n", name, buf);
 }
@@ -311,7 +311,7 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
     int packet_size = st->codecpar->block_align;
     int byte_rate   = st->codecpar->bit_rate >> 3;
     int64_t pos     = avio_tell(s->pb);
-    int ret         = av_get_packet(s->pb, pkt, packet_size);
+    int ret         = av_get_packet_xij(s->pb, pkt, packet_size);
 
     if (ret < packet_size)
         pkt->flags |= AV_PKT_FLAG_CORRUPT;
@@ -349,21 +349,21 @@ static int aal_read_packet(AVFormatContext *s, AVPacket *pkt)
     int packet_size;
     unsigned tag;
 
-    if (avio_feof(s->pb))
+    if (avio_feof_xij(s->pb))
         return AVERROR_EOF;
 
-    tag = avio_rb24(s->pb);
+    tag = avio_rb24_xij(s->pb);
     if (tag == 0)
         return AVERROR_EOF;
     else if (tag != MKBETAG(0,'B','L','K'))
         return AVERROR_INVALIDDATA;
 
-    avio_skip(s->pb, 1);
-    packet_size = avio_rb16(s->pb);
-    avio_skip(s->pb, 2);
-    pts = avio_rb32(s->pb);
-    avio_skip(s->pb, 12);
-    ret = av_get_packet(s->pb, pkt, packet_size);
+    avio_skip_xij(s->pb, 1);
+    packet_size = avio_rb16_xij(s->pb);
+    avio_skip_xij(s->pb, 2);
+    pts = avio_rb32_xij(s->pb);
+    avio_skip_xij(s->pb, 12);
+    ret = av_get_packet_xij(s->pb, pkt, packet_size);
     if (ret < packet_size)
         pkt->flags |= AV_PKT_FLAG_CORRUPT;
 
@@ -402,7 +402,7 @@ static int oma_read_header(AVFormatContext *s)
         return ret;
     }
 
-    ret = avio_read(s->pb, buf, EA3_HEADER_SIZE);
+    ret = avio_read_xij(s->pb, buf, EA3_HEADER_SIZE);
     if (ret < EA3_HEADER_SIZE)
         return -1;
 
@@ -425,14 +425,14 @@ static int oma_read_header(AVFormatContext *s)
 
     codec_params = AV_RB24(&buf[33]);
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
     st->start_time = 0;
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_tag  = buf[32];
-    st->codecpar->codec_id   = ff_codec_get_id(ff_oma_codec_tags,
+    st->codecpar->codec_id   = ff_codec_get_id_xij(ff_oma_codec_tags,
                                                st->codecpar->codec_tag);
 
     oc->read_packet = read_packet;
@@ -459,7 +459,7 @@ static int oma_read_header(AVFormatContext *s)
 
         /* fake the ATRAC3 extradata
          * (wav format, makes stream copy to wav work) */
-        if (ff_alloc_extradata(st->codecpar, 14))
+        if (ff_alloc_extradata_xij(st->codecpar, 14))
             return AVERROR(ENOMEM);
 
         edata = st->codecpar->extradata;
@@ -470,7 +470,7 @@ static int oma_read_header(AVFormatContext *s)
         AV_WL16(&edata[10], 1);             // always 1
         // AV_WL16(&edata[12], 0);          // always 0
 
-        avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+        avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
         break;
     case OMA_CODECID_ATRAC3P:
         channel_id = (codec_params >> 10) & 7;
@@ -489,7 +489,7 @@ static int oma_read_header(AVFormatContext *s)
         }
         st->codecpar->sample_rate = samplerate;
         st->codecpar->bit_rate    = samplerate * framesize / (2048 / 8);
-        avpriv_set_pts_info(st, 64, 1, samplerate);
+        avpriv_set_pts_info_ijk(st, 64, 1, samplerate);
         break;
     case OMA_CODECID_MP3:
         st->need_parsing = AVSTREAM_PARSE_FULL_RAW;
@@ -504,14 +504,14 @@ static int oma_read_header(AVFormatContext *s)
         /* bit rate = sample rate x PCM block align (= 4) x 8 */
         st->codecpar->bit_rate = st->codecpar->sample_rate * 32;
         st->codecpar->bits_per_coded_sample =
-            av_get_bits_per_sample(st->codecpar->codec_id);
-        avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+            av_get_bits_per_sample_xij(st->codecpar->codec_id);
+        avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
         break;
     case OMA_CODECID_ATRAC3AL:
         st->codecpar->channels    = 2;
         st->codecpar->channel_layout = AV_CH_LAYOUT_STEREO;
         st->codecpar->sample_rate = 44100;
-        avpriv_set_pts_info(st, 64, 1, 44100);
+        avpriv_set_pts_info_ijk(st, 64, 1, 44100);
         oc->read_packet = aal_read_packet;
         framesize = 4096;
         break;
@@ -519,7 +519,7 @@ static int oma_read_header(AVFormatContext *s)
         st->codecpar->channel_layout = AV_CH_LAYOUT_STEREO;
         st->codecpar->channels       = 2;
         st->codecpar->sample_rate = 44100;
-        avpriv_set_pts_info(st, 64, 1, 44100);
+        avpriv_set_pts_info_ijk(st, 64, 1, 44100);
         oc->read_packet = aal_read_packet;
         framesize = 4096;
         break;
@@ -578,9 +578,9 @@ static int oma_read_seek(struct AVFormatContext *s,
     /* readjust IV for CBC */
     if (err || avio_tell(s->pb) < oc->content_start)
         goto wipe;
-    if ((err = avio_seek(s->pb, -8, SEEK_CUR)) < 0)
+    if ((err = avio_seek_xij(s->pb, -8, SEEK_CUR)) < 0)
         goto wipe;
-    if ((err = avio_read(s->pb, oc->iv, 8)) < 8) {
+    if ((err = avio_read_xij(s->pb, oc->iv, 8)) < 8) {
         if (err >= 0)
             err = AVERROR_EOF;
         goto wipe;

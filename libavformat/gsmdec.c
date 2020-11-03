@@ -60,9 +60,9 @@ static int gsm_read_packet(AVFormatContext *s, AVPacket *pkt)
     pkt->pos = avio_tell(s->pb);
     pkt->stream_index = 0;
 
-    ret = av_get_packet(s->pb, pkt, size);
+    ret = av_get_packet_xij(s->pb, pkt, size);
     if (ret < GSM_BLOCK_SIZE) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return ret < 0 ? ret : AVERROR(EIO);
     }
     pkt->duration = 1;
@@ -74,7 +74,7 @@ static int gsm_read_packet(AVFormatContext *s, AVPacket *pkt)
 static int gsm_read_header(AVFormatContext *s)
 {
     GSMDemuxerContext *c = s->priv_data;
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -85,7 +85,7 @@ static int gsm_read_header(AVFormatContext *s)
     st->codecpar->sample_rate = c->sample_rate;
     st->codecpar->bit_rate    = GSM_BLOCK_SIZE * 8 * c->sample_rate / GSM_BLOCK_SAMPLES;
 
-    avpriv_set_pts_info(st, 64, GSM_BLOCK_SAMPLES, GSM_SAMPLE_RATE);
+    avpriv_set_pts_info_ijk(st, 64, GSM_BLOCK_SAMPLES, GSM_SAMPLE_RATE);
 
     return 0;
 }

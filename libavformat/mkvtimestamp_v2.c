@@ -25,8 +25,8 @@
 static int write_header(AVFormatContext *s)
 {
     static const char *header = "# timecode format v2\n";
-    avio_write(s->pb, header, strlen(header));
-    avpriv_set_pts_info(s->streams[0], 64, 1, 1000);
+    avio_write_xij(s->pb, header, strlen(header));
+    avpriv_set_pts_info_ijk(s->streams[0], 64, 1, 1000);
     return 0;
 }
 
@@ -36,7 +36,7 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
     if (pkt->stream_index)
         av_log(s, AV_LOG_WARNING, "More than one stream unsupported\n");
     snprintf(buf, sizeof(buf), "%" PRId64 "\n", pkt->dts);
-    avio_write(s->pb, buf, strlen(buf));
+    avio_write_xij(s->pb, buf, strlen(buf));
     return 0;
 }
 

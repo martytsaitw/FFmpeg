@@ -65,17 +65,17 @@ static int dxa_read_header(AVFormatContext *s)
     int flags;
     int ret;
 
-    tag = avio_rl32(pb);
+    tag = avio_rl32_xij(pb);
     if (tag != MKTAG('D', 'E', 'X', 'A'))
         return AVERROR_INVALIDDATA;
-    flags = avio_r8(pb);
-    c->frames = avio_rb16(pb);
+    flags = avio_r8_xij(pb);
+    c->frames = avio_rb16_xij(pb);
     if(!c->frames){
         av_log(s, AV_LOG_ERROR, "File contains no frames ???\n");
         return AVERROR_INVALIDDATA;
     }
 
-    fps = avio_rb32(pb);
+    fps = avio_rb32_xij(pb);
     if(fps > 0){
         den = 1000;
         num = fps;
@@ -86,44 +86,44 @@ static int dxa_read_header(AVFormatContext *s)
         den = 10;
         num = 1;
     }
-    w = avio_rb16(pb);
-    h = avio_rb16(pb);
+    w = avio_rb16_xij(pb);
+    h = avio_rb16_xij(pb);
     c->has_sound = 0;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
     // Parse WAV data header
-    if(avio_rl32(pb) == MKTAG('W', 'A', 'V', 'E')){
+    if(avio_rl32_xij(pb) == MKTAG('W', 'A', 'V', 'E')){
         uint32_t size, fsize;
         c->has_sound = 1;
-        size = avio_rb32(pb);
+        size = avio_rb32_xij(pb);
         c->vidpos = avio_tell(pb) + size;
-        avio_skip(pb, 16);
-        fsize = avio_rl32(pb);
+        avio_skip_xij(pb, 16);
+        fsize = avio_rl32_xij(pb);
 
-        ast = avformat_new_stream(s, NULL);
+        ast = avformat_new_stream_ijk(s, NULL);
         if (!ast)
             return AVERROR(ENOMEM);
         ret = ff_get_wav_header(s, pb, ast->codecpar, fsize, 0);
         if (ret < 0)
             return ret;
         if (ast->codecpar->sample_rate > 0)
-            avpriv_set_pts_info(ast, 64, 1, ast->codecpar->sample_rate);
+            avpriv_set_pts_info_ijk(ast, 64, 1, ast->codecpar->sample_rate);
         // find 'data' chunk
-        while(avio_tell(pb) < c->vidpos && !avio_feof(pb)){
-            tag = avio_rl32(pb);
-            fsize = avio_rl32(pb);
+        while(avio_tell(pb) < c->vidpos && !avio_feof_xij(pb)){
+            tag = avio_rl32_xij(pb);
+            fsize = avio_rl32_xij(pb);
             if(tag == MKTAG('d', 'a', 't', 'a')) break;
-            avio_skip(pb, fsize);
+            avio_skip_xij(pb, fsize);
         }
         c->bpc = (fsize + c->frames - 1) / c->frames;
         if(ast->codecpar->block_align)
             c->bpc = ((c->bpc + ast->codecpar->block_align - 1) / ast->codecpar->block_align) * ast->codecpar->block_align;
         c->bytes_left = fsize;
         c->wavpos = avio_tell(pb);
-        avio_seek(pb, c->vidpos, SEEK_SET);
+        avio_seek_xij(pb, c->vidpos, SEEK_SET);
     }
 
     /* now we are ready: build format streams */
@@ -132,7 +132,7 @@ static int dxa_read_header(AVFormatContext *s)
     st->codecpar->width      = w;
     st->codecpar->height     = h;
     av_reduce(&den, &num, den, num, (1UL<<31)-1);
-    avpriv_set_pts_info(st, 33, num, den);
+    avpriv_set_pts_info_ijk(st, 33, num, den);
     /* flags & 0x80 means that image is interlaced,
      * flags & 0x40 means that image has double height
      * either way set true height
@@ -159,9 +159,9 @@ static int dxa_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     if(!c->readvid && c->has_sound && c->bytes_left){
         c->readvid = 1;
-        avio_seek(s->pb, c->wavpos, SEEK_SET);
+        avio_seek_xij(s->pb, c->wavpos, SEEK_SET);
         size = FFMIN(c->bytes_left, c->bpc);
-        ret = av_get_packet(s->pb, pkt, size);
+        ret = av_get_packet_xij(s->pb, pkt, size);
         pkt->stream_index = 1;
         if(ret != size)
             return AVERROR(EIO);
@@ -169,17 +169,17 @@ static int dxa_read_packet(AVFormatContext *s, AVPacket *pkt)
         c->wavpos = avio_tell(s->pb);
         return 0;
     }
-    avio_seek(s->pb, c->vidpos, SEEK_SET);
-    while(!avio_feof(s->pb) && c->frames){
+    avio_seek_xij(s->pb, c->vidpos, SEEK_SET);
+    while(!avio_feof_xij(s->pb) && c->frames){
         uint32_t tag;
-        if ((ret = avio_read(s->pb, buf, 4)) != 4) {
+        if ((ret = avio_read_xij(s->pb, buf, 4)) != 4) {
             av_log(s, AV_LOG_ERROR, "failed reading chunk type\n");
             return ret < 0 ? ret : AVERROR_INVALIDDATA;
         }
         tag = AV_RL32(buf);
         switch (tag) {
         case MKTAG('N', 'U', 'L', 'L'):
-            if(av_new_packet(pkt, 4 + pal_size) < 0)
+            if(av_new_packet_ijk(pkt, 4 + pal_size) < 0)
                 return AVERROR(ENOMEM);
             pkt->stream_index = 0;
             if(pal_size) memcpy(pkt->data, pal, pal_size);
@@ -191,10 +191,10 @@ static int dxa_read_packet(AVFormatContext *s, AVPacket *pkt)
         case MKTAG('C', 'M', 'A', 'P'):
             pal_size = 768+4;
             memcpy(pal, buf, 4);
-            avio_read(s->pb, pal + 4, 768);
+            avio_read_xij(s->pb, pal + 4, 768);
             break;
         case MKTAG('F', 'R', 'A', 'M'):
-            if ((ret = avio_read(s->pb, buf + 4, DXA_EXTRA_SIZE - 4)) != DXA_EXTRA_SIZE - 4) {
+            if ((ret = avio_read_xij(s->pb, buf + 4, DXA_EXTRA_SIZE - 4)) != DXA_EXTRA_SIZE - 4) {
                 av_log(s, AV_LOG_ERROR, "failed reading dxa_extra\n");
                 return ret < 0 ? ret : AVERROR_INVALIDDATA;
             }
@@ -204,12 +204,12 @@ static int dxa_read_packet(AVFormatContext *s, AVPacket *pkt)
                        size);
                 return AVERROR_INVALIDDATA;
             }
-            if(av_new_packet(pkt, size + DXA_EXTRA_SIZE + pal_size) < 0)
+            if(av_new_packet_ijk(pkt, size + DXA_EXTRA_SIZE + pal_size) < 0)
                 return AVERROR(ENOMEM);
             memcpy(pkt->data + pal_size, buf, DXA_EXTRA_SIZE);
-            ret = avio_read(s->pb, pkt->data + DXA_EXTRA_SIZE + pal_size, size);
+            ret = avio_read_xij(s->pb, pkt->data + DXA_EXTRA_SIZE + pal_size, size);
             if(ret != size){
-                av_packet_unref(pkt);
+                av_packet_unref_ijk(pkt);
                 return AVERROR(EIO);
             }
             if(pal_size) memcpy(pkt->data, pal, pal_size);

@@ -80,7 +80,7 @@
  * @defgroup lavc_encdec send/receive encoding and decoding API overview
  * @{
  *
- * The avcodec_send_packet()/avcodec_receive_frame()/avcodec_send_frame()/
+ * The avcodec_send_packet_xij()/avcodec_receive_frame_xij()/avcodec_send_frame()/
  * avcodec_receive_packet() functions provide an encode/decode API, which
  * decouples input and output.
  *
@@ -88,17 +88,17 @@
  * follows:
  * - Set up and open the AVCodecContext as usual.
  * - Send valid input:
- *   - For decoding, call avcodec_send_packet() to give the decoder raw
+ *   - For decoding, call avcodec_send_packet_xij() to give the decoder raw
  *     compressed data in an AVPacket.
  *   - For encoding, call avcodec_send_frame() to give the encoder an AVFrame
  *     containing uncompressed audio or video.
  *   In both cases, it is recommended that AVPackets and AVFrames are
  *   refcounted, or libavcodec might have to copy the input data. (libavformat
- *   always returns refcounted AVPackets, and av_frame_get_buffer() allocates
+ *   always returns refcounted AVPackets, and av_frame_get_buffer_xij() allocates
  *   refcounted AVFrames.)
  * - Receive output in a loop. Periodically call one of the avcodec_receive_*()
  *   functions and process their output:
- *   - For decoding, call avcodec_receive_frame(). On success, it will return
+ *   - For decoding, call avcodec_receive_frame_xij(). On success, it will return
  *     an AVFrame containing uncompressed audio or video data.
  *   - For encoding, call avcodec_receive_packet(). On success, it will return
  *     an AVPacket with a compressed frame.
@@ -123,19 +123,19 @@
  * as the codec might buffer multiple frames or packets internally for
  * performance or out of necessity (consider B-frames).
  * This is handled as follows:
- * - Instead of valid input, send NULL to the avcodec_send_packet() (decoding)
+ * - Instead of valid input, send NULL to the avcodec_send_packet_xij() (decoding)
  *   or avcodec_send_frame() (encoding) functions. This will enter draining
  *   mode.
- * - Call avcodec_receive_frame() (decoding) or avcodec_receive_packet()
+ * - Call avcodec_receive_frame_xij() (decoding) or avcodec_receive_packet()
  *   (encoding) in a loop until AVERROR_EOF is returned. The functions will
  *   not return AVERROR(EAGAIN), unless you forgot to enter draining mode.
  * - Before decoding can be resumed again, the codec has to be reset with
- *   avcodec_flush_buffers().
+ *   avcodec_flush_buffers_xij().
  *
  * Using the API as outlined above is highly recommended. But it is also
  * possible to call functions outside of this rigid schema. For example, you can
- * call avcodec_send_packet() repeatedly without calling
- * avcodec_receive_frame(). In this case, avcodec_send_packet() will succeed
+ * call avcodec_send_packet_xij() repeatedly without calling
+ * avcodec_receive_frame_xij(). In this case, avcodec_send_packet_xij() will succeed
  * until the codec's internal buffer has been filled up (which is typically of
  * size 1 per output frame, after initial input), and then reject input with
  * AVERROR(EAGAIN). Once it starts rejecting input, you have no choice but to
@@ -148,9 +148,9 @@
  * permit unlimited buffering of input or output.
  *
  * This API replaces the following legacy functions:
- * - avcodec_decode_video2() and avcodec_decode_audio4():
- *   Use avcodec_send_packet() to feed input to the decoder, then use
- *   avcodec_receive_frame() to receive decoded frames after each packet.
+ * - avcodec_decode_video2_xij() and avcodec_decode_audio4_xij():
+ *   Use avcodec_send_packet_xij() to feed input to the decoder, then use
+ *   avcodec_receive_frame_xij() to receive decoded frames after each packet.
  *   Unlike with the old video decoding API, multiple frames might result from
  *   a packet. For audio, splitting the input packet into frames by partially
  *   decoding packets becomes transparent to the API user. You never need to
@@ -173,7 +173,7 @@
  * A codec is not allowed to return AVERROR(EAGAIN) for both sending and receiving. This
  * would be an invalid state, which could put the codec user into an endless
  * loop. The API has no concept of time either: it cannot happen that trying to
- * do avcodec_send_packet() results in AVERROR(EAGAIN), but a repeated call 1 second
+ * do avcodec_send_packet_xij() results in AVERROR(EAGAIN), but a repeated call 1 second
  * later accepts the packet (with no other receive/flush API calls involved).
  * The API is a strict state machine, and the passage of time is not supposed
  * to influence it. Some timing-dependent behavior might still be deemed
@@ -183,7 +183,7 @@
  * the send/receive APIs allowing progress. For example, it's not allowed that
  * the codec randomly decides that it actually wants to consume a packet now
  * instead of returning a frame, after it just returned AVERROR(EAGAIN) on an
- * avcodec_send_packet() call.
+ * avcodec_send_packet_xij() call.
  * @}
  */
 
@@ -1056,7 +1056,7 @@ typedef struct RcOverride{
 /**
  * Codec is backed by a hardware implementation. Typically used to
  * identify a non-hwaccel hardware decoder. For information about hwaccels, use
- * avcodec_get_hw_config() instead.
+ * avcodec_get_hw_config_xij() instead.
  */
 #define AV_CODEC_CAP_HARDWARE            (1 << 18)
 
@@ -1403,17 +1403,17 @@ typedef struct AVPacketSideData {
  *
  * The semantics of data ownership depends on the buf field.
  * If it is set, the packet data is dynamically allocated and is
- * valid indefinitely until a call to av_packet_unref() reduces the
+ * valid indefinitely until a call to av_packet_unref_ijk() reduces the
  * reference count to 0.
  *
- * If the buf field is not set av_packet_ref() would make a copy instead
+ * If the buf field is not set av_packet_ref_ijk() would make a copy instead
  * of increasing the reference count.
  *
  * The side data is always allocated with av_malloc(), copied by
- * av_packet_ref() and freed by av_packet_unref().
+ * av_packet_ref_ijk() and freed by av_packet_unref_ijk().
  *
- * @see av_packet_ref
- * @see av_packet_unref
+ * @see av_packet_ref_ijk
+ * @see av_packet_unref_ijk
  */
 typedef struct AVPacket {
     /**
@@ -1541,7 +1541,7 @@ enum AVFieldOrder {
 typedef struct AVCodecContext {
     /**
      * information on struct for av_log
-     * - set by avcodec_alloc_context3
+     * - set by avcodec_alloc_context3_ijk
      */
     const AVClass *av_class;
     int log_level_offset;
@@ -1701,7 +1701,7 @@ typedef struct AVCodecContext {
      * picture width / height.
      *
      * @note Those fields may not match the values of the last
-     * AVFrame output by avcodec_decode_video2 due frame
+     * AVFrame output by avcodec_decode_video2_xij due frame
      * reordering.
      *
      * - encoding: MUST be set by user.
@@ -1717,7 +1717,7 @@ typedef struct AVCodecContext {
      * the decoded frame is cropped before being output or lowres is enabled.
      *
      * @note Those field may not match the value of the last
-     * AVFrame output by avcodec_receive_frame() due frame
+     * AVFrame output by avcodec_receive_frame_xij() due frame
      * reordering.
      *
      * - encoding: unused
@@ -1740,7 +1740,7 @@ typedef struct AVCodecContext {
      * May be overridden by the decoder if it knows better.
      *
      * @note This field may not match the value of the last
-     * AVFrame output by avcodec_receive_frame() due frame
+     * AVFrame output by avcodec_receive_frame_xij() due frame
      * reordering.
      *
      * - encoding: Set by user.
@@ -2207,7 +2207,7 @@ typedef struct AVCodecContext {
     /**
      * Number of samples per channel in an audio frame.
      *
-     * - encoding: set by libavcodec in avcodec_open2(). Each submitted frame
+     * - encoding: set by libavcodec in avcodec_open2_xij(). Each submitted frame
      *   except the last must contain exactly frame_size samples per channel.
      *   May be 0 when the codec has AV_CODEC_CAP_VARIABLE_FRAME_SIZE set, then the
      *   frame size is not restricted.
@@ -2293,33 +2293,33 @@ typedef struct AVCodecContext {
      *     callback must allocate and fill extended_data to contain all pointers
      *     to all data planes. data[] must hold as many pointers as it can.
      *     extended_data must be allocated with av_malloc() and will be freed in
-     *     av_frame_unref().
+     *     av_frame_unref_xij().
      *   * otherwise extended_data must point to data
      * - buf[] must contain one or more pointers to AVBufferRef structures. Each of
      *   the frame's data and extended_data pointers must be contained in these. That
      *   is, one AVBufferRef for each allocated chunk of memory, not necessarily one
-     *   AVBufferRef per data[] entry. See: av_buffer_create(), av_buffer_alloc(),
-     *   and av_buffer_ref().
+     *   AVBufferRef per data[] entry. See: av_buffer_create_ijk(), av_buffer_alloc_ijk(),
+     *   and av_buffer_ref_ijk().
      * - extended_buf and nb_extended_buf must be allocated with av_malloc() by
      *   this callback and filled with the extra buffers if there are more
      *   buffers than buf[] can hold. extended_buf will be freed in
-     *   av_frame_unref().
+     *   av_frame_unref_xij().
      *
      * If AV_CODEC_CAP_DR1 is not set then get_buffer2() must call
-     * avcodec_default_get_buffer2() instead of providing buffers allocated by
+     * avcodec_default_get_buffer2_xij() instead of providing buffers allocated by
      * some other means.
      *
      * Each data plane must be aligned to the maximum required by the target
      * CPU.
      *
-     * @see avcodec_default_get_buffer2()
+     * @see avcodec_default_get_buffer2_xij()
      *
      * Video:
      *
      * If AV_GET_BUFFER_FLAG_REF is set in flags then the frame may be reused
      * (read and/or written to if it is writable) later by libavcodec.
      *
-     * avcodec_align_dimensions2() should be used to find the required width and
+     * avcodec_align_dimensions2_xij() should be used to find the required width and
      * height, as they normally need to be rounded up to the next multiple of 16.
      *
      * Some decoders do not support linesizes changing between frames.
@@ -2328,7 +2328,7 @@ typedef struct AVCodecContext {
      * this callback may be called from a different thread, but not from more
      * than one at once. Does not need to be reentrant.
      *
-     * @see avcodec_align_dimensions2()
+     * @see avcodec_align_dimensions2_xij()
      *
      * Audio:
      *
@@ -2352,16 +2352,16 @@ typedef struct AVCodecContext {
 
     /**
      * If non-zero, the decoded audio and video frames returned from
-     * avcodec_decode_video2() and avcodec_decode_audio4() are reference-counted
+     * avcodec_decode_video2_xij() and avcodec_decode_audio4_xij() are reference-counted
      * and are valid indefinitely. The caller must free them with
-     * av_frame_unref() when they are not needed anymore.
+     * av_frame_unref_xij() when they are not needed anymore.
      * Otherwise, the decoded frames must not be freed by the caller and are
      * only valid until the next decode call.
      *
-     * This is always automatically enabled if avcodec_receive_frame() is used.
+     * This is always automatically enabled if avcodec_receive_frame_xij() is used.
      *
      * - encoding: unused
-     * - decoding: set by the caller before avcodec_open2().
+     * - decoding: set by the caller before avcodec_open2_xij().
      */
     attribute_deprecated
     int refcounted_frames;
@@ -3002,8 +3002,8 @@ typedef struct AVCodecContext {
      * For SUBTITLE_ASS subtitle type, it should contain the whole ASS
      * [Script Info] and [V4+ Styles] section, plus the [Events] line and
      * the Format line following. It shouldn't include any Dialogue line.
-     * - encoding: Set/allocated/freed by user (before avcodec_open2())
-     * - decoding: Set/allocated/freed by libavcodec (by avcodec_open2())
+     * - encoding: Set/allocated/freed by user (before avcodec_open2_xij())
+     * - decoding: Set/allocated/freed by libavcodec (by avcodec_open2_xij())
      */
     uint8_t *subtitle_header;
     int subtitle_header_size;
@@ -3190,7 +3190,7 @@ typedef struct AVCodecContext {
      * Additional data associated with the entire coded stream.
      *
      * - decoding: unused
-     * - encoding: may be set by libavcodec after avcodec_open2().
+     * - encoding: may be set by libavcodec after avcodec_open2_xij().
      */
     AVPacketSideData *coded_side_data;
     int            nb_coded_side_data;
@@ -3215,7 +3215,7 @@ typedef struct AVCodecContext {
      *             AVHWFramesContext.format must be equal to
      *             AVCodecContext.pix_fmt.
      *
-     *             This field should be set before avcodec_open2() is called.
+     *             This field should be set before avcodec_open2_xij() is called.
      */
     AVBufferRef *hw_frames_ctx;
 
@@ -3263,7 +3263,7 @@ typedef struct AVCodecContext {
      * may again be used on a following one after another get_format() call.
      *
      * For both encoders and decoders this field should be set before
-     * avcodec_open2() is called and must not be written to thereafter.
+     * avcodec_open2_xij() is called and must not be written to thereafter.
      *
      * Note that some decoders may require this field to be set initially in
      * order to support hw_frames_ctx at all - in that case, all frames
@@ -3275,7 +3275,7 @@ typedef struct AVCodecContext {
      * Bit set of AV_HWACCEL_FLAG_* flags, which affect hardware accelerated
      * decoding (if active).
      * - encoding: unused
-     * - decoding: Set by user (either before avcodec_open2(), or in the
+     * - decoding: Set by user (either before avcodec_open2_xij(), or in the
      *             AVCodecContext.get_format callback)
      */
     int hwaccel_flags;
@@ -3310,7 +3310,7 @@ typedef struct AVCodecContext {
     /*
      * Video decoding only.  Sets the number of extra hardware frames which
      * the decoder will allocate for use by the caller.  This must be set
-     * before avcodec_open2() is called.
+     * before avcodec_open2_xij() is called.
      *
      * Some hardware decoders require all frames that they will use for
      * output to be defined in advance before decoding starts.  For such
@@ -3328,34 +3328,34 @@ typedef struct AVCodecContext {
  * compatibility, and do not need to be used anymore.
  */
 attribute_deprecated
-AVRational av_codec_get_pkt_timebase         (const AVCodecContext *avctx);
+AVRational av_codec_get_pkt_timebase_xij         (const AVCodecContext *avctx);
 attribute_deprecated
-void       av_codec_set_pkt_timebase         (AVCodecContext *avctx, AVRational val);
+void       av_codec_set_pkt_timebase_xij         (AVCodecContext *avctx, AVRational val);
 
 attribute_deprecated
-const AVCodecDescriptor *av_codec_get_codec_descriptor(const AVCodecContext *avctx);
+const AVCodecDescriptor *av_codec_get_codec_descriptor_xij(const AVCodecContext *avctx);
 attribute_deprecated
-void                     av_codec_set_codec_descriptor(AVCodecContext *avctx, const AVCodecDescriptor *desc);
+void                     av_codec_set_codec_descriptor_xij(AVCodecContext *avctx, const AVCodecDescriptor *desc);
 
 attribute_deprecated
-unsigned av_codec_get_codec_properties(const AVCodecContext *avctx);
+unsigned av_codec_get_codec_properties_xij(const AVCodecContext *avctx);
 
 #if FF_API_LOWRES
 attribute_deprecated
-int  av_codec_get_lowres(const AVCodecContext *avctx);
+int  av_codec_get_lowres_xij(const AVCodecContext *avctx);
 attribute_deprecated
-void av_codec_set_lowres(AVCodecContext *avctx, int val);
+void av_codec_set_lowres_xij(AVCodecContext *avctx, int val);
 #endif
 
 attribute_deprecated
-int  av_codec_get_seek_preroll(const AVCodecContext *avctx);
+int  av_codec_get_seek_preroll_xij(const AVCodecContext *avctx);
 attribute_deprecated
-void av_codec_set_seek_preroll(AVCodecContext *avctx, int val);
+void av_codec_set_seek_preroll_xij(AVCodecContext *avctx, int val);
 
 attribute_deprecated
-uint16_t *av_codec_get_chroma_intra_matrix(const AVCodecContext *avctx);
+uint16_t *av_codec_get_chroma_intra_matrix_xij(const AVCodecContext *avctx);
 attribute_deprecated
-void av_codec_set_chroma_intra_matrix(AVCodecContext *avctx, uint16_t *val);
+void av_codec_set_chroma_intra_matrix_xij(AVCodecContext *avctx, uint16_t *val);
 #endif
 
 /**
@@ -3372,7 +3372,7 @@ enum {
      *
      * When selecting this format, AVCodecContext.hw_device_ctx should
      * have been set to a device of the specified type before calling
-     * avcodec_open2().
+     * avcodec_open2_xij().
      */
     AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX = 0x01,
     /**
@@ -3504,7 +3504,7 @@ typedef struct AVCodec {
     const AVCodecDefault *defaults;
 
     /**
-     * Initialize codec static data, called from avcodec_register().
+     * Initialize codec static data, called from avcodec_register_xij().
      *
      * This is not intended for time consuming operations as it is
      * run for every codec regardless of that codec being used.
@@ -3541,7 +3541,7 @@ typedef struct AVCodec {
 
     /**
      * Decode API with decoupled packet/frame dataflow. This function is called
-     * to get one output frame. It should call ff_decode_get_packet() to obtain
+     * to get one output frame. It should call ff_decode_get_packet_xij() to obtain
      * input data.
      */
     int (*receive_frame)(AVCodecContext *avctx, AVFrame *frame);
@@ -3567,14 +3567,14 @@ typedef struct AVCodec {
      * or NULL if no hardware supported.  The array is terminated by a NULL
      * pointer.
      *
-     * The user can only access this field via avcodec_get_hw_config().
+     * The user can only access this field via avcodec_get_hw_config_xij().
      */
     const struct AVCodecHWConfigInternal **hw_configs;
 } AVCodec;
 
 #if FF_API_CODEC_GET_SET
 attribute_deprecated
-int av_codec_get_max_lowres(const AVCodec *codec);
+int av_codec_get_max_lowres_xij(const AVCodec *codec);
 #endif
 
 struct MpegEncContext;
@@ -3586,7 +3586,7 @@ struct MpegEncContext;
  * descriptor; all other values return NULL.  If the codec does not support
  * any hardware configurations then it will always return NULL.
  */
-const AVCodecHWConfig *avcodec_get_hw_config(const AVCodec *codec, int index);
+const AVCodecHWConfig *avcodec_get_hw_config_xij(const AVCodec *codec, int index);
 
 /**
  * @defgroup lavc_hwaccel AVHWAccel
@@ -3722,7 +3722,7 @@ typedef struct AVHWAccel {
     /**
      * Initialize the hwaccel private data.
      *
-     * This will be called from ff_get_format(), after hwaccel and
+     * This will be called from ff_get_format_xij(), after hwaccel and
      * hwaccel_context are set and the hwaccel private data in AVCodecInternal
      * is allocated.
      */
@@ -3731,7 +3731,7 @@ typedef struct AVHWAccel {
     /**
      * Uninitialize the hwaccel private data.
      *
-     * This will be called from get_format() or avcodec_close(), after hwaccel
+     * This will be called from get_format() or avcodec_close_xij(), after hwaccel
      * and hwaccel_context are already uninitialized.
      */
     int (*uninit)(AVCodecContext *avctx);
@@ -3749,7 +3749,7 @@ typedef struct AVHWAccel {
 
     /**
      * Fill the given hw_frames context with current codec parameters. Called
-     * from get_format. Refer to avcodec_get_hw_frames_parameters() for
+     * from get_format. Refer to avcodec_get_hw_frames_parameters_xij() for
      * details.
      *
      * This CAN be called before AVHWAccel.init is called, and you must assume
@@ -3893,8 +3893,8 @@ typedef struct AVSubtitle {
  * This struct describes the properties of an encoded stream.
  *
  * sizeof(AVCodecParameters) is not a part of the public ABI, this struct must
- * be allocated with avcodec_parameters_alloc() and freed with
- * avcodec_parameters_free().
+ * be allocated with avcodec_parameters_alloc_ijk() and freed with
+ * avcodec_parameters_free_ijk().
  */
 typedef struct AVCodecParameters {
     /**
@@ -3914,7 +3914,7 @@ typedef struct AVCodecParameters {
      * Extra binary data needed for initializing the decoder, codec-dependent.
      *
      * Must be allocated with av_malloc() and will be freed by
-     * avcodec_parameters_free(). The allocated size of extradata must be at
+     * avcodec_parameters_free_ijk(). The allocated size of extradata must be at
      * least extradata_size + AV_INPUT_BUFFER_PADDING_SIZE, with the padding
      * bytes zeroed.
      */
@@ -4056,7 +4056,7 @@ typedef struct AVCodecParameters {
  * @return the next registered codec or NULL when the iteration is
  *         finished
  */
-const AVCodec *av_codec_iterate(void **opaque);
+const AVCodec *av_codec_iterate_xij(void **opaque);
 
 #if FF_API_NEXT
 /**
@@ -4065,35 +4065,35 @@ const AVCodec *av_codec_iterate(void **opaque);
  * or NULL if c is the last one.
  */
 attribute_deprecated
-AVCodec *av_codec_next(const AVCodec *c);
+AVCodec *av_codec_next_xij(const AVCodec *c);
 #endif
 
 /**
  * Return the LIBAVCODEC_VERSION_INT constant.
  */
-unsigned avcodec_version(void);
+unsigned avcodec_version_ijk(void);
 
 /**
  * Return the libavcodec build-time configuration.
  */
-const char *avcodec_configuration(void);
+const char *avcodec_configuration_xij(void);
 
 /**
  * Return the libavcodec license.
  */
-const char *avcodec_license(void);
+const char *avcodec_license_xij(void);
 
 #if FF_API_NEXT
 /**
  * Register the codec codec and initialize libavcodec.
  *
- * @warning either this function or avcodec_register_all() must be called
+ * @warning either this function or avcodec_register_all_xij() must be called
  * before any other libavcodec functions.
  *
- * @see avcodec_register_all()
+ * @see avcodec_register_all_xij()
  */
 attribute_deprecated
-void avcodec_register(AVCodec *codec);
+void avcodec_register_xij(AVCodec *codec);
 
 /**
  * Register all the codecs, parsers and bitstream filters which were enabled at
@@ -4101,20 +4101,20 @@ void avcodec_register(AVCodec *codec);
  * which formats you want to support, by using the individual registration
  * functions.
  *
- * @see avcodec_register
+ * @see avcodec_register_xij
  * @see av_register_codec_parser
  * @see av_register_bitstream_filter
  */
 attribute_deprecated
-void avcodec_register_all(void);
+void avcodec_register_all_xij(void);
 #endif
 
 /**
  * Allocate an AVCodecContext and set its fields to default values. The
- * resulting struct should be freed with avcodec_free_context().
+ * resulting struct should be freed with avcodec_free_context_ijk().
  *
  * @param codec if non-NULL, allocate private data and initialize defaults
- *              for the given codec. It is illegal to then call avcodec_open2()
+ *              for the given codec. It is illegal to then call avcodec_open2_xij()
  *              with a different codec.
  *              If NULL, then the codec-specific defaults won't be initialized,
  *              which may result in suboptimal default settings (this is
@@ -4122,13 +4122,13 @@ void avcodec_register_all(void);
  *
  * @return An AVCodecContext filled with default values or NULL on failure.
  */
-AVCodecContext *avcodec_alloc_context3(const AVCodec *codec);
+AVCodecContext *avcodec_alloc_context3_ijk(const AVCodec *codec);
 
 /**
  * Free the codec context and everything associated with it and write NULL to
  * the provided pointer.
  */
-void avcodec_free_context(AVCodecContext **avctx);
+void avcodec_free_context_ijk(AVCodecContext **avctx);
 
 #if FF_API_GET_CONTEXT_DEFAULTS
 /**
@@ -4136,7 +4136,7 @@ void avcodec_free_context(AVCodecContext **avctx);
  * context multiple time is not supported. A new codec context should be
  * allocated for each new use.
  */
-int avcodec_get_context_defaults3(AVCodecContext *s, const AVCodec *codec);
+int avcodec_get_context_defaults3_xij(AVCodecContext *s, const AVCodec *codec);
 #endif
 
 /**
@@ -4145,7 +4145,7 @@ int avcodec_get_context_defaults3(AVCodecContext *s, const AVCodec *codec);
  *
  * @see av_opt_find().
  */
-const AVClass *avcodec_get_class(void);
+const AVClass *avcodec_get_class_ijk(void);
 
 #if FF_API_COPY_CONTEXT
 /**
@@ -4154,7 +4154,7 @@ const AVClass *avcodec_get_class(void);
  *
  * @see av_opt_find().
  */
-const AVClass *avcodec_get_frame_class(void);
+const AVClass *avcodec_get_frame_class_xij(void);
 
 /**
  * Get the AVClass for AVSubtitleRect. It can be used in combination with
@@ -4162,41 +4162,41 @@ const AVClass *avcodec_get_frame_class(void);
  *
  * @see av_opt_find().
  */
-const AVClass *avcodec_get_subtitle_rect_class(void);
+const AVClass *avcodec_get_subtitle_rect_class_xij(void);
 
 /**
  * Copy the settings of the source AVCodecContext into the destination
  * AVCodecContext. The resulting destination codec context will be
- * unopened, i.e. you are required to call avcodec_open2() before you
+ * unopened, i.e. you are required to call avcodec_open2_xij() before you
  * can use this AVCodecContext to decode/encode video/audio data.
  *
  * @param dest target codec context, should be initialized with
- *             avcodec_alloc_context3(NULL), but otherwise uninitialized
+ *             avcodec_alloc_context3_ijk(NULL), but otherwise uninitialized
  * @param src source codec context
  * @return AVERROR() on error (e.g. memory allocation error), 0 on success
  *
  * @deprecated The semantics of this function are ill-defined and it should not
  * be used. If you need to transfer the stream parameters from one codec context
  * to another, use an intermediate AVCodecParameters instance and the
- * avcodec_parameters_from_context() / avcodec_parameters_to_context()
+ * avcodec_parameters_from_context_ijk() / avcodec_parameters_to_context_ijk()
  * functions.
  */
 attribute_deprecated
-int avcodec_copy_context(AVCodecContext *dest, const AVCodecContext *src);
+int avcodec_copy_context_xij(AVCodecContext *dest, const AVCodecContext *src);
 #endif
 
 /**
  * Allocate a new AVCodecParameters and set its fields to default values
  * (unknown/invalid/0). The returned struct must be freed with
- * avcodec_parameters_free().
+ * avcodec_parameters_free_ijk().
  */
-AVCodecParameters *avcodec_parameters_alloc(void);
+AVCodecParameters *avcodec_parameters_alloc_ijk(void);
 
 /**
  * Free an AVCodecParameters instance and everything associated with it and
  * write NULL to the supplied pointer.
  */
-void avcodec_parameters_free(AVCodecParameters **par);
+void avcodec_parameters_free_ijk(AVCodecParameters **par);
 
 /**
  * Copy the contents of src to dst. Any allocated fields in dst are freed and
@@ -4204,7 +4204,7 @@ void avcodec_parameters_free(AVCodecParameters **par);
  *
  * @return >= 0 on success, a negative AVERROR code on failure.
  */
-int avcodec_parameters_copy(AVCodecParameters *dst, const AVCodecParameters *src);
+int avcodec_parameters_copy_ijk(AVCodecParameters *dst, const AVCodecParameters *src);
 
 /**
  * Fill the parameters struct based on the values from the supplied codec
@@ -4213,7 +4213,7 @@ int avcodec_parameters_copy(AVCodecParameters *dst, const AVCodecParameters *src
  *
  * @return >= 0 on success, a negative AVERROR code on failure
  */
-int avcodec_parameters_from_context(AVCodecParameters *par,
+int avcodec_parameters_from_context_ijk(AVCodecParameters *par,
                                     const AVCodecContext *codec);
 
 /**
@@ -4224,70 +4224,70 @@ int avcodec_parameters_from_context(AVCodecParameters *par,
  *
  * @return >= 0 on success, a negative AVERROR code on failure.
  */
-int avcodec_parameters_to_context(AVCodecContext *codec,
+int avcodec_parameters_to_context_ijk(AVCodecContext *codec,
                                   const AVCodecParameters *par);
 
 /**
  * Initialize the AVCodecContext to use the given AVCodec. Prior to using this
- * function the context has to be allocated with avcodec_alloc_context3().
+ * function the context has to be allocated with avcodec_alloc_context3_ijk().
  *
- * The functions avcodec_find_decoder_by_name(), avcodec_find_encoder_by_name(),
- * avcodec_find_decoder() and avcodec_find_encoder() provide an easy way for
+ * The functions avcodec_find_decoder_by_name_xij(), avcodec_find_encoder_by_name_xij(),
+ * avcodec_find_decoder_ijk() and avcodec_find_encoder_ijk() provide an easy way for
  * retrieving a codec.
  *
  * @warning This function is not thread safe!
  *
  * @note Always call this function before using decoding routines (such as
- * @ref avcodec_receive_frame()).
+ * @ref avcodec_receive_frame_xij()).
  *
  * @code
- * avcodec_register_all();
+ * avcodec_register_all_xij();
  * av_dict_set(&opts, "b", "2.5M", 0);
- * codec = avcodec_find_decoder(AV_CODEC_ID_H264);
+ * codec = avcodec_find_decoder_ijk(AV_CODEC_ID_H264);
  * if (!codec)
  *     exit(1);
  *
- * context = avcodec_alloc_context3(codec);
+ * context = avcodec_alloc_context3_ijk(codec);
  *
- * if (avcodec_open2(context, codec, opts) < 0)
+ * if (avcodec_open2_xij(context, codec, opts) < 0)
  *     exit(1);
  * @endcode
  *
  * @param avctx The context to initialize.
  * @param codec The codec to open this context for. If a non-NULL codec has been
- *              previously passed to avcodec_alloc_context3() or
+ *              previously passed to avcodec_alloc_context3_ijk() or
  *              for this context, then this parameter MUST be either NULL or
  *              equal to the previously passed codec.
  * @param options A dictionary filled with AVCodecContext and codec-private options.
  *                On return this object will be filled with options that were not found.
  *
  * @return zero on success, a negative value on error
- * @see avcodec_alloc_context3(), avcodec_find_decoder(), avcodec_find_encoder(),
+ * @see avcodec_alloc_context3_ijk(), avcodec_find_decoder_ijk(), avcodec_find_encoder_ijk(),
  *      av_dict_set(), av_opt_find().
  */
-int avcodec_open2(AVCodecContext *avctx, const AVCodec *codec, AVDictionary **options);
+int avcodec_open2_xij(AVCodecContext *avctx, const AVCodec *codec, AVDictionary **options);
 
 /**
  * Close a given AVCodecContext and free all the data associated with it
  * (but not the AVCodecContext itself).
  *
  * Calling this function on an AVCodecContext that hasn't been opened will free
- * the codec-specific data allocated in avcodec_alloc_context3() with a non-NULL
+ * the codec-specific data allocated in avcodec_alloc_context3_ijk() with a non-NULL
  * codec. Subsequent calls will do nothing.
  *
- * @note Do not use this function. Use avcodec_free_context() to destroy a
+ * @note Do not use this function. Use avcodec_free_context_ijk() to destroy a
  * codec context (either open or closed). Opening and closing a codec context
  * multiple times is not supported anymore -- use multiple codec contexts
  * instead.
  */
-int avcodec_close(AVCodecContext *avctx);
+int avcodec_close_xij(AVCodecContext *avctx);
 
 /**
  * Free all allocated data in the given subtitle struct.
  *
  * @param sub AVSubtitle to free.
  */
-void avsubtitle_free(AVSubtitle *sub);
+void avsubtitle_free_xij(AVSubtitle *sub);
 
 /**
  * @}
@@ -4300,28 +4300,28 @@ void avsubtitle_free(AVSubtitle *sub);
 
 /**
  * Allocate an AVPacket and set its fields to default values.  The resulting
- * struct must be freed using av_packet_free().
+ * struct must be freed using av_packet_free_xij().
  *
  * @return An AVPacket filled with default values or NULL on failure.
  *
  * @note this only allocates the AVPacket itself, not the data buffers. Those
- * must be allocated through other means such as av_new_packet.
+ * must be allocated through other means such as av_new_packet_ijk.
  *
- * @see av_new_packet
+ * @see av_new_packet_ijk
  */
-AVPacket *av_packet_alloc(void);
+AVPacket *av_packet_alloc_ijk(void);
 
 /**
  * Create a new packet that references the same data as src.
  *
- * This is a shortcut for av_packet_alloc()+av_packet_ref().
+ * This is a shortcut for av_packet_alloc_ijk()+av_packet_ref_ijk().
  *
  * @return newly created AVPacket on success, NULL on error.
  *
- * @see av_packet_alloc
- * @see av_packet_ref
+ * @see av_packet_alloc_ijk
+ * @see av_packet_ref_ijk
  */
-AVPacket *av_packet_clone(const AVPacket *src);
+AVPacket *av_packet_clone_xij(const AVPacket *src);
 
 /**
  * Free the packet, if the packet is reference counted, it will be
@@ -4330,7 +4330,7 @@ AVPacket *av_packet_clone(const AVPacket *src);
  * @param pkt packet to be freed. The pointer will be set to NULL.
  * @note passing NULL is a no-op.
  */
-void av_packet_free(AVPacket **pkt);
+void av_packet_free_xij(AVPacket **pkt);
 
 /**
  * Initialize optional fields of a packet with default values.
@@ -4340,7 +4340,7 @@ void av_packet_free(AVPacket **pkt);
  *
  * @param pkt packet
  */
-void av_init_packet(AVPacket *pkt);
+void av_init_packet_ijk(AVPacket *pkt);
 
 /**
  * Allocate the payload of a packet and initialize its fields with
@@ -4350,7 +4350,7 @@ void av_init_packet(AVPacket *pkt);
  * @param size wanted payload size
  * @return 0 if OK, AVERROR_xxx otherwise
  */
-int av_new_packet(AVPacket *pkt, int size);
+int av_new_packet_ijk(AVPacket *pkt, int size);
 
 /**
  * Reduce packet size, correctly zeroing padding
@@ -4358,7 +4358,7 @@ int av_new_packet(AVPacket *pkt, int size);
  * @param pkt packet
  * @param size new size
  */
-void av_shrink_packet(AVPacket *pkt, int size);
+void av_shrink_packet_xij(AVPacket *pkt, int size);
 
 /**
  * Increase packet size, correctly zeroing padding
@@ -4366,7 +4366,7 @@ void av_shrink_packet(AVPacket *pkt, int size);
  * @param pkt packet
  * @param grow_by number of bytes by which to increase the size of the packet
  */
-int av_grow_packet(AVPacket *pkt, int grow_by);
+int av_grow_packet_ijk(AVPacket *pkt, int grow_by);
 
 /**
  * Initialize a reference-counted packet from av_malloc()ed data.
@@ -4381,46 +4381,46 @@ int av_grow_packet(AVPacket *pkt, int grow_by);
  *
  * @return 0 on success, a negative AVERROR on error
  */
-int av_packet_from_data(AVPacket *pkt, uint8_t *data, int size);
+int av_packet_from_data_ijk(AVPacket *pkt, uint8_t *data, int size);
 
 #if FF_API_AVPACKET_OLD_API
 /**
  * @warning This is a hack - the packet memory allocation stuff is broken. The
  * packet is allocated if it was not really allocated.
  *
- * @deprecated Use av_packet_ref or av_packet_make_refcounted
+ * @deprecated Use av_packet_ref_ijk or av_packet_make_refcounted_xij
  */
 attribute_deprecated
-int av_dup_packet(AVPacket *pkt);
+int av_dup_packet_ijk(AVPacket *pkt);
 /**
  * Copy packet, including contents
  *
  * @return 0 on success, negative AVERROR on fail
  *
- * @deprecated Use av_packet_ref
+ * @deprecated Use av_packet_ref_ijk
  */
 attribute_deprecated
-int av_copy_packet(AVPacket *dst, const AVPacket *src);
+int av_copy_packet_xij(AVPacket *dst, const AVPacket *src);
 
 /**
  * Copy packet side data
  *
  * @return 0 on success, negative AVERROR on fail
  *
- * @deprecated Use av_packet_copy_props
+ * @deprecated Use av_packet_copy_props_ijk
  */
 attribute_deprecated
-int av_copy_packet_side_data(AVPacket *dst, const AVPacket *src);
+int av_copy_packet_side_data_ijk(AVPacket *dst, const AVPacket *src);
 
 /**
  * Free a packet.
  *
- * @deprecated Use av_packet_unref
+ * @deprecated Use av_packet_unref_ijk
  *
  * @param pkt packet to free
  */
 attribute_deprecated
-void av_free_packet(AVPacket *pkt);
+void av_free_packet_ijk(AVPacket *pkt);
 #endif
 /**
  * Allocate new information of a packet.
@@ -4430,7 +4430,7 @@ void av_free_packet(AVPacket *pkt);
  * @param size side information size
  * @return pointer to fresh allocated data or NULL otherwise
  */
-uint8_t* av_packet_new_side_data(AVPacket *pkt, enum AVPacketSideDataType type,
+uint8_t* av_packet_new_side_data_xij(AVPacket *pkt, enum AVPacketSideDataType type,
                                  int size);
 
 /**
@@ -4446,7 +4446,7 @@ uint8_t* av_packet_new_side_data(AVPacket *pkt, enum AVPacketSideDataType type,
  *         failure. On failure, the packet is unchanged and the data remains
  *         owned by the caller.
  */
-int av_packet_add_side_data(AVPacket *pkt, enum AVPacketSideDataType type,
+int av_packet_add_side_data_ijk(AVPacket *pkt, enum AVPacketSideDataType type,
                             uint8_t *data, size_t size);
 
 /**
@@ -4457,7 +4457,7 @@ int av_packet_add_side_data(AVPacket *pkt, enum AVPacketSideDataType type,
  * @param size new side information size
  * @return 0 on success, < 0 on failure
  */
-int av_packet_shrink_side_data(AVPacket *pkt, enum AVPacketSideDataType type,
+int av_packet_shrink_side_data_xij(AVPacket *pkt, enum AVPacketSideDataType type,
                                int size);
 
 /**
@@ -4468,18 +4468,18 @@ int av_packet_shrink_side_data(AVPacket *pkt, enum AVPacketSideDataType type,
  * @param size pointer for side information size to store (optional)
  * @return pointer to data if present or NULL otherwise
  */
-uint8_t* av_packet_get_side_data(const AVPacket *pkt, enum AVPacketSideDataType type,
+uint8_t* av_packet_get_side_data_xij(const AVPacket *pkt, enum AVPacketSideDataType type,
                                  int *size);
 
 #if FF_API_MERGE_SD_API
 attribute_deprecated
-int av_packet_merge_side_data(AVPacket *pkt);
+int av_packet_merge_side_data_xij(AVPacket *pkt);
 
 attribute_deprecated
-int av_packet_split_side_data(AVPacket *pkt);
+int av_packet_split_side_data_xij(AVPacket *pkt);
 #endif
 
-const char *av_packet_side_data_name(enum AVPacketSideDataType type);
+const char *av_packet_side_data_name_xij(enum AVPacketSideDataType type);
 
 /**
  * Pack a dictionary for use in side_data.
@@ -4488,7 +4488,7 @@ const char *av_packet_side_data_name(enum AVPacketSideDataType type);
  * @param size pointer to store the size of the returned data
  * @return pointer to data if successful, NULL otherwise
  */
-uint8_t *av_packet_pack_dictionary(AVDictionary *dict, int *size);
+uint8_t *av_packet_pack_dictionary_xij(AVDictionary *dict, int *size);
 /**
  * Unpack a dictionary from side_data.
  *
@@ -4497,7 +4497,7 @@ uint8_t *av_packet_pack_dictionary(AVDictionary *dict, int *size);
  * @param dict the metadata storage dictionary
  * @return 0 on success, < 0 on failure
  */
-int av_packet_unpack_dictionary(const uint8_t *data, int size, AVDictionary **dict);
+int av_packet_unpack_dictionary_xij(const uint8_t *data, int size, AVDictionary **dict);
 
 
 /**
@@ -4506,7 +4506,7 @@ int av_packet_unpack_dictionary(const uint8_t *data, int size, AVDictionary **di
  *
  * @param pkt packet
  */
-void av_packet_free_side_data(AVPacket *pkt);
+void av_packet_free_side_data_ijk(AVPacket *pkt);
 
 /**
  * Setup a new reference to the data described by a given packet
@@ -4517,14 +4517,14 @@ void av_packet_free_side_data(AVPacket *pkt);
  *
  * All the other fields are copied from src.
  *
- * @see av_packet_unref
+ * @see av_packet_unref_ijk
  *
  * @param dst Destination packet
  * @param src Source packet
  *
  * @return 0 on success, a negative AVERROR on error.
  */
-int av_packet_ref(AVPacket *dst, const AVPacket *src);
+int av_packet_ref_ijk(AVPacket *dst, const AVPacket *src);
 
 /**
  * Wipe the packet.
@@ -4534,17 +4534,17 @@ int av_packet_ref(AVPacket *dst, const AVPacket *src);
  *
  * @param pkt The packet to be unreferenced.
  */
-void av_packet_unref(AVPacket *pkt);
+void av_packet_unref_ijk(AVPacket *pkt);
 
 /**
  * Move every field in src to dst and reset src.
  *
- * @see av_packet_unref
+ * @see av_packet_unref_ijk
  *
  * @param src Source packet, will be reset
  * @param dst Destination packet
  */
-void av_packet_move_ref(AVPacket *dst, AVPacket *src);
+void av_packet_move_ref_xij(AVPacket *dst, AVPacket *src);
 
 /**
  * Copy only "properties" fields from src to dst.
@@ -4557,23 +4557,23 @@ void av_packet_move_ref(AVPacket *dst, AVPacket *src);
  *
  * @return 0 on success AVERROR on failure.
  */
-int av_packet_copy_props(AVPacket *dst, const AVPacket *src);
+int av_packet_copy_props_ijk(AVPacket *dst, const AVPacket *src);
 
 /**
  * Ensure the data described by a given packet is reference counted.
  *
  * @note This function does not ensure that the reference will be writable.
- *       Use av_packet_make_writable instead for that purpose.
+ *       Use av_packet_make_writable_xij instead for that purpose.
  *
- * @see av_packet_ref
- * @see av_packet_make_writable
+ * @see av_packet_ref_ijk
+ * @see av_packet_make_writable_xij
  *
  * @param pkt packet whose data should be made reference counted.
  *
  * @return 0 on success, a negative AVERROR on error. On failure, the
  *         packet is unchanged.
  */
-int av_packet_make_refcounted(AVPacket *pkt);
+int av_packet_make_refcounted_xij(AVPacket *pkt);
 
 /**
  * Create a writable reference for the data described by a given packet,
@@ -4584,7 +4584,7 @@ int av_packet_make_refcounted(AVPacket *pkt);
  * @return 0 on success, a negative AVERROR on failure. On failure, the
  *         packet is unchanged.
  */
-int av_packet_make_writable(AVPacket *pkt);
+int av_packet_make_writable_xij(AVPacket *pkt);
 
 /**
  * Convert valid timing fields (timestamps / durations) in a packet from one
@@ -4597,7 +4597,7 @@ int av_packet_make_writable(AVPacket *pkt);
  * @param tb_dst destination timebase, to which the timing fields will be
  *               converted
  */
-void av_packet_rescale_ts(AVPacket *pkt, AVRational tb_src, AVRational tb_dst);
+void av_packet_rescale_ts_xij(AVPacket *pkt, AVRational tb_src, AVRational tb_dst);
 
 /**
  * @}
@@ -4614,7 +4614,7 @@ void av_packet_rescale_ts(AVPacket *pkt, AVRational tb_src, AVRational tb_dst);
  * @param id AVCodecID of the requested decoder
  * @return A decoder if one was found, NULL otherwise.
  */
-AVCodec *avcodec_find_decoder(enum AVCodecID id);
+AVCodec *avcodec_find_decoder_ijk(enum AVCodecID id);
 
 /**
  * Find a registered decoder with the specified name.
@@ -4622,14 +4622,14 @@ AVCodec *avcodec_find_decoder(enum AVCodecID id);
  * @param name name of the requested decoder
  * @return A decoder if one was found, NULL otherwise.
  */
-AVCodec *avcodec_find_decoder_by_name(const char *name);
+AVCodec *avcodec_find_decoder_by_name_xij(const char *name);
 
 /**
  * The default callback for AVCodecContext.get_buffer2(). It is made public so
  * it can be called by custom get_buffer2() implementations for decoders without
  * AV_CODEC_CAP_DR1 set.
  */
-int avcodec_default_get_buffer2(AVCodecContext *s, AVFrame *frame, int flags);
+int avcodec_default_get_buffer2_xij(AVCodecContext *s, AVFrame *frame, int flags);
 
 /**
  * Modify width and height values so that they will result in a memory
@@ -4638,7 +4638,7 @@ int avcodec_default_get_buffer2(AVCodecContext *s, AVFrame *frame, int flags);
  *
  * May only be used if a codec with AV_CODEC_CAP_DR1 has been opened.
  */
-void avcodec_align_dimensions(AVCodecContext *s, int *width, int *height);
+void avcodec_align_dimensions_xij(AVCodecContext *s, int *width, int *height);
 
 /**
  * Modify width and height values so that they will result in a memory
@@ -4647,7 +4647,7 @@ void avcodec_align_dimensions(AVCodecContext *s, int *width, int *height);
  *
  * May only be used if a codec with AV_CODEC_CAP_DR1 has been opened.
  */
-void avcodec_align_dimensions2(AVCodecContext *s, int *width, int *height,
+void avcodec_align_dimensions2_xij(AVCodecContext *s, int *width, int *height,
                                int linesize_align[AV_NUM_DATA_POINTERS]);
 
 /**
@@ -4659,7 +4659,7 @@ void avcodec_align_dimensions2(AVCodecContext *s, int *width, int *height,
  * @param xpos  horizontal chroma sample position
  * @param ypos  vertical   chroma sample position
  */
-int avcodec_enum_to_chroma_pos(int *xpos, int *ypos, enum AVChromaLocation pos);
+int avcodec_enum_to_chroma_pos_xij(int *xpos, int *ypos, enum AVChromaLocation pos);
 
 /**
  * Converts swscale x/y chroma position to AVChromaLocation.
@@ -4670,14 +4670,14 @@ int avcodec_enum_to_chroma_pos(int *xpos, int *ypos, enum AVChromaLocation pos);
  * @param xpos  horizontal chroma sample position
  * @param ypos  vertical   chroma sample position
  */
-enum AVChromaLocation avcodec_chroma_pos_to_enum(int xpos, int ypos);
+enum AVChromaLocation avcodec_chroma_pos_to_enum_xij(int xpos, int ypos);
 
 /**
  * Decode the audio frame of size avpkt->size from avpkt->data into frame.
  *
  * Some decoders may support multiple frames in a single AVPacket. Such
  * decoders would then just decode the first frame and the return value would be
- * less than the packet size. In this case, avcodec_decode_audio4 has to be
+ * less than the packet size. In this case, avcodec_decode_audio4_xij has to be
  * called again with an AVPacket containing the remaining data in order to
  * decode the second frame, etc...  Even if no frames are returned, the packet
  * needs to be fed to the decoder with remaining data until it is completely
@@ -4695,7 +4695,7 @@ enum AVChromaLocation avcodec_chroma_pos_to_enum(int xpos, int ypos);
  *          larger than the actual read bytes because some optimized bitstream
  *          readers read 32 or 64 bits at once and could read over the end.
  *
- * @note The AVCodecContext MUST have been opened with @ref avcodec_open2()
+ * @note The AVCodecContext MUST have been opened with @ref avcodec_open2_xij()
  * before packets may be fed to the decoder.
  *
  * @param      avctx the codec context
@@ -4704,9 +4704,9 @@ enum AVChromaLocation avcodec_chroma_pos_to_enum(int xpos, int ypos);
  *                   calling the AVCodecContext.get_buffer2() callback.
  *                   When AVCodecContext.refcounted_frames is set to 1, the frame is
  *                   reference counted and the returned reference belongs to the
- *                   caller. The caller must release the frame using av_frame_unref()
+ *                   caller. The caller must release the frame using av_frame_unref_xij()
  *                   when the frame is no longer needed. The caller may safely write
- *                   to the frame if av_frame_is_writable() returns 1.
+ *                   to the frame if av_frame_is_writable_xij() returns 1.
  *                   When AVCodecContext.refcounted_frames is set to 0, the returned
  *                   reference belongs to the decoder and is valid only until the
  *                   next call to this function or until closing or flushing the
@@ -4723,10 +4723,10 @@ enum AVChromaLocation avcodec_chroma_pos_to_enum(int xpos, int ypos);
  *         decoding, otherwise the number of bytes consumed from the input
  *         AVPacket is returned.
  *
-* @deprecated Use avcodec_send_packet() and avcodec_receive_frame().
+* @deprecated Use avcodec_send_packet_xij() and avcodec_receive_frame_xij().
  */
 attribute_deprecated
-int avcodec_decode_audio4(AVCodecContext *avctx, AVFrame *frame,
+int avcodec_decode_audio4_xij(AVCodecContext *avctx, AVFrame *frame,
                           int *got_frame_ptr, const AVPacket *avpkt);
 
 /**
@@ -4745,26 +4745,26 @@ int avcodec_decode_audio4(AVCodecContext *avctx, AVFrame *frame,
  * between input and output, these need to be fed with avpkt->data=NULL,
  * avpkt->size=0 at the end to return the remaining frames.
  *
- * @note The AVCodecContext MUST have been opened with @ref avcodec_open2()
+ * @note The AVCodecContext MUST have been opened with @ref avcodec_open2_xij()
  * before packets may be fed to the decoder.
  *
  * @param avctx the codec context
  * @param[out] picture The AVFrame in which the decoded video frame will be stored.
- *             Use av_frame_alloc() to get an AVFrame. The codec will
+ *             Use av_frame_alloc_ijk() to get an AVFrame. The codec will
  *             allocate memory for the actual bitmap by calling the
  *             AVCodecContext.get_buffer2() callback.
  *             When AVCodecContext.refcounted_frames is set to 1, the frame is
  *             reference counted and the returned reference belongs to the
- *             caller. The caller must release the frame using av_frame_unref()
+ *             caller. The caller must release the frame using av_frame_unref_xij()
  *             when the frame is no longer needed. The caller may safely write
- *             to the frame if av_frame_is_writable() returns 1.
+ *             to the frame if av_frame_is_writable_xij() returns 1.
  *             When AVCodecContext.refcounted_frames is set to 0, the returned
  *             reference belongs to the decoder and is valid only until the
  *             next call to this function or until closing or flushing the
  *             decoder. The caller may not write to it.
  *
  * @param[in] avpkt The input AVPacket containing the input buffer.
- *            You can create such packet with av_init_packet() and by then setting
+ *            You can create such packet with av_init_packet_ijk() and by then setting
  *            data and size, some decoders might in addition need other fields like
  *            flags&AV_PKT_FLAG_KEY. All decoders are designed to use the least
  *            fields possible.
@@ -4772,10 +4772,10 @@ int avcodec_decode_audio4(AVCodecContext *avctx, AVFrame *frame,
  * @return On error a negative value is returned, otherwise the number of bytes
  * used or zero if no frame could be decompressed.
  *
- * @deprecated Use avcodec_send_packet() and avcodec_receive_frame().
+ * @deprecated Use avcodec_send_packet_xij() and avcodec_receive_frame_xij().
  */
 attribute_deprecated
-int avcodec_decode_video2(AVCodecContext *avctx, AVFrame *picture,
+int avcodec_decode_video2_xij(AVCodecContext *avctx, AVFrame *picture,
                          int *got_picture_ptr,
                          const AVPacket *avpkt);
 
@@ -4797,16 +4797,16 @@ int avcodec_decode_video2(AVCodecContext *avctx, AVFrame *picture,
  * returning subtitles. It is safe to flush even those decoders that are not
  * marked with AV_CODEC_CAP_DELAY, then no subtitles will be returned.
  *
- * @note The AVCodecContext MUST have been opened with @ref avcodec_open2()
+ * @note The AVCodecContext MUST have been opened with @ref avcodec_open2_xij()
  * before packets may be fed to the decoder.
  *
  * @param avctx the codec context
  * @param[out] sub The Preallocated AVSubtitle in which the decoded subtitle will be stored,
- *                 must be freed with avsubtitle_free if *got_sub_ptr is set.
+ *                 must be freed with avsubtitle_free_xij if *got_sub_ptr is set.
  * @param[in,out] got_sub_ptr Zero if no subtitle could be decompressed, otherwise, it is nonzero.
  * @param[in] avpkt The input AVPacket containing the input buffer.
  */
-int avcodec_decode_subtitle2(AVCodecContext *avctx, AVSubtitle *sub,
+int avcodec_decode_subtitle2_xij(AVCodecContext *avctx, AVSubtitle *sub,
                             int *got_sub_ptr,
                             AVPacket *avpkt);
 
@@ -4822,11 +4822,11 @@ int avcodec_decode_subtitle2(AVCodecContext *avctx, AVSubtitle *sub,
  *          larger than the actual read bytes because some optimized bitstream
  *          readers read 32 or 64 bits at once and could read over the end.
  *
- * @warning Do not mix this API with the legacy API (like avcodec_decode_video2())
+ * @warning Do not mix this API with the legacy API (like avcodec_decode_video2_xij())
  *          on the same AVCodecContext. It will return unexpected results now
  *          or in future libavcodec versions.
  *
- * @note The AVCodecContext MUST have been opened with @ref avcodec_open2()
+ * @note The AVCodecContext MUST have been opened with @ref avcodec_open2_xij()
  *       before packets may be fed to the decoder.
  *
  * @param avctx codec context
@@ -4838,7 +4838,7 @@ int avcodec_decode_subtitle2(AVCodecContext *avctx, AVSubtitle *sub,
  *                  not reference-counted).
  *                  Unlike with older APIs, the packet is always fully consumed,
  *                  and if it contains multiple frames (e.g. some audio codecs),
- *                  will require you to call avcodec_receive_frame() multiple
+ *                  will require you to call avcodec_receive_frame_xij() multiple
  *                  times afterwards before you can send a new packet.
  *                  It can be NULL (or an AVPacket with data set to NULL and
  *                  size set to 0); in this case, it is considered a flush
@@ -4850,7 +4850,7 @@ int avcodec_decode_subtitle2(AVCodecContext *avctx, AVSubtitle *sub,
  *
  * @return 0 on success, otherwise negative error code:
  *      AVERROR(EAGAIN):   input is not accepted in the current state - user
- *                         must read output with avcodec_receive_frame() (once
+ *                         must read output with avcodec_receive_frame_xij() (once
  *                         all output is read, the packet should be resent, and
  *                         the call will not fail with EAGAIN).
  *      AVERROR_EOF:       the decoder has been flushed, and no new packets can
@@ -4860,7 +4860,7 @@ int avcodec_decode_subtitle2(AVCodecContext *avctx, AVSubtitle *sub,
  *      AVERROR(ENOMEM):   failed to add packet to internal queue, or similar
  *      other errors: legitimate decoding errors
  */
-int avcodec_send_packet(AVCodecContext *avctx, const AVPacket *avpkt);
+int avcodec_send_packet_xij(AVCodecContext *avctx, const AVPacket *avpkt);
 
 /**
  * Return decoded output data from a decoder.
@@ -4869,7 +4869,7 @@ int avcodec_send_packet(AVCodecContext *avctx, const AVPacket *avpkt);
  * @param frame This will be set to a reference-counted video or audio
  *              frame (depending on the decoder type) allocated by the
  *              decoder. Note that the function will always call
- *              av_frame_unref(frame) before doing anything else.
+ *              av_frame_unref_xij(frame) before doing anything else.
  *
  * @return
  *      0:                 success, a frame was returned
@@ -4880,7 +4880,7 @@ int avcodec_send_packet(AVCodecContext *avctx, const AVPacket *avpkt);
  *      AVERROR(EINVAL):   codec not opened, or it is an encoder
  *      other negative values: legitimate decoding errors
  */
-int avcodec_receive_frame(AVCodecContext *avctx, AVFrame *frame);
+int avcodec_receive_frame_xij(AVCodecContext *avctx, AVFrame *frame);
 
 /**
  * Supply a raw video or audio frame to the encoder. Use avcodec_receive_packet()
@@ -4925,7 +4925,7 @@ int avcodec_send_frame(AVCodecContext *avctx, const AVFrame *frame);
  * @param avctx codec context
  * @param avpkt This will be set to a reference-counted packet allocated by the
  *              encoder. Note that the function will always call
- *              av_frame_unref(frame) before doing anything else.
+ *              av_frame_unref_xij(frame) before doing anything else.
  * @return 0 on success, otherwise negative error code:
  *      AVERROR(EAGAIN):   output is not available in the current state - user
  *                         must try to send input
@@ -5033,7 +5033,7 @@ int avcodec_receive_packet(AVCodecContext *avctx, AVPacket *avpkt);
  *                       this configuration, or the device_ref is not supported
  *                       for the hwaccel referenced by hw_pix_fmt.
  */
-int avcodec_get_hw_frames_parameters(AVCodecContext *avctx,
+int avcodec_get_hw_frames_parameters_xij(AVCodecContext *avctx,
                                      AVBufferRef *device_ref,
                                      enum AVPixelFormat hw_pix_fmt,
                                      AVBufferRef **out_frames_ref);
@@ -5250,7 +5250,7 @@ AVCodecParser *av_parser_next(const AVCodecParser *c);
 
 attribute_deprecated
 void av_register_codec_parser(AVCodecParser *parser);
-AVCodecParserContext *av_parser_init(int codec_id);
+AVCodecParserContext *av_parser_init_xij(int codec_id);
 
 /**
  * Parse a packet.
@@ -5272,7 +5272,7 @@ AVCodecParserContext *av_parser_init(int codec_id);
  * Example:
  * @code
  *   while(in_len){
- *       len = av_parser_parse2(myparser, AVCodecContext, &data, &size,
+ *       len = av_parser_parse2_xij(myparser, AVCodecContext, &data, &size,
  *                                        in_data, in_len,
  *                                        pts, dts, pos);
  *       in_data += len;
@@ -5283,7 +5283,7 @@ AVCodecParserContext *av_parser_init(int codec_id);
  *   }
  * @endcode
  */
-int av_parser_parse2(AVCodecParserContext *s,
+int av_parser_parse2_xij(AVCodecParserContext *s,
                      AVCodecContext *avctx,
                      uint8_t **poutbuf, int *poutbuf_size,
                      const uint8_t *buf, int buf_size,
@@ -5294,11 +5294,11 @@ int av_parser_parse2(AVCodecParserContext *s,
  * @return 0 if the output buffer is a subset of the input, 1 if it is allocated and must be freed
  * @deprecated use AVBitStreamFilter
  */
-int av_parser_change(AVCodecParserContext *s,
+int av_parser_change_xij(AVCodecParserContext *s,
                      AVCodecContext *avctx,
                      uint8_t **poutbuf, int *poutbuf_size,
                      const uint8_t *buf, int buf_size, int keyframe);
-void av_parser_close(AVCodecParserContext *s);
+void av_parser_close_ijk(AVCodecParserContext *s);
 
 /**
  * @}
@@ -5316,7 +5316,7 @@ void av_parser_close(AVCodecParserContext *s);
  * @param id AVCodecID of the requested encoder
  * @return An encoder if one was found, NULL otherwise.
  */
-AVCodec *avcodec_find_encoder(enum AVCodecID id);
+AVCodec *avcodec_find_encoder_ijk(enum AVCodecID id);
 
 /**
  * Find a registered encoder with the specified name.
@@ -5324,7 +5324,7 @@ AVCodec *avcodec_find_encoder(enum AVCodecID id);
  * @param name name of the requested encoder
  * @return An encoder if one was found, NULL otherwise.
  */
-AVCodec *avcodec_find_encoder_by_name(const char *name);
+AVCodec *avcodec_find_encoder_by_name_xij(const char *name);
 
 /**
  * Encode a frame of audio.
@@ -5342,12 +5342,12 @@ AVCodec *avcodec_find_encoder_by_name(const char *name);
  *                  large enough, encoding will fail. If avpkt->data and
  *                  avpkt->size are set, avpkt->destruct must also be set. All
  *                  other AVPacket fields will be reset by the encoder using
- *                  av_init_packet(). If avpkt->data is NULL, the encoder will
+ *                  av_init_packet_ijk(). If avpkt->data is NULL, the encoder will
  *                  allocate it. The encoder will set avpkt->size to the size
  *                  of the output packet.
  *
  *                  If this function fails or produces no output, avpkt will be
- *                  freed using av_packet_unref().
+ *                  freed using av_packet_unref_ijk().
  * @param[in] frame AVFrame containing the raw audio data to be encoded.
  *                  May be NULL when flushing an encoder that has the
  *                  AV_CODEC_CAP_DELAY capability set.
@@ -5384,14 +5384,14 @@ int avcodec_encode_audio2(AVCodecContext *avctx, AVPacket *avpkt,
  *                  avpkt->data and avpkt->size prior to calling the
  *                  function, but if the size of the user-provided data is not
  *                  large enough, encoding will fail. All other AVPacket fields
- *                  will be reset by the encoder using av_init_packet(). If
+ *                  will be reset by the encoder using av_init_packet_ijk(). If
  *                  avpkt->data is NULL, the encoder will allocate it.
  *                  The encoder will set avpkt->size to the size of the
  *                  output packet. The returned data (if any) belongs to the
  *                  caller, he is responsible for freeing it.
  *
  *                  If this function fails or produces no output, avpkt will be
- *                  freed using av_packet_unref().
+ *                  freed using av_packet_unref_ijk().
  * @param[in] frame AVFrame containing the raw video data to be encoded.
  *                  May be NULL when flushing an encoder that has the
  *                  AV_CODEC_CAP_DELAY capability set.
@@ -5551,7 +5551,7 @@ attribute_deprecated
 enum AVPixelFormat avcodec_find_best_pix_fmt2(enum AVPixelFormat dst_pix_fmt1, enum AVPixelFormat dst_pix_fmt2,
                                             enum AVPixelFormat src_pix_fmt, int has_alpha, int *loss_ptr);
 
-enum AVPixelFormat avcodec_default_get_format(struct AVCodecContext *s, const enum AVPixelFormat * fmt);
+enum AVPixelFormat avcodec_default_get_format_xij(struct AVCodecContext *s, const enum AVPixelFormat * fmt);
 
 /**
  * @}
@@ -5567,13 +5567,13 @@ enum AVPixelFormat avcodec_default_get_format(struct AVCodecContext *s, const en
  * @return the length of the string that would have been generated if
  * enough space had been available, excluding the trailing null
  *
- * @deprecated see av_fourcc_make_string() and av_fourcc2str().
+ * @deprecated see av_fourcc_make_string_xij() and av_fourcc2str().
  */
 attribute_deprecated
-size_t av_get_codec_tag_string(char *buf, size_t buf_size, unsigned int codec_tag);
+size_t av_get_codec_tag_string_xij(char *buf, size_t buf_size, unsigned int codec_tag);
 #endif
 
-void avcodec_string(char *buf, int buf_size, AVCodecContext *enc, int encode);
+void avcodec_string_xij(char *buf, int buf_size, AVCodecContext *enc, int encode);
 
 /**
  * Return a name for the specified profile, if available.
@@ -5582,7 +5582,7 @@ void avcodec_string(char *buf, int buf_size, AVCodecContext *enc, int encode);
  * @param profile the profile value for which a name is requested
  * @return A name for the profile if found, NULL otherwise.
  */
-const char *av_get_profile_name(const AVCodec *codec, int profile);
+const char *av_get_profile_name_xij(const AVCodec *codec, int profile);
 
 /**
  * Return a name for the specified profile, if available.
@@ -5591,14 +5591,14 @@ const char *av_get_profile_name(const AVCodec *codec, int profile);
  * @param profile the profile value for which a name is requested
  * @return A name for the profile if found, NULL otherwise.
  *
- * @note unlike av_get_profile_name(), which searches a list of profiles
+ * @note unlike av_get_profile_name_xij(), which searches a list of profiles
  *       supported by a specific decoder or encoder implementation, this
  *       function searches the list of profiles from the AVCodecDescriptor
  */
-const char *avcodec_profile_name(enum AVCodecID codec_id, int profile);
+const char *avcodec_profile_name_xij(enum AVCodecID codec_id, int profile);
 
-int avcodec_default_execute(AVCodecContext *c, int (*func)(AVCodecContext *c2, void *arg2),void *arg, int *ret, int count, int size);
-int avcodec_default_execute2(AVCodecContext *c, int (*func)(AVCodecContext *c2, void *arg2, int, int),void *arg, int *ret, int count);
+int avcodec_default_execute_xij(AVCodecContext *c, int (*func)(AVCodecContext *c2, void *arg2),void *arg, int *ret, int count, int size);
+int avcodec_default_execute2_xij(AVCodecContext *c, int (*func)(AVCodecContext *c2, void *arg2, int, int),void *arg, int *ret, int count);
 //FIXME func typedef
 
 /**
@@ -5624,7 +5624,7 @@ int avcodec_default_execute2(AVCodecContext *c, int (*func)(AVCodecContext *c2, 
  * @todo return the size in bytes required to store the samples in
  * case of success, at the next libavutil bump
  */
-int avcodec_fill_audio_frame(AVFrame *frame, int nb_channels,
+int avcodec_fill_audio_frame_xij(AVFrame *frame, int nb_channels,
                              enum AVSampleFormat sample_fmt, const uint8_t *buf,
                              int buf_size, int align);
 
@@ -5637,7 +5637,7 @@ int avcodec_fill_audio_frame(AVFrame *frame, int nb_channels,
  * refcounted frames are used, the decoder just releases any references it might
  * keep internally, but the caller's reference remains valid.
  */
-void avcodec_flush_buffers(AVCodecContext *avctx);
+void avcodec_flush_buffers_xij(AVCodecContext *avctx);
 
 /**
  * Return codec bits per sample.
@@ -5645,7 +5645,7 @@ void avcodec_flush_buffers(AVCodecContext *avctx);
  * @param[in] codec_id the codec
  * @return Number of bits per sample or zero if unknown for the given codec.
  */
-int av_get_bits_per_sample(enum AVCodecID codec_id);
+int av_get_bits_per_sample_xij(enum AVCodecID codec_id);
 
 /**
  * Return the PCM codec associated with a sample format.
@@ -5653,7 +5653,7 @@ int av_get_bits_per_sample(enum AVCodecID codec_id);
  *            -1 (or anything else) for native
  * @return  AV_CODEC_ID_PCM_* or AV_CODEC_ID_NONE
  */
-enum AVCodecID av_get_pcm_codec(enum AVSampleFormat fmt, int be);
+enum AVCodecID av_get_pcm_codec_xij(enum AVSampleFormat fmt, int be);
 
 /**
  * Return codec bits per sample.
@@ -5663,7 +5663,7 @@ enum AVCodecID av_get_pcm_codec(enum AVSampleFormat fmt, int be);
  * @param[in] codec_id the codec
  * @return Number of bits per sample or zero if unknown for the given codec.
  */
-int av_get_exact_bits_per_sample(enum AVCodecID codec_id);
+int av_get_exact_bits_per_sample_xij(enum AVCodecID codec_id);
 
 /**
  * Return audio frame duration.
@@ -5673,13 +5673,13 @@ int av_get_exact_bits_per_sample(enum AVCodecID codec_id);
  * @return             frame duration, in samples, if known. 0 if not able to
  *                     determine.
  */
-int av_get_audio_frame_duration(AVCodecContext *avctx, int frame_bytes);
+int av_get_audio_frame_duration_ijk(AVCodecContext *avctx, int frame_bytes);
 
 /**
- * This function is the same as av_get_audio_frame_duration(), except it works
+ * This function is the same as av_get_audio_frame_duration_ijk(), except it works
  * with AVCodecParameters instead of an AVCodecContext.
  */
-int av_get_audio_frame_duration2(AVCodecParameters *par, int frame_bytes);
+int av_get_audio_frame_duration2_ijk(AVCodecParameters *par, int frame_bytes);
 
 #if FF_API_OLD_BSF
 typedef struct AVBitStreamFilterContext {
@@ -5700,8 +5700,8 @@ typedef struct AVBSFInternal AVBSFInternal;
 /**
  * The bitstream filter state.
  *
- * This struct must be allocated with av_bsf_alloc() and freed with
- * av_bsf_free().
+ * This struct must be allocated with av_bsf_alloc_ijk() and freed with
+ * av_bsf_free_xij().
  *
  * The fields in the struct will only be changed (by the caller or by the
  * filter) as described in their documentation, and are to be considered
@@ -5732,26 +5732,26 @@ typedef struct AVBSFContext {
 
     /**
      * Parameters of the input stream. This field is allocated in
-     * av_bsf_alloc(), it needs to be filled by the caller before
-     * av_bsf_init().
+     * av_bsf_alloc_ijk(), it needs to be filled by the caller before
+     * av_bsf_init_ijk().
      */
     AVCodecParameters *par_in;
 
     /**
      * Parameters of the output stream. This field is allocated in
-     * av_bsf_alloc(), it is set by the filter in av_bsf_init().
+     * av_bsf_alloc_ijk(), it is set by the filter in av_bsf_init_ijk().
      */
     AVCodecParameters *par_out;
 
     /**
      * The timebase used for the timestamps of the input packets. Set by the
-     * caller before av_bsf_init().
+     * caller before av_bsf_init_ijk().
      */
     AVRational time_base_in;
 
     /**
      * The timebase used for the timestamps of the output packets. Set by the
-     * filter in av_bsf_init().
+     * filter in av_bsf_init_ijk().
      */
     AVRational time_base_out;
 } AVBSFContext;
@@ -5800,14 +5800,14 @@ attribute_deprecated
 void av_register_bitstream_filter(AVBitStreamFilter *bsf);
 /**
  * @deprecated the old bitstream filtering API (using AVBitStreamFilterContext)
- * is deprecated. Use av_bsf_get_by_name(), av_bsf_alloc(), and av_bsf_init()
+ * is deprecated. Use av_bsf_get_by_name_ijk(), av_bsf_alloc_ijk(), and av_bsf_init_ijk()
  * from the new bitstream filtering API (using AVBSFContext).
  */
 attribute_deprecated
 AVBitStreamFilterContext *av_bitstream_filter_init(const char *name);
 /**
  * @deprecated the old bitstream filtering API (using AVBitStreamFilterContext)
- * is deprecated. Use av_bsf_send_packet() and av_bsf_receive_packet() from the
+ * is deprecated. Use av_bsf_send_packet_ijk() and av_bsf_receive_packet_ijk() from the
  * new bitstream filtering API (using AVBSFContext).
  */
 attribute_deprecated
@@ -5817,14 +5817,14 @@ int av_bitstream_filter_filter(AVBitStreamFilterContext *bsfc,
                                const uint8_t *buf, int buf_size, int keyframe);
 /**
  * @deprecated the old bitstream filtering API (using AVBitStreamFilterContext)
- * is deprecated. Use av_bsf_free() from the new bitstream filtering API (using
+ * is deprecated. Use av_bsf_free_xij() from the new bitstream filtering API (using
  * AVBSFContext).
  */
 attribute_deprecated
 void av_bitstream_filter_close(AVBitStreamFilterContext *bsf);
 /**
  * @deprecated the old bitstream filtering API (using AVBitStreamFilterContext)
- * is deprecated. Use av_bsf_iterate() from the new bitstream filtering API (using
+ * is deprecated. Use av_bsf_iterate_xij() from the new bitstream filtering API (using
  * AVBSFContext).
  */
 attribute_deprecated
@@ -5835,7 +5835,7 @@ const AVBitStreamFilter *av_bitstream_filter_next(const AVBitStreamFilter *f);
  * @return a bitstream filter with the specified name or NULL if no such
  *         bitstream filter exists.
  */
-const AVBitStreamFilter *av_bsf_get_by_name(const char *name);
+const AVBitStreamFilter *av_bsf_get_by_name_ijk(const char *name);
 
 /**
  * Iterate over all registered bitstream filters.
@@ -5846,37 +5846,37 @@ const AVBitStreamFilter *av_bsf_get_by_name(const char *name);
  * @return the next registered bitstream filter or NULL when the iteration is
  *         finished
  */
-const AVBitStreamFilter *av_bsf_iterate(void **opaque);
+const AVBitStreamFilter *av_bsf_iterate_xij(void **opaque);
 #if FF_API_NEXT
 attribute_deprecated
-const AVBitStreamFilter *av_bsf_next(void **opaque);
+const AVBitStreamFilter *av_bsf_next_xij(void **opaque);
 #endif
 
 /**
  * Allocate a context for a given bitstream filter. The caller must fill in the
  * context parameters as described in the documentation and then call
- * av_bsf_init() before sending any data to the filter.
+ * av_bsf_init_ijk() before sending any data to the filter.
  *
  * @param filter the filter for which to allocate an instance.
  * @param ctx a pointer into which the pointer to the newly-allocated context
- *            will be written. It must be freed with av_bsf_free() after the
+ *            will be written. It must be freed with av_bsf_free_xij() after the
  *            filtering is done.
  *
  * @return 0 on success, a negative AVERROR code on failure
  */
-int av_bsf_alloc(const AVBitStreamFilter *filter, AVBSFContext **ctx);
+int av_bsf_alloc_ijk(const AVBitStreamFilter *filter, AVBSFContext **ctx);
 
 /**
  * Prepare the filter for use, after all the parameters and options have been
  * set.
  */
-int av_bsf_init(AVBSFContext *ctx);
+int av_bsf_init_ijk(AVBSFContext *ctx);
 
 /**
  * Submit a packet for filtering.
  *
  * After sending each packet, the filter must be completely drained by calling
- * av_bsf_receive_packet() repeatedly until it returns AVERROR(EAGAIN) or
+ * av_bsf_receive_packet_ijk() repeatedly until it returns AVERROR(EAGAIN) or
  * AVERROR_EOF.
  *
  * @param pkt the packet to filter. The bitstream filter will take ownership of
@@ -5887,39 +5887,39 @@ int av_bsf_init(AVBSFContext *ctx);
  *
  * @return 0 on success, a negative AVERROR on error.
  */
-int av_bsf_send_packet(AVBSFContext *ctx, AVPacket *pkt);
+int av_bsf_send_packet_ijk(AVBSFContext *ctx, AVPacket *pkt);
 
 /**
  * Retrieve a filtered packet.
  *
  * @param[out] pkt this struct will be filled with the contents of the filtered
  *                 packet. It is owned by the caller and must be freed using
- *                 av_packet_unref() when it is no longer needed.
+ *                 av_packet_unref_ijk() when it is no longer needed.
  *                 This parameter should be "clean" (i.e. freshly allocated
- *                 with av_packet_alloc() or unreffed with av_packet_unref())
+ *                 with av_packet_alloc_ijk() or unreffed with av_packet_unref_ijk())
  *                 when this function is called. If this function returns
  *                 successfully, the contents of pkt will be completely
  *                 overwritten by the returned data. On failure, pkt is not
  *                 touched.
  *
  * @return 0 on success. AVERROR(EAGAIN) if more packets need to be sent to the
- * filter (using av_bsf_send_packet()) to get more output. AVERROR_EOF if there
+ * filter (using av_bsf_send_packet_ijk()) to get more output. AVERROR_EOF if there
  * will be no further output from the filter. Another negative AVERROR value if
  * an error occurs.
  *
  * @note one input packet may result in several output packets, so after sending
- * a packet with av_bsf_send_packet(), this function needs to be called
+ * a packet with av_bsf_send_packet_ijk(), this function needs to be called
  * repeatedly until it stops returning 0. It is also possible for a filter to
  * output fewer packets than were sent to it, so this function may return
- * AVERROR(EAGAIN) immediately after a successful av_bsf_send_packet() call.
+ * AVERROR(EAGAIN) immediately after a successful av_bsf_send_packet_ijk() call.
  */
-int av_bsf_receive_packet(AVBSFContext *ctx, AVPacket *pkt);
+int av_bsf_receive_packet_ijk(AVBSFContext *ctx, AVPacket *pkt);
 
 /**
  * Free a bitstream filter context and everything associated with it; write NULL
  * into the supplied pointer.
  */
-void av_bsf_free(AVBSFContext **ctx);
+void av_bsf_free_xij(AVBSFContext **ctx);
 
 /**
  * Get the AVClass for AVBSFContext. It can be used in combination with
@@ -5927,29 +5927,29 @@ void av_bsf_free(AVBSFContext **ctx);
  *
  * @see av_opt_find().
  */
-const AVClass *av_bsf_get_class(void);
+const AVClass *av_bsf_get_class_xij(void);
 
 /**
  * Structure for chain/list of bitstream filters.
- * Empty list can be allocated by av_bsf_list_alloc().
+ * Empty list can be allocated by av_bsf_list_alloc_xij().
  */
 typedef struct AVBSFList AVBSFList;
 
 /**
  * Allocate empty list of bitstream filters.
- * The list must be later freed by av_bsf_list_free()
- * or finalized by av_bsf_list_finalize().
+ * The list must be later freed by av_bsf_list_free_xij()
+ * or finalized by av_bsf_list_finalize_xij().
  *
  * @return Pointer to @ref AVBSFList on success, NULL in case of failure
  */
-AVBSFList *av_bsf_list_alloc(void);
+AVBSFList *av_bsf_list_alloc_xij(void);
 
 /**
  * Free list of bitstream filters.
  *
- * @param lst Pointer to pointer returned by av_bsf_list_alloc()
+ * @param lst Pointer to pointer returned by av_bsf_list_alloc_xij()
  */
-void av_bsf_list_free(AVBSFList **lst);
+void av_bsf_list_free_xij(AVBSFList **lst);
 
 /**
  * Append bitstream filter to the list of bitstream filters.
@@ -5959,7 +5959,7 @@ void av_bsf_list_free(AVBSFList **lst);
  *
  * @return >=0 on success, negative AVERROR in case of failure
  */
-int av_bsf_list_append(AVBSFList *lst, AVBSFContext *bsf);
+int av_bsf_list_append_xij(AVBSFList *lst, AVBSFContext *bsf);
 
 /**
  * Construct new bitstream filter context given it's name and options
@@ -5971,16 +5971,16 @@ int av_bsf_list_append(AVBSFList *lst, AVBSFContext *bsf);
  *
  * @return >=0 on success, negative AVERROR in case of failure
  */
-int av_bsf_list_append2(AVBSFList *lst, const char * bsf_name, AVDictionary **options);
+int av_bsf_list_append2_xij(AVBSFList *lst, const char * bsf_name, AVDictionary **options);
 /**
  * Finalize list of bitstream filters.
  *
  * This function will transform @ref AVBSFList to single @ref AVBSFContext,
  * so the whole chain of bitstream filters can be treated as single filter
- * freshly allocated by av_bsf_alloc().
+ * freshly allocated by av_bsf_alloc_ijk().
  * If the call is successful, @ref AVBSFList structure is freed and lst
  * will be set to NULL. In case of failure, caller is responsible for
- * freeing the structure by av_bsf_list_free()
+ * freeing the structure by av_bsf_list_free_xij()
  *
  * @param      lst Filter list structure to be transformed
  * @param[out] bsf Pointer to be set to newly created @ref AVBSFContext structure
@@ -5988,13 +5988,13 @@ int av_bsf_list_append2(AVBSFList *lst, const char * bsf_name, AVDictionary **op
  *
  * @return >=0 on success, negative AVERROR in case of failure
  */
-int av_bsf_list_finalize(AVBSFList **lst, AVBSFContext **bsf);
+int av_bsf_list_finalize_xij(AVBSFList **lst, AVBSFContext **bsf);
 
 /**
  * Parse string describing list of bitstream filters and create single
  * @ref AVBSFContext describing the whole chain of bitstream filters.
  * Resulting @ref AVBSFContext can be treated as any other @ref AVBSFContext freshly
- * allocated by av_bsf_alloc().
+ * allocated by av_bsf_alloc_ijk().
  *
  * @param      str String describing chain of bitstream filters in format
  *                 `bsf1[=opt1=val1:opt2=val2][,bsf2]`
@@ -6003,7 +6003,7 @@ int av_bsf_list_finalize(AVBSFList **lst, AVBSFContext **bsf);
  *
  * @return >=0 on success, negative AVERROR in case of failure
  */
-int av_bsf_list_parse_str(const char *str, AVBSFContext **bsf);
+int av_bsf_list_parse_str_xij(const char *str, AVBSFContext **bsf);
 
 /**
  * Get null/pass-through bitstream filter.
@@ -6012,7 +6012,7 @@ int av_bsf_list_parse_str(const char *str, AVBSFContext **bsf);
  *
  * @return
  */
-int av_bsf_get_null_filter(AVBSFContext **bsf);
+int av_bsf_get_null_filter_xij(AVBSFContext **bsf);
 
 /* memory */
 
@@ -6023,13 +6023,13 @@ int av_bsf_get_null_filter(AVBSFContext **bsf);
  * In addition the whole buffer will initially and after resizes
  * be 0-initialized so that no uninitialized data will ever appear.
  */
-void av_fast_padded_malloc(void *ptr, unsigned int *size, size_t min_size);
+void av_fast_padded_malloc_xij(void *ptr, unsigned int *size, size_t min_size);
 
 /**
- * Same behaviour av_fast_padded_malloc except that buffer will always
+ * Same behaviour av_fast_padded_malloc_xij except that buffer will always
  * be 0-initialized after call.
  */
-void av_fast_padded_mallocz(void *ptr, unsigned int *size, size_t min_size);
+void av_fast_padded_mallocz_xij(void *ptr, unsigned int *size, size_t min_size);
 
 /**
  * Encode extradata length to a buffer. Used by xiph codecs.
@@ -6038,7 +6038,7 @@ void av_fast_padded_mallocz(void *ptr, unsigned int *size, size_t min_size);
  * @param v size of extradata in bytes
  * @return number of bytes written to the buffer.
  */
-unsigned int av_xiphlacing(unsigned char *s, unsigned int v);
+unsigned int av_xiphlacing_xij(unsigned char *s, unsigned int v);
 
 #if FF_API_USER_VISIBLE_AVHWACCEL
 /**
@@ -6047,7 +6047,7 @@ unsigned int av_xiphlacing(unsigned char *s, unsigned int v);
  * @deprecated  This function doesn't do anything.
  */
 attribute_deprecated
-void av_register_hwaccel(AVHWAccel *hwaccel);
+void av_register_hwaccel_xij(AVHWAccel *hwaccel);
 
 /**
  * If hwaccel is NULL, returns the first registered hardware accelerator,
@@ -6058,14 +6058,14 @@ void av_register_hwaccel(AVHWAccel *hwaccel);
  *              this function should not be used.
  */
 attribute_deprecated
-AVHWAccel *av_hwaccel_next(const AVHWAccel *hwaccel);
+AVHWAccel *av_hwaccel_next_xij(const AVHWAccel *hwaccel);
 #endif
 
 #if FF_API_LOCKMGR
 /**
  * Lock operation used by lockmgr
  *
- * @deprecated Deprecated together with av_lockmgr_register().
+ * @deprecated Deprecated together with av_lockmgr_register_xij().
  */
 enum AVLockOp {
   AV_LOCK_CREATE,  ///< Create a mutex
@@ -6083,13 +6083,13 @@ enum AVLockOp {
  * unable to perform the op then it should leave the mutex in the same
  * state as when it was called and return a non-zero value. However,
  * when called with AV_LOCK_DESTROY the mutex will always be assumed to
- * have been successfully destroyed. If av_lockmgr_register succeeds
+ * have been successfully destroyed. If av_lockmgr_register_xij succeeds
  * it will return a non-negative value, if it fails it will return a
  * negative value and destroy all mutex and unregister all callbacks.
- * av_lockmgr_register is not thread-safe, it must be called from a
+ * av_lockmgr_register_xij is not thread-safe, it must be called from a
  * single thread before any calls which make use of locking are used.
  *
- * @param cb User defined callback. av_lockmgr_register invokes calls
+ * @param cb User defined callback. av_lockmgr_register_xij invokes calls
  *           to this callback and the previously registered callback.
  *           The callback will be used to create more than one mutex
  *           each of which must be backed by its own underlying locking
@@ -6101,7 +6101,7 @@ enum AVLockOp {
  *             build with thread support to get basic thread safety.
  */
 attribute_deprecated
-int av_lockmgr_register(int (*cb)(void **mutex, enum AVLockOp op));
+int av_lockmgr_register_xij(int (*cb)(void **mutex, enum AVLockOp op));
 #endif
 
 /**
@@ -6113,23 +6113,23 @@ enum AVMediaType avcodec_get_type(enum AVCodecID codec_id);
  * Get the name of a codec.
  * @return  a static string identifying the codec; never NULL
  */
-const char *avcodec_get_name(enum AVCodecID id);
+const char *avcodec_get_name_xij(enum AVCodecID id);
 
 /**
- * @return a positive value if s is open (i.e. avcodec_open2() was called on it
- * with no corresponding avcodec_close()), 0 otherwise.
+ * @return a positive value if s is open (i.e. avcodec_open2_xij() was called on it
+ * with no corresponding avcodec_close_xij()), 0 otherwise.
  */
-int avcodec_is_open(AVCodecContext *s);
+int avcodec_is_open_xij(AVCodecContext *s);
 
 /**
  * @return a non-zero number if codec is an encoder, zero otherwise
  */
-int av_codec_is_encoder(const AVCodec *codec);
+int av_codec_is_encoder_xij(const AVCodec *codec);
 
 /**
  * @return a non-zero number if codec is a decoder, zero otherwise
  */
-int av_codec_is_decoder(const AVCodec *codec);
+int av_codec_is_decoder_xij(const AVCodec *codec);
 
 /**
  * @return descriptor for given codec ID or NULL if no descriptor exists.
@@ -6160,7 +6160,7 @@ const AVCodecDescriptor *avcodec_descriptor_get_by_name(const char *name);
  *
  * @return the newly allocated struct or NULL on failure
  */
-AVCPBProperties *av_cpb_properties_alloc(size_t *size);
+AVCPBProperties *av_cpb_properties_alloc_xij(size_t *size);
 
 /**
  * @}

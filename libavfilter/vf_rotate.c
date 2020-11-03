@@ -517,10 +517,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out) {
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         return AVERROR(ENOMEM);
     }
-    av_frame_copy_props(out, in);
+    av_frame_copy_props_xij(out, in);
 
     rot->var_values[VAR_N] = inlink->frame_count_out;
     rot->var_values[VAR_T] = TS2T(in->pts, inlink->time_base);
@@ -556,7 +556,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         ctx->internal->execute(ctx, filter_slice, &td, NULL, FFMIN(outh, ff_filter_get_nb_threads(ctx)));
     }
 
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
     return ff_filter_frame(outlink, out);
 }
 

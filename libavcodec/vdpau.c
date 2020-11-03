@@ -178,7 +178,7 @@ int ff_vdpau_common_init(AVCodecContext *avctx, VdpDecoderProfile profile,
         AVHWFramesContext *frames_ctx;
         AVVDPAUDeviceContext *dev_ctx;
 
-        ret = ff_decode_get_hw_frames_ctx(avctx, AV_HWDEVICE_TYPE_VDPAU);
+        ret = ff_decode_get_hw_frames_ctx_xij(avctx, AV_HWDEVICE_TYPE_VDPAU);
         if (ret < 0)
             return ret;
 

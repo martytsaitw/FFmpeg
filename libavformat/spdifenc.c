@@ -489,9 +489,9 @@ static av_always_inline void spdif_put_16(IEC61937Context *ctx,
                                           AVIOContext *pb, unsigned int val)
 {
     if (ctx->spdif_flags & SPDIF_FLAG_BIGENDIAN)
-        avio_wb16(pb, val);
+        avio_wb16_xij(pb, val);
     else
-        avio_wl16(pb, val);
+        avio_wl16_xij(pb, val);
 }
 
 static int spdif_write_packet(struct AVFormatContext *s, AVPacket *pkt)
@@ -525,20 +525,20 @@ static int spdif_write_packet(struct AVFormatContext *s, AVPacket *pkt)
     }
 
     if (ctx->extra_bswap ^ (ctx->spdif_flags & SPDIF_FLAG_BIGENDIAN)) {
-        avio_write(s->pb, ctx->out_buf, ctx->out_bytes & ~1);
+        avio_write_xij(s->pb, ctx->out_buf, ctx->out_bytes & ~1);
     } else {
         av_fast_malloc(&ctx->buffer, &ctx->buffer_size, ctx->out_bytes + AV_INPUT_BUFFER_PADDING_SIZE);
         if (!ctx->buffer)
             return AVERROR(ENOMEM);
         ff_spdif_bswap_buf16((uint16_t *)ctx->buffer, (uint16_t *)ctx->out_buf, ctx->out_bytes >> 1);
-        avio_write(s->pb, ctx->buffer, ctx->out_bytes & ~1);
+        avio_write_xij(s->pb, ctx->buffer, ctx->out_bytes & ~1);
     }
 
     /* a final lone byte has to be MSB aligned */
     if (ctx->out_bytes & 1)
         spdif_put_16(ctx, s->pb, ctx->out_buf[ctx->out_bytes - 1] << 8);
 
-    ffio_fill(s->pb, 0, padding);
+    ffio_fill_xij(s->pb, 0, padding);
 
     av_log(s, AV_LOG_DEBUG, "type=%x len=%i pkt_offset=%i\n",
            ctx->data_type, ctx->out_bytes, ctx->pkt_offset);

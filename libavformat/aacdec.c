@@ -84,7 +84,7 @@ static int adts_aac_read_header(AVFormatContext *s)
     AVStream *st;
     uint16_t state;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -97,23 +97,23 @@ static int adts_aac_read_header(AVFormatContext *s)
         !av_dict_get(s->metadata, "", NULL, AV_DICT_IGNORE_SUFFIX)) {
         int64_t cur = avio_tell(s->pb);
         ff_ape_parse_tag(s);
-        avio_seek(s->pb, cur, SEEK_SET);
+        avio_seek_xij(s->pb, cur, SEEK_SET);
     }
 
     // skip data until the first ADTS frame is found
-    state = avio_r8(s->pb);
-    while (!avio_feof(s->pb) && avio_tell(s->pb) < s->probesize) {
-        state = (state << 8) | avio_r8(s->pb);
+    state = avio_r8_xij(s->pb);
+    while (!avio_feof_xij(s->pb) && avio_tell(s->pb) < s->probesize) {
+        state = (state << 8) | avio_r8_xij(s->pb);
         if ((state >> 4) != 0xFFF)
             continue;
-        avio_seek(s->pb, -2, SEEK_CUR);
+        avio_seek_xij(s->pb, -2, SEEK_CUR);
         break;
     }
     if ((state >> 4) != 0xFFF)
         return AVERROR_INVALIDDATA;
 
     // LCM of all possible ADTS sample rates
-    avpriv_set_pts_info(st, 64, 1, 28224000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 28224000);
 
     return 0;
 }
@@ -125,13 +125,13 @@ static int handle_id3(AVFormatContext *s, AVPacket *pkt)
     ID3v2ExtraMeta *id3v2_extra_meta = NULL;
     int ret;
 
-    ret = av_append_packet(s->pb, pkt, ff_id3v2_tag_len(pkt->data) - pkt->size);
+    ret = av_append_packet_xij(s->pb, pkt, ff_id3v2_tag_len(pkt->data) - pkt->size);
     if (ret < 0) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return ret;
     }
 
-    ffio_init_context(&ioctx, pkt->data, pkt->size, 0, NULL, NULL, NULL, NULL);
+    ffio_init_context_xij(&ioctx, pkt->data, pkt->size, 0, NULL, NULL, NULL, NULL);
     ff_id3v2_read_dict(&ioctx, &metadata, ID3v2_DEFAULT_MAGIC, &id3v2_extra_meta);
     if ((ret = ff_id3v2_parse_priv_dict(&metadata, &id3v2_extra_meta)) < 0)
         goto error;
@@ -143,7 +143,7 @@ static int handle_id3(AVFormatContext *s, AVPacket *pkt)
     }
 
 error:
-    av_packet_unref(pkt);
+    av_packet_unref_ijk(pkt);
     ff_id3v2_free_extra_meta(&id3v2_extra_meta);
     av_dict_free(&metadata);
 
@@ -156,7 +156,7 @@ static int adts_aac_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     // Parse all the ID3 headers between frames
     while (1) {
-        ret = av_get_packet(s->pb, pkt, FFMAX(ID3v2_HEADER_SIZE, ADTS_HEADER_SIZE));
+        ret = av_get_packet_xij(s->pb, pkt, FFMAX(ID3v2_HEADER_SIZE, ADTS_HEADER_SIZE));
         if (ret >= ID3v2_HEADER_SIZE && ff_id3v2_match(pkt->data, ID3v2_DEFAULT_MAGIC)) {
             if ((ret = handle_id3(s, pkt)) >= 0) {
                 continue;
@@ -169,24 +169,24 @@ static int adts_aac_read_packet(AVFormatContext *s, AVPacket *pkt)
         return ret;
 
     if (ret < ADTS_HEADER_SIZE) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return AVERROR(EIO);
     }
 
     if ((AV_RB16(pkt->data) >> 4) != 0xfff) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return AVERROR_INVALIDDATA;
     }
 
     fsize = (AV_RB32(pkt->data + 3) >> 13) & 0x1FFF;
     if (fsize < ADTS_HEADER_SIZE) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return AVERROR_INVALIDDATA;
     }
 
-    ret = av_append_packet(s->pb, pkt, fsize - pkt->size);
+    ret = av_append_packet_xij(s->pb, pkt, fsize - pkt->size);
     if (ret < 0)
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
 
     return ret;
 }

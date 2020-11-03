@@ -124,7 +124,7 @@ static int fifo_thread_write_header(FifoThreadContext *ctx)
     if (ret < 0)
         return ret;
 
-    ret = ff_format_output_open(avf2, avf->url, &format_options);
+    ret = ff_format_output_open_xij(avf2, avf->url, &format_options);
     if (ret < 0) {
         av_log(avf, AV_LOG_ERROR, "Error opening %s: %s\n", avf->url,
                av_err2str(ret));
@@ -134,7 +134,7 @@ static int fifo_thread_write_header(FifoThreadContext *ctx)
     for (i = 0;i < avf2->nb_streams; i++)
         avf2->streams[i]->cur_dts = 0;
 
-    ret = avformat_write_header(avf2, &format_options);
+    ret = avformat_write_header_xij(avf2, &format_options);
     if (!ret)
         ctx->header_written = 1;
 
@@ -157,7 +157,7 @@ static int fifo_thread_flush_output(FifoThreadContext *ctx)
     FifoContext *fifo = avf->priv_data;
     AVFormatContext *avf2 = fifo->avf;
 
-    return av_write_frame(avf2, NULL);
+    return av_write_frame_xij(avf2, NULL);
 }
 
 static int fifo_thread_write_packet(FifoThreadContext *ctx, AVPacket *pkt)
@@ -174,7 +174,7 @@ static int fifo_thread_write_packet(FifoThreadContext *ctx, AVPacket *pkt)
             av_log(avf, AV_LOG_VERBOSE, "Keyframe received, recovering...\n");
         } else {
             av_log(avf, AV_LOG_VERBOSE, "Dropping non-keyframe packet\n");
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return 0;
         }
     }
@@ -182,11 +182,11 @@ static int fifo_thread_write_packet(FifoThreadContext *ctx, AVPacket *pkt)
     s_idx = pkt->stream_index;
     src_tb = avf->streams[s_idx]->time_base;
     dst_tb = avf2->streams[s_idx]->time_base;
-    av_packet_rescale_ts(pkt, src_tb, dst_tb);
+    av_packet_rescale_ts_xij(pkt, src_tb, dst_tb);
 
-    ret = av_write_frame(avf2, pkt);
+    ret = av_write_frame_xij(avf2, pkt);
     if (ret >= 0)
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
     return ret;
 }
 
@@ -200,8 +200,8 @@ static int fifo_thread_write_trailer(FifoThreadContext *ctx)
     if (!ctx->header_written)
         return 0;
 
-    ret = av_write_trailer(avf2);
-    ff_format_io_close(avf2, &avf2->pb);
+    ret = av_write_trailer_xij(avf2);
+    ff_format_io_close_xij(avf2, &avf2->pb);
 
     return ret;
 }
@@ -254,7 +254,7 @@ static void free_message(void *msg)
     FifoMessage *fifo_msg = msg;
 
     if (fifo_msg->type == FIFO_WRITE_PACKET)
-        av_packet_unref(&fifo_msg->pkt);
+        av_packet_unref_ijk(&fifo_msg->pkt);
 }
 
 static int fifo_thread_process_recovery_failure(FifoThreadContext *ctx, AVPacket *pkt,
@@ -379,7 +379,7 @@ static int fifo_thread_recover(FifoThreadContext *ctx, FifoMessage *msg, int err
 
     if (ret == AVERROR(EAGAIN) && fifo->drop_pkts_on_overflow) {
         if (msg->type == FIFO_WRITE_PACKET)
-            av_packet_unref(&msg->pkt);
+            av_packet_unref_ijk(&msg->pkt);
         ret = 0;
     }
 
@@ -449,7 +449,7 @@ static int fifo_mux_init(AVFormatContext *avf, AVOutputFormat *oformat,
     AVFormatContext *avf2;
     int ret = 0, i;
 
-    ret = avformat_alloc_output_context2(&avf2, oformat, NULL, filename);
+    ret = avformat_alloc_output_context2_ijk(&avf2, oformat, NULL, filename);
     if (ret < 0)
         return ret;
 
@@ -466,11 +466,11 @@ static int fifo_mux_init(AVFormatContext *avf, AVOutputFormat *oformat,
     avf2->flags = avf->flags;
 
     for (i = 0; i < avf->nb_streams; ++i) {
-        AVStream *st = avformat_new_stream(avf2, NULL);
+        AVStream *st = avformat_new_stream_ijk(avf2, NULL);
         if (!st)
             return AVERROR(ENOMEM);
 
-        ret = ff_stream_encode_params_copy(st, avf->streams[i]);
+        ret = ff_stream_encode_params_copy_xij(st, avf->streams[i]);
         if (ret < 0)
             return ret;
     }
@@ -500,7 +500,7 @@ static int fifo_init(AVFormatContext *avf)
         }
     }
 
-    oformat = av_guess_format(fifo->format, avf->url, NULL);
+    oformat = av_guess_format_xij(fifo->format, avf->url, NULL);
     if (!oformat) {
         ret = AVERROR_MUXER_NOT_FOUND;
         return ret;
@@ -547,8 +547,8 @@ static int fifo_write_packet(AVFormatContext *avf, AVPacket *pkt)
     int ret;
 
     if (pkt) {
-        av_init_packet(&msg.pkt);
-        ret = av_packet_ref(&msg.pkt,pkt);
+        av_init_packet_ijk(&msg.pkt);
+        ret = av_packet_ref_ijk(&msg.pkt,pkt);
         if (ret < 0)
             return ret;
     }
@@ -578,7 +578,7 @@ static int fifo_write_packet(AVFormatContext *avf, AVPacket *pkt)
     return ret;
 fail:
     if (pkt)
-        av_packet_unref(&msg.pkt);
+        av_packet_unref_ijk(&msg.pkt);
     return ret;
 }
 
@@ -605,7 +605,7 @@ static void fifo_deinit(AVFormatContext *avf)
     FifoContext *fifo = avf->priv_data;
 
     av_dict_free(&fifo->format_options);
-    avformat_free_context(fifo->avf);
+    avformat_free_context_ijk(fifo->avf);
     av_thread_message_queue_free(&fifo->queue);
     if (fifo->overflow_flag_lock_initialized)
         pthread_mutex_destroy(&fifo->overflow_flag_lock);

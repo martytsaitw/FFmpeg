@@ -73,7 +73,7 @@ end:
 #endif
     WebPPictureFree(pic);
     av_freep(&pic);
-    av_frame_free(&alt_frame);
+    av_frame_free_xij(&alt_frame);
 
     return ret;
 }
@@ -81,7 +81,7 @@ end:
 static int libwebp_encode_close(AVCodecContext *avctx)
 {
     LibWebPContextCommon *s  = avctx->priv_data;
-    av_frame_free(&s->ref);
+    av_frame_free_xij(&s->ref);
 
     return 0;
 }

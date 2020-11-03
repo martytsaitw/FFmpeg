@@ -58,11 +58,11 @@ static int get_tag(AVIOContext *pb, uint32_t * tag)
 {
     int size;
 
-    if (avio_feof(pb))
+    if (avio_feof_xij(pb))
         return AVERROR(EIO);
 
-    *tag = avio_rl32(pb);
-    size = avio_rb32(pb);
+    *tag = avio_rl32_xij(pb);
+    size = avio_rb32_xij(pb);
 
     if (size < 0)
         size = 0x7fffffff;
@@ -76,7 +76,7 @@ static void get_meta(AVFormatContext *s, const char *key, int size)
     uint8_t *str = av_malloc(size+1);
 
     if (str) {
-        int res = avio_read(s->pb, str, size);
+        int res = avio_read_xij(s->pb, str, size);
         if (res < 0){
             av_free(str);
             return;
@@ -86,7 +86,7 @@ static void get_meta(AVFormatContext *s, const char *key, int size)
         av_dict_set(&s->metadata, key, str, AV_DICT_DONT_STRDUP_VAL);
     }
 
-    avio_skip(s->pb, size);
+    avio_skip_xij(s->pb, size);
 }
 
 /* Returns the number of sound data frames or negative on error */
@@ -104,12 +104,12 @@ static int get_aiff_header(AVFormatContext *s, int size,
     if (size & 1)
         size++;
     par->codec_type = AVMEDIA_TYPE_AUDIO;
-    par->channels = avio_rb16(pb);
-    num_frames = avio_rb32(pb);
-    par->bits_per_coded_sample = avio_rb16(pb);
+    par->channels = avio_rb16_xij(pb);
+    num_frames = avio_rb32_xij(pb);
+    par->bits_per_coded_sample = avio_rb16_xij(pb);
 
-    exp = avio_rb16(pb) - 16383 - 63;
-    val = avio_rb64(pb);
+    exp = avio_rb16_xij(pb) - 16383 - 63;
+    val = avio_rb64_xij(pb);
     if (exp <-63 || exp >63) {
         av_log(s, AV_LOG_ERROR, "exp %d is out of range\n", exp);
         return AVERROR_INVALIDDATA;
@@ -125,8 +125,8 @@ static int get_aiff_header(AVFormatContext *s, int size,
     if (size < 4) {
         version = AIFF;
     } else if (version == AIFF_C_VERSION1) {
-        par->codec_tag = avio_rl32(pb);
-        par->codec_id  = ff_codec_get_id(ff_codec_aiff_tags, par->codec_tag);
+        par->codec_tag = avio_rl32_xij(pb);
+        par->codec_id  = ff_codec_get_id_xij(ff_codec_aiff_tags, par->codec_tag);
         if (par->codec_id == AV_CODEC_ID_NONE)
             avpriv_request_sample(s, "unknown or unsupported codec tag: %s",
                                   av_fourcc2str(par->codec_tag));
@@ -135,7 +135,7 @@ static int get_aiff_header(AVFormatContext *s, int size,
 
     if (version != AIFF_C_VERSION1 || par->codec_id == AV_CODEC_ID_PCM_S16BE) {
         par->codec_id = aiff_codec_get_id(par->bits_per_coded_sample);
-        par->bits_per_coded_sample = av_get_bits_per_sample(par->codec_id);
+        par->bits_per_coded_sample = av_get_bits_per_sample_xij(par->codec_id);
         aiff->block_duration = 1;
     } else {
         switch (par->codec_id) {
@@ -168,14 +168,14 @@ static int get_aiff_header(AVFormatContext *s, int size,
             break;
         }
         if (par->block_align > 0)
-            aiff->block_duration = av_get_audio_frame_duration2(par,
+            aiff->block_duration = av_get_audio_frame_duration2_ijk(par,
                                                                 par->block_align);
     }
 
     /* Block align needs to be computed in all cases, as the definition
      * is specific to applications -> here we use the WAVE format definition */
     if (!par->block_align)
-        par->block_align = (av_get_bits_per_sample(par->codec_id) * par->channels) >> 3;
+        par->block_align = (av_get_bits_per_sample_xij(par->codec_id) * par->channels) >> 3;
 
     if (aiff->block_duration) {
         par->bit_rate = (int64_t)par->sample_rate * (par->block_align << 3) /
@@ -184,7 +184,7 @@ static int get_aiff_header(AVFormatContext *s, int size,
 
     /* Chunk is over */
     if (size)
-        avio_skip(pb, size);
+        avio_skip_xij(pb, size);
 
     return num_frames;
 }
@@ -219,7 +219,7 @@ static int aiff_read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
 
     /* AIFF data type */
-    tag = avio_rl32(pb);
+    tag = avio_rl32_xij(pb);
     if (tag == MKTAG('A', 'I', 'F', 'F'))       /* Got an AIFF file */
         version = AIFF;
     else if (tag != MKTAG('A', 'I', 'F', 'C'))  /* An AIFF-C file then */
@@ -227,7 +227,7 @@ static int aiff_read_header(AVFormatContext *s)
 
     filesize -= 4;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -264,10 +264,10 @@ static int aiff_read_header(AVFormatContext *s)
                 }
             ff_id3v2_free_extra_meta(&id3v2_extra_meta);
             if (position + size > avio_tell(pb))
-                avio_skip(pb, position + size - avio_tell(pb));
+                avio_skip_xij(pb, position + size - avio_tell(pb));
             break;
         case MKTAG('F', 'V', 'E', 'R'):     /* Version chunk */
-            version = avio_rb32(pb);
+            version = avio_rb32_xij(pb);
             break;
         case MKTAG('N', 'A', 'M', 'E'):     /* Sample name chunk */
             get_meta(s, "title"    , size);
@@ -283,8 +283,8 @@ static int aiff_read_header(AVFormatContext *s)
             break;
         case MKTAG('S', 'S', 'N', 'D'):     /* Sampled sound chunk */
             aiff->data_end = avio_tell(pb) + size;
-            offset = avio_rb32(pb);      /* Offset of sound data */
-            avio_rb32(pb);               /* BlockSize... don't care */
+            offset = avio_rb32_xij(pb);      /* Offset of sound data */
+            avio_rb32_xij(pb);               /* BlockSize... don't care */
             offset += avio_tell(pb);    /* Compute absolute data offset */
             if (st->codecpar->block_align && !(pb->seekable & AVIO_SEEKABLE_NORMAL))    /* Assume COMM already parsed */
                 goto got_sound;
@@ -292,12 +292,12 @@ static int aiff_read_header(AVFormatContext *s)
                 av_log(s, AV_LOG_ERROR, "file is not seekable\n");
                 return -1;
             }
-            avio_skip(pb, size - 8);
+            avio_skip_xij(pb, size - 8);
             break;
         case MKTAG('w', 'a', 'v', 'e'):
             if ((uint64_t)size > (1<<30))
                 return -1;
-            if (ff_get_extradata(s, st->codecpar, pb, size) < 0)
+            if (ff_get_extradata_xij(s, st->codecpar, pb, size) < 0)
                 return AVERROR(ENOMEM);
             if (   (st->codecpar->codec_id == AV_CODEC_ID_QDMC || st->codecpar->codec_id == AV_CODEC_ID_QDM2)
                 && size>=12*4 && !st->codecpar->block_align) {
@@ -329,8 +329,8 @@ static int aiff_read_header(AVFormatContext *s)
             aiff->data_end = avio_tell(pb) + size;
             offset = avio_tell(pb) + 8;
             /* This field is unknown and its data seems to be irrelevant */
-            avio_rb32(pb);
-            st->codecpar->block_align = avio_rb32(pb);
+            avio_rb32_xij(pb);
+            st->codecpar->block_align = avio_rb32_xij(pb);
 
             goto got_sound;
             break;
@@ -338,13 +338,13 @@ static int aiff_read_header(AVFormatContext *s)
             if (offset > 0 && st->codecpar->block_align) // COMM && SSND
                 goto got_sound;
         default: /* Jump */
-            avio_skip(pb, size);
+            avio_skip_xij(pb, size);
         }
 
         /* Skip required padding byte for odd-sized chunks. */
         if (size & 1) {
             filesize--;
-            avio_skip(pb, 1);
+            avio_skip_xij(pb, 1);
         }
     }
 
@@ -358,12 +358,12 @@ got_sound:
     }
 
     /* Now positioned, get the sound data start and end */
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
     st->start_time = 0;
     st->duration = st->nb_frames * aiff->block_duration;
 
     /* Position the stream at the first block */
-    avio_seek(pb, offset, SEEK_SET);
+    avio_seek_xij(pb, offset, SEEK_SET);
 
     return 0;
 }
@@ -400,7 +400,7 @@ static int aiff_read_packet(AVFormatContext *s,
         size = st->codecpar->block_align ? (MAX_SIZE / st->codecpar->block_align) * st->codecpar->block_align : MAX_SIZE;
     }
     size = FFMIN(max_size, size);
-    res = av_get_packet(s->pb, pkt, size);
+    res = av_get_packet_xij(s->pb, pkt, size);
     if (res < 0)
         return res;
 

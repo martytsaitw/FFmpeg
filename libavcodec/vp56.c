@@ -516,7 +516,7 @@ static int vp56_size_changed(VP56Context *s)
     s->mb_height = (avctx->coded_height+15) / 16;
 
     if (s->mb_width > 1000 || s->mb_height > 1000) {
-        ff_set_dimensions(avctx, 0, 0);
+        ff_set_dimensions_xij(avctx, 0, 0);
         av_log(avctx, AV_LOG_ERROR, "picture too big\n");
         return AVERROR_INVALIDDATA;
     }
@@ -567,32 +567,32 @@ int ff_vp56_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
 
     if (res == VP56_SIZE_CHANGE) {
         for (i = 0; i < 4; i++) {
-            av_frame_unref(s->frames[i]);
+            av_frame_unref_xij(s->frames[i]);
             if (s->alpha_context)
-                av_frame_unref(s->alpha_context->frames[i]);
+                av_frame_unref_xij(s->alpha_context->frames[i]);
         }
     }
 
-    ret = ff_get_buffer(avctx, p, AV_GET_BUFFER_FLAG_REF);
+    ret = ff_get_buffer_xij(avctx, p, AV_GET_BUFFER_FLAG_REF);
     if (ret < 0) {
         if (res == VP56_SIZE_CHANGE)
-            ff_set_dimensions(avctx, 0, 0);
+            ff_set_dimensions_xij(avctx, 0, 0);
         return ret;
     }
 
     if (avctx->pix_fmt == AV_PIX_FMT_YUVA420P) {
-        av_frame_unref(s->alpha_context->frames[VP56_FRAME_CURRENT]);
-        if ((ret = av_frame_ref(s->alpha_context->frames[VP56_FRAME_CURRENT], p)) < 0) {
-            av_frame_unref(p);
+        av_frame_unref_xij(s->alpha_context->frames[VP56_FRAME_CURRENT]);
+        if ((ret = av_frame_ref_xij(s->alpha_context->frames[VP56_FRAME_CURRENT], p)) < 0) {
+            av_frame_unref_xij(p);
             if (res == VP56_SIZE_CHANGE)
-                ff_set_dimensions(avctx, 0, 0);
+                ff_set_dimensions_xij(avctx, 0, 0);
             return ret;
         }
     }
 
     if (res == VP56_SIZE_CHANGE) {
         if (vp56_size_changed(s)) {
-            av_frame_unref(p);
+            av_frame_unref_xij(p);
             return AVERROR_INVALIDDATA;
         }
     }
@@ -614,7 +614,7 @@ int ff_vp56_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
                 avctx->coded_width  = bak_cw;
                 avctx->coded_height = bak_ch;
             }
-            av_frame_unref(p);
+            av_frame_unref_xij(p);
             return AVERROR_INVALIDDATA;
         }
     }
@@ -625,7 +625,7 @@ int ff_vp56_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     if (s->discard_frame)
         return AVERROR_INVALIDDATA;
 
-    if ((res = av_frame_ref(data, p)) < 0)
+    if ((res = av_frame_ref_xij(data, p)) < 0)
         return res;
     *got_frame = 1;
 
@@ -738,12 +738,12 @@ static int ff_vp56_decode_mbs(AVCodecContext *avctx, void *data,
 
 next:
     if (p->key_frame || s->golden_frame) {
-        av_frame_unref(s->frames[VP56_FRAME_GOLDEN]);
-        if ((res = av_frame_ref(s->frames[VP56_FRAME_GOLDEN], p)) < 0)
+        av_frame_unref_xij(s->frames[VP56_FRAME_GOLDEN]);
+        if ((res = av_frame_ref_xij(s->frames[VP56_FRAME_GOLDEN], p)) < 0)
             return res;
     }
 
-    av_frame_unref(s->frames[VP56_FRAME_PREVIOUS]);
+    av_frame_unref_xij(s->frames[VP56_FRAME_PREVIOUS]);
     FFSWAP(AVFrame *, s->frames[VP56_FRAME_CURRENT],
                       s->frames[VP56_FRAME_PREVIOUS]);
     return 0;
@@ -775,7 +775,7 @@ av_cold int ff_vp56_init_context(AVCodecContext *avctx, VP56Context *s,
     }
 
     for (i = 0; i < FF_ARRAY_ELEMS(s->frames); i++) {
-        s->frames[i] = av_frame_alloc();
+        s->frames[i] = av_frame_alloc_ijk();
         if (!s->frames[i]) {
             ff_vp56_free(avctx);
             return AVERROR(ENOMEM);
@@ -823,7 +823,7 @@ av_cold int ff_vp56_free_context(VP56Context *s)
     av_freep(&s->edge_emu_buffer_alloc);
 
     for (i = 0; i < FF_ARRAY_ELEMS(s->frames); i++)
-        av_frame_free(&s->frames[i]);
+        av_frame_free_xij(&s->frames[i]);
 
     return 0;
 }

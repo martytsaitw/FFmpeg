@@ -363,7 +363,7 @@ static int get_siz(Jpeg2000DecoderContext *s)
     }
 
     /* compute image size with reduction factor */
-    ret = ff_set_dimensions(s->avctx,
+    ret = ff_set_dimensions_xij(s->avctx,
             ff_jpeg2000_ceildivpow2(s->width  - s->image_offset_x,
                                                s->reduction_factor),
             ff_jpeg2000_ceildivpow2(s->height - s->image_offset_y,

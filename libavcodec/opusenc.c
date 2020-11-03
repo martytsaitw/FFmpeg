@@ -129,7 +129,7 @@ static void celt_frame_setup_input(OpusEncContext *s, CeltFrame *f)
         memcpy(b->overlap, input, bps*cur->nb_samples);
     }
 
-    av_frame_free(&cur);
+    av_frame_free_xij(&cur);
 
     for (sf = 0; sf < subframes; sf++) {
         if (sf != (subframes - 1))
@@ -149,7 +149,7 @@ static void celt_frame_setup_input(OpusEncContext *s, CeltFrame *f)
 
         /* Last frame isn't popped off and freed yet - we need it for overlap */
         if (sf != (subframes - 1))
-            av_frame_free(&cur);
+            av_frame_free_xij(&cur);
     }
 }
 
@@ -523,14 +523,14 @@ static void opus_packet_assembler(OpusEncContext *s, AVPacket *avpkt)
 static AVFrame *spawn_empty_frame(OpusEncContext *s)
 {
     int i;
-    AVFrame *f = av_frame_alloc();
+    AVFrame *f = av_frame_alloc_ijk();
     if (!f)
         return NULL;
     f->format         = s->avctx->sample_fmt;
     f->nb_samples     = s->avctx->frame_size;
     f->channel_layout = s->avctx->channel_layout;
-    if (av_frame_get_buffer(f, 4)) {
-        av_frame_free(&f);
+    if (av_frame_get_buffer_xij(f, 4)) {
+        av_frame_free_xij(&f);
         return NULL;
     }
     for (i = 0; i < s->channels; i++) {
@@ -549,7 +549,7 @@ static int opus_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     if (frame) { /* Add new frame to queue */
         if ((ret = ff_af_queue_add(&s->afq, frame)) < 0)
             return ret;
-        ff_bufqueue_add(avctx, &s->bufqueue, av_frame_clone(frame));
+        ff_bufqueue_add(avctx, &s->bufqueue, av_frame_clone_xij(frame));
     } else {
         ff_opus_psy_signal_eof(&s->psyctx);
         if (!s->afq.remaining_samples)
@@ -597,7 +597,7 @@ static int opus_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     /* Remove samples from queue and skip if needed */
     ff_af_queue_remove(&s->afq, s->packet.frames*frame_size, &avpkt->pts, &avpkt->duration);
     if (s->packet.frames*frame_size > avpkt->duration) {
-        uint8_t *side = av_packet_new_side_data(avpkt, AV_PKT_DATA_SKIP_SAMPLES, 10);
+        uint8_t *side = av_packet_new_side_data_xij(avpkt, AV_PKT_DATA_SKIP_SAMPLES, 10);
         if (!side)
             return AVERROR(ENOMEM);
         AV_WL32(&side[4], s->packet.frames*frame_size - avpkt->duration + 120);

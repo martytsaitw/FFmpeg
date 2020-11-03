@@ -181,7 +181,7 @@ static int rl2_decode_frame(AVCodecContext *avctx,
     int ret, buf_size  = avpkt->size;
     Rl2Context *s = avctx->priv_data;
 
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     /** run length decode */

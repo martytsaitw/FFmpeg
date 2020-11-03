@@ -55,7 +55,7 @@ static int sipr_parse(AVCodecParserContext *s1, AVCodecContext *avctx,
     int next;
 
     next = sipr_split(avctx, buf, buf_size);
-    if (ff_combine_frame(pc, next, &buf, &buf_size) < 0) {
+    if (ff_combine_frame_xij(pc, next, &buf, &buf_size) < 0) {
         *poutbuf = NULL;
         *poutbuf_size = 0;
         return buf_size;
@@ -70,5 +70,5 @@ AVCodecParser ff_sipr_parser = {
     .codec_ids      = { AV_CODEC_ID_SIPR },
     .priv_data_size = sizeof(SiprParserContext),
     .parser_parse   = sipr_parse,
-    .parser_close   = ff_parse_close,
+    .parser_close   = ff_parse_close_xij,
 };

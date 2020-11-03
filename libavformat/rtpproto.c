@@ -107,7 +107,7 @@ int ff_rtp_set_remote_url(URLContext *h, const char *uri)
     char buf[1024];
     char path[1024];
 
-    av_url_split(NULL, 0, NULL, 0, hostname, sizeof(hostname), &port,
+    av_url_split_xij(NULL, 0, NULL, 0, hostname, sizeof(hostname), &port,
                  path, sizeof(path), uri);
     rtcp_port = port + 1;
 
@@ -329,7 +329,7 @@ static int rtp_open(URLContext *h, const char *uri, int flags)
     int i, max_retry_count = 3;
     int rtcpflags;
 
-    av_url_split(NULL, 0, NULL, 0, hostname, sizeof(hostname), &rtp_port,
+    av_url_split_xij(NULL, 0, NULL, 0, hostname, sizeof(hostname), &rtp_port,
                  path, sizeof(path), uri);
     /* extract parameters */
     if (s->rtcp_port < 0)

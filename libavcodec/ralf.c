@@ -461,7 +461,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame_ptr,
     }
 
     frame->nb_samples = ctx->max_frame_size;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
     samples0 = (int16_t *)frame->data[0];
     samples1 = (int16_t *)frame->data[1];

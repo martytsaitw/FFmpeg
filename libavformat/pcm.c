@@ -41,7 +41,7 @@ int ff_pcm_read_packet(AVFormatContext *s, AVPacket *pkt)
     size = FFMAX(par->sample_rate/25, 1);
     size = FFMIN(size, RAW_SAMPLES) * par->block_align;
 
-    ret = av_get_packet(s->pb, pkt, size);
+    ret = av_get_packet_xij(s->pb, pkt, size);
 
     pkt->flags &= ~AV_PKT_FLAG_CORRUPT;
     pkt->stream_index = 0;
@@ -59,7 +59,7 @@ int ff_pcm_read_seek(AVFormatContext *s,
     st = s->streams[0];
 
     block_align = st->codecpar->block_align ? st->codecpar->block_align :
-        (av_get_bits_per_sample(st->codecpar->codec_id) * st->codecpar->channels) >> 3;
+        (av_get_bits_per_sample_xij(st->codecpar->codec_id) * st->codecpar->channels) >> 3;
     byte_rate = st->codecpar->bit_rate ? st->codecpar->bit_rate >> 3 :
         block_align * st->codecpar->sample_rate;
 
@@ -76,7 +76,7 @@ int ff_pcm_read_seek(AVFormatContext *s,
 
     /* recompute exact position */
     st->cur_dts = av_rescale(pos, st->time_base.den, byte_rate * (int64_t)st->time_base.num);
-    if ((ret = avio_seek(s->pb, pos + s->internal->data_offset, SEEK_SET)) < 0)
+    if ((ret = avio_seek_xij(s->pb, pos + s->internal->data_offset, SEEK_SET)) < 0)
         return ret;
     return 0;
 }

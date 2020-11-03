@@ -734,7 +734,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
         vpx_img_wrap(&ctx->rawimg_alpha, VPX_IMG_FMT_I420, avctx->width, avctx->height, 1,
                      (unsigned char*)1);
 
-    cpb_props = ff_add_cpb_side_data(avctx);
+    cpb_props = ff_add_cpb_side_data_xij(avctx);
     if (!cpb_props)
         return AVERROR(ENOMEM);
 
@@ -824,7 +824,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
 #endif
         }
 
-        ff_side_data_set_encoder_stats(pkt, 0, cx_frame->sse + 1,
+        ff_side_data_set_encoder_stats_xij(pkt, 0, cx_frame->sse + 1,
                                        cx_frame->have_sse ? 3 : 0, pict_type);
 
         if (cx_frame->have_sse) {
@@ -844,11 +844,11 @@ FF_ENABLE_DEPRECATION_WARNINGS
             cx_frame->have_sse = 0;
         }
         if (cx_frame->sz_alpha > 0) {
-            side_data = av_packet_new_side_data(pkt,
+            side_data = av_packet_new_side_data_xij(pkt,
                                                 AV_PKT_DATA_MATROSKA_BLOCKADDITIONAL,
                                                 cx_frame->sz_alpha + 8);
             if(!side_data) {
-                av_packet_unref(pkt);
+                av_packet_unref_ijk(pkt);
                 av_free(pkt);
                 return AVERROR(ENOMEM);
             }

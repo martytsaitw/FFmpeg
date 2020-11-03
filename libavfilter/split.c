@@ -86,7 +86,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
 
         if (ctx->outputs[i]->status_in)
             continue;
-        buf_out = av_frame_clone(frame);
+        buf_out = av_frame_clone_xij(frame);
         if (!buf_out) {
             ret = AVERROR(ENOMEM);
             break;
@@ -96,7 +96,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
         if (ret < 0)
             break;
     }
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
     return ret;
 }
 

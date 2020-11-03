@@ -92,10 +92,10 @@ static void show_format_opts(void)
     AVOutputFormat *oformat = NULL;
 
     printf("@section Generic format AVOptions\n");
-    show_opts(avformat_get_class());
+    show_opts(avformat_get_class_ijk());
 
     printf("@section Format-specific AVOptions\n");
-    while ((iformat = av_iformat_next(iformat))) {
+    while ((iformat = av_iformat_next_ijk(iformat))) {
         if (!iformat->priv_class)
             continue;
         printf("@subsection %s AVOptions\n", iformat->priv_class->class_name);
@@ -114,7 +114,7 @@ static void show_codec_opts(void)
     AVCodec *c = NULL;
 
     printf("@section Generic codec AVOptions\n");
-    show_opts(avcodec_get_class());
+    show_opts(avcodec_get_class_ijk());
 
     printf("@section Codec-specific AVOptions\n");
     while ((c = av_codec_next(c))) {

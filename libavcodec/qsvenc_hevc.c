@@ -70,7 +70,7 @@ static int generate_fake_vps(QSVEncContext *q, AVCodecContext *avctx)
         return AVERROR_UNKNOWN;
     }
 
-    av_fast_padded_malloc(&sps_rbsp.rbsp_buffer, &sps_rbsp.rbsp_buffer_alloc_size, avctx->extradata_size);
+    av_fast_padded_malloc_xij(&sps_rbsp.rbsp_buffer, &sps_rbsp.rbsp_buffer_alloc_size, avctx->extradata_size);
     if (!sps_rbsp.rbsp_buffer)
         return AVERROR(ENOMEM);
 

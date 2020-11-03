@@ -63,7 +63,7 @@ static const uint8_t default_quantizers[128] = {
 
 static void jpeg_close_context(PayloadContext *jpeg)
 {
-    ffio_free_dyn_buf(&jpeg->frame);
+    ffio_free_dyn_buf_xij(&jpeg->frame);
 }
 
 static int jpeg_create_huffman_table(PutByteContext *p, int table_class,
@@ -319,9 +319,9 @@ static int jpeg_parse_packet(AVFormatContext *ctx, PayloadContext *jpeg,
 
         /* Skip the current frame in case of the end packet
          * has been lost somewhere. */
-        ffio_free_dyn_buf(&jpeg->frame);
+        ffio_free_dyn_buf_xij(&jpeg->frame);
 
-        if ((ret = avio_open_dyn_buf(&jpeg->frame)) < 0)
+        if ((ret = avio_open_dyn_buf_xij(&jpeg->frame)) < 0)
             return ret;
         jpeg->timestamp = *timestamp;
 
@@ -333,7 +333,7 @@ static int jpeg_parse_packet(AVFormatContext *ctx, PayloadContext *jpeg,
                                             qtable_len / 64, dri);
 
         /* Copy JPEG header to frame buffer. */
-        avio_write(jpeg->frame, hdr, jpeg->hdr_size);
+        avio_write_xij(jpeg->frame, hdr, jpeg->hdr_size);
     }
 
     if (!jpeg->frame) {
@@ -345,7 +345,7 @@ static int jpeg_parse_packet(AVFormatContext *ctx, PayloadContext *jpeg,
     if (jpeg->timestamp != *timestamp) {
         /* Skip the current frame if timestamp is incorrect.
          * A start packet has been lost somewhere. */
-        ffio_free_dyn_buf(&jpeg->frame);
+        ffio_free_dyn_buf_xij(&jpeg->frame);
         av_log(ctx, AV_LOG_ERROR, "RTP timestamps don't match.\n");
         return AVERROR_INVALIDDATA;
     }
@@ -357,14 +357,14 @@ static int jpeg_parse_packet(AVFormatContext *ctx, PayloadContext *jpeg,
     }
 
     /* Copy data to frame buffer. */
-    avio_write(jpeg->frame, buf, len);
+    avio_write_xij(jpeg->frame, buf, len);
 
     if (flags & RTP_FLAG_MARKER) {
         /* End of JPEG data packet. */
         uint8_t buf[2] = { 0xff, EOI };
 
         /* Put EOI marker. */
-        avio_write(jpeg->frame, buf, sizeof(buf));
+        avio_write_xij(jpeg->frame, buf, sizeof(buf));
 
         /* Prepare the JPEG packet. */
         if ((ret = ff_rtp_finalize_packet(pkt, &jpeg->frame, st->index)) < 0) {

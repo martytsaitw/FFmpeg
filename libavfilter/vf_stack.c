@@ -113,7 +113,7 @@ static int process_frame(FFFrameSync *fs)
         int height[4];
 
         if ((ret = av_image_fill_linesizes(linesize, inlink->format, inlink->w)) < 0) {
-            av_frame_free(&out);
+            av_frame_free_xij(&out);
             return ret;
         }
 

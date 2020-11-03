@@ -575,7 +575,7 @@ static int decode_frame(AVCodecContext *avctx, void *data,
         return ret;
 
     frame->nb_samples = s->block_len / avctx->channels;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     skip_bits(gb, s->skip);

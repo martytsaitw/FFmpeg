@@ -41,15 +41,15 @@ int ff_reshuffle_raw_rgb(AVFormatContext *s, AVPacket **ppkt, AVCodecParameters 
     if (size != stride * par->height)
         return 0;
 
-    new_pkt = av_packet_alloc();
+    new_pkt = av_packet_alloc_ijk();
     if (!new_pkt)
         return AVERROR(ENOMEM);
 
-    ret = av_new_packet(new_pkt, expected_stride * par->height);
+    ret = av_new_packet_ijk(new_pkt, expected_stride * par->height);
     if (ret < 0)
         goto fail;
 
-    ret = av_packet_copy_props(new_pkt, pkt);
+    ret = av_packet_copy_props_ijk(new_pkt, pkt);
     if (ret < 0)
         goto fail;
 
@@ -61,7 +61,7 @@ int ff_reshuffle_raw_rgb(AVFormatContext *s, AVPacket **ppkt, AVCodecParameters 
     *ppkt = new_pkt;
     return 1 + contains_pal;
 fail:
-    av_packet_free(&new_pkt);
+    av_packet_free_xij(&new_pkt);
 
     return ret;
 }

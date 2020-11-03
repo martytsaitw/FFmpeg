@@ -45,8 +45,8 @@ typedef struct MPEG4AudioConfig {
     int frame_length_short;
 } MPEG4AudioConfig;
 
-extern av_export_avcodec const int avpriv_mpeg4audio_sample_rates[16];
-extern const uint8_t ff_mpeg4audio_channels[8];
+extern av_export_avcodec const int avpriv_mpeg4audio_sample_rates_xij[16];
+extern const uint8_t ff_mpeg4audio_channels_xij[8];
 
 /**
  * Parse MPEG-4 systems extradata from a potentially unaligned GetBitContext to retrieve audio configuration.
@@ -55,7 +55,7 @@ extern const uint8_t ff_mpeg4audio_channels[8];
  * @param[in] sync_extension look for a sync extension after config if true.
  * @return On error -1 is returned, on success AudioSpecificConfig bit index in extradata.
  */
-int ff_mpeg4audio_get_config_gb(MPEG4AudioConfig *c, GetBitContext *gb,
+int ff_mpeg4audio_get_config_gb_xij(MPEG4AudioConfig *c, GetBitContext *gb,
                                 int sync_extension);
 
 /**
@@ -66,7 +66,7 @@ int ff_mpeg4audio_get_config_gb(MPEG4AudioConfig *c, GetBitContext *gb,
  * @param[in] sync_extension look for a sync extension after config if true.
  * @return On error -1 is returned, on success AudioSpecificConfig bit index in extradata.
  */
-int avpriv_mpeg4audio_get_config(MPEG4AudioConfig *c, const uint8_t *buf,
+int avpriv_mpeg4audio_get_config_xij(MPEG4AudioConfig *c, const uint8_t *buf,
                                  int bit_size, int sync_extension);
 
 enum AudioObjectType {

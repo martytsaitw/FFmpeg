@@ -344,7 +344,7 @@ static int fdk_aac_decode_frame(AVCodecContext *avctx, void *data,
         goto end;
     frame->nb_samples = avctx->frame_size;
 
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         goto end;
 
     memcpy(frame->extended_data[0], s->decoder_buffer,

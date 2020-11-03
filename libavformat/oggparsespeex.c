@@ -92,11 +92,11 @@ static int speex_header(AVFormatContext *s, int idx) {
         if (frames_per_packet)
             spxp->packet_size *= frames_per_packet;
 
-        if (ff_alloc_extradata(st->codecpar, os->psize) < 0)
+        if (ff_alloc_extradata_xij(st->codecpar, os->psize) < 0)
             return AVERROR(ENOMEM);
         memcpy(st->codecpar->extradata, p, st->codecpar->extradata_size);
 
-        avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+        avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
     } else
         ff_vorbis_stream_comment(s, st, p, os->psize);
 

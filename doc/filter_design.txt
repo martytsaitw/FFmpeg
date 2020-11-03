@@ -58,8 +58,8 @@ Frame references ownership and permissions
     A reference is usually obtained as input to the filter_frame method or
     requested using the ff_get_video_buffer or ff_get_audio_buffer
     functions. A new reference on an existing buffer can be created with
-    av_frame_ref(). A reference is destroyed using
-    the av_frame_free() function.
+    av_frame_ref_xij(). A reference is destroyed using
+    the av_frame_free_xij() function.
 
   Reference ownership
   -------------------
@@ -78,7 +78,7 @@ Frame references ownership and permissions
     * A reference passed to ff_filter_frame is given away and must no longer
       be used.
 
-    * A reference created with av_frame_ref() belongs to the code that
+    * A reference created with av_frame_ref_xij() belongs to the code that
       created it.
 
     * A reference obtained with ff_get_video_buffer or ff_get_audio_buffer
@@ -107,7 +107,7 @@ Frame references ownership and permissions
     to modify the data.
 
     A filter can check if a frame is writable by using the
-    av_frame_is_writable() function.
+    av_frame_is_writable_xij() function.
 
     A filter can ensure that a frame is writable at some point of the code
     by using the ff_inlink_make_frame_writable() function. It will duplicate

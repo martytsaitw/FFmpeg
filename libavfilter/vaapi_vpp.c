@@ -63,7 +63,7 @@ void ff_vaapi_vpp_pipeline_uninit(AVFilterContext *avctx)
         ctx->va_config = VA_INVALID_ID;
     }
 
-    av_buffer_unref(&ctx->device_ref);
+    av_buffer_unref_xij(&ctx->device_ref);
     ctx->hwctx = NULL;
 }
 
@@ -81,7 +81,7 @@ int ff_vaapi_vpp_config_input(AVFilterLink *inlink)
         return AVERROR(EINVAL);
     }
 
-    ctx->input_frames_ref = av_buffer_ref(inlink->hw_frames_ctx);
+    ctx->input_frames_ref = av_buffer_ref_ijk(inlink->hw_frames_ctx);
     if (!ctx->input_frames_ref) {
         av_log(avctx, AV_LOG_ERROR, "A input frames reference create "
                "failed.\n");
@@ -112,7 +112,7 @@ int ff_vaapi_vpp_config_output(AVFilterLink *outlink)
         ctx->output_height = avctx->inputs[0]->h;
 
     av_assert0(ctx->input_frames);
-    ctx->device_ref = av_buffer_ref(ctx->input_frames->device_ref);
+    ctx->device_ref = av_buffer_ref_ijk(ctx->input_frames->device_ref);
     if (!ctx->device_ref) {
         av_log(avctx, AV_LOG_ERROR, "A device reference create "
                "failed.\n");
@@ -228,7 +228,7 @@ int ff_vaapi_vpp_config_output(AVFilterLink *outlink)
     return 0;
 
 fail:
-    av_buffer_unref(&outlink->hw_frames_ctx);
+    av_buffer_unref_xij(&outlink->hw_frames_ctx);
     av_freep(&hwconfig);
     av_hwframe_constraints_free(&constraints);
     return err;
@@ -368,6 +368,6 @@ void ff_vaapi_vpp_ctx_uninit(AVFilterContext *avctx)
     if (ctx->valid_ids && ctx->pipeline_uninit)
         ctx->pipeline_uninit(avctx);
 
-    av_buffer_unref(&ctx->input_frames_ref);
-    av_buffer_unref(&ctx->device_ref);
+    av_buffer_unref_xij(&ctx->input_frames_ref);
+    av_buffer_unref_xij(&ctx->device_ref);
 }

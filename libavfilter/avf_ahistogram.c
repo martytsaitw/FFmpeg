@@ -169,10 +169,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
     if (!s->out || s->out->width  != outlink->w ||
                    s->out->height != outlink->h) {
-        av_frame_free(&s->out);
+        av_frame_free_xij(&s->out);
         s->out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!s->out) {
-            av_frame_free(&in);
+            av_frame_free_xij(&in);
             return AVERROR(ENOMEM);
         }
         for (n = H; n < s->h; n++) {
@@ -250,7 +250,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         break;
     }
 
-    av_frame_free(&s->in[s->frame_count]);
+    av_frame_free_xij(&s->in[s->frame_count]);
     s->in[s->frame_count] = in;
     s->frame_count++;
     if (s->frame_count > s->count)
@@ -366,7 +366,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
             s->ypos = H;
     }
 
-    return ff_filter_frame(outlink, av_frame_clone(s->out));
+    return ff_filter_frame(outlink, av_frame_clone_xij(s->out));
 }
 
 static av_cold void uninit(AVFilterContext *ctx)
@@ -374,12 +374,12 @@ static av_cold void uninit(AVFilterContext *ctx)
     AudioHistogramContext *s = ctx->priv;
     int i;
 
-    av_frame_free(&s->out);
+    av_frame_free_xij(&s->out);
     av_freep(&s->shistogram);
     av_freep(&s->achistogram);
     av_freep(&s->combine_buffer);
     for (i = 0; i < 101; i++)
-        av_frame_free(&s->in[i]);
+        av_frame_free_xij(&s->in[i]);
 }
 
 static const AVFilterPad audiovectorscope_inputs[] = {

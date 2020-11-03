@@ -31,7 +31,7 @@ AVMasteringDisplayMetadata *av_mastering_display_metadata_alloc(void)
 
 AVMasteringDisplayMetadata *av_mastering_display_metadata_create_side_data(AVFrame *frame)
 {
-    AVFrameSideData *side_data = av_frame_new_side_data(frame,
+    AVFrameSideData *side_data = av_frame_new_side_data_xij(frame,
                                                         AV_FRAME_DATA_MASTERING_DISPLAY_METADATA,
                                                         sizeof(AVMasteringDisplayMetadata));
     if (!side_data)
@@ -54,7 +54,7 @@ AVContentLightMetadata *av_content_light_metadata_alloc(size_t *size)
 
 AVContentLightMetadata *av_content_light_metadata_create_side_data(AVFrame *frame)
 {
-    AVFrameSideData *side_data = av_frame_new_side_data(frame,
+    AVFrameSideData *side_data = av_frame_new_side_data_xij(frame,
                                                         AV_FRAME_DATA_CONTENT_LIGHT_LEVEL,
                                                         sizeof(AVContentLightMetadata));
     if (!side_data)

@@ -167,7 +167,7 @@ static int modplug_read_header(AVFormatContext *s)
     AVIOContext *pb = s->pb;
     ModPlug_Settings settings;
     ModPlugContext *modplug = s->priv_data;
-    int64_t sz = avio_size(pb);
+    int64_t sz = avio_size_xij(pb);
 
     if (sz < 0) {
         av_log(s, AV_LOG_WARNING, "Could not determine file size\n");
@@ -189,7 +189,7 @@ static int modplug_read_header(AVFormatContext *s)
     modplug->buf = av_malloc(modplug->max_size);
     if (!modplug->buf)
         return AVERROR(ENOMEM);
-    sz = avio_read(pb, modplug->buf, sz);
+    sz = avio_read_xij(pb, modplug->buf, sz);
 
     ModPlug_GetSettings(&settings);
     settings.mChannels       = 2;
@@ -219,10 +219,10 @@ static int modplug_read_header(AVFormatContext *s)
     if (!modplug->f)
         return AVERROR_INVALIDDATA;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
-    avpriv_set_pts_info(st, 64, 1, 1000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000);
     st->duration = ModPlug_GetLength(modplug->f);
     st->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id    = AV_CODEC_ID_PCM_S16LE;
@@ -233,10 +233,10 @@ static int modplug_read_header(AVFormatContext *s)
     modplug->ts_per_packet = 1000*AUDIO_PKT_SIZE / (4*44100.);
 
     if (modplug->video_stream) {
-        AVStream *vst = avformat_new_stream(s, NULL);
+        AVStream *vst = avformat_new_stream_ijk(s, NULL);
         if (!vst)
             return AVERROR(ENOMEM);
-        avpriv_set_pts_info(vst, 64, 1, 1000);
+        avpriv_set_pts_info_ijk(vst, 64, 1, 1000);
         vst->duration = st->duration;
         vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
         vst->codecpar->codec_id   = AV_CODEC_ID_XBIN;
@@ -284,7 +284,7 @@ static int modplug_read_packet(AVFormatContext *s, AVPacket *pkt)
             var_values[VAR_PATTERN] = ModPlug_GetCurrentPattern(modplug->f);
             var_values[VAR_ROW    ] = ModPlug_GetCurrentRow    (modplug->f);
 
-            if (av_new_packet(pkt, modplug->fsize) < 0)
+            if (av_new_packet_ijk(pkt, modplug->fsize) < 0)
                 return AVERROR(ENOMEM);
             pkt->stream_index = 1;
             memset(pkt->data, 0, modplug->fsize);
@@ -317,7 +317,7 @@ static int modplug_read_packet(AVFormatContext *s, AVPacket *pkt)
         }
     }
 
-    if (av_new_packet(pkt, AUDIO_PKT_SIZE) < 0)
+    if (av_new_packet_ijk(pkt, AUDIO_PKT_SIZE) < 0)
         return AVERROR(ENOMEM);
 
     if (modplug->video_stream)
@@ -325,7 +325,7 @@ static int modplug_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     pkt->size = ModPlug_Read(modplug->f, pkt->data, AUDIO_PKT_SIZE);
     if (pkt->size <= 0) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return pkt->size == 0 ? AVERROR_EOF : AVERROR(EIO);
     }
     return 0;
@@ -352,7 +352,7 @@ static const char modplug_extensions[] = "669,abc,amf,ams,dbm,dmf,dsm,far,it,mdl
 
 static int modplug_probe(AVProbeData *p)
 {
-    if (av_match_ext(p->filename, modplug_extensions)) {
+    if (av_match_ext_xij(p->filename, modplug_extensions)) {
         if (p->buf_size < 16384)
             return AVPROBE_SCORE_EXTENSION/2-1;
         else

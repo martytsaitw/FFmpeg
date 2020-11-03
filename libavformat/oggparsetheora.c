@@ -97,7 +97,7 @@ static int theora_header(AVFormatContext *s, int idx)
             timebase.num = 1;
             timebase.den = 25;
         }
-        avpriv_set_pts_info(st, 64, timebase.num, timebase.den);
+        avpriv_set_pts_info_ijk(st, 64, timebase.num, timebase.den);
 
         st->sample_aspect_ratio.num = get_bits_long(&gb, 24);
         st->sample_aspect_ratio.den = get_bits_long(&gb, 24);

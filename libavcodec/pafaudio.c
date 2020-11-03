@@ -53,7 +53,7 @@ static int paf_audio_decode(AVCodecContext *avctx, void *data,
         return AVERROR_INVALIDDATA;
 
     frame->nb_samples = PAF_SOUND_SAMPLES * frames;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     output_samples = (int16_t *)frame->data[0];

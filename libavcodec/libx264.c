@@ -220,7 +220,7 @@ static void reconfig_encoder(AVCodecContext *ctx, const AVFrame *frame)
     }
   }
 
-    side_data = av_frame_get_side_data(frame, AV_FRAME_DATA_STEREO3D);
+    side_data = av_frame_get_side_data_xij(frame, AV_FRAME_DATA_STEREO3D);
     if (side_data) {
         AVStereo3D *stereo = (AVStereo3D *)side_data->data;
         int fpa_type;
@@ -316,7 +316,7 @@ static int X264_frame(AVCodecContext *ctx, AVPacket *pkt, const AVFrame *frame,
             void *sei_data;
             size_t sei_size;
 
-            ret = ff_alloc_a53_sei(frame, 0, &sei_data, &sei_size);
+            ret = ff_alloc_a53_sei_xij(frame, 0, &sei_data, &sei_size);
             if (ret < 0) {
                 av_log(ctx, AV_LOG_ERROR, "Not enough memory for closed captions, skipping\n");
             } else if (sei_data) {
@@ -372,7 +372,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
 
     pkt->flags |= AV_PKT_FLAG_KEY*pic_out.b_keyframe;
     if (ret) {
-        ff_side_data_set_encoder_stats(pkt, (pic_out.i_qpplus1 - 1) * FF_QP2LAMBDA, NULL, 0, pict_type);
+        ff_side_data_set_encoder_stats_xij(pkt, (pic_out.i_qpplus1 - 1) * FF_QP2LAMBDA, NULL, 0, pict_type);
 
 #if FF_API_CODED_FRAME
 FF_DISABLE_DEPRECATION_WARNINGS
@@ -833,7 +833,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
         avctx->extradata_size = p - avctx->extradata;
     }
 
-    cpb_props = ff_add_cpb_side_data(avctx);
+    cpb_props = ff_add_cpb_side_data_xij(avctx);
     if (!cpb_props)
         return AVERROR(ENOMEM);
     cpb_props->buffer_size = x4->params.rc.i_vbv_buffer_size * 1000;

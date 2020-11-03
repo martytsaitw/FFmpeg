@@ -274,13 +274,13 @@ static int mlp_parse(AVCodecParserContext *s,
             }
 
             if (!mp->in_sync) {
-                if (ff_combine_frame(&mp->pc, END_NOT_FOUND, &buf, &buf_size) != -1)
-                    av_log(avctx, AV_LOG_WARNING, "ff_combine_frame failed\n");
+                if (ff_combine_frame_xij(&mp->pc, END_NOT_FOUND, &buf, &buf_size) != -1)
+                    av_log(avctx, AV_LOG_WARNING, "ff_combine_frame_xij failed\n");
                 return buf_size;
             }
 
-            if ((ret = ff_combine_frame(&mp->pc, i - 7, &buf, &buf_size)) < 0) {
-                av_log(avctx, AV_LOG_WARNING, "ff_combine_frame failed\n");
+            if ((ret = ff_combine_frame_xij(&mp->pc, i - 7, &buf, &buf_size)) < 0) {
+                av_log(avctx, AV_LOG_WARNING, "ff_combine_frame_xij failed\n");
                 return ret;
             }
 
@@ -296,8 +296,8 @@ static int mlp_parse(AVCodecParserContext *s,
             }
 
             if (mp->pc.index + buf_size < 2) {
-                if (ff_combine_frame(&mp->pc, END_NOT_FOUND, &buf, &buf_size) != -1)
-                    av_log(avctx, AV_LOG_WARNING, "ff_combine_frame failed\n");
+                if (ff_combine_frame_xij(&mp->pc, END_NOT_FOUND, &buf, &buf_size) != -1)
+                    av_log(avctx, AV_LOG_WARNING, "ff_combine_frame_xij failed\n");
                 return buf_size;
             }
 
@@ -312,7 +312,7 @@ static int mlp_parse(AVCodecParserContext *s,
 
         next = (mp->bytes_left > buf_size) ? END_NOT_FOUND : mp->bytes_left;
 
-        if (ff_combine_frame(&mp->pc, next, &buf, &buf_size) < 0) {
+        if (ff_combine_frame_xij(&mp->pc, next, &buf, &buf_size) < 0) {
             mp->bytes_left -= buf_size;
             return buf_size;
         }
@@ -396,5 +396,5 @@ AVCodecParser ff_mlp_parser = {
     .priv_data_size = sizeof(MLPParseContext),
     .parser_init    = mlp_init,
     .parser_parse   = mlp_parse,
-    .parser_close   = ff_parse_close,
+    .parser_close   = ff_parse_close_xij,
 };

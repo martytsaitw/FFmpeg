@@ -45,7 +45,7 @@ static int aac_adtstoasc_filter(AVBSFContext *bsfc, AVPacket *pkt)
     AACADTSHeaderInfo hdr;
     int ret;
 
-    ret = ff_bsf_get_packet_ref(bsfc, pkt);
+    ret = ff_bsf_get_packet_ref_xij(bsfc, pkt);
     if (ret < 0)
         return ret;
 
@@ -97,7 +97,7 @@ static int aac_adtstoasc_filter(AVBSFContext *bsfc, AVPacket *pkt)
             pkt->data += get_bits_count(&gb)/8;
         }
 
-        extradata = av_packet_new_side_data(pkt, AV_PKT_DATA_NEW_EXTRADATA,
+        extradata = av_packet_new_side_data_xij(pkt, AV_PKT_DATA_NEW_EXTRADATA,
                                             2 + pce_size);
         if (!extradata) {
             ret = AVERROR(ENOMEM);
@@ -125,7 +125,7 @@ packet_too_small:
     av_log(bsfc, AV_LOG_ERROR, "Input packet too small\n");
     ret = AVERROR_INVALIDDATA;
 fail:
-    av_packet_unref(pkt);
+    av_packet_unref_ijk(pkt);
     return ret;
 }
 
@@ -134,7 +134,7 @@ static int aac_adtstoasc_init(AVBSFContext *ctx)
     /* Validate the extradata if the stream is already MPEG-4 AudioSpecificConfig */
     if (ctx->par_in->extradata) {
         MPEG4AudioConfig mp4ac;
-        int ret = avpriv_mpeg4audio_get_config(&mp4ac, ctx->par_in->extradata,
+        int ret = avpriv_mpeg4audio_get_config_xij(&mp4ac, ctx->par_in->extradata,
                                                ctx->par_in->extradata_size * 8, 1);
         if (ret < 0) {
             av_log(ctx, AV_LOG_ERROR, "Error parsing AudioSpecificConfig extradata!\n");

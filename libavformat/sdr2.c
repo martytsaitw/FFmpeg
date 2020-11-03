@@ -37,19 +37,19 @@ static int sdr2_read_header(AVFormatContext *s)
 {
     AVStream *st, *ast;
 
-    ast = avformat_new_stream(s, 0);
+    ast = avformat_new_stream_ijk(s, 0);
     if (!ast)
         return AVERROR(ENOMEM);
 
-    st = avformat_new_stream(s, 0);
+    st = avformat_new_stream_ijk(s, 0);
     if (!st)
         return AVERROR(ENOMEM);
 
-    avio_skip(s->pb, 20);
-    avpriv_set_pts_info(st, 64, 1, avio_rl32(s->pb));
+    avio_skip_xij(s->pb, 20);
+    avpriv_set_pts_info_ijk(st, 64, 1, avio_rl32_xij(s->pb));
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
-    st->codecpar->width      = avio_rl32(s->pb);
-    st->codecpar->height     = avio_rl32(s->pb);
+    st->codecpar->width      = avio_rl32_xij(s->pb);
+    st->codecpar->height     = avio_rl32_xij(s->pb);
     st->codecpar->codec_id   = AV_CODEC_ID_H264;
     st->need_parsing      = AVSTREAM_PARSE_FULL;
 
@@ -57,9 +57,9 @@ static int sdr2_read_header(AVFormatContext *s)
     ast->codecpar->channels    = 1;
     ast->codecpar->sample_rate = 8000;
     ast->codecpar->codec_id    = AV_CODEC_ID_PCM_S16LE;
-    avpriv_set_pts_info(ast, 64, 1, 8000);
+    avpriv_set_pts_info_ijk(ast, 64, 1, 8000);
 
-    avio_seek(s->pb, FIRST, SEEK_SET);
+    avio_seek_xij(s->pb, FIRST, SEEK_SET);
 
     return 0;
 }
@@ -78,29 +78,29 @@ static int sdr2_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     pos = avio_tell(s->pb);
 
-    flags = avio_rl32(s->pb);
-    avio_skip(s->pb, 4);
+    flags = avio_rl32_xij(s->pb);
+    avio_skip_xij(s->pb, 4);
 
-    next = avio_rl32(s->pb);
+    next = avio_rl32_xij(s->pb);
     if (next <= 52)
         return AVERROR_INVALIDDATA;
 
-    avio_skip(s->pb, 6);
-    is_video = avio_rl32(s->pb);
-    avio_skip(s->pb, 30);
+    avio_skip_xij(s->pb, 6);
+    is_video = avio_rl32_xij(s->pb);
+    avio_skip_xij(s->pb, 30);
 
     if (pos == FIRST) {
-        if (av_new_packet(pkt, next - 52 + 24) < 0)
+        if (av_new_packet_ijk(pkt, next - 52 + 24) < 0)
             return AVERROR(ENOMEM);
         memcpy(pkt->data, header, 24);
-        ret = avio_read(s->pb, pkt->data + 24, next - 52);
+        ret = avio_read_xij(s->pb, pkt->data + 24, next - 52);
         if (ret < 0) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return ret;
         }
-        av_shrink_packet(pkt, ret + 24);
+        av_shrink_packet_xij(pkt, ret + 24);
     } else {
-        ret = av_get_packet(s->pb, pkt, next - 52);
+        ret = av_get_packet_xij(s->pb, pkt, next - 52);
     }
     pkt->stream_index = !!is_video;
     pkt->pos = pos;

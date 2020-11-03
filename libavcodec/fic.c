@@ -272,7 +272,7 @@ static int fic_decode_frame(AVCodecContext *avctx, void *data,
     int skip_cursor = ctx->skip_cursor;
     uint8_t *sdata;
 
-    if ((ret = ff_reget_buffer(avctx, ctx->frame)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, ctx->frame)) < 0)
         return ret;
 
     /* Header + at least one slice (4) */
@@ -401,15 +401,15 @@ static int fic_decode_frame(AVCodecContext *avctx, void *data,
             break;
         }
     }
-    av_frame_free(&ctx->final_frame);
-    ctx->final_frame = av_frame_clone(ctx->frame);
+    av_frame_free_xij(&ctx->final_frame);
+    ctx->final_frame = av_frame_clone_xij(ctx->frame);
     if (!ctx->final_frame) {
         av_log(avctx, AV_LOG_ERROR, "Could not clone frame buffer.\n");
         return AVERROR(ENOMEM);
     }
 
     /* Make sure we use a user-supplied buffer. */
-    if ((ret = ff_reget_buffer(avctx, ctx->final_frame)) < 0) {
+    if ((ret = ff_reget_buffer_xij(avctx, ctx->final_frame)) < 0) {
         av_log(avctx, AV_LOG_ERROR, "Could not make frame writable.\n");
         return ret;
     }
@@ -422,7 +422,7 @@ static int fic_decode_frame(AVCodecContext *avctx, void *data,
 
 skip:
     *got_frame = 1;
-    if ((ret = av_frame_ref(data, ctx->final_frame)) < 0)
+    if ((ret = av_frame_ref_xij(data, ctx->final_frame)) < 0)
         return ret;
 
     return avpkt->size;
@@ -433,8 +433,8 @@ static av_cold int fic_decode_close(AVCodecContext *avctx)
     FICContext *ctx = avctx->priv_data;
 
     av_freep(&ctx->slice_data);
-    av_frame_free(&ctx->final_frame);
-    av_frame_free(&ctx->frame);
+    av_frame_free_xij(&ctx->final_frame);
+    av_frame_free_xij(&ctx->frame);
 
     return 0;
 }
@@ -451,7 +451,7 @@ static av_cold int fic_decode_init(AVCodecContext *avctx)
     avctx->pix_fmt             = AV_PIX_FMT_YUV420P;
     avctx->bits_per_raw_sample = 8;
 
-    ctx->frame = av_frame_alloc();
+    ctx->frame = av_frame_alloc_ijk();
     if (!ctx->frame)
         return AVERROR(ENOMEM);
 

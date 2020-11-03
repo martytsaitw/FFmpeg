@@ -73,7 +73,7 @@ static av_cold int msvideo1_decode_init(AVCodecContext *avctx)
         avctx->pix_fmt = AV_PIX_FMT_RGB555;
     }
 
-    s->frame = av_frame_alloc();
+    s->frame = av_frame_alloc_ijk();
     if (!s->frame)
         return AVERROR(ENOMEM);
 
@@ -307,12 +307,12 @@ static int msvideo1_decode_frame(AVCodecContext *avctx,
         return AVERROR_INVALIDDATA;
     }
 
-    if ((ret = ff_reget_buffer(avctx, s->frame)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, s->frame)) < 0)
         return ret;
 
     if (s->mode_8bit) {
         int size;
-        const uint8_t *pal = av_packet_get_side_data(avpkt, AV_PKT_DATA_PALETTE, &size);
+        const uint8_t *pal = av_packet_get_side_data_xij(avpkt, AV_PKT_DATA_PALETTE, &size);
 
         if (pal && size == AVPALETTE_SIZE) {
             memcpy(s->pal, pal, AVPALETTE_SIZE);
@@ -327,7 +327,7 @@ static int msvideo1_decode_frame(AVCodecContext *avctx,
     else
         msvideo1_decode_16bit(s);
 
-    if ((ret = av_frame_ref(data, s->frame)) < 0)
+    if ((ret = av_frame_ref_xij(data, s->frame)) < 0)
         return ret;
 
     *got_frame      = 1;
@@ -340,7 +340,7 @@ static av_cold int msvideo1_decode_end(AVCodecContext *avctx)
 {
     Msvideo1Context *s = avctx->priv_data;
 
-    av_frame_free(&s->frame);
+    av_frame_free_xij(&s->frame);
 
     return 0;
 }

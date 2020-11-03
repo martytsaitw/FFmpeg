@@ -150,17 +150,17 @@ static int s337m_read_packet(AVFormatContext *s, AVPacket *pkt)
     int64_t pos;
 
     while (!IS_LE_MARKER(state)) {
-        state = (state << 8) | avio_r8(pb);
-        if (avio_feof(pb))
+        state = (state << 8) | avio_r8_xij(pb);
+        if (avio_feof_xij(pb))
             return AVERROR_EOF;
     }
 
     if (IS_16LE_MARKER(state)) {
-        data_type = avio_rl16(pb);
-        data_size = avio_rl16(pb);
+        data_type = avio_rl16_xij(pb);
+        data_size = avio_rl16_xij(pb);
     } else {
-        data_type = avio_rl24(pb);
-        data_size = avio_rl24(pb);
+        data_type = avio_rl24_xij(pb);
+        data_size = avio_rl24_xij(pb);
     }
 
     pos = avio_tell(pb);
@@ -168,13 +168,13 @@ static int s337m_read_packet(AVFormatContext *s, AVPacket *pkt)
     if ((ret = s337m_get_offset_and_codec(s, state, data_type, data_size, &offset, &codec)) < 0)
         return ret;
 
-    if ((ret = av_new_packet(pkt, offset)) < 0)
+    if ((ret = av_new_packet_ijk(pkt, offset)) < 0)
         return ret;
 
     pkt->pos = pos;
 
-    if (avio_read(pb, pkt->data, pkt->size) < pkt->size) {
-        av_packet_unref(pkt);
+    if (avio_read_xij(pb, pkt->data, pkt->size) < pkt->size) {
+        av_packet_unref_ijk(pkt);
         return AVERROR_EOF;
     }
 
@@ -184,9 +184,9 @@ static int s337m_read_packet(AVFormatContext *s, AVPacket *pkt)
         bswap_buf24(pkt->data, pkt->size);
 
     if (!s->nb_streams) {
-        AVStream *st = avformat_new_stream(s, NULL);
+        AVStream *st = avformat_new_stream_ijk(s, NULL);
         if (!st) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return AVERROR(ENOMEM);
         }
         st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;

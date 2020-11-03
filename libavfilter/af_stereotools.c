@@ -163,15 +163,15 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     int n;
 
     nbuf -= nbuf % 2;
-    if (av_frame_is_writable(in)) {
+    if (av_frame_is_writable_xij(in)) {
         out = in;
     } else {
         out = ff_get_audio_buffer(outlink, in->nb_samples);
         if (!out) {
-            av_frame_free(&in);
+            av_frame_free_xij(&in);
             return AVERROR(ENOMEM);
         }
-        av_frame_copy_props(out, in);
+        av_frame_copy_props_xij(out, in);
     }
     dst = (double *)out->data[0];
 
@@ -320,7 +320,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     }
 
     if (out != in)
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
     return ff_filter_frame(outlink, out);
 }
 

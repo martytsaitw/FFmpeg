@@ -116,7 +116,7 @@ void av_register_codec_parser(AVCodecParser *parser)
     ff_thread_once(&av_parser_next_init, av_parser_init_next);
 }
 
-AVCodecParserContext *av_parser_init(int codec_id)
+AVCodecParserContext *av_parser_init_xij(int codec_id)
 {
     AVCodecParserContext *s = NULL;
     const AVCodecParser *parser;
@@ -171,7 +171,7 @@ err_out:
     return NULL;
 }
 
-void ff_fetch_timestamp(AVCodecParserContext *s, int off, int remove, int fuzzy)
+void ff_fetch_timestamp_xij(AVCodecParserContext *s, int off, int remove, int fuzzy)
 {
     int i;
 
@@ -202,7 +202,7 @@ void ff_fetch_timestamp(AVCodecParserContext *s, int off, int remove, int fuzzy)
     }
 }
 
-int av_parser_parse2(AVCodecParserContext *s, AVCodecContext *avctx,
+int av_parser_parse2_xij(AVCodecParserContext *s, AVCodecContext *avctx,
                      uint8_t **poutbuf, int *poutbuf_size,
                      const uint8_t *buf, int buf_size,
                      int64_t pts, int64_t dts, int64_t pos)
@@ -245,7 +245,7 @@ int av_parser_parse2(AVCodecParserContext *s, AVCodecContext *avctx,
         s->last_pts        = s->pts;
         s->last_dts        = s->dts;
         s->last_pos        = s->pos;
-        ff_fetch_timestamp(s, 0, 0, 0);
+        ff_fetch_timestamp_xij(s, 0, 0, 0);
     }
     /* WARNING: the returned index can be negative */
     index = s->parser->parser_parse(s, avctx, (const uint8_t **) poutbuf,
@@ -271,7 +271,7 @@ int av_parser_parse2(AVCodecParserContext *s, AVCodecContext *avctx,
     return index;
 }
 
-int av_parser_change(AVCodecParserContext *s, AVCodecContext *avctx,
+int av_parser_change_xij(AVCodecParserContext *s, AVCodecContext *avctx,
                      uint8_t **poutbuf, int *poutbuf_size,
                      const uint8_t *buf, int buf_size, int keyframe)
 {
@@ -306,7 +306,7 @@ int av_parser_change(AVCodecParserContext *s, AVCodecContext *avctx,
     return 0;
 }
 
-void av_parser_close(AVCodecParserContext *s)
+void av_parser_close_ijk(AVCodecParserContext *s)
 {
     if (s) {
         if (s->parser->parser_close)
@@ -316,7 +316,7 @@ void av_parser_close(AVCodecParserContext *s)
     }
 }
 
-int ff_combine_frame(ParseContext *pc, int next,
+int ff_combine_frame_xij(ParseContext *pc, int next,
                      const uint8_t **buf, int *buf_size)
 {
     if (pc->overread) {
@@ -394,20 +394,20 @@ int ff_combine_frame(ParseContext *pc, int next,
     return 0;
 }
 
-void ff_parse_close(AVCodecParserContext *s)
+void ff_parse_close_xij(AVCodecParserContext *s)
 {
     ParseContext *pc = s->priv_data;
 
     av_freep(&pc->buffer);
 }
 
-int ff_mpeg4video_split(AVCodecContext *avctx, const uint8_t *buf, int buf_size)
+int ff_mpeg4video_split_xij(AVCodecContext *avctx, const uint8_t *buf, int buf_size)
 {
     uint32_t state = -1;
     const uint8_t *ptr = buf, *end = buf + buf_size;
 
     while (ptr < end) {
-        ptr = avpriv_find_start_code(ptr, end, &state);
+        ptr = avpriv_find_start_code_xij(ptr, end, &state);
         if (state == 0x1B3 || state == 0x1B6)
             return ptr - 4 - buf;
     }

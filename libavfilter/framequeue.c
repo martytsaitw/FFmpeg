@@ -54,7 +54,7 @@ void ff_framequeue_free(FFFrameQueue *fq)
 {
     while (fq->queued) {
         AVFrame *frame = ff_framequeue_take(fq);
-        av_frame_free(&frame);
+        av_frame_free_xij(&frame);
     }
     if (fq->queue != &fq->first_bucket)
         av_freep(&fq->queue);

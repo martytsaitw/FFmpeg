@@ -52,7 +52,7 @@ static int write_header(AVFormatContext *s)
         av_log(s, AV_LOG_ERROR, "Exactly one ASS/SSA stream is needed.\n");
         return AVERROR(EINVAL);
     }
-    avpriv_set_pts_info(s->streams[0], 64, 1, 100);
+    avpriv_set_pts_info_ijk(s->streams[0], 64, 1, 100);
     if (par->extradata_size > 0) {
         size_t header_size = par->extradata_size;
         uint8_t *trailer = strstr(par->extradata, "\n[Events]");
@@ -69,15 +69,15 @@ static int write_header(AVFormatContext *s)
                 ass->trailer = trailer;
         }
 
-        avio_write(s->pb, par->extradata, header_size);
+        avio_write_xij(s->pb, par->extradata, header_size);
         if (par->extradata[header_size - 1] != '\n')
-            avio_write(s->pb, "\r\n", 2);
+            avio_write_xij(s->pb, "\r\n", 2);
         ass->ssa_mode = !strstr(par->extradata, "\n[V4+ Styles]");
         if (!strstr(par->extradata, "\n[Events]"))
-            avio_printf(s->pb, "[Events]\r\nFormat: %s, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\r\n",
+            avio_printf_xij(s->pb, "[Events]\r\nFormat: %s, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\r\n",
                         ass->ssa_mode ? "Marked" : "Layer");
     }
-    avio_flush(s->pb);
+    avio_flush_xij(s->pb);
 
     return 0;
 }
@@ -95,7 +95,7 @@ static void purge_dialogues(AVFormatContext *s, int force)
                    ass->expected_readorder, dialogue->readorder);
             ass->expected_readorder = dialogue->readorder;
         }
-        avio_printf(s->pb, "Dialogue: %s\r\n", dialogue->line);
+        avio_printf_xij(s->pb, "Dialogue: %s\r\n", dialogue->line);
         if (dialogue == ass->last_added_dialogue)
             ass->last_added_dialogue = next;
         av_freep(&dialogue->line);
@@ -207,7 +207,7 @@ static int write_trailer(AVFormatContext *s)
     purge_dialogues(s, 1);
 
     if (ass->trailer) {
-        avio_write(s->pb, ass->trailer, ass->trailer_size);
+        avio_write_xij(s->pb, ass->trailer, ass->trailer_size);
     }
 
     return 0;

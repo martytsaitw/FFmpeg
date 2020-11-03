@@ -120,7 +120,7 @@ static int xface_decode_frame(AVCodecContext *avctx,
     int64_t c;
     AVFrame *frame = data;
 
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     for (i = 0, k = 0; avpkt->data[i] && i < avpkt->size; i++) {

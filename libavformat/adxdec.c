@@ -63,13 +63,13 @@ static int adx_read_packet(AVFormatContext *s, AVPacket *pkt)
     pkt->pos = avio_tell(s->pb);
     pkt->stream_index = 0;
 
-    ret = av_get_packet(s->pb, pkt, size);
+    ret = av_get_packet_xij(s->pb, pkt, size);
     if (ret != size) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return ret < 0 ? ret : AVERROR(EIO);
     }
     if (AV_RB16(pkt->data) & 0x8000) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return AVERROR_EOF;
     }
     pkt->size     = size;
@@ -84,17 +84,17 @@ static int adx_read_header(AVFormatContext *s)
     ADXDemuxerContext *c = s->priv_data;
     AVCodecParameters *par;
 
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     par = s->streams[0]->codecpar;
 
-    if (avio_rb16(s->pb) != 0x8000)
+    if (avio_rb16_xij(s->pb) != 0x8000)
         return AVERROR_INVALIDDATA;
-    c->header_size = avio_rb16(s->pb) + 4;
-    avio_seek(s->pb, -4, SEEK_CUR);
+    c->header_size = avio_rb16_xij(s->pb) + 4;
+    avio_seek_xij(s->pb, -4, SEEK_CUR);
 
-    if (ff_get_extradata(s, par, s->pb, c->header_size) < 0)
+    if (ff_get_extradata_xij(s, par, s->pb, c->header_size) < 0)
         return AVERROR(ENOMEM);
 
     if (par->extradata_size < 12) {
@@ -118,7 +118,7 @@ static int adx_read_header(AVFormatContext *s)
     par->codec_id    = s->iformat->raw_codec_id;
     par->bit_rate    = (int64_t)par->sample_rate * par->channels * BLOCK_SIZE * 8LL / BLOCK_SAMPLES;
 
-    avpriv_set_pts_info(st, 64, BLOCK_SAMPLES, par->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, BLOCK_SAMPLES, par->sample_rate);
 
     return 0;
 }

@@ -54,8 +54,8 @@ static int roq_write_header(struct AVFormatContext *s)
         }
     }
 
-    avio_write(s->pb, header, 8);
-    avio_flush(s->pb);
+    avio_write_xij(s->pb, header, 8);
+    avio_flush_xij(s->pb);
 
     return 0;
 }

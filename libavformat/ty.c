@@ -295,7 +295,7 @@ static int ty_read_header(AVFormatContext *s)
     ty->last_video_pts = AV_NOPTS_VALUE;
 
     for (i = 0; i < CHUNK_PEEK_COUNT; i++) {
-        avio_read(pb, ty->chunk, CHUNK_SIZE);
+        avio_read_xij(pb, ty->chunk, CHUNK_SIZE);
 
         ret = analyze_chunk(s, ty->chunk);
         if (ret < 0)
@@ -311,15 +311,15 @@ static int ty_read_header(AVFormatContext *s)
         ty->tivo_type == TIVO_TYPE_UNKNOWN)
         return AVERROR(EIO);
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id   = AV_CODEC_ID_MPEG2VIDEO;
     st->need_parsing         = AVSTREAM_PARSE_FULL_RAW;
-    avpriv_set_pts_info(st, 64, 1, 90000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 90000);
 
-    ast = avformat_new_stream(s, NULL);
+    ast = avformat_new_stream_ijk(s, NULL);
     if (!ast)
         return AVERROR(ENOMEM);
     ast->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -330,11 +330,11 @@ static int ty_read_header(AVFormatContext *s)
     } else {
         ast->codecpar->codec_id = AV_CODEC_ID_AC3;
     }
-    avpriv_set_pts_info(ast, 64, 1, 90000);
+    avpriv_set_pts_info_ijk(ast, 64, 1, 90000);
 
     ty->first_chunk = 1;
 
-    avio_seek(pb, 0, SEEK_SET);
+    avio_seek_xij(pb, 0, SEEK_SET);
 
     return 0;
 }
@@ -400,11 +400,11 @@ static int get_chunk(AVFormatContext *s)
     ff_dlog(s, "parsing ty chunk #%d\n", ty->cur_chunk);
 
     /* if we have left-over filler space from the last chunk, get that */
-    if (avio_feof(pb))
+    if (avio_feof_xij(pb))
         return AVERROR_EOF;
 
     /* read the TY packet header */
-    read_size = avio_read(pb, ty->chunk, CHUNK_SIZE);
+    read_size = avio_read_xij(pb, ty->chunk, CHUNK_SIZE);
     ty->cur_chunk++;
 
     if ((read_size < 4) || (AV_RB32(ty->chunk) == 0)) {
@@ -474,7 +474,7 @@ static int demux_video(AVFormatContext *s, TyRecHdr *rec_hdr, AVPacket *pkt)
                     int size = rec_hdr->rec_size - VIDEO_PES_LENGTH - es_offset1;
 
                     ty->cur_chunk_pos += VIDEO_PES_LENGTH + es_offset1;
-                    if (av_new_packet(pkt, size) < 0)
+                    if (av_new_packet_ijk(pkt, size) < 0)
                         return AVERROR(ENOMEM);
                     memcpy(pkt->data, ty->chunk + ty->cur_chunk_pos, size);
                     ty->cur_chunk_pos += size;
@@ -498,7 +498,7 @@ static int demux_video(AVFormatContext *s, TyRecHdr *rec_hdr, AVPacket *pkt)
     }
 
     if (!got_packet) {
-        if (av_new_packet(pkt, rec_size) < 0)
+        if (av_new_packet_ijk(pkt, rec_size) < 0)
             return AVERROR(ENOMEM);
         memcpy(pkt->data, ty->chunk + ty->cur_chunk_pos, rec_size);
         ty->cur_chunk_pos += rec_size;
@@ -621,7 +621,7 @@ static int demux_audio(AVFormatContext *s, TyRecHdr *rec_hdr, AVPacket *pkt)
             ty->pes_buf_cnt = 0;
 
         }
-        if (av_new_packet(pkt, rec_size - need) < 0)
+        if (av_new_packet_ijk(pkt, rec_size - need) < 0)
             return AVERROR(ENOMEM);
         memcpy(pkt->data, ty->chunk + ty->cur_chunk_pos, rec_size - need);
         ty->cur_chunk_pos += rec_size - need;
@@ -643,7 +643,7 @@ static int demux_audio(AVFormatContext *s, TyRecHdr *rec_hdr, AVPacket *pkt)
             }
         }
     } else if (subrec_type == 0x03) {
-        if (av_new_packet(pkt, rec_size) < 0)
+        if (av_new_packet_ijk(pkt, rec_size) < 0)
             return AVERROR(ENOMEM);
         memcpy(pkt->data, ty->chunk + ty->cur_chunk_pos, rec_size);
         ty->cur_chunk_pos += rec_size;
@@ -658,7 +658,7 @@ static int demux_audio(AVFormatContext *s, TyRecHdr *rec_hdr, AVPacket *pkt)
             ty->last_audio_pts = ff_parse_pes_pts(&pkt->data[SA_PTS_OFFSET]);
             if (ty->first_audio_pts == AV_NOPTS_VALUE)
                 ty->first_audio_pts = ty->last_audio_pts;
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return 0;
         }
         /* DTiVo Audio with PES Header                      */
@@ -668,20 +668,20 @@ static int demux_audio(AVFormatContext *s, TyRecHdr *rec_hdr, AVPacket *pkt)
         if (check_sync_pes(s, pkt, es_offset1, rec_size) == -1) {
             /* partial PES header found, nothing else.
              * we're done. */
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return 0;
         }
     } else if (subrec_type == 0x04) {
         /* SA Audio with no PES Header                      */
         /* ================================================ */
-        if (av_new_packet(pkt, rec_size) < 0)
+        if (av_new_packet_ijk(pkt, rec_size) < 0)
             return AVERROR(ENOMEM);
         memcpy(pkt->data, ty->chunk + ty->cur_chunk_pos, rec_size);
         ty->cur_chunk_pos += rec_size;
         pkt->stream_index = 1;
         pkt->pts = ty->last_audio_pts;
     } else if (subrec_type == 0x09) {
-        if (av_new_packet(pkt, rec_size) < 0)
+        if (av_new_packet_ijk(pkt, rec_size) < 0)
             return AVERROR(ENOMEM);
         memcpy(pkt->data, ty->chunk + ty->cur_chunk_pos, rec_size);
         ty->cur_chunk_pos += rec_size ;
@@ -694,7 +694,7 @@ static int demux_audio(AVFormatContext *s, TyRecHdr *rec_hdr, AVPacket *pkt)
         /* Check for complete PES */
         if (check_sync_pes(s, pkt, es_offset1, rec_size) == -1) {
             /* partial PES header found, nothing else.  we're done. */
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return 0;
         }
         /* S2 DTivo has invalid long AC3 packets */
@@ -723,7 +723,7 @@ static int ty_read_packet(AVFormatContext *s, AVPacket *pkt)
     int64_t rec_size = 0;
     int ret = 0;
 
-    if (avio_feof(pb))
+    if (avio_feof_xij(pb))
         return AVERROR_EOF;
 
     while (ret <= 0) {
@@ -742,7 +742,7 @@ static int ty_read_packet(AVFormatContext *s, AVPacket *pkt)
         if (ty->cur_chunk_pos + rec->rec_size > CHUNK_SIZE)
             return AVERROR_INVALIDDATA;
 
-        if (avio_feof(pb))
+        if (avio_feof_xij(pb))
             return AVERROR_EOF;
 
         switch (rec->rec_type) {

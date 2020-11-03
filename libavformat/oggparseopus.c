@@ -63,7 +63,7 @@ static int opus_header(AVFormatContext *avf, int idx)
         /*channel_map         = AV_RL8 (packet + 18);*/
 
         av_freep(&st->codecpar->extradata);
-        if (ff_alloc_extradata(st->codecpar, os->psize))
+        if (ff_alloc_extradata_xij(st->codecpar, os->psize))
             return AVERROR(ENOMEM);
 
         memcpy(st->codecpar->extradata, packet, os->psize);
@@ -71,7 +71,7 @@ static int opus_header(AVFormatContext *avf, int idx)
         st->codecpar->sample_rate = 48000;
         st->codecpar->seek_preroll = av_rescale(OPUS_SEEK_PREROLL_MS,
                                                 st->codecpar->sample_rate, 1000);
-        avpriv_set_pts_info(st, 64, 1, 48000);
+        avpriv_set_pts_info_ijk(st, 64, 1, 48000);
         priv->need_comments = 1;
         return 1;
     }

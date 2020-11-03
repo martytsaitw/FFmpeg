@@ -409,7 +409,7 @@ static int plot_freqs(AVFilterLink *inlink, AVFrame *in)
 
     colors = av_strdup(s->colors);
     if (!colors) {
-        av_frame_free(&out);
+        av_frame_free_xij(&out);
         return AVERROR(ENOMEM);
     }
 
@@ -464,7 +464,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
             goto fail;
 
         ret = plot_freqs(inlink, fin);
-        av_frame_free(&fin);
+        av_frame_free_xij(&fin);
         av_audio_fifo_drain(s->fifo, s->hop_size);
         if (ret < 0)
             goto fail;
@@ -472,8 +472,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
 fail:
     s->pts = AV_NOPTS_VALUE;
-    av_frame_free(&fin);
-    av_frame_free(&in);
+    av_frame_free_xij(&fin);
+    av_frame_free_xij(&in);
     return ret;
 }
 

@@ -1164,10 +1164,10 @@ static av_cold int ipvideo_decode_init(AVCodecContext *avctx)
 
     ff_hpeldsp_init(&s->hdsp, avctx->flags);
 
-    s->last_frame        = av_frame_alloc();
-    s->second_last_frame = av_frame_alloc();
-    s->cur_decode_frame  = av_frame_alloc();
-    s->prev_decode_frame = av_frame_alloc();
+    s->last_frame        = av_frame_alloc_ijk();
+    s->second_last_frame = av_frame_alloc_ijk();
+    s->cur_decode_frame  = av_frame_alloc_ijk();
+    s->prev_decode_frame = av_frame_alloc_ijk();
     if (!s->last_frame || !s->second_last_frame ||
         !s->cur_decode_frame || !s->prev_decode_frame) {
         ret = AVERROR(ENOMEM);
@@ -1181,20 +1181,20 @@ static av_cold int ipvideo_decode_init(AVCodecContext *avctx)
     s->cur_decode_frame->format  = avctx->pix_fmt;
     s->prev_decode_frame->format = avctx->pix_fmt;
 
-    ret = ff_get_buffer(avctx, s->cur_decode_frame, 0);
+    ret = ff_get_buffer_xij(avctx, s->cur_decode_frame, 0);
     if (ret < 0)
         goto error;
 
-    ret = ff_get_buffer(avctx, s->prev_decode_frame, 0);
+    ret = ff_get_buffer_xij(avctx, s->prev_decode_frame, 0);
     if (ret < 0)
         goto error;
 
     return 0;
 error:
-    av_frame_free(&s->last_frame);
-    av_frame_free(&s->second_last_frame);
-    av_frame_free(&s->cur_decode_frame);
-    av_frame_free(&s->prev_decode_frame);
+    av_frame_free_xij(&s->last_frame);
+    av_frame_free_xij(&s->second_last_frame);
+    av_frame_free_xij(&s->cur_decode_frame);
+    av_frame_free_xij(&s->prev_decode_frame);
     return ret;
 }
 
@@ -1211,21 +1211,21 @@ static int ipvideo_decode_frame(AVCodecContext *avctx,
     int frame_format;
     int video_data_size;
 
-    if (av_packet_get_side_data(avpkt, AV_PKT_DATA_PARAM_CHANGE, NULL)) {
-        av_frame_unref(s->last_frame);
-        av_frame_unref(s->second_last_frame);
-        av_frame_unref(s->cur_decode_frame);
-        av_frame_unref(s->prev_decode_frame);
+    if (av_packet_get_side_data_xij(avpkt, AV_PKT_DATA_PARAM_CHANGE, NULL)) {
+        av_frame_unref_xij(s->last_frame);
+        av_frame_unref_xij(s->second_last_frame);
+        av_frame_unref_xij(s->cur_decode_frame);
+        av_frame_unref_xij(s->prev_decode_frame);
     }
 
     if (!s->cur_decode_frame->data[0]) {
-        ret = ff_get_buffer(avctx, s->cur_decode_frame, 0);
+        ret = ff_get_buffer_xij(avctx, s->cur_decode_frame, 0);
         if (ret < 0)
             return ret;
 
-        ret = ff_get_buffer(avctx, s->prev_decode_frame, 0);
+        ret = ff_get_buffer_xij(avctx, s->prev_decode_frame, 0);
         if (ret < 0) {
-            av_frame_unref(s->cur_decode_frame);
+            av_frame_unref_xij(s->cur_decode_frame);
             return ret;
         }
     }
@@ -1324,12 +1324,12 @@ static int ipvideo_decode_frame(AVCodecContext *avctx,
         return AVERROR_INVALIDDATA;
     }
 
-    if ((ret = ff_get_buffer(avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
         return ret;
 
     if (!s->is_16bpp) {
         int size;
-        const uint8_t *pal = av_packet_get_side_data(avpkt, AV_PKT_DATA_PALETTE, &size);
+        const uint8_t *pal = av_packet_get_side_data_xij(avpkt, AV_PKT_DATA_PALETTE, &size);
         if (pal && size == AVPALETTE_SIZE) {
             frame->palette_has_changed = 1;
             memcpy(s->pal, pal, AVPALETTE_SIZE);
@@ -1353,9 +1353,9 @@ static int ipvideo_decode_frame(AVCodecContext *avctx,
     *got_frame = send_buffer;
 
     /* shuffle frames */
-    av_frame_unref(s->second_last_frame);
+    av_frame_unref_xij(s->second_last_frame);
     FFSWAP(AVFrame*, s->second_last_frame, s->last_frame);
-    if ((ret = av_frame_ref(s->last_frame, frame)) < 0)
+    if ((ret = av_frame_ref_xij(s->last_frame, frame)) < 0)
         return ret;
 
     /* report that the buffer was completely consumed */
@@ -1366,10 +1366,10 @@ static av_cold int ipvideo_decode_end(AVCodecContext *avctx)
 {
     IpvideoContext *s = avctx->priv_data;
 
-    av_frame_free(&s->last_frame);
-    av_frame_free(&s->second_last_frame);
-    av_frame_free(&s->cur_decode_frame);
-    av_frame_free(&s->prev_decode_frame);
+    av_frame_free_xij(&s->last_frame);
+    av_frame_free_xij(&s->second_last_frame);
+    av_frame_free_xij(&s->cur_decode_frame);
+    av_frame_free_xij(&s->prev_decode_frame);
 
     return 0;
 }

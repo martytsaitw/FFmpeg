@@ -75,7 +75,7 @@ static int h263_parse(AVCodecParserContext *s,
     } else {
         next= ff_h263_find_frame_end(pc, buf, buf_size);
 
-        if (ff_combine_frame(pc, next, &buf, &buf_size) < 0) {
+        if (ff_combine_frame_xij(pc, next, &buf, &buf_size) < 0) {
             *poutbuf = NULL;
             *poutbuf_size = 0;
             return buf_size;
@@ -91,5 +91,5 @@ AVCodecParser ff_h263_parser = {
     .codec_ids      = { AV_CODEC_ID_H263 },
     .priv_data_size = sizeof(ParseContext),
     .parser_parse   = h263_parse,
-    .parser_close   = ff_parse_close,
+    .parser_close   = ff_parse_close_xij,
 };

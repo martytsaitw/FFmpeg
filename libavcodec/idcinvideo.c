@@ -215,14 +215,14 @@ static int idcin_decode_frame(AVCodecContext *avctx,
     int buf_size = avpkt->size;
     IdcinContext *s = avctx->priv_data;
     int pal_size;
-    const uint8_t *pal = av_packet_get_side_data(avpkt, AV_PKT_DATA_PALETTE, &pal_size);
+    const uint8_t *pal = av_packet_get_side_data_xij(avpkt, AV_PKT_DATA_PALETTE, &pal_size);
     AVFrame *frame = data;
     int ret;
 
     s->buf = buf;
     s->size = buf_size;
 
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     if (idcin_decode_vlcs(s, frame))

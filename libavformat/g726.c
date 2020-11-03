@@ -32,7 +32,7 @@ typedef struct G726Context {
 static int g726_read_header(AVFormatContext *s)
 {
     G726Context *c = s->priv_data;
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -50,7 +50,7 @@ static int g726_read_header(AVFormatContext *s)
 static int g726_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     int res;
-    res = av_get_packet(s->pb, pkt, 1020); // a size similar to RAW_PACKET_SIZE divisible by all code_size values
+    res = av_get_packet_xij(s->pb, pkt, 1020); // a size similar to RAW_PACKET_SIZE divisible by all code_size values
     if (res < 0)
         return res;
     return 0;

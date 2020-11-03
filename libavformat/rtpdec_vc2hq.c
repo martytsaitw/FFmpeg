@@ -59,7 +59,7 @@ static int vc2hq_handle_sequence_header(PayloadContext *pl_ctx, AVStream *st, AV
     int res;
     uint32_t size = DIRAC_DATA_UNIT_HEADER_SIZE + len;
 
-    if ((res = av_new_packet(pkt, DIRAC_DATA_UNIT_HEADER_SIZE + len)) < 0)
+    if ((res = av_new_packet_ijk(pkt, DIRAC_DATA_UNIT_HEADER_SIZE + len)) < 0)
         return res;
 
     fill_parse_info_header(pl_ctx, pkt->data, 0x00, size);
@@ -78,7 +78,7 @@ static int vc2hq_mark_end_of_sequence(PayloadContext *pl_ctx, AVStream *st, AVPa
     uint32_t size = 0;
 
     /* create A/V packet */
-    if ((res = av_new_packet(pkt, DIRAC_DATA_UNIT_HEADER_SIZE)) < 0)
+    if ((res = av_new_packet_ijk(pkt, DIRAC_DATA_UNIT_HEADER_SIZE)) < 0)
         return res;
 
     fill_parse_info_header(pl_ctx, pkt->data, 0x10, size);
@@ -110,7 +110,7 @@ static int vc2hq_handle_frame_fragment(AVFormatContext *ctx, PayloadContext *pl_
 
     if (pl_ctx->buf && pl_ctx->frame_nr != pic_nr) {
         av_log(ctx, AV_LOG_WARNING, "Dropping buffered RTP/VC2hq packet fragments - non-continuous picture numbers\n");
-        ffio_free_dyn_buf(&pl_ctx->buf);
+        ffio_free_dyn_buf_xij(&pl_ctx->buf);
     }
 
     /* transform parameters? */
@@ -123,12 +123,12 @@ static int vc2hq_handle_frame_fragment(AVFormatContext *ctx, PayloadContext *pl_
         /* start frame buffering with new dynamic buffer */
         if (!pl_ctx->buf) {
 
-            res = avio_open_dyn_buf(&pl_ctx->buf);
+            res = avio_open_dyn_buf_xij(&pl_ctx->buf);
             if (res < 0)
                 return res;
 
             /* reserve memory for frame header */
-            res = avio_seek(pl_ctx->buf, DIRAC_DATA_UNIT_HEADER_SIZE + DIRAC_PIC_NR_SIZE, SEEK_SET);
+            res = avio_seek_xij(pl_ctx->buf, DIRAC_DATA_UNIT_HEADER_SIZE + DIRAC_PIC_NR_SIZE, SEEK_SET);
             if (res < 0)
                 return res;
 
@@ -137,7 +137,7 @@ static int vc2hq_handle_frame_fragment(AVFormatContext *ctx, PayloadContext *pl_
             pl_ctx->frame_size = DIRAC_DATA_UNIT_HEADER_SIZE + DIRAC_PIC_NR_SIZE;
         }
 
-        avio_write(pl_ctx->buf, buf + 16 /* skip pl header */, frag_len);
+        avio_write_xij(pl_ctx->buf, buf + 16 /* skip pl header */, frag_len);
         pl_ctx->frame_size += frag_len;
 
         return AVERROR(EAGAIN);
@@ -151,7 +151,7 @@ static int vc2hq_handle_frame_fragment(AVFormatContext *ctx, PayloadContext *pl_
         if (!pl_ctx->buf)
             return AVERROR_INVALIDDATA;
 
-        avio_write(pl_ctx->buf, buf + 20 /* skip pl header */, frag_len);
+        avio_write_xij(pl_ctx->buf, buf + 20 /* skip pl header */, frag_len);
         pl_ctx->frame_size += frag_len;
 
         /* RTP marker bit means: last fragment of current frame was received;
@@ -183,7 +183,7 @@ static int vc2hq_handle_packet(AVFormatContext *ctx, PayloadContext *pl_ctx,
 
     if (pl_ctx->buf && pl_ctx->timestamp != *timestamp) {
         av_log(ctx, AV_LOG_WARNING, "Dropping buffered RTP/VC2hq packet fragments - non-continuous timestamps\n");
-        ffio_free_dyn_buf(&pl_ctx->buf);
+        ffio_free_dyn_buf_xij(&pl_ctx->buf);
         pl_ctx->frame_size = 0;
     }
 

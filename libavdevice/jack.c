@@ -135,7 +135,7 @@ static int supply_new_packets(JackData *self, AVFormatContext *context)
      * packets FIFO buffer with as many packets as possible. process_callback()
      * can't do this by itself, because it can't allocate memory in realtime. */
     while (av_fifo_space(self->new_pkts) >= sizeof(pkt)) {
-        if ((test = av_new_packet(&pkt, pkt_size)) < 0) {
+        if ((test = av_new_packet_ijk(&pkt, pkt_size)) < 0) {
             av_log(context, AV_LOG_ERROR, "Could not create packet of size %d\n", pkt_size);
             return test;
         }
@@ -214,7 +214,7 @@ static void free_pkt_fifo(AVFifoBuffer **fifo)
     AVPacket pkt;
     while (av_fifo_size(*fifo)) {
         av_fifo_generic_read(*fifo, &pkt, sizeof(pkt), NULL);
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
     }
     av_fifo_freep(fifo);
 }
@@ -242,7 +242,7 @@ static int audio_read_header(AVFormatContext *context)
     if ((test = start_jack(context)))
         return test;
 
-    stream = avformat_new_stream(context, NULL);
+    stream = avformat_new_stream_ijk(context, NULL);
     if (!stream) {
         stop_jack(self);
         return AVERROR(ENOMEM);
@@ -257,7 +257,7 @@ static int audio_read_header(AVFormatContext *context)
     stream->codecpar->sample_rate  = self->sample_rate;
     stream->codecpar->channels     = self->nports;
 
-    avpriv_set_pts_info(stream, 64, 1, 1000000);  /* 64 bits pts in us */
+    avpriv_set_pts_info_ijk(stream, 64, 1, 1000000);  /* 64 bits pts in us */
     return 0;
 }
 

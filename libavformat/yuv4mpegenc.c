@@ -173,13 +173,13 @@ static int yuv4_write_packet(AVFormatContext *s, AVPacket *pkt)
                    "Error. YUV4MPEG stream header write failed.\n");
             return AVERROR(EIO);
         } else {
-            avio_write(pb, buf2, strlen(buf2));
+            avio_write_xij(pb, buf2, strlen(buf2));
         }
     }
 
     /* construct frame header */
 
-    avio_printf(s->pb, "%s\n", Y4M_FRAME_MAGIC);
+    avio_printf_xij(s->pb, "%s\n", Y4M_FRAME_MAGIC);
 
     width  = st->codecpar->width;
     height = st->codecpar->height;
@@ -221,7 +221,7 @@ static int yuv4_write_packet(AVFormatContext *s, AVPacket *pkt)
     }
 
     for (i = 0; i < height; i++) {
-        avio_write(pb, ptr, width);
+        avio_write_xij(pb, ptr, width);
         ptr += frame->linesize[0];
     }
 
@@ -238,11 +238,11 @@ static int yuv4_write_packet(AVFormatContext *s, AVPacket *pkt)
         ptr1 = frame->data[1];
         ptr2 = frame->data[2];
         for (i = 0; i < height; i++) {     /* Cb */
-            avio_write(pb, ptr1, width);
+            avio_write_xij(pb, ptr1, width);
             ptr1 += frame->linesize[1];
         }
         for (i = 0; i < height; i++) {     /* Cr */
-            avio_write(pb, ptr2, width);
+            avio_write_xij(pb, ptr2, width);
             ptr2 += frame->linesize[2];
         }
     }

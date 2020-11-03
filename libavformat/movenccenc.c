@@ -84,7 +84,7 @@ static int auxiliary_info_add_subsample(MOVMuxCencContext* ctx,
 }
 
 /**
- * Encrypt the input buffer and write using avio_write
+ * Encrypt the input buffer and write using avio_write_xij
  */
 static void mov_cenc_write_encrypted(MOVMuxCencContext* ctx, AVIOContext *pb,
                                      const uint8_t *buf_in, int size)
@@ -97,7 +97,7 @@ static void mov_cenc_write_encrypted(MOVMuxCencContext* ctx, AVIOContext *pb,
     while (size_left > 0) {
         cur_size = FFMIN(size_left, sizeof(chunk));
         av_aes_ctr_crypt(ctx->aes_ctr, chunk, cur_pos, cur_size);
-        avio_write(pb, chunk, cur_size);
+        avio_write_xij(pb, chunk, cur_size);
         cur_pos += cur_size;
         size_left -= cur_size;
     }
@@ -211,8 +211,8 @@ int ff_mov_cenc_avc_parse_nal_units(MOVMuxCencContext* ctx, AVIOContext *pb,
 
         nal_end = ff_avc_find_startcode(nal_start, end);
 
-        avio_wb32(pb, nal_end - nal_start);
-        avio_w8(pb, *nal_start);
+        avio_wb32_xij(pb, nal_end - nal_start);
+        avio_w8_xij(pb, *nal_start);
         mov_cenc_write_encrypted(ctx, pb, nal_start + 1, nal_end - nal_start - 1);
 
         auxiliary_info_add_subsample(ctx, 5, nal_end - nal_start - 1);
@@ -249,7 +249,7 @@ int ff_mov_cenc_avc_write_nal_units(AVFormatContext *s, MOVMuxCencContext* ctx,
             return -1;
         }
 
-        avio_write(pb, buf_in, nal_length_size + 1);
+        avio_write_xij(pb, buf_in, nal_length_size + 1);
 
         nalsize = 0;
         for (j = 0; j < nal_length_size; j++) {
@@ -282,9 +282,9 @@ int ff_mov_cenc_avc_write_nal_units(AVFormatContext *s, MOVMuxCencContext* ctx,
 static int64_t update_size(AVIOContext *pb, int64_t pos)
 {
     int64_t curpos = avio_tell(pb);
-    avio_seek(pb, pos, SEEK_SET);
-    avio_wb32(pb, curpos - pos); /* rewrite size */
-    avio_seek(pb, curpos, SEEK_SET);
+    avio_seek_xij(pb, pos, SEEK_SET);
+    avio_wb32_xij(pb, curpos - pos); /* rewrite size */
+    avio_seek_xij(pb, curpos, SEEK_SET);
 
     return curpos - pos;
 }
@@ -294,12 +294,12 @@ static int mov_cenc_write_senc_tag(MOVMuxCencContext* ctx, AVIOContext *pb,
 {
     int64_t pos = avio_tell(pb);
 
-    avio_wb32(pb, 0); /* size */
+    avio_wb32_xij(pb, 0); /* size */
     ffio_wfourcc(pb, "senc");
-    avio_wb32(pb, ctx->use_subsamples ? 0x02 : 0); /* version & flags */
-    avio_wb32(pb, ctx->auxiliary_info_entries); /* entry count */
+    avio_wb32_xij(pb, ctx->use_subsamples ? 0x02 : 0); /* version & flags */
+    avio_wb32_xij(pb, ctx->auxiliary_info_entries); /* entry count */
     *auxiliary_info_offset = avio_tell(pb);
-    avio_write(pb, ctx->auxiliary_info, ctx->auxiliary_info_size);
+    avio_write_xij(pb, ctx->auxiliary_info, ctx->auxiliary_info_size);
     return update_size(pb, pos);
 }
 
@@ -308,16 +308,16 @@ static int mov_cenc_write_saio_tag(AVIOContext *pb, int64_t auxiliary_info_offse
     int64_t pos = avio_tell(pb);
     uint8_t version;
 
-    avio_wb32(pb, 0); /* size */
+    avio_wb32_xij(pb, 0); /* size */
     ffio_wfourcc(pb, "saio");
     version = auxiliary_info_offset > 0xffffffff ? 1 : 0;
-    avio_w8(pb, version);
-    avio_wb24(pb, 0); /* flags */
-    avio_wb32(pb, 1); /* entry count */
+    avio_w8_xij(pb, version);
+    avio_wb24_xij(pb, 0); /* flags */
+    avio_wb32_xij(pb, 1); /* entry count */
     if (version) {
-        avio_wb64(pb, auxiliary_info_offset);
+        avio_wb64_xij(pb, auxiliary_info_offset);
     } else {
-        avio_wb32(pb, auxiliary_info_offset);
+        avio_wb32_xij(pb, auxiliary_info_offset);
     }
     return update_size(pb, pos);
 }
@@ -325,13 +325,13 @@ static int mov_cenc_write_saio_tag(AVIOContext *pb, int64_t auxiliary_info_offse
 static int mov_cenc_write_saiz_tag(MOVMuxCencContext* ctx, AVIOContext *pb)
 {
     int64_t pos = avio_tell(pb);
-    avio_wb32(pb, 0); /* size */
+    avio_wb32_xij(pb, 0); /* size */
     ffio_wfourcc(pb, "saiz");
-    avio_wb32(pb, 0); /* version & flags */
-    avio_w8(pb, ctx->use_subsamples ? 0 : AES_CTR_IV_SIZE);    /* default size*/
-    avio_wb32(pb, ctx->auxiliary_info_entries); /* entry count */
+    avio_wb32_xij(pb, 0); /* version & flags */
+    avio_w8_xij(pb, ctx->use_subsamples ? 0 : AES_CTR_IV_SIZE);    /* default size*/
+    avio_wb32_xij(pb, ctx->auxiliary_info_entries); /* entry count */
     if (ctx->use_subsamples) {
-        avio_write(pb, ctx->auxiliary_info_sizes, ctx->auxiliary_info_entries);
+        avio_write_xij(pb, ctx->auxiliary_info_sizes, ctx->auxiliary_info_entries);
     }
     return update_size(pb, pos);
 }
@@ -348,15 +348,15 @@ void ff_mov_cenc_write_stbl_atoms(MOVMuxCencContext* ctx, AVIOContext *pb)
 static int mov_cenc_write_schi_tag(AVIOContext *pb, uint8_t* kid)
 {
     int64_t pos = avio_tell(pb);
-    avio_wb32(pb, 0);     /* size */
+    avio_wb32_xij(pb, 0);     /* size */
     ffio_wfourcc(pb, "schi");
 
-    avio_wb32(pb, 32);    /* size */
+    avio_wb32_xij(pb, 32);    /* size */
     ffio_wfourcc(pb, "tenc");
-    avio_wb32(pb, 0);     /* version & flags */
-    avio_wb24(pb, 1);     /* is encrypted */
-    avio_w8(pb, AES_CTR_IV_SIZE); /* iv size */
-    avio_write(pb, kid, CENC_KID_SIZE);
+    avio_wb32_xij(pb, 0);     /* version & flags */
+    avio_wb24_xij(pb, 1);     /* is encrypted */
+    avio_w8_xij(pb, AES_CTR_IV_SIZE); /* iv size */
+    avio_write_xij(pb, kid, CENC_KID_SIZE);
 
     return update_size(pb, pos);
 }
@@ -364,20 +364,20 @@ static int mov_cenc_write_schi_tag(AVIOContext *pb, uint8_t* kid)
 int ff_mov_cenc_write_sinf_tag(MOVTrack* track, AVIOContext *pb, uint8_t* kid)
 {
     int64_t pos = avio_tell(pb);
-    avio_wb32(pb, 0); /* size */
+    avio_wb32_xij(pb, 0); /* size */
     ffio_wfourcc(pb, "sinf");
 
     /* frma */
-    avio_wb32(pb, 12);    /* size */
+    avio_wb32_xij(pb, 12);    /* size */
     ffio_wfourcc(pb, "frma");
-    avio_wl32(pb, track->tag);
+    avio_wl32_xij(pb, track->tag);
 
     /* schm */
-    avio_wb32(pb, 20);    /* size */
+    avio_wb32_xij(pb, 20);    /* size */
     ffio_wfourcc(pb, "schm");
-    avio_wb32(pb, 0); /* version & flags */
+    avio_wb32_xij(pb, 0); /* version & flags */
     ffio_wfourcc(pb, "cenc");    /* scheme type*/
-    avio_wb32(pb, 0x10000); /* scheme version */
+    avio_wb32_xij(pb, 0x10000); /* scheme version */
 
     /* schi */
     mov_cenc_write_schi_tag(pb, kid);

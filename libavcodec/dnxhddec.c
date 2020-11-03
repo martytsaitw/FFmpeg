@@ -635,7 +635,7 @@ decode_coding_unit:
     }
 
     avctx->pix_fmt = ctx->pix_fmt;
-    ret = ff_set_dimensions(avctx, ctx->width, ctx->height);
+    ret = ff_set_dimensions_xij(avctx, ctx->width, ctx->height);
     if (ret < 0)
         return ret;
 

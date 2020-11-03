@@ -89,7 +89,7 @@ static int mpeg4_unpack_bframes_filter(AVBSFContext *ctx, AVPacket *out)
     int pos_p = -1, nb_vop = 0, pos_vop2 = -1, ret = 0;
     AVPacket *in;
 
-    ret = ff_bsf_get_packet(ctx, &in);
+    ret = ff_bsf_get_packet_xij(ctx, &in);
     if (ret < 0)
         return ret;
 
@@ -120,12 +120,12 @@ static int mpeg4_unpack_bframes_filter(AVBSFContext *ctx, AVPacket *out)
 
     if (nb_vop == 1 && s->b_frame_buf) {
         /* use frame from BSFContext */
-        ret = av_packet_copy_props(out, in);
+        ret = av_packet_copy_props_ijk(out, in);
         if (ret < 0) {
             goto fail;
         }
 
-        ret = av_packet_from_data(out, s->b_frame_buf, s->b_frame_buf_size);
+        ret = av_packet_from_data_ijk(out, s->b_frame_buf, s->b_frame_buf_size);
         if (ret < 0) {
             goto fail;
         }
@@ -146,25 +146,25 @@ static int mpeg4_unpack_bframes_filter(AVBSFContext *ctx, AVPacket *out)
         }
     } else if (nb_vop >= 2) {
         /* use first frame of the packet */
-        av_packet_move_ref(out, in);
+        av_packet_move_ref_xij(out, in);
         out->size = pos_vop2;
     } else if (pos_p >= 0) {
-        ret = av_packet_make_writable(in);
+        ret = av_packet_make_writable_xij(in);
         if (ret < 0)
             goto fail;
         av_log(ctx, AV_LOG_DEBUG, "Updating DivX userdata (remove trailing 'p').\n");
-        av_packet_move_ref(out, in);
+        av_packet_move_ref_xij(out, in);
         /* remove 'p' (packed) from the end of the (DivX) userdata string */
         out->data[pos_p] = '\0';
     } else {
         /* copy packet */
-        av_packet_move_ref(out, in);
+        av_packet_move_ref_xij(out, in);
     }
 
 fail:
     if (ret < 0)
-        av_packet_unref(out);
-    av_packet_free(&in);
+        av_packet_unref_ijk(out);
+    av_packet_free_xij(&in);
 
     return ret;
 }

@@ -70,9 +70,9 @@ static av_cold int fbdev_read_header(AVFormatContext *avctx)
     int ret, flags = O_RDONLY;
     const char* device;
 
-    if (!(st = avformat_new_stream(avctx, NULL)))
+    if (!(st = avformat_new_stream_ijk(avctx, NULL)))
         return AVERROR(ENOMEM);
-    avpriv_set_pts_info(st, 64, 1, 1000000); /* 64 bits pts in microseconds */
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000000); /* 64 bits pts in microseconds */
 
     /* NONBLOCK is ignored by the fbdev driver, only set for consistency */
     if (avctx->flags & AVFMT_FLAG_NONBLOCK)
@@ -177,7 +177,7 @@ static int fbdev_read_packet(AVFormatContext *avctx, AVPacket *pkt)
         while (nanosleep(&ts, &ts) < 0 && errno == EINTR);
     }
 
-    if ((ret = av_new_packet(pkt, fbdev->frame_size)) < 0)
+    if ((ret = av_new_packet_ijk(pkt, fbdev->frame_size)) < 0)
         return ret;
 
     /* refresh fbdev->varinfo, visible data position may change at each call */

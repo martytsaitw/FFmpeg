@@ -1862,7 +1862,7 @@ static void print_pkt_side_data(WriterContext *w,
     writer_print_section_header(w, id_data_list);
     for (i = 0; i < nb_side_data; i++) {
         const AVPacketSideData *sd = &side_data[i];
-        const char *name = av_packet_side_data_name(sd->type);
+        const char *name = av_packet_side_data_name_xij(sd->type);
 
         writer_print_section_header(w, id_data);
         print_str("side_data_type", name ? name : "unknown");
@@ -2038,7 +2038,7 @@ static void show_packet(WriterContext *w, InputFile *ifile, AVPacket *pkt, int p
 
     writer_print_section_header(w, SECTION_ID_PACKET);
 
-    s = av_get_media_type_string(st->codecpar->codec_type);
+    s = av_get_media_type_string_xij(st->codecpar->codec_type);
     if (s) print_str    ("codec_type", s);
     else   print_str_opt("codec_type", "unknown");
     print_int("stream_index",     pkt->stream_index);
@@ -2060,10 +2060,10 @@ static void show_packet(WriterContext *w, InputFile *ifile, AVPacket *pkt, int p
         int size;
         const uint8_t *side_metadata;
 
-        side_metadata = av_packet_get_side_data(pkt, AV_PKT_DATA_STRINGS_METADATA, &size);
+        side_metadata = av_packet_get_side_data_xij(pkt, AV_PKT_DATA_STRINGS_METADATA, &size);
         if (side_metadata && size && do_show_packet_tags) {
             AVDictionary *dict = NULL;
-            if (av_packet_unpack_dictionary(side_metadata, size, &dict) >= 0)
+            if (av_packet_unpack_dictionary_xij(side_metadata, size, &dict) >= 0)
                 show_tags(w, dict, SECTION_ID_PACKET_TAGS);
             av_dict_free(&dict);
         }
@@ -2117,7 +2117,7 @@ static void show_frame(WriterContext *w, AVFrame *frame, AVStream *stream,
 
     writer_print_section_header(w, SECTION_ID_FRAME);
 
-    s = av_get_media_type_string(stream->codecpar->codec_type);
+    s = av_get_media_type_string_xij(stream->codecpar->codec_type);
     if (s) print_str    ("media_type", s);
     else   print_str_opt("media_type", "unknown");
     print_int("stream_index",           stream->index);
@@ -2144,13 +2144,13 @@ static void show_frame(WriterContext *w, AVFrame *frame, AVStream *stream,
         s = av_get_pix_fmt_name(frame->format);
         if (s) print_str    ("pix_fmt", s);
         else   print_str_opt("pix_fmt", "unknown");
-        sar = av_guess_sample_aspect_ratio(fmt_ctx, stream, frame);
+        sar = av_guess_sample_aspect_ratio_xij(fmt_ctx, stream, frame);
         if (sar.num) {
             print_q("sample_aspect_ratio", sar, ':');
         } else {
             print_str_opt("sample_aspect_ratio", "N/A");
         }
-        print_fmt("pict_type",              "%c", av_get_picture_type_char(frame->pict_type));
+        print_fmt("pict_type",              "%c", av_get_picture_type_char_xij(frame->pict_type));
         print_int("coded_picture_number",   frame->coded_picture_number);
         print_int("display_picture_number", frame->display_picture_number);
         print_int("interlaced_frame",       frame->interlaced_frame);
@@ -2190,7 +2190,7 @@ static void show_frame(WriterContext *w, AVFrame *frame, AVStream *stream,
             const char *name;
 
             writer_print_section_header(w, SECTION_ID_FRAME_SIDE_DATA);
-            name = av_frame_side_data_name(sd->type);
+            name = av_frame_side_data_name_xij(sd->type);
             print_str("side_data_type", name ? name : "unknown");
             if (sd->type == AV_FRAME_DATA_DISPLAYMATRIX && sd->size >= 9*4) {
                 writer_print_integers(w, "displaymatrix", sd->data, 9, " %11d", 3, 4, 1);
@@ -2256,7 +2256,7 @@ static av_always_inline int process_frame(WriterContext *w,
         case AVMEDIA_TYPE_VIDEO:
         case AVMEDIA_TYPE_AUDIO:
             if (*packet_new) {
-                ret = avcodec_send_packet(dec_ctx, pkt);
+                ret = avcodec_send_packet_xij(dec_ctx, pkt);
                 if (ret == AVERROR(EAGAIN)) {
                     ret = 0;
                 } else if (ret >= 0 || ret == AVERROR_EOF) {
@@ -2265,7 +2265,7 @@ static av_always_inline int process_frame(WriterContext *w,
                 }
             }
             if (ret >= 0) {
-                ret = avcodec_receive_frame(dec_ctx, frame);
+                ret = avcodec_receive_frame_xij(dec_ctx, frame);
                 if (ret >= 0) {
                     got_frame = 1;
                 } else if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
@@ -2276,7 +2276,7 @@ static av_always_inline int process_frame(WriterContext *w,
 
         case AVMEDIA_TYPE_SUBTITLE:
             if (*packet_new)
-                ret = avcodec_decode_subtitle2(dec_ctx, &sub, &got_frame, pkt);
+                ret = avcodec_decode_subtitle2_xij(dec_ctx, &sub, &got_frame, pkt);
             *packet_new = 0;
             break;
         default:
@@ -2297,7 +2297,7 @@ static av_always_inline int process_frame(WriterContext *w,
             else
                 show_frame(w, frame, ifile->streams[pkt->stream_index].st, fmt_ctx);
         if (is_sub)
-            avsubtitle_free(&sub);
+            avsubtitle_free_xij(&sub);
     }
     return got_frame || *packet_new;
 }
@@ -2336,7 +2336,7 @@ static int read_interval_packets(WriterContext *w, InputFile *ifile,
     int64_t start = -INT64_MAX, end = interval->end;
     int has_start = 0, has_end = interval->has_end && !interval->end_is_offset;
 
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
 
     av_log(NULL, AV_LOG_VERBOSE, "Processing read interval ");
     log_read_interval(interval, NULL, AV_LOG_VERBOSE);
@@ -2358,19 +2358,19 @@ static int read_interval_packets(WriterContext *w, InputFile *ifile,
 
         av_log(NULL, AV_LOG_VERBOSE, "Seeking to read interval start point %s\n",
                av_ts2timestr(target, &AV_TIME_BASE_Q));
-        if ((ret = avformat_seek_file(fmt_ctx, -1, -INT64_MAX, target, INT64_MAX, 0)) < 0) {
+        if ((ret = avformat_seek_file_ijk(fmt_ctx, -1, -INT64_MAX, target, INT64_MAX, 0)) < 0) {
             av_log(NULL, AV_LOG_ERROR, "Could not seek to position %"PRId64": %s\n",
                    interval->start, av_err2str(ret));
             goto end;
         }
     }
 
-    frame = av_frame_alloc();
+    frame = av_frame_alloc_ijk();
     if (!frame) {
         ret = AVERROR(ENOMEM);
         goto end;
     }
-    while (!av_read_frame(fmt_ctx, &pkt)) {
+    while (!av_read_frame_ijk(fmt_ctx, &pkt)) {
         if (ifile->nb_streams > nb_streams) {
             REALLOCZ_ARRAY_STREAM(nb_streams_frames,  nb_streams, fmt_ctx->nb_streams);
             REALLOCZ_ARRAY_STREAM(nb_streams_packets, nb_streams, fmt_ctx->nb_streams);
@@ -2411,9 +2411,9 @@ static int read_interval_packets(WriterContext *w, InputFile *ifile,
                 while (process_frame(w, ifile, frame, &pkt, &packet_new) > 0);
             }
         }
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
     }
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
     pkt.data = NULL;
     pkt.size = 0;
     //Flush remaining frames that are cached in the decoder
@@ -2424,7 +2424,7 @@ static int read_interval_packets(WriterContext *w, InputFile *ifile,
     }
 
 end:
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
     if (ret < 0) {
         av_log(NULL, AV_LOG_ERROR, "Could not read packets in interval ");
         log_read_interval(interval, NULL, AV_LOG_ERROR);
@@ -2486,7 +2486,7 @@ static int show_stream(WriterContext *w, AVFormatContext *fmt_ctx, int stream_id
         }
     }
 
-    if (!do_bitexact && (profile = avcodec_profile_name(par->codec_id, par->profile)))
+    if (!do_bitexact && (profile = avcodec_profile_name_xij(par->codec_id, par->profile)))
         print_str("profile", profile);
     else {
         if (par->profile != FF_PROFILE_UNKNOWN) {
@@ -2497,7 +2497,7 @@ static int show_stream(WriterContext *w, AVFormatContext *fmt_ctx, int stream_id
             print_str_opt("profile", "unknown");
     }
 
-    s = av_get_media_type_string(par->codec_type);
+    s = av_get_media_type_string_xij(par->codec_type);
     if (s) print_str    ("codec_type", s);
     else   print_str_opt("codec_type", "unknown");
 #if FF_API_LAVF_AVCTX
@@ -2520,7 +2520,7 @@ static int show_stream(WriterContext *w, AVFormatContext *fmt_ctx, int stream_id
         }
 #endif
         print_int("has_b_frames", par->video_delay);
-        sar = av_guess_sample_aspect_ratio(fmt_ctx, stream, NULL);
+        sar = av_guess_sample_aspect_ratio_xij(fmt_ctx, stream, NULL);
         if (sar.num) {
             print_q("sample_aspect_ratio", sar, ':');
             av_reduce(&dar.num, &dar.den,
@@ -2584,7 +2584,7 @@ static int show_stream(WriterContext *w, AVFormatContext *fmt_ctx, int stream_id
             print_str_opt("channel_layout", "unknown");
         }
 
-        print_int("bits_per_sample", av_get_bits_per_sample(par->codec_id));
+        print_int("bits_per_sample", av_get_bits_per_sample_xij(par->codec_id));
         break;
 
     case AVMEDIA_TYPE_SUBTITLE:
@@ -2777,7 +2777,7 @@ static int show_format(WriterContext *w, InputFile *ifile)
 {
     AVFormatContext *fmt_ctx = ifile->fmt_ctx;
     char val_str[128];
-    int64_t size = fmt_ctx->pb ? avio_size(fmt_ctx->pb) : -1;
+    int64_t size = fmt_ctx->pb ? avio_size_xij(fmt_ctx->pb) : -1;
     int ret = 0;
 
     writer_print_section_header(w, SECTION_ID_FORMAT);
@@ -2825,9 +2825,9 @@ static int open_input_file(InputFile *ifile, const char *filename)
     AVDictionaryEntry *t;
     int scan_all_pmts_set = 0;
 
-    fmt_ctx = avformat_alloc_context();
+    fmt_ctx = avformat_alloc_context_ijk();
     if (!fmt_ctx) {
-        print_error(filename, AVERROR(ENOMEM));
+        print_error_xij(filename, AVERROR(ENOMEM));
         exit_program(1);
     }
 
@@ -2835,9 +2835,9 @@ static int open_input_file(InputFile *ifile, const char *filename)
         av_dict_set(&format_opts, "scan_all_pmts", "1", AV_DICT_DONT_OVERWRITE);
         scan_all_pmts_set = 1;
     }
-    if ((err = avformat_open_input(&fmt_ctx, filename,
+    if ((err = avformat_open_input_ijk(&fmt_ctx, filename,
                                    iformat, &format_opts)) < 0) {
-        print_error(filename, err);
+        print_error_xij(filename, err);
         return err;
     }
     ifile->fmt_ctx = fmt_ctx;
@@ -2852,19 +2852,19 @@ static int open_input_file(InputFile *ifile, const char *filename)
         AVDictionary **opts = setup_find_stream_info_opts(fmt_ctx, codec_opts);
         int orig_nb_streams = fmt_ctx->nb_streams;
 
-        err = avformat_find_stream_info(fmt_ctx, opts);
+        err = avformat_find_stream_info_ijk(fmt_ctx, opts);
 
         for (i = 0; i < orig_nb_streams; i++)
             av_dict_free(&opts[i]);
         av_freep(&opts);
 
         if (err < 0) {
-            print_error(filename, err);
+            print_error_xij(filename, err);
             return err;
         }
     }
 
-    av_dump_format(fmt_ctx, 0, filename, 0);
+    av_dump_format_ijk(fmt_ctx, 0, filename, 0);
 
     ifile->streams = av_mallocz_array(fmt_ctx->nb_streams,
                                       sizeof(*ifile->streams));
@@ -2887,7 +2887,7 @@ static int open_input_file(InputFile *ifile, const char *filename)
             continue;
         }
 
-        codec = avcodec_find_decoder(stream->codecpar->codec_id);
+        codec = avcodec_find_decoder_ijk(stream->codecpar->codec_id);
         if (!codec) {
             av_log(NULL, AV_LOG_WARNING,
                     "Unsupported codec with id %d for input stream %d\n",
@@ -2898,11 +2898,11 @@ static int open_input_file(InputFile *ifile, const char *filename)
             AVDictionary *opts = filter_codec_opts(codec_opts, stream->codecpar->codec_id,
                                                    fmt_ctx, stream, codec);
 
-            ist->dec_ctx = avcodec_alloc_context3(codec);
+            ist->dec_ctx = avcodec_alloc_context3_ijk(codec);
             if (!ist->dec_ctx)
                 exit(1);
 
-            err = avcodec_parameters_to_context(ist->dec_ctx, stream->codecpar);
+            err = avcodec_parameters_to_context_ijk(ist->dec_ctx, stream->codecpar);
             if (err < 0)
                 exit(1);
 
@@ -2920,7 +2920,7 @@ static int open_input_file(InputFile *ifile, const char *filename)
             ist->dec_ctx->coded_height = stream->codec->coded_height;
 #endif
 
-            if (avcodec_open2(ist->dec_ctx, codec, &opts) < 0) {
+            if (avcodec_open2_xij(ist->dec_ctx, codec, &opts) < 0) {
                 av_log(NULL, AV_LOG_WARNING, "Could not open codec for input stream %d\n",
                        stream->index);
                 exit(1);
@@ -2945,12 +2945,12 @@ static void close_input_file(InputFile *ifile)
     /* close decoder for each stream */
     for (i = 0; i < ifile->nb_streams; i++)
         if (ifile->streams[i].st->codecpar->codec_id != AV_CODEC_ID_NONE)
-            avcodec_free_context(&ifile->streams[i].dec_ctx);
+            avcodec_free_context_ijk(&ifile->streams[i].dec_ctx);
 
     av_freep(&ifile->streams);
     ifile->nb_streams = 0;
 
-    avformat_close_input(&ifile->fmt_ctx);
+    avformat_close_input_xij(&ifile->fmt_ctx);
 }
 
 static int probe_file(WriterContext *wctx, const char *filename)
@@ -2975,7 +2975,7 @@ static int probe_file(WriterContext *wctx, const char *filename)
 
     for (i = 0; i < ifile.fmt_ctx->nb_streams; i++) {
         if (stream_specifier) {
-            ret = avformat_match_stream_specifier(ifile.fmt_ctx,
+            ret = avformat_match_stream_specifier_xij(ifile.fmt_ctx,
                                                   ifile.fmt_ctx->streams[i],
                                                   stream_specifier);
             CHECK_END;
@@ -3141,7 +3141,7 @@ static void ffprobe_show_pixel_formats(WriterContext *w)
 
 static int opt_format(void *optctx, const char *opt, const char *arg)
 {
-    iformat = av_find_input_format(arg);
+    iformat = av_find_input_format_xij(arg);
     if (!iformat) {
         av_log(NULL, AV_LOG_ERROR, "Unknown input format: %s\n", arg);
         return AVERROR(EINVAL);
@@ -3275,8 +3275,8 @@ void show_help_default(const char *opt, const char *arg)
     show_help_options(options, "Main options:", 0, 0, 0);
     printf("\n");
 
-    show_help_children(avformat_get_class(), AV_OPT_FLAG_DECODING_PARAM);
-    show_help_children(avcodec_get_class(), AV_OPT_FLAG_DECODING_PARAM);
+    show_help_children(avformat_get_class_ijk(), AV_OPT_FLAG_DECODING_PARAM);
+    show_help_children(avcodec_get_class_ijk(), AV_OPT_FLAG_DECODING_PARAM);
 }
 
 /**
@@ -3569,7 +3569,7 @@ int main(int argc, char **argv)
 
     options = real_options;
     parse_loglevel(argc, argv, options);
-    avformat_network_init();
+    avformat_network_init_xij();
     init_opts();
 #if CONFIG_AVDEVICE
     avdevice_register_all();
@@ -3692,7 +3692,7 @@ end:
     for (i = 0; i < FF_ARRAY_ELEMS(sections); i++)
         av_dict_free(&(sections[i].entries_to_show));
 
-    avformat_network_deinit();
+    avformat_network_deinit_xij();
 
     return ret < 0;
 }

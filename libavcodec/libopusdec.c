@@ -177,7 +177,7 @@ static int libopus_decode(AVCodecContext *avc, void *data,
     int ret, nb_samples;
 
     frame->nb_samples = MAX_FRAME_SIZE;
-    if ((ret = ff_get_buffer(avc, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avc, frame, 0)) < 0)
         return ret;
 
     if (avc->sample_fmt == AV_SAMPLE_FMT_S16)

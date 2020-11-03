@@ -209,7 +209,7 @@ static int request_frame(AVFilterLink *outlink)
                                  frame->linesize[0], nb_samples,
                                  NULL, 0, 0);
         if (ret <= 0) {
-            av_frame_free(&frame);
+            av_frame_free_xij(&frame);
             return (ret == 0) ? AVERROR_EOF : ret;
         }
 
@@ -245,7 +245,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                                  nb_samples, in->extended_data, in->linesize[0],
                                  in->nb_samples);
         if (ret <= 0) {
-            av_frame_free(&out);
+            av_frame_free_xij(&out);
             if (ret < 0)
                 goto fail;
         }
@@ -265,9 +265,9 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         if (ret > 0) {
             out->nb_samples = ret;
 
-            ret = av_frame_copy_props(out, in);
+            ret = av_frame_copy_props_xij(out, in);
             if (ret < 0) {
-                av_frame_free(&out);
+                av_frame_free_xij(&out);
                 goto fail;
             }
 
@@ -296,7 +296,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         }
 
 fail:
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
     } else {
         in->format = outlink->format;
         ret = ff_filter_frame(outlink, in);

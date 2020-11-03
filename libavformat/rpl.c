@@ -55,12 +55,12 @@ static int read_line(AVIOContext * pb, char* line, int bufsize)
 {
     int i;
     for (i = 0; i < bufsize - 1; i++) {
-        int b = avio_r8(pb);
+        int b = avio_r8_xij(pb);
         if (b == 0)
             break;
         if (b == '\n') {
             line[i] = '\0';
-            return avio_feof(pb) ? -1 : 0;
+            return avio_feof_xij(pb) ? -1 : 0;
         }
         line[i] = b;
     }
@@ -142,7 +142,7 @@ static int rpl_read_header(AVFormatContext *s)
     av_dict_set(&s->metadata, "author"   , line, 0);
 
     // video headers
-    vst = avformat_new_stream(s, NULL);
+    vst = avformat_new_stream_ijk(s, NULL);
     if (!vst)
         return AVERROR(ENOMEM);
     vst->codecpar->codec_type      = AVMEDIA_TYPE_VIDEO;
@@ -152,7 +152,7 @@ static int rpl_read_header(AVFormatContext *s)
     vst->codecpar->bits_per_coded_sample = read_line_and_int(pb, &error);  // video bits per sample
     error |= read_line(pb, line, sizeof(line));                   // video frames per second
     fps = read_fps(line, &error);
-    avpriv_set_pts_info(vst, 32, fps.den, fps.num);
+    avpriv_set_pts_info_ijk(vst, 32, fps.den, fps.num);
 
     // Figure out the video codec
     switch (vst->codecpar->codec_tag) {
@@ -181,7 +181,7 @@ static int rpl_read_header(AVFormatContext *s)
     // samples, though. This code will ignore additional tracks.
     audio_format = read_line_and_int(pb, &error);  // audio format ID
     if (audio_format) {
-        ast = avformat_new_stream(s, NULL);
+        ast = avformat_new_stream_ijk(s, NULL);
         if (!ast)
             return AVERROR(ENOMEM);
         ast->codecpar->codec_type      = AVMEDIA_TYPE_AUDIO;
@@ -224,7 +224,7 @@ static int rpl_read_header(AVFormatContext *s)
         if (ast->codecpar->codec_id == AV_CODEC_ID_NONE)
             avpriv_request_sample(s, "Audio format %"PRId32,
                                   audio_format);
-        avpriv_set_pts_info(ast, 32, 1, ast->codecpar->bit_rate);
+        avpriv_set_pts_info_ijk(ast, 32, 1, ast->codecpar->bit_rate);
     } else {
         for (i = 0; i < 3; i++)
             error |= read_line(pb, line, sizeof(line));
@@ -249,7 +249,7 @@ static int rpl_read_header(AVFormatContext *s)
     error |= read_line(pb, line, sizeof(line));  // offset to key frame list
 
     // Read the index
-    avio_seek(pb, chunk_catalog_offset, SEEK_SET);
+    avio_seek_xij(pb, chunk_catalog_offset, SEEK_SET);
     total_audio_size = 0;
     for (i = 0; !error && i < number_of_chunks; i++) {
         int64_t offset, video_size, audio_size;
@@ -259,10 +259,10 @@ static int rpl_read_header(AVFormatContext *s)
             error = -1;
             continue;
         }
-        av_add_index_entry(vst, offset, i * rpl->frames_per_chunk,
+        av_add_index_entry_xij(vst, offset, i * rpl->frames_per_chunk,
                            video_size, rpl->frames_per_chunk, 0);
         if (ast)
-            av_add_index_entry(ast, offset + video_size, total_audio_size,
+            av_add_index_entry_xij(ast, offset + video_size, total_audio_size,
                                audio_size, audio_size * 8, 0);
         total_audio_size += audio_size * 8;
     }
@@ -293,7 +293,7 @@ static int rpl_read_packet(AVFormatContext *s, AVPacket *pkt)
     index_entry = &stream->index_entries[rpl->chunk_number];
 
     if (rpl->frame_in_part == 0)
-        if (avio_seek(pb, index_entry->pos, SEEK_SET) < 0)
+        if (avio_seek_xij(pb, index_entry->pos, SEEK_SET) < 0)
             return AVERROR(EIO);
 
     if (stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO &&
@@ -302,16 +302,16 @@ static int rpl_read_packet(AVFormatContext *s, AVPacket *pkt)
         // multiple frames per chunk in Escape 124 samples.
         uint32_t frame_size;
 
-        avio_skip(pb, 4); /* flags */
-        frame_size = avio_rl32(pb);
-        if (avio_seek(pb, -8, SEEK_CUR) < 0)
+        avio_skip_xij(pb, 4); /* flags */
+        frame_size = avio_rl32_xij(pb);
+        if (avio_seek_xij(pb, -8, SEEK_CUR) < 0)
             return AVERROR(EIO);
 
-        ret = av_get_packet(pb, pkt, frame_size);
+        ret = av_get_packet_xij(pb, pkt, frame_size);
         if (ret < 0)
             return ret;
         if (ret != frame_size) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return AVERROR(EIO);
         }
         pkt->duration = 1;
@@ -324,11 +324,11 @@ static int rpl_read_packet(AVFormatContext *s, AVPacket *pkt)
             rpl->chunk_part++;
         }
     } else {
-        ret = av_get_packet(pb, pkt, index_entry->size);
+        ret = av_get_packet_xij(pb, pkt, index_entry->size);
         if (ret < 0)
             return ret;
         if (ret != index_entry->size) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return AVERROR(EIO);
         }
 

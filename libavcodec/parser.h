@@ -44,10 +44,10 @@ typedef struct ParseContext{
  * @return -1 if no complete frame could be created,
  *         AVERROR(ENOMEM) if there was a memory allocation error
  */
-int ff_combine_frame(ParseContext *pc, int next, const uint8_t **buf, int *buf_size);
-int ff_mpeg4video_split(AVCodecContext *avctx, const uint8_t *buf,
+int ff_combine_frame_xij(ParseContext *pc, int next, const uint8_t **buf, int *buf_size);
+int ff_mpeg4video_split_xij(AVCodecContext *avctx, const uint8_t *buf,
                         int buf_size);
-void ff_parse_close(AVCodecParserContext *s);
+void ff_parse_close_xij(AVCodecParserContext *s);
 
 /**
  * Fetch timestamps for a specific byte within the current access unit.
@@ -55,6 +55,6 @@ void ff_parse_close(AVCodecParserContext *s);
  * @param remove Found timestamps will be removed if set to 1, kept if set to 0.
  * @param fuzzy Only use found value if it is more informative than what we already have
  */
-void ff_fetch_timestamp(AVCodecParserContext *s, int off, int remove, int fuzzy);
+void ff_fetch_timestamp_xij(AVCodecParserContext *s, int off, int remove, int fuzzy);
 
 #endif /* AVCODEC_PARSER_H */

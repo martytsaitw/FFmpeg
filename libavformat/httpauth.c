@@ -97,7 +97,7 @@ void ff_http_auth_handle_header(HTTPAuthState *state, const char *key,
             state->auth_type = HTTP_AUTH_BASIC;
             state->realm[0] = 0;
             state->stale = 0;
-            ff_parse_key_value(p, (ff_parse_key_val_cb) handle_basic_params,
+            ff_parse_key_value_xij(p, (ff_parse_key_val_cb) handle_basic_params,
                                state);
         } else if (av_stristart(value, "Digest ", &p) &&
                    state->auth_type <= HTTP_AUTH_DIGEST) {
@@ -105,7 +105,7 @@ void ff_http_auth_handle_header(HTTPAuthState *state, const char *key,
             memset(&state->digest_params, 0, sizeof(DigestParams));
             state->realm[0] = 0;
             state->stale = 0;
-            ff_parse_key_value(p, (ff_parse_key_val_cb) handle_digest_params,
+            ff_parse_key_value_xij(p, (ff_parse_key_val_cb) handle_digest_params,
                                state);
             choose_qop(state->digest_params.qop,
                        sizeof(state->digest_params.qop));
@@ -113,7 +113,7 @@ void ff_http_auth_handle_header(HTTPAuthState *state, const char *key,
                 state->stale = 1;
         }
     } else if (!av_strcasecmp(key, "Authentication-Info")) {
-        ff_parse_key_value(value, (ff_parse_key_val_cb) handle_digest_update,
+        ff_parse_key_value_xij(value, (ff_parse_key_val_cb) handle_digest_update,
                            state);
     }
 }
@@ -155,7 +155,7 @@ static char *make_digest_auth(HTTPAuthState *state, const char *username,
     /* Generate a client nonce. */
     for (i = 0; i < 2; i++)
         cnonce_buf[i] = av_get_random_seed();
-    ff_data_to_hex(cnonce, (const uint8_t*) cnonce_buf, sizeof(cnonce_buf), 1);
+    ff_data_to_hex_xij(cnonce, (const uint8_t*) cnonce_buf, sizeof(cnonce_buf), 1);
     cnonce[2*sizeof(cnonce_buf)] = 0;
 
     md5ctx = av_md5_alloc();
@@ -165,7 +165,7 @@ static char *make_digest_auth(HTTPAuthState *state, const char *username,
     av_md5_init(md5ctx);
     update_md5_strings(md5ctx, username, ":", state->realm, ":", password, NULL);
     av_md5_final(md5ctx, hash);
-    ff_data_to_hex(A1hash, hash, 16, 1);
+    ff_data_to_hex_xij(A1hash, hash, 16, 1);
     A1hash[32] = 0;
 
     if (!strcmp(digest->algorithm, "") || !strcmp(digest->algorithm, "MD5")) {
@@ -173,7 +173,7 @@ static char *make_digest_auth(HTTPAuthState *state, const char *username,
         av_md5_init(md5ctx);
         update_md5_strings(md5ctx, A1hash, ":", digest->nonce, ":", cnonce, NULL);
         av_md5_final(md5ctx, hash);
-        ff_data_to_hex(A1hash, hash, 16, 1);
+        ff_data_to_hex_xij(A1hash, hash, 16, 1);
         A1hash[32] = 0;
     } else {
         /* Unsupported algorithm */
@@ -184,7 +184,7 @@ static char *make_digest_auth(HTTPAuthState *state, const char *username,
     av_md5_init(md5ctx);
     update_md5_strings(md5ctx, method, ":", uri, NULL);
     av_md5_final(md5ctx, hash);
-    ff_data_to_hex(A2hash, hash, 16, 1);
+    ff_data_to_hex_xij(A2hash, hash, 16, 1);
     A2hash[32] = 0;
 
     av_md5_init(md5ctx);
@@ -194,7 +194,7 @@ static char *make_digest_auth(HTTPAuthState *state, const char *username,
     }
     update_md5_strings(md5ctx, ":", A2hash, NULL);
     av_md5_final(md5ctx, hash);
-    ff_data_to_hex(response, hash, 16, 1);
+    ff_data_to_hex_xij(response, hash, 16, 1);
     response[32] = 0;
 
     av_free(md5ctx);

@@ -63,7 +63,7 @@ static int chunk_mux_init(AVFormatContext *s)
     AVFormatContext *oc;
     int ret;
 
-    ret = avformat_alloc_output_context2(&wc->avf, wc->oformat, NULL, NULL);
+    ret = avformat_alloc_output_context2_ijk(&wc->avf, wc->oformat, NULL, NULL);
     if (ret < 0)
         return ret;
     oc = wc->avf;
@@ -98,7 +98,7 @@ static int get_chunk_filename(AVFormatContext *s, int is_header, char *filename)
         }
         av_strlcpy(filename, wc->header_filename, strlen(wc->header_filename) + 1);
     } else {
-        if (av_get_frame_filename(filename, MAX_FILENAME_SIZE,
+        if (av_get_frame_filename_xij(filename, MAX_FILENAME_SIZE,
                                   s->url, wc->chunk_index - 1) < 0) {
             av_log(oc, AV_LOG_ERROR, "Invalid chunk filename template '%s'\n", s->url);
             return AVERROR(EINVAL);
@@ -119,7 +119,7 @@ static int webm_chunk_write_header(AVFormatContext *s)
     if (s->nb_streams != 1) { return AVERROR_INVALIDDATA; }
 
     wc->chunk_index = wc->chunk_start_index;
-    wc->oformat = av_guess_format("webm", s->url, "video/webm");
+    wc->oformat = av_guess_format_xij("webm", s->url, "video/webm");
     if (!wc->oformat)
         return AVERROR_MUXER_NOT_FOUND;
 
@@ -141,10 +141,10 @@ static int webm_chunk_write_header(AVFormatContext *s)
     ret = oc->oformat->write_header(oc);
     if (ret < 0)
         return ret;
-    ff_format_io_close(s, &oc->pb);
+    ff_format_io_close_xij(s, &oc->pb);
     for (i = 0; i < s->nb_streams; i++) {
         // ms precision is the de-facto standard timescale for mkv files.
-        avpriv_set_pts_info(s->streams[i], 64, 1, 1000);
+        avpriv_set_pts_info_ijk(s->streams[i], 64, 1, 1000);
     }
     return 0;
 }
@@ -155,7 +155,7 @@ static int chunk_start(AVFormatContext *s)
     AVFormatContext *oc = wc->avf;
     int ret;
 
-    ret = avio_open_dyn_buf(&oc->pb);
+    ret = avio_open_dyn_buf_xij(&oc->pb);
     if (ret < 0)
         return ret;
     wc->chunk_index++;
@@ -177,7 +177,7 @@ static int chunk_end(AVFormatContext *s)
         return 0;
     // Flush the cluster in WebM muxer.
     oc->oformat->write_packet(oc, NULL);
-    buffer_size = avio_close_dyn_buf(oc->pb, &buffer);
+    buffer_size = avio_close_dyn_buf_xij(oc->pb, &buffer);
     ret = get_chunk_filename(s, 0, filename);
     if (ret < 0)
         goto fail;
@@ -186,8 +186,8 @@ static int chunk_end(AVFormatContext *s)
     ret = s->io_open(s, &pb, filename, AVIO_FLAG_WRITE, &options);
     if (ret < 0)
         goto fail;
-    avio_write(pb, buffer, buffer_size);
-    ff_format_io_close(s, &pb);
+    avio_write_xij(pb, buffer, buffer_size);
+    ff_format_io_close_xij(s, &pb);
     oc->pb = NULL;
 fail:
     av_dict_free(&options);
@@ -229,7 +229,7 @@ fail:
     if (ret < 0) {
         oc->streams = NULL;
         oc->nb_streams = 0;
-        avformat_free_context(oc);
+        avformat_free_context_ijk(oc);
     }
 
     return ret;
@@ -243,7 +243,7 @@ static int webm_chunk_write_trailer(AVFormatContext *s)
     chunk_end(s);
     oc->streams = NULL;
     oc->nb_streams = 0;
-    avformat_free_context(oc);
+    avformat_free_context_ijk(oc);
     return 0;
 }
 

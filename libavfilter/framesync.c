@@ -197,7 +197,7 @@ static int framesync_advance(FFFrameSync *fs)
             if (fs->in[i].pts_next == pts ||
                 (fs->in[i].before == EXT_INFINITY &&
                  fs->in[i].state == STATE_BOF)) {
-                av_frame_free(&fs->in[i].frame);
+                av_frame_free_xij(&fs->in[i].frame);
                 fs->in[i].frame      = fs->in[i].frame_next;
                 fs->in[i].pts        = fs->in[i].pts_next;
                 fs->in[i].frame_next = NULL;
@@ -275,10 +275,10 @@ int ff_framesync_get_frame(FFFrameSync *fs, unsigned in, AVFrame **rframe,
                 (!fs->in[i].have_next || fs->in[i].pts_next < pts_next))
                 need_copy = 1;
         if (need_copy) {
-            if (!(frame = av_frame_clone(frame)))
+            if (!(frame = av_frame_clone_xij(frame)))
                 return AVERROR(ENOMEM);
-            if ((ret = av_frame_make_writable(frame)) < 0) {
-                av_frame_free(&frame);
+            if ((ret = av_frame_make_writable_xij(frame)) < 0) {
+                av_frame_free_xij(&frame);
                 return ret;
             }
         } else {
@@ -295,8 +295,8 @@ void ff_framesync_uninit(FFFrameSync *fs)
     unsigned i;
 
     for (i = 0; i < fs->nb_in; i++) {
-        av_frame_free(&fs->in[i].frame);
-        av_frame_free(&fs->in[i].frame_next);
+        av_frame_free_xij(&fs->in[i].frame);
+        av_frame_free_xij(&fs->in[i].frame_next);
     }
 
     av_freep(&fs->in);
@@ -384,7 +384,7 @@ int ff_framesync_dualinput_get(FFFrameSync *fs, AVFrame **f0, AVFrame **f1)
 
     if ((ret = ff_framesync_get_frame(fs, 0, &mainpic,   1)) < 0 ||
         (ret = ff_framesync_get_frame(fs, 1, &secondpic, 0)) < 0) {
-        av_frame_free(&mainpic);
+        av_frame_free_xij(&mainpic);
         return ret;
     }
     av_assert0(mainpic);
@@ -405,7 +405,7 @@ int ff_framesync_dualinput_get_writable(FFFrameSync *fs, AVFrame **f0, AVFrame *
         return ret;
     ret = ff_inlink_make_frame_writable(fs->parent->inputs[0], f0);
     if (ret < 0) {
-        av_frame_free(f0);
+        av_frame_free_xij(f0);
         *f1 = NULL;
         return ret;
     }

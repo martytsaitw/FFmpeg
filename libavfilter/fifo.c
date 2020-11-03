@@ -66,11 +66,11 @@ static av_cold void uninit(AVFilterContext *ctx)
 
     for (buf = fifo->root.next; buf; buf = tmp) {
         tmp = buf->next;
-        av_frame_free(&buf->frame);
+        av_frame_free_xij(&buf->frame);
         av_free(buf);
     }
 
-    av_frame_free(&fifo->out);
+    av_frame_free_xij(&fifo->out);
 }
 
 static int add_to_queue(AVFilterLink *inlink, AVFrame *frame)
@@ -79,7 +79,7 @@ static int add_to_queue(AVFilterLink *inlink, AVFrame *frame)
 
     fifo->last->next = av_mallocz(sizeof(Buf));
     if (!fifo->last->next) {
-        av_frame_free(&frame);
+        av_frame_free_xij(&frame);
         return AVERROR(ENOMEM);
     }
 
@@ -162,7 +162,7 @@ static int return_audio_frame(AVFilterContext *ctx)
             out = head;
             queue_pop(s);
         } else {
-            out = av_frame_clone(head);
+            out = av_frame_clone_xij(head);
             if (!out)
                 return AVERROR(ENOMEM);
 
@@ -215,7 +215,7 @@ static int return_audio_frame(AVFilterContext *ctx)
             s->out->nb_samples += len;
 
             if (len == head->nb_samples) {
-                av_frame_free(&head);
+                av_frame_free_xij(&head);
                 queue_pop(s);
             } else {
                 buffer_offset(link, head, len);

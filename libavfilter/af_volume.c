@@ -346,7 +346,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
     int nb_samples        = buf->nb_samples;
     AVFrame *out_buf;
     int64_t pos;
-    AVFrameSideData *sd = av_frame_get_side_data(buf, AV_FRAME_DATA_REPLAYGAIN);
+    AVFrameSideData *sd = av_frame_get_side_data_xij(buf, AV_FRAME_DATA_REPLAYGAIN);
     int ret;
 
     if (sd && vol->replaygain != REPLAYGAIN_IGNORE) {
@@ -384,7 +384,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
 
             volume_init(vol);
         }
-        av_frame_remove_side_data(buf, AV_FRAME_DATA_REPLAYGAIN);
+        av_frame_remove_side_data_xij(buf, AV_FRAME_DATA_REPLAYGAIN);
     }
 
     if (isnan(vol->var_values[VAR_STARTPTS])) {
@@ -406,19 +406,19 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
     }
 
     /* do volume scaling in-place if input buffer is writable */
-    if (av_frame_is_writable(buf)
+    if (av_frame_is_writable_xij(buf)
             && (vol->precision != PRECISION_FIXED || vol->volume_i > 0)) {
         out_buf = buf;
     } else {
         out_buf = ff_get_audio_buffer(outlink, nb_samples);
         if (!out_buf) {
-            av_frame_free(&buf);
+            av_frame_free_xij(&buf);
             return AVERROR(ENOMEM);
         }
-        ret = av_frame_copy_props(out_buf, buf);
+        ret = av_frame_copy_props_xij(out_buf, buf);
         if (ret < 0) {
-            av_frame_free(&out_buf);
-            av_frame_free(&buf);
+            av_frame_free_xij(&out_buf);
+            av_frame_free_xij(&buf);
             return ret;
         }
     }
@@ -455,7 +455,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
     emms_c();
 
     if (buf != out_buf)
-        av_frame_free(&buf);
+        av_frame_free_xij(&buf);
 
 end:
     vol->var_values[VAR_NB_CONSUMED_SAMPLES] += out_buf->nb_samples;

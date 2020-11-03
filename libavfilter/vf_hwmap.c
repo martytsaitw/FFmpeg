@@ -64,7 +64,7 @@ static int hwmap_config_output(AVFilterLink *outlink)
            av_get_pix_fmt_name(inlink->format),
            av_get_pix_fmt_name(outlink->format));
 
-    av_buffer_unref(&ctx->hwframes_ref);
+    av_buffer_unref_xij(&ctx->hwframes_ref);
 
     device = avctx->hw_device_ctx;
     device_is_derived = 0;
@@ -171,7 +171,7 @@ static int hwmap_config_output(AVFilterLink *outlink)
             // the format it expects.  If there were any additional
             // constraints on the output frames there then this may
             // break nastily.
-            av_buffer_unref(&inlink->hw_frames_ctx);
+            av_buffer_unref_xij(&inlink->hw_frames_ctx);
             inlink->hw_frames_ctx = source;
 
         } else if ((outlink->format == hwfc->format &&
@@ -180,7 +180,7 @@ static int hwmap_config_output(AVFilterLink *outlink)
             // Map from a hardware format to a software format, or
             // undo an existing such mapping.
 
-            ctx->hwframes_ref = av_buffer_ref(inlink->hw_frames_ctx);
+            ctx->hwframes_ref = av_buffer_ref_ijk(inlink->hw_frames_ctx);
             if (!ctx->hwframes_ref) {
                 err = AVERROR(ENOMEM);
                 goto fail;
@@ -241,7 +241,7 @@ static int hwmap_config_output(AVFilterLink *outlink)
         return AVERROR(EINVAL);
     }
 
-    outlink->hw_frames_ctx = av_buffer_ref(ctx->hwframes_ref);
+    outlink->hw_frames_ctx = av_buffer_ref_ijk(ctx->hwframes_ref);
     if (!outlink->hw_frames_ctx) {
         err = AVERROR(ENOMEM);
         goto fail;
@@ -251,13 +251,13 @@ static int hwmap_config_output(AVFilterLink *outlink)
     outlink->h = inlink->h;
 
     if (device_is_derived)
-        av_buffer_unref(&device);
+        av_buffer_unref_xij(&device);
     return 0;
 
 fail:
     if (device_is_derived)
-        av_buffer_unref(&device);
-    av_buffer_unref(&ctx->hwframes_ref);
+        av_buffer_unref_xij(&device);
+    av_buffer_unref_xij(&ctx->hwframes_ref);
     return err;
 }
 
@@ -278,9 +278,9 @@ static AVFrame *hwmap_get_buffer(AVFilterLink *inlink, int w, int h)
             return NULL;
         }
 
-        dst = av_frame_alloc();
+        dst = av_frame_alloc_ijk();
         if (!dst) {
-            av_frame_free(&src);
+            av_frame_free_xij(&src);
             return NULL;
         }
 
@@ -288,12 +288,12 @@ static AVFrame *hwmap_get_buffer(AVFilterLink *inlink, int w, int h)
         if (err) {
             av_log(avctx, AV_LOG_ERROR, "Failed to map frame to "
                    "software: %d.\n", err);
-            av_frame_free(&src);
-            av_frame_free(&dst);
+            av_frame_free_xij(&src);
+            av_frame_free_xij(&dst);
             return NULL;
         }
 
-        av_frame_free(&src);
+        av_frame_free_xij(&src);
         return dst;
     } else {
         return ff_default_get_video_buffer(inlink, w, h);
@@ -312,14 +312,14 @@ static int hwmap_filter_frame(AVFilterLink *link, AVFrame *input)
            av_get_pix_fmt_name(input->format),
            input->width, input->height, input->pts);
 
-    map = av_frame_alloc();
+    map = av_frame_alloc_ijk();
     if (!map) {
         err = AVERROR(ENOMEM);
         goto fail;
     }
 
     map->format = outlink->format;
-    map->hw_frames_ctx = av_buffer_ref(ctx->hwframes_ref);
+    map->hw_frames_ctx = av_buffer_ref_ijk(ctx->hwframes_ref);
     if (!map->hw_frames_ctx) {
         err = AVERROR(ENOMEM);
         goto fail;
@@ -329,7 +329,7 @@ static int hwmap_filter_frame(AVFilterLink *link, AVFrame *input)
         // If we mapped backwards from hardware to software, we need
         // to attach the hardware frame context to the input frame to
         // make the mapping visible to av_hwframe_map().
-        input->hw_frames_ctx = av_buffer_ref(ctx->hwframes_ref);
+        input->hw_frames_ctx = av_buffer_ref_ijk(ctx->hwframes_ref);
         if (!input->hw_frames_ctx) {
             err = AVERROR(ENOMEM);
             goto fail;
@@ -342,11 +342,11 @@ static int hwmap_filter_frame(AVFilterLink *link, AVFrame *input)
         goto fail;
     }
 
-    err = av_frame_copy_props(map, input);
+    err = av_frame_copy_props_xij(map, input);
     if (err < 0)
         goto fail;
 
-    av_frame_free(&input);
+    av_frame_free_xij(&input);
 
     av_log(ctx, AV_LOG_DEBUG, "Filter output: %s, %ux%u (%"PRId64").\n",
            av_get_pix_fmt_name(map->format),
@@ -355,8 +355,8 @@ static int hwmap_filter_frame(AVFilterLink *link, AVFrame *input)
     return ff_filter_frame(outlink, map);
 
 fail:
-    av_frame_free(&input);
-    av_frame_free(&map);
+    av_frame_free_xij(&input);
+    av_frame_free_xij(&map);
     return err;
 }
 
@@ -364,7 +364,7 @@ static av_cold void hwmap_uninit(AVFilterContext *avctx)
 {
     HWMapContext *ctx = avctx->priv;
 
-    av_buffer_unref(&ctx->hwframes_ref);
+    av_buffer_unref_xij(&ctx->hwframes_ref);
 }
 
 #define OFFSET(x) offsetof(HWMapContext, x)

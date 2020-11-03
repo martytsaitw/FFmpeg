@@ -37,17 +37,17 @@ static int acm_read_header(AVFormatContext *s)
     AVStream *st;
     int ret;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id   = AV_CODEC_ID_INTERPLAY_ACM;
 
-    ff_alloc_extradata(st->codecpar, 14);
+    ff_alloc_extradata_xij(st->codecpar, 14);
     if (!st->codecpar->extradata)
         return AVERROR(ENOMEM);
-    ret = avio_read(s->pb, st->codecpar->extradata, 14);
+    ret = avio_read_xij(s->pb, st->codecpar->extradata, 14);
     if (ret < 10)
         return ret < 0 ? ret : AVERROR_EOF;
 
@@ -58,7 +58,7 @@ static int acm_read_header(AVFormatContext *s)
     st->start_time         = 0;
     st->duration           = AV_RL32(st->codecpar->extradata +  4) / st->codecpar->channels;
     st->need_parsing       = AVSTREAM_PARSE_FULL_RAW;
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }
@@ -68,7 +68,7 @@ AVInputFormat ff_acm_demuxer = {
     .long_name      = NULL_IF_CONFIG_SMALL("Interplay ACM"),
     .read_probe     = acm_probe,
     .read_header    = acm_read_header,
-    .read_packet    = ff_raw_read_partial_packet,
+    .read_packet    = ff_raw_read_partial_packet_xij,
     .flags          = AVFMT_NOBINSEARCH | AVFMT_NOGENSEARCH | AVFMT_NO_BYTE_SEEK | AVFMT_NOTIMESTAMPS,
     .extensions     = "acm",
     .raw_codec_id   = AV_CODEC_ID_INTERPLAY_ACM,

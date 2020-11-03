@@ -52,11 +52,11 @@ static int sup_write_packet(AVFormatContext *s, AVPacket *pkt)
         }
 
         /* header */
-        avio_wb16(s->pb, SUP_PGS_MAGIC);
-        avio_wb32(s->pb, pts);
-        avio_wb32(s->pb, dts);
+        avio_wb16_xij(s->pb, SUP_PGS_MAGIC);
+        avio_wb32_xij(s->pb, pts);
+        avio_wb32_xij(s->pb, dts);
 
-        avio_write(s->pb, data, len);
+        avio_write_xij(s->pb, data, len);
 
         data += len;
         size -= len;
@@ -79,7 +79,7 @@ static int sup_write_header(AVFormatContext *s)
         return AVERROR(EINVAL);
     }
 
-    avpriv_set_pts_info(s->streams[0], 32, 1, 90000);
+    avpriv_set_pts_info_ijk(s->streams[0], 32, 1, 90000);
 
     return 0;
 }

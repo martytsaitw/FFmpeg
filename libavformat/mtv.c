@@ -105,17 +105,17 @@ static int mtv_read_header(AVFormatContext *s)
     AVStream        *st;
     unsigned int    audio_subsegments;
 
-    avio_skip(pb, 3);
-    mtv->file_size         = avio_rl32(pb);
-    mtv->segments          = avio_rl32(pb);
-    avio_skip(pb, 32);
-    mtv->audio_identifier  = avio_rl24(pb);
-    mtv->audio_br          = avio_rl16(pb);
-    mtv->img_colorfmt      = avio_rl24(pb);
-    mtv->img_bpp           = avio_r8(pb);
-    mtv->img_width         = avio_rl16(pb);
-    mtv->img_height        = avio_rl16(pb);
-    mtv->img_segment_size  = avio_rl16(pb);
+    avio_skip_xij(pb, 3);
+    mtv->file_size         = avio_rl32_xij(pb);
+    mtv->segments          = avio_rl32_xij(pb);
+    avio_skip_xij(pb, 32);
+    mtv->audio_identifier  = avio_rl24_xij(pb);
+    mtv->audio_br          = avio_rl16_xij(pb);
+    mtv->img_colorfmt      = avio_rl24_xij(pb);
+    mtv->img_bpp           = avio_r8_xij(pb);
+    mtv->img_width         = avio_rl16_xij(pb);
+    mtv->img_height        = avio_rl16_xij(pb);
+    mtv->img_segment_size  = avio_rl16_xij(pb);
 
     /* Assume 16bpp even if claimed otherwise.
      * We know its going to be RGBG565/555 anyway
@@ -141,8 +141,8 @@ static int mtv_read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
     }
 
-    avio_skip(pb, 4);
-    audio_subsegments = avio_rl16(pb);
+    avio_skip_xij(pb, 4);
+    audio_subsegments = avio_rl16_xij(pb);
 
     if (audio_subsegments == 0) {
         avpriv_request_sample(s, "MTV files without audio");
@@ -160,11 +160,11 @@ static int mtv_read_header(AVFormatContext *s)
 
     // video - raw rgb565
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if(!st)
         return AVERROR(ENOMEM);
 
-    avpriv_set_pts_info(st, 64, 1, mtv->video_fps);
+    avpriv_set_pts_info_ijk(st, 64, 1, mtv->video_fps);
     st->codecpar->codec_type      = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id        = AV_CODEC_ID_RAWVIDEO;
     st->codecpar->format          = AV_PIX_FMT_RGB565BE;
@@ -175,11 +175,11 @@ static int mtv_read_header(AVFormatContext *s)
 
     // audio - mp3
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if(!st)
         return AVERROR(ENOMEM);
 
-    avpriv_set_pts_info(st, 64, 1, MTV_AUDIO_SAMPLING_RATE);
+    avpriv_set_pts_info_ijk(st, 64, 1, MTV_AUDIO_SAMPLING_RATE);
     st->codecpar->codec_type      = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id        = AV_CODEC_ID_MP3;
     st->codecpar->bit_rate        = mtv->audio_br;
@@ -187,7 +187,7 @@ static int mtv_read_header(AVFormatContext *s)
 
     // Jump over header
 
-    if(avio_seek(pb, MTV_HEADER_SIZE, SEEK_SET) != MTV_HEADER_SIZE)
+    if(avio_seek_xij(pb, MTV_HEADER_SIZE, SEEK_SET) != MTV_HEADER_SIZE)
         return AVERROR(EIO);
 
     return 0;
@@ -202,9 +202,9 @@ static int mtv_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     if((avio_tell(pb) - s->internal->data_offset + mtv->img_segment_size) % mtv->full_segment_size)
     {
-        avio_skip(pb, MTV_AUDIO_PADDING_SIZE);
+        avio_skip_xij(pb, MTV_AUDIO_PADDING_SIZE);
 
-        ret = av_get_packet(pb, pkt, MTV_ASUBCHUNK_DATA_SIZE);
+        ret = av_get_packet_xij(pb, pkt, MTV_ASUBCHUNK_DATA_SIZE);
         if(ret < 0)
             return ret;
 
@@ -213,7 +213,7 @@ static int mtv_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     }else
     {
-        ret = av_get_packet(pb, pkt, mtv->img_segment_size);
+        ret = av_get_packet_xij(pb, pkt, mtv->img_segment_size);
         if(ret < 0)
             return ret;
 

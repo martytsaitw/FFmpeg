@@ -75,15 +75,15 @@ static av_cold int raw_init_decoder(AVCodecContext *avctx)
 
     if (   avctx->codec_tag == MKTAG('r','a','w',' ')
         || avctx->codec_tag == MKTAG('N','O','1','6'))
-        avctx->pix_fmt = avpriv_find_pix_fmt(avpriv_pix_fmt_bps_mov,
+        avctx->pix_fmt = avpriv_find_pix_fmt_xij(avpriv_pix_fmt_bps_mov,
                                       avctx->bits_per_coded_sample);
     else if (avctx->codec_tag == MKTAG('W', 'R', 'A', 'W'))
-        avctx->pix_fmt = avpriv_find_pix_fmt(avpriv_pix_fmt_bps_avi,
+        avctx->pix_fmt = avpriv_find_pix_fmt_xij(avpriv_pix_fmt_bps_avi,
                                       avctx->bits_per_coded_sample);
     else if (avctx->codec_tag && (avctx->codec_tag & 0xFFFFFF) != MKTAG('B','I','T', 0))
-        avctx->pix_fmt = avpriv_find_pix_fmt(ff_raw_pix_fmt_tags, avctx->codec_tag);
+        avctx->pix_fmt = avpriv_find_pix_fmt_xij(ff_raw_pix_fmt_tags, avctx->codec_tag);
     else if (avctx->pix_fmt == AV_PIX_FMT_NONE && avctx->bits_per_coded_sample)
-        avctx->pix_fmt = avpriv_find_pix_fmt(avpriv_pix_fmt_bps_avi,
+        avctx->pix_fmt = avpriv_find_pix_fmt_xij(avpriv_pix_fmt_bps_avi,
                                       avctx->bits_per_coded_sample);
 
     desc = av_pix_fmt_desc_get(avctx->pix_fmt);
@@ -93,7 +93,7 @@ static av_cold int raw_init_decoder(AVCodecContext *avctx)
     }
 
     if (desc->flags & (AV_PIX_FMT_FLAG_PAL | FF_PSEUDOPAL)) {
-        context->palette = av_buffer_alloc(AVPALETTE_SIZE);
+        context->palette = av_buffer_alloc_ijk(AVPALETTE_SIZE);
         if (!context->palette)
             return AVERROR(ENOMEM);
 #if FF_API_PSEUDOPAL
@@ -235,7 +235,7 @@ static int raw_decode(AVCodecContext *avctx, void *data, int *got_frame,
     frame->pict_type        = AV_PICTURE_TYPE_I;
     frame->key_frame        = 1;
 
-    res = ff_decode_frame_props(avctx, frame);
+    res = ff_decode_frame_props_xij(avctx, frame);
     if (res < 0)
         return res;
 
@@ -251,9 +251,9 @@ static int raw_decode(AVCodecContext *avctx, void *data, int *got_frame,
         return res;
 
     if (need_copy)
-        frame->buf[0] = av_buffer_alloc(FFMAX(context->frame_size, buf_size));
+        frame->buf[0] = av_buffer_alloc_ijk(FFMAX(context->frame_size, buf_size));
     else
-        frame->buf[0] = av_buffer_ref(avpkt->buf);
+        frame->buf[0] = av_buffer_ref_ijk(avpkt->buf);
     if (!frame->buf[0])
         return AVERROR(ENOMEM);
 
@@ -324,7 +324,7 @@ static int raw_decode(AVCodecContext *avctx, void *data, int *got_frame,
         int swap   =  avctx->codec_tag >> 24;
 
         if (packed && swap) {
-            av_fast_padded_malloc(&context->bitstream_buf, &context->bitstream_buf_size, buf_size);
+            av_fast_padded_malloc_xij(&context->bitstream_buf, &context->bitstream_buf_size, buf_size);
             if (!context->bitstream_buf)
                 return AVERROR(ENOMEM);
             if (swap == 16)
@@ -354,20 +354,20 @@ static int raw_decode(AVCodecContext *avctx, void *data, int *got_frame,
     len = context->frame_size - (avctx->pix_fmt==AV_PIX_FMT_PAL8 ? AVPALETTE_SIZE : 0);
     if (buf_size < len && ((avctx->codec_tag & 0xFFFFFF) != MKTAG('B','I','T', 0) || !need_copy)) {
         av_log(avctx, AV_LOG_ERROR, "Invalid buffer size, packet size %d < expected frame_size %d\n", buf_size, len);
-        av_buffer_unref(&frame->buf[0]);
+        av_buffer_unref_xij(&frame->buf[0]);
         return AVERROR(EINVAL);
     }
 
     if ((res = av_image_fill_arrays(frame->data, frame->linesize,
                                     buf, avctx->pix_fmt,
                                     avctx->width, avctx->height, 1)) < 0) {
-        av_buffer_unref(&frame->buf[0]);
+        av_buffer_unref_xij(&frame->buf[0]);
         return res;
     }
 
     if (avctx->pix_fmt == AV_PIX_FMT_PAL8) {
         int pal_size;
-        const uint8_t *pal = av_packet_get_side_data(avpkt, AV_PKT_DATA_PALETTE,
+        const uint8_t *pal = av_packet_get_side_data_xij(avpkt, AV_PKT_DATA_PALETTE,
                                                      &pal_size);
         int ret;
 
@@ -377,14 +377,14 @@ static int raw_decode(AVCodecContext *avctx, void *data, int *got_frame,
         }
 
         if (!context->palette)
-            context->palette = av_buffer_alloc(AVPALETTE_SIZE);
+            context->palette = av_buffer_alloc_ijk(AVPALETTE_SIZE);
         if (!context->palette) {
-            av_buffer_unref(&frame->buf[0]);
+            av_buffer_unref_xij(&frame->buf[0]);
             return AVERROR(ENOMEM);
         }
-        ret = av_buffer_make_writable(&context->palette);
+        ret = av_buffer_make_writable_xij(&context->palette);
         if (ret < 0) {
-            av_buffer_unref(&frame->buf[0]);
+            av_buffer_unref_xij(&frame->buf[0]);
             return ret;
         }
 
@@ -426,9 +426,9 @@ static int raw_decode(AVCodecContext *avctx, void *data, int *got_frame,
 
     if ((avctx->pix_fmt == AV_PIX_FMT_PAL8 && buf_size < context->frame_size) ||
         (desc->flags & FF_PSEUDOPAL)) {
-        frame->buf[1]  = av_buffer_ref(context->palette);
+        frame->buf[1]  = av_buffer_ref_ijk(context->palette);
         if (!frame->buf[1]) {
-            av_buffer_unref(&frame->buf[0]);
+            av_buffer_unref_xij(&frame->buf[0]);
             return AVERROR(ENOMEM);
         }
         frame->data[1] = frame->buf[1]->data;
@@ -488,7 +488,7 @@ static av_cold int raw_close_decoder(AVCodecContext *avctx)
 {
     RawVideoContext *context = avctx->priv_data;
 
-    av_buffer_unref(&context->palette);
+    av_buffer_unref_xij(&context->palette);
     return 0;
 }
 

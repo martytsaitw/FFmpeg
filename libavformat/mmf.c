@@ -58,9 +58,9 @@ static void end_tag_be(AVIOContext *pb, int64_t start)
     int64_t pos;
 
     pos = avio_tell(pb);
-    avio_seek(pb, start - 4, SEEK_SET);
-    avio_wb32(pb, (uint32_t)(pos - start));
-    avio_seek(pb, pos, SEEK_SET);
+    avio_seek_xij(pb, start - 4, SEEK_SET);
+    avio_wb32_xij(pb, (uint32_t)(pos - start));
+    avio_seek_xij(pb, pos, SEEK_SET);
 }
 
 static int mmf_write_header(AVFormatContext *s)
@@ -90,40 +90,40 @@ static int mmf_write_header(AVFormatContext *s)
     }
 
     ffio_wfourcc(pb, "MMMD");
-    avio_wb32(pb, 0);
+    avio_wb32_xij(pb, 0);
     pos = ff_start_tag(pb, "CNTI");
-    avio_w8(pb, 0); /* class */
-    avio_w8(pb, 1); /* type */
-    avio_w8(pb, 1); /* code type */
-    avio_w8(pb, 0); /* status */
-    avio_w8(pb, 0); /* counts */
+    avio_w8_xij(pb, 0); /* class */
+    avio_w8_xij(pb, 1); /* type */
+    avio_w8_xij(pb, 1); /* code type */
+    avio_w8_xij(pb, 0); /* status */
+    avio_w8_xij(pb, 0); /* counts */
     end_tag_be(pb, pos);
 
     pos = ff_start_tag(pb, "OPDA");
-    avio_write(pb, version, strlen(version)); /* metadata ("ST:songtitle,VN:version,...") */
+    avio_write_xij(pb, version, strlen(version)); /* metadata ("ST:songtitle,VN:version,...") */
     end_tag_be(pb, pos);
 
-    avio_write(pb, "ATR\x00", 4);
-    avio_wb32(pb, 0);
+    avio_write_xij(pb, "ATR\x00", 4);
+    avio_wb32_xij(pb, 0);
     mmf->atrpos = avio_tell(pb);
-    avio_w8(pb, 0); /* format type */
-    avio_w8(pb, 0); /* sequence type */
-    avio_w8(pb, (mmf->stereo << 7) | (1 << 4) | rate); /* (channel << 7) | (format << 4) | rate */
-    avio_w8(pb, 0); /* wave base bit */
-    avio_w8(pb, 2); /* time base d */
-    avio_w8(pb, 2); /* time base g */
+    avio_w8_xij(pb, 0); /* format type */
+    avio_w8_xij(pb, 0); /* sequence type */
+    avio_w8_xij(pb, (mmf->stereo << 7) | (1 << 4) | rate); /* (channel << 7) | (format << 4) | rate */
+    avio_w8_xij(pb, 0); /* wave base bit */
+    avio_w8_xij(pb, 2); /* time base d */
+    avio_w8_xij(pb, 2); /* time base g */
 
     ffio_wfourcc(pb, "Atsq");
-    avio_wb32(pb, 16);
+    avio_wb32_xij(pb, 16);
     mmf->atsqpos = avio_tell(pb);
     /* Will be filled on close */
-    avio_write(pb, "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 16);
+    avio_write_xij(pb, "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 16);
 
     mmf->awapos = ff_start_tag(pb, "Awa\x01");
 
-    avpriv_set_pts_info(s->streams[0], 64, 1, s->streams[0]->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(s->streams[0], 64, 1, s->streams[0]->codecpar->sample_rate);
 
-    avio_flush(pb);
+    avio_flush_xij(pb);
 
     return 0;
 }
@@ -132,11 +132,11 @@ static int mmf_write_header(AVFormatContext *s)
 static void put_varlength(AVIOContext *pb, int val)
 {
     if (val < 128)
-        avio_w8(pb, val);
+        avio_w8_xij(pb, val);
     else {
         val -= 128;
-        avio_w8(pb, 0x80 | val >> 7);
-        avio_w8(pb, 0x7f & val);
+        avio_w8_xij(pb, 0x80 | val >> 7);
+        avio_w8_xij(pb, 0x7f & val);
     }
 }
 
@@ -157,24 +157,24 @@ static int mmf_write_trailer(AVFormatContext *s)
         size = pos - mmf->awapos;
 
         /* Fill Atsq chunk */
-        avio_seek(pb, mmf->atsqpos, SEEK_SET);
+        avio_seek_xij(pb, mmf->atsqpos, SEEK_SET);
 
         /* "play wav" */
-        avio_w8(pb, 0); /* start time */
-        avio_w8(pb, (mmf->stereo << 6) | 1); /* (channel << 6) | wavenum */
+        avio_w8_xij(pb, 0); /* start time */
+        avio_w8_xij(pb, (mmf->stereo << 6) | 1); /* (channel << 6) | wavenum */
         gatetime = size * 500 / s->streams[0]->codecpar->sample_rate;
         put_varlength(pb, gatetime); /* duration */
 
         /* "nop" */
         put_varlength(pb, gatetime); /* start time */
-        avio_write(pb, "\xff\x00", 2); /* nop */
+        avio_write_xij(pb, "\xff\x00", 2); /* nop */
 
         /* "end of sequence" */
-        avio_write(pb, "\x00\x00\x00\x00", 4);
+        avio_write_xij(pb, "\x00\x00\x00\x00", 4);
 
-        avio_seek(pb, pos, SEEK_SET);
+        avio_seek_xij(pb, pos, SEEK_SET);
 
-        avio_flush(pb);
+        avio_flush_xij(pb);
     }
     return 0;
 }
@@ -202,15 +202,15 @@ static int mmf_read_header(AVFormatContext *s)
     int64_t size;
     int rate, params;
 
-    tag = avio_rl32(pb);
+    tag = avio_rl32_xij(pb);
     if (tag != MKTAG('M', 'M', 'M', 'D'))
         return AVERROR_INVALIDDATA;
-    avio_skip(pb, 4); /* file_size */
+    avio_skip_xij(pb, 4); /* file_size */
 
     /* Skip some unused chunks that may or may not be present */
-    for (;; avio_skip(pb, size)) {
-        tag  = avio_rl32(pb);
-        size = avio_rb32(pb);
+    for (;; avio_skip_xij(pb, size)) {
+        tag  = avio_rl32_xij(pb);
+        size = avio_rb32_xij(pb);
         if (tag == MKTAG('C', 'N', 'T', 'I'))
             continue;
         if (tag == MKTAG('O', 'P', 'D', 'A'))
@@ -228,22 +228,22 @@ static int mmf_read_header(AVFormatContext *s)
         return AVERROR_PATCHWELCOME;
     }
 
-    avio_r8(pb); /* format type */
-    avio_r8(pb); /* sequence type */
-    params = avio_r8(pb); /* (channel << 7) | (format << 4) | rate */
+    avio_r8_xij(pb); /* format type */
+    avio_r8_xij(pb); /* sequence type */
+    params = avio_r8_xij(pb); /* (channel << 7) | (format << 4) | rate */
     rate   = mmf_rate(params & 0x0f);
     if (rate < 0) {
         av_log(s, AV_LOG_ERROR, "Invalid sample rate\n");
         return AVERROR_INVALIDDATA;
     }
-    avio_r8(pb); /* wave base bit */
-    avio_r8(pb); /* time base d */
-    avio_r8(pb); /* time base g */
+    avio_r8_xij(pb); /* wave base bit */
+    avio_r8_xij(pb); /* time base d */
+    avio_r8_xij(pb); /* time base g */
 
     /* Skip some unused chunks that may or may not be present */
-    for (;; avio_skip(pb, size)) {
-        tag  = avio_rl32(pb);
-        size = avio_rb32(pb);
+    for (;; avio_skip_xij(pb, size)) {
+        tag  = avio_rl32_xij(pb);
+        size = avio_rb32_xij(pb);
         if (tag == MKTAG('A', 't', 's', 'q'))
             continue;
         if (tag == MKTAG('A', 's', 'p', 'I'))
@@ -258,7 +258,7 @@ static int mmf_read_header(AVFormatContext *s)
     }
     mmf->data_end = avio_tell(pb) + size;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -271,7 +271,7 @@ static int mmf_read_header(AVFormatContext *s)
     st->codecpar->bit_rate              = st->codecpar->sample_rate *
                                           st->codecpar->bits_per_coded_sample;
 
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }
@@ -286,10 +286,10 @@ static int mmf_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     left = mmf->data_end - avio_tell(s->pb);
     size = FFMIN(left, MAX_SIZE);
-    if (avio_feof(s->pb) || size <= 0)
+    if (avio_feof_xij(s->pb) || size <= 0)
         return AVERROR_EOF;
 
-    ret = av_get_packet(s->pb, pkt, size);
+    ret = av_get_packet_xij(s->pb, pkt, size);
     if (ret < 0)
         return ret;
 

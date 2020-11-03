@@ -128,7 +128,7 @@ static int fir_frame(AudioFIRContext *s, AVFilterLink *outlink)
 
     s->in[0] = ff_get_audio_buffer(ctx->inputs[0], s->nb_samples);
     if (!s->in[0]) {
-        av_frame_free(&out);
+        av_frame_free_xij(&out);
         return AVERROR(ENOMEM);
     }
 
@@ -150,7 +150,7 @@ static int fir_frame(AudioFIRContext *s, AVFilterLink *outlink)
     if (s->index == 3)
         s->index = 0;
 
-    av_frame_free(&s->in[0]);
+    av_frame_free_xij(&s->in[0]);
 
     if (s->want_skip == 1) {
         s->want_skip = 0;
@@ -266,7 +266,7 @@ static int convert_coeffs(AVFilterContext *ctx)
         }
     }
 
-    av_frame_free(&s->in[1]);
+    av_frame_free_xij(&s->in[1]);
     av_log(ctx, AV_LOG_DEBUG, "nb_taps: %d\n", s->nb_taps);
     av_log(ctx, AV_LOG_DEBUG, "nb_partitions: %d\n", s->nb_partitions);
     av_log(ctx, AV_LOG_DEBUG, "partition size: %d\n", s->part_size);
@@ -285,7 +285,7 @@ static int read_ir(AVFilterLink *link, AVFrame *frame)
 
     ret = av_audio_fifo_write(s->fifo[1], (void **)frame->extended_data,
                              frame->nb_samples);
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
     if (ret < 0)
         return ret;
 
@@ -311,7 +311,7 @@ static int filter_frame(AVFilterLink *link, AVFrame *frame)
     if (ret > 0 && s->pts == AV_NOPTS_VALUE)
         s->pts = frame->pts;
 
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
 
     if (ret < 0)
         return ret;
@@ -355,7 +355,7 @@ static int request_frame(AVFilterLink *outlink)
                 return AVERROR(ENOMEM);
             ret = av_audio_fifo_write(s->fifo[0], (void **)silence->extended_data,
                                       silence->nb_samples);
-            av_frame_free(&silence);
+            av_frame_free_xij(&silence);
             if (ret < 0)
                 return ret;
             s->need_padding = 0;
@@ -480,9 +480,9 @@ static av_cold void uninit(AVFilterContext *ctx)
     }
     av_freep(&s->irdft);
 
-    av_frame_free(&s->in[0]);
-    av_frame_free(&s->in[1]);
-    av_frame_free(&s->buffer);
+    av_frame_free_xij(&s->in[0]);
+    av_frame_free_xij(&s->in[1]);
+    av_frame_free_xij(&s->buffer);
 
     av_audio_fifo_free(s->fifo[0]);
     av_audio_fifo_free(s->fifo[1]);

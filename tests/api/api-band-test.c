@@ -82,19 +82,19 @@ static int video_decode(const char *input_filename)
 
     draw_horiz_band_called = 0;
 
-    result = avformat_open_input(&fmt_ctx, input_filename, NULL, NULL);
+    result = avformat_open_input_ijk(&fmt_ctx, input_filename, NULL, NULL);
     if (result < 0) {
         av_log(NULL, AV_LOG_ERROR, "Can't open file\n");
         return result;
     }
 
-    result = avformat_find_stream_info(fmt_ctx, NULL);
+    result = avformat_find_stream_info_ijk(fmt_ctx, NULL);
     if (result < 0) {
         av_log(NULL, AV_LOG_ERROR, "Can't get stream info\n");
         return result;
     }
 
-    video_stream = av_find_best_stream(fmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+    video_stream = av_find_best_stream_ijk(fmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
     if (video_stream < 0) {
       av_log(NULL, AV_LOG_ERROR, "Can't find video stream in input file\n");
       return -1;
@@ -102,19 +102,19 @@ static int video_decode(const char *input_filename)
 
     origin_par = fmt_ctx->streams[video_stream]->codecpar;
 
-    codec = avcodec_find_decoder(origin_par->codec_id);
+    codec = avcodec_find_decoder_ijk(origin_par->codec_id);
     if (!codec) {
         av_log(NULL, AV_LOG_ERROR, "Can't find decoder\n");
         return -1;
     }
 
-    ctx = avcodec_alloc_context3(codec);
+    ctx = avcodec_alloc_context3_ijk(codec);
     if (!ctx) {
         av_log(NULL, AV_LOG_ERROR, "Can't allocate decoder context\n");
         return AVERROR(ENOMEM);
     }
 
-    result = avcodec_parameters_to_context(ctx, origin_par);
+    result = avcodec_parameters_to_context_ijk(ctx, origin_par);
     if (result) {
         av_log(NULL, AV_LOG_ERROR, "Can't copy decoder context\n");
         return result;
@@ -123,13 +123,13 @@ static int video_decode(const char *input_filename)
     ctx->draw_horiz_band = draw_horiz_band;
     ctx->thread_count = 1;
 
-    result = avcodec_open2(ctx, codec, NULL);
+    result = avcodec_open2_xij(ctx, codec, NULL);
     if (result < 0) {
         av_log(ctx, AV_LOG_ERROR, "Can't open decoder\n");
         return result;
     }
 
-    fr = av_frame_alloc();
+    fr = av_frame_alloc_ijk();
     if (!fr) {
         av_log(NULL, AV_LOG_ERROR, "Can't allocate frame\n");
         return AVERROR(ENOMEM);
@@ -155,10 +155,10 @@ static int video_decode(const char *input_filename)
     memset(slice_byte_buffer, 0, byte_buffer_size);
     slice_byte_buffer_size = byte_buffer_size;
 
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
     do {
         if (!end_of_stream) {
-            if (av_read_frame(fmt_ctx, &pkt) < 0) {
+            if (av_read_frame_ijk(fmt_ctx, &pkt) < 0) {
                 end_of_stream = 1;
             }
         }
@@ -168,7 +168,7 @@ static int video_decode(const char *input_filename)
         }
         if (pkt.stream_index == video_stream || end_of_stream) {
             got_frame = 0;
-            result = avcodec_decode_video2(ctx, fr, &got_frame, &pkt);
+            result = avcodec_decode_video2_xij(ctx, fr, &got_frame, &pkt);
             if (result < 0) {
                 av_log(NULL, AV_LOG_ERROR, "Error decoding frame\n");
                 return result;
@@ -191,16 +191,16 @@ static int video_decode(const char *input_filename)
                     return -1;
                 }
             }
-            av_packet_unref(&pkt);
-            av_init_packet(&pkt);
+            av_packet_unref_ijk(&pkt);
+            av_init_packet_ijk(&pkt);
         }
     } while (!end_of_stream || got_frame);
 
-    av_packet_unref(&pkt);
-    av_frame_free(&fr);
-    avcodec_close(ctx);
-    avformat_close_input(&fmt_ctx);
-    avcodec_free_context(&ctx);
+    av_packet_unref_ijk(&pkt);
+    av_frame_free_xij(&fr);
+    avcodec_close_xij(ctx);
+    avformat_close_input_xij(&fmt_ctx);
+    avcodec_free_context_ijk(&ctx);
     av_freep(&byte_buffer);
     av_freep(&slice_byte_buffer);
     return 0;

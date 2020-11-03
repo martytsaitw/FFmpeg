@@ -82,9 +82,9 @@ static av_cold int smvjpeg_decode_end(AVCodecContext *avctx)
     int ret;
 
     jpg->picture_ptr = NULL;
-    av_frame_free(&s->picture[0]);
-    av_frame_free(&s->picture[1]);
-    ret = avcodec_close(s->avctx);
+    av_frame_free_xij(&s->picture[0]);
+    av_frame_free_xij(&s->picture[1]);
+    ret = avcodec_close_xij(s->avctx);
     av_freep(&s->avctx);
     return ret;
 }
@@ -98,13 +98,13 @@ static av_cold int smvjpeg_decode_init(AVCodecContext *avctx)
 
     s->frames_per_jpeg = 0;
 
-    s->picture[0] = av_frame_alloc();
+    s->picture[0] = av_frame_alloc_ijk();
     if (!s->picture[0])
         return AVERROR(ENOMEM);
 
-    s->picture[1] = av_frame_alloc();
+    s->picture[1] = av_frame_alloc_ijk();
     if (!s->picture[1]) {
-        av_frame_free(&s->picture[0]);
+        av_frame_free_xij(&s->picture[0]);
         return AVERROR(ENOMEM);
     }
 
@@ -118,20 +118,20 @@ static av_cold int smvjpeg_decode_init(AVCodecContext *avctx)
         ret = AVERROR_INVALIDDATA;
     }
 
-    codec = avcodec_find_decoder(AV_CODEC_ID_MJPEG);
+    codec = avcodec_find_decoder_ijk(AV_CODEC_ID_MJPEG);
     if (!codec) {
         av_log(avctx, AV_LOG_ERROR, "MJPEG codec not found\n");
         smvjpeg_decode_end(avctx);
         return AVERROR_DECODER_NOT_FOUND;
     }
 
-    s->avctx = avcodec_alloc_context3(codec);
+    s->avctx = avcodec_alloc_context3_ijk(codec);
 
     av_dict_set(&thread_opt, "threads", "1", 0);
     s->avctx->refcounted_frames = 1;
     s->avctx->flags = avctx->flags;
     s->avctx->idct_algo = avctx->idct_algo;
-    if ((r = ff_codec_open2_recursive(s->avctx, codec, &thread_opt)) < 0) {
+    if ((r = ff_codec_open2_recursive_xij(s->avctx, codec, &thread_opt)) < 0) {
         av_log(avctx, AV_LOG_ERROR, "MJPEG codec failed to open\n");
         ret = r;
     }
@@ -158,8 +158,8 @@ static int smvjpeg_decode_frame(AVCodecContext *avctx, void *data, int *data_siz
 
     /* Are we at the start of a block? */
     if (!cur_frame) {
-        av_frame_unref(mjpeg_data);
-        ret = avcodec_decode_video2(s->avctx, mjpeg_data, &s->mjpeg_data_size, avpkt);
+        av_frame_unref_xij(mjpeg_data);
+        ret = avcodec_decode_video2_xij(s->avctx, mjpeg_data, &s->mjpeg_data_size, avpkt);
         if (ret < 0) {
             s->mjpeg_data_size = 0;
             return ret;
@@ -182,7 +182,7 @@ static int smvjpeg_decode_frame(AVCodecContext *avctx, void *data, int *data_siz
 
     /* We shouldn't get here if frames_per_jpeg <= 0 because this was rejected
        in init */
-    ret = ff_set_dimensions(avctx, mjpeg_data->width, mjpeg_data->height / s->frames_per_jpeg);
+    ret = ff_set_dimensions_xij(avctx, mjpeg_data->width, mjpeg_data->height / s->frames_per_jpeg);
     if (ret < 0) {
         av_log(s, AV_LOG_ERROR, "Failed to set dimensions\n");
         return ret;
@@ -198,7 +198,7 @@ static int smvjpeg_decode_frame(AVCodecContext *avctx, void *data, int *data_siz
         for (i = 0; i < AV_NUM_DATA_POINTERS; i++)
             s->picture[1]->linesize[i] = mjpeg_data->linesize[i];
 
-        ret = av_frame_ref(data, s->picture[1]);
+        ret = av_frame_ref_xij(data, s->picture[1]);
         if (ret < 0)
             return ret;
     }

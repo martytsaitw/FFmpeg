@@ -233,7 +233,7 @@ static int overlay_opencl_blend(FFFrameSync *fs)
         goto fail;
     }
 
-    err = av_frame_copy_props(output, input_main);
+    err = av_frame_copy_props_xij(output, input_main);
 
     av_log(avctx, AV_LOG_DEBUG, "Filter output: %s, %ux%u (%"PRId64").\n",
            av_get_pix_fmt_name(output->format),
@@ -246,7 +246,7 @@ fail_kernel_arg:
            kernel_arg, cle);
     err = AVERROR(EIO);
 fail:
-    av_frame_free(&output);
+    av_frame_free_xij(&output);
     return err;
 }
 

@@ -46,7 +46,7 @@ static int nc_probe(AVProbeData *probe_packet)
 
 static int nc_read_header(AVFormatContext *s)
 {
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
 
     if (!st)
         return AVERROR(ENOMEM);
@@ -55,7 +55,7 @@ static int nc_read_header(AVFormatContext *s)
     st->codecpar->codec_id   = AV_CODEC_ID_MPEG4;
     st->need_parsing      = AVSTREAM_PARSE_FULL;
 
-    avpriv_set_pts_info(st, 64, 1, 100);
+    avpriv_set_pts_info_ijk(st, 64, 1, 100);
 
     return 0;
 }
@@ -67,23 +67,23 @@ static int nc_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     uint32_t state=-1;
     while (state != NC_VIDEO_FLAG) {
-        if (avio_feof(s->pb))
+        if (avio_feof_xij(s->pb))
             return AVERROR(EIO);
-        state = (state<<8) + avio_r8(s->pb);
+        state = (state<<8) + avio_r8_xij(s->pb);
     }
 
-    avio_r8(s->pb);
-    size = avio_rl16(s->pb);
-    avio_skip(s->pb, 9);
+    avio_r8_xij(s->pb);
+    size = avio_rl16_xij(s->pb);
+    avio_skip_xij(s->pb, 9);
 
     if (size == 0) {
         av_log(s, AV_LOG_DEBUG, "Next packet size is zero\n");
         return AVERROR(EAGAIN);
     }
 
-    ret = av_get_packet(s->pb, pkt, size);
+    ret = av_get_packet_xij(s->pb, pkt, size);
     if (ret != size) {
-        if (ret > 0) av_packet_unref(pkt);
+        if (ret > 0) av_packet_unref_ijk(pkt);
         return AVERROR(EIO);
     }
 

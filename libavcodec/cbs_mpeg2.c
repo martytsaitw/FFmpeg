@@ -25,7 +25,7 @@
 
 
 #define HEADER(name) do { \
-        ff_cbs_trace_header(ctx, name); \
+        ff_cbs_trace_header_xij(ctx, name); \
     } while (0)
 
 #define CHECK(call) do { \
@@ -45,7 +45,7 @@
 
 #define xui(width, name, var) do { \
         uint32_t value = 0; \
-        CHECK(ff_cbs_read_unsigned(ctx, rw, width, #name, \
+        CHECK(ff_cbs_read_unsigned_xij(ctx, rw, width, #name, \
                                    &value, 0, (1 << width) - 1)); \
         var = value; \
     } while (0)
@@ -55,7 +55,7 @@
 
 #define marker_bit() do { \
         av_unused uint32_t one; \
-        CHECK(ff_cbs_read_unsigned(ctx, rw, 1, "marker_bit", &one, 1, 1)); \
+        CHECK(ff_cbs_read_unsigned_xij(ctx, rw, 1, "marker_bit", &one, 1, 1)); \
     } while (0)
 
 #define nextbits(width, compare, var) \
@@ -78,7 +78,7 @@
 #define RWContext PutBitContext
 
 #define xui(width, name, var) do { \
-        CHECK(ff_cbs_write_unsigned(ctx, rw, width, #name, \
+        CHECK(ff_cbs_write_unsigned_xij(ctx, rw, width, #name, \
                                     var, 0, (1 << width) - 1)); \
     } while (0)
 
@@ -86,7 +86,7 @@
         xui(width, name, current->name)
 
 #define marker_bit() do { \
-        CHECK(ff_cbs_write_unsigned(ctx, rw, 1, "marker_bit", 1, 1, 1)); \
+        CHECK(ff_cbs_write_unsigned_xij(ctx, rw, 1, "marker_bit", 1, 1, 1)); \
     } while (0)
 
 #define nextbits(width, compare, var) (var)
@@ -105,15 +105,15 @@
 static void cbs_mpeg2_free_user_data(void *unit, uint8_t *content)
 {
     MPEG2RawUserData *user = (MPEG2RawUserData*)content;
-    av_buffer_unref(&user->user_data_ref);
+    av_buffer_unref_xij(&user->user_data_ref);
     av_freep(&content);
 }
 
 static void cbs_mpeg2_free_slice(void *unit, uint8_t *content)
 {
     MPEG2RawSlice *slice = (MPEG2RawSlice*)content;
-    av_buffer_unref(&slice->header.extra_information_ref);
-    av_buffer_unref(&slice->data_ref);
+    av_buffer_unref_xij(&slice->header.extra_information_ref);
+    av_buffer_unref_xij(&slice->data_ref);
     av_freep(&content);
 }
 
@@ -127,10 +127,10 @@ static int cbs_mpeg2_split_fragment(CodedBitstreamContext *ctx,
     size_t unit_size;
     int err, i, unit_type;
 
-    start = avpriv_find_start_code(frag->data, frag->data + frag->data_size,
+    start = avpriv_find_start_code_xij(frag->data, frag->data + frag->data_size,
                                    &start_code);
     for (i = 0;; i++) {
-        end = avpriv_find_start_code(start, frag->data + frag->data_size,
+        end = avpriv_find_start_code_xij(start, frag->data + frag->data_size,
                                      &next_start_code);
 
         unit_type = start_code & 0xff;
@@ -152,7 +152,7 @@ static int cbs_mpeg2_split_fragment(CodedBitstreamContext *ctx,
         memcpy(unit_data, start - 1, unit_size);
         memset(unit_data + unit_size, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 
-        err = ff_cbs_insert_unit_data(ctx, frag, i, unit_type,
+        err = ff_cbs_insert_unit_data_xij(ctx, frag, i, unit_type,
                                       unit_data, unit_size, NULL);
         if (err < 0) {
             av_freep(&unit_data);
@@ -183,7 +183,7 @@ static int cbs_mpeg2_read_unit(CodedBitstreamContext *ctx,
         MPEG2RawSlice *slice;
         int pos, len;
 
-        err = ff_cbs_alloc_unit_content(ctx, unit, sizeof(*slice),
+        err = ff_cbs_alloc_unit_content_xij(ctx, unit, sizeof(*slice),
                                         &cbs_mpeg2_free_slice);
         if (err < 0)
             return err;
@@ -197,7 +197,7 @@ static int cbs_mpeg2_read_unit(CodedBitstreamContext *ctx,
         len = unit->data_size;
 
         slice->data_size = len - pos / 8;
-        slice->data_ref  = av_buffer_alloc(slice->data_size +
+        slice->data_ref  = av_buffer_alloc_ijk(slice->data_size +
                                            AV_INPUT_BUFFER_PADDING_SIZE);
         if (!slice->data_ref)
             return AVERROR(ENOMEM);
@@ -215,7 +215,7 @@ static int cbs_mpeg2_read_unit(CodedBitstreamContext *ctx,
         case start_code: \
             { \
                 type *header; \
-                err = ff_cbs_alloc_unit_content(ctx, unit, \
+                err = ff_cbs_alloc_unit_content_xij(ctx, unit, \
                                                 sizeof(*header), free_func); \
                 if (err < 0) \
                     return err; \
@@ -349,7 +349,7 @@ static int cbs_mpeg2_write_unit(CodedBitstreamContext *ctx,
     unit->data_size = (put_bits_count(&pbc) + 7) / 8;
     flush_put_bits(&pbc);
 
-    err = ff_cbs_alloc_unit_data(ctx, unit, unit->data_size);
+    err = ff_cbs_alloc_unit_data_xij(ctx, unit, unit->data_size);
     if (err < 0)
         return err;
 
@@ -369,7 +369,7 @@ static int cbs_mpeg2_assemble_fragment(CodedBitstreamContext *ctx,
     for (i = 0; i < frag->nb_units; i++)
         size += 3 + frag->units[i].data_size;
 
-    frag->data_ref = av_buffer_alloc(size + AV_INPUT_BUFFER_PADDING_SIZE);
+    frag->data_ref = av_buffer_alloc_ijk(size + AV_INPUT_BUFFER_PADDING_SIZE);
     if (!frag->data_ref)
         return AVERROR(ENOMEM);
     data = frag->data_ref->data;

@@ -60,7 +60,7 @@ static av_always_inline const uint8_t* find_next_marker(const uint8_t *src, cons
 {
     if (end - src >= 4) {
         uint32_t mrk = 0xFFFFFFFF;
-        src = avpriv_find_start_code(src, end, &mrk);
+        src = avpriv_find_start_code_xij(src, end, &mrk);
         if (IS_MARKER(mrk))
             return src - 4;
     }

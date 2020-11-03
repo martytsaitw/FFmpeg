@@ -91,20 +91,20 @@ static int qcp_read_header(AVFormatContext *s)
 {
     AVIOContext *pb = s->pb;
     QCPContext    *c  = s->priv_data;
-    AVStream      *st = avformat_new_stream(s, NULL);
+    AVStream      *st = avformat_new_stream_ijk(s, NULL);
     uint8_t       buf[16];
     int           i, nb_rates;
 
     if (!st)
         return AVERROR(ENOMEM);
 
-    avio_rb32(pb);                    // "RIFF"
-    avio_skip(pb, 4 + 8 + 4 + 1 + 1);    // filesize + "QLCMfmt " + chunk-size + major-version + minor-version
+    avio_rb32_xij(pb);                    // "RIFF"
+    avio_skip_xij(pb, 4 + 8 + 4 + 1 + 1);    // filesize + "QLCMfmt " + chunk-size + major-version + minor-version
 
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codecpar->channels   = 1;
     st->codecpar->channel_layout = AV_CH_LAYOUT_MONO;
-    avio_read(pb, buf, 16);
+    avio_read_xij(pb, buf, 16);
     if (is_qcelp_13k_guid(buf)) {
         st->codecpar->codec_id = AV_CODEC_ID_QCELP;
     } else if (!memcmp(buf, guid_evrc, 16)) {
@@ -118,26 +118,26 @@ static int qcp_read_header(AVFormatContext *s)
                FF_ARG_GUID(buf));
         return AVERROR_INVALIDDATA;
     }
-    avio_skip(pb, 2 + 80); // codec-version + codec-name
-    st->codecpar->bit_rate = avio_rl16(pb);
+    avio_skip_xij(pb, 2 + 80); // codec-version + codec-name
+    st->codecpar->bit_rate = avio_rl16_xij(pb);
 
-    s->packet_size = avio_rl16(pb);
-    avio_skip(pb, 2); // block-size
-    st->codecpar->sample_rate = avio_rl16(pb);
-    avio_skip(pb, 2); // sample-size
+    s->packet_size = avio_rl16_xij(pb);
+    avio_skip_xij(pb, 2); // block-size
+    st->codecpar->sample_rate = avio_rl16_xij(pb);
+    avio_skip_xij(pb, 2); // sample-size
 
     memset(c->rates_per_mode, -1, sizeof(c->rates_per_mode));
-    nb_rates = avio_rl32(pb);
+    nb_rates = avio_rl32_xij(pb);
     nb_rates = FFMIN(nb_rates, 8);
     for (i=0; i<nb_rates; i++) {
-        int size = avio_r8(pb);
-        int mode = avio_r8(pb);
+        int size = avio_r8_xij(pb);
+        int mode = avio_r8_xij(pb);
         if (mode > QCP_MAX_MODE) {
             av_log(s, AV_LOG_WARNING, "Unknown entry %d=>%d in rate-map-table.\n ", mode, size);
         } else
             c->rates_per_mode[mode] = size;
     }
-    avio_skip(pb, 16 - 2*nb_rates + 20); // empty entries of rate-map-table + reserved
+    avio_skip_xij(pb, 16 - 2*nb_rates + 20); // empty entries of rate-map-table + reserved
 
     return 0;
 }
@@ -148,9 +148,9 @@ static int qcp_read_packet(AVFormatContext *s, AVPacket *pkt)
     QCPContext    *c  = s->priv_data;
     unsigned int  chunk_size, tag;
 
-    while(!avio_feof(pb)) {
+    while(!avio_feof_xij(pb)) {
         if (c->data_size) {
-            int pkt_size, ret, mode = avio_r8(pb);
+            int pkt_size, ret, mode = avio_r8_xij(pb);
 
             if (s->packet_size) {
                 pkt_size = s->packet_size - 1;
@@ -164,7 +164,7 @@ static int qcp_read_packet(AVFormatContext *s, AVPacket *pkt)
                 pkt_size = c->data_size - 1;
             }
 
-            if ((ret = av_get_packet(pb, pkt, pkt_size)) >= 0) {
+            if ((ret = av_get_packet_xij(pb, pkt, pkt_size)) >= 0) {
                 if (pkt_size != ret)
                     av_log(s, AV_LOG_ERROR, "Packet size is too small.\n");
 
@@ -173,23 +173,23 @@ static int qcp_read_packet(AVFormatContext *s, AVPacket *pkt)
             return ret;
         }
 
-        if (avio_tell(pb) & 1 && avio_r8(pb))
+        if (avio_tell(pb) & 1 && avio_r8_xij(pb))
             av_log(s, AV_LOG_WARNING, "Padding should be 0.\n");
 
-        tag        = avio_rl32(pb);
-        chunk_size = avio_rl32(pb);
+        tag        = avio_rl32_xij(pb);
+        chunk_size = avio_rl32_xij(pb);
         switch (tag) {
         case MKTAG('v', 'r', 'a', 't'):
-            if (avio_rl32(pb)) // var-rate-flag
+            if (avio_rl32_xij(pb)) // var-rate-flag
                 s->packet_size = 0;
-            avio_skip(pb, 4); // size-in-packets
+            avio_skip_xij(pb, 4); // size-in-packets
             break;
         case MKTAG('d', 'a', 't', 'a'):
             c->data_size = chunk_size;
             break;
 
         default:
-            avio_skip(pb, chunk_size);
+            avio_skip_xij(pb, chunk_size);
         }
     }
     return AVERROR_EOF;

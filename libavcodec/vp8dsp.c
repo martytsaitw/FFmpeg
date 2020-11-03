@@ -663,7 +663,7 @@ VP8_BILINEAR(4)
     dsp->put_vp8_bilinear_pixels_tab[IDX][2][1] = put_vp8_bilinear ## SIZE ## _hv_c; \
     dsp->put_vp8_bilinear_pixels_tab[IDX][2][2] = put_vp8_bilinear ## SIZE ## _hv_c
 
-av_cold void ff_vp78dsp_init(VP8DSPContext *dsp)
+av_cold void ff_vp78dsp_init_xij(VP8DSPContext *dsp)
 {
     VP78_MC_FUNC(0, 16);
     VP78_MC_FUNC(1, 8);
@@ -711,7 +711,7 @@ av_cold void ff_vp7dsp_init(VP8DSPContext *dsp)
 #if CONFIG_VP8_DECODER
 LOOP_FILTERS(vp8)
 
-av_cold void ff_vp8dsp_init(VP8DSPContext *dsp)
+av_cold void ff_vp8dsp_init_xij(VP8DSPContext *dsp)
 {
     dsp->vp8_luma_dc_wht    = vp8_luma_dc_wht_c;
     dsp->vp8_luma_dc_wht_dc = vp8_luma_dc_wht_dc_c;

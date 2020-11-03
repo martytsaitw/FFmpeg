@@ -194,7 +194,7 @@ static LRESULT CALLBACK videostream_cb(HWND hwnd, LPVIDEOHDR vdhdr)
     if(!pktl_next)
         goto fail;
 
-    if(av_new_packet(&pktl_next->pkt, vdhdr->dwBytesUsed) < 0) {
+    if(av_new_packet_ijk(&pktl_next->pkt, vdhdr->dwBytesUsed) < 0) {
         av_free(pktl_next);
         goto fail;
     }
@@ -234,7 +234,7 @@ static int vfw_read_close(AVFormatContext *s)
     pktl = ctx->pktl;
     while (pktl) {
         AVPacketList *next = pktl->next;
-        av_packet_unref(&pktl->pkt);
+        av_packet_unref_ijk(&pktl->pkt);
         av_free(pktl);
         pktl = next;
     }
@@ -300,7 +300,7 @@ static int vfw_read_header(AVFormatContext *s)
 
     SetWindowLongPtr(ctx->hwnd, GWLP_USERDATA, (LONG_PTR) s);
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if(!st) {
         vfw_read_close(s);
         return AVERROR(ENOMEM);
@@ -406,7 +406,7 @@ static int vfw_read_header(AVFormatContext *s)
 
     av_freep(&bi);
 
-    avpriv_set_pts_info(st, 32, 1, 1000);
+    avpriv_set_pts_info_ijk(st, 32, 1, 1000);
 
     ctx->mutex = CreateMutex(NULL, 0, NULL);
     if(!ctx->mutex) {

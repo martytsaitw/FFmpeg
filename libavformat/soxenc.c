@@ -58,29 +58,29 @@ static int sox_write_header(AVFormatContext *s)
 
     if (par->codec_id == AV_CODEC_ID_PCM_S32LE) {
         ffio_wfourcc(pb, ".SoX");
-        avio_wl32(pb, sox->header_size);
-        avio_wl64(pb, 0); /* number of samples */
-        avio_wl64(pb, av_double2int(par->sample_rate));
-        avio_wl32(pb, par->channels);
-        avio_wl32(pb, comment_size);
+        avio_wl32_xij(pb, sox->header_size);
+        avio_wl64_xij(pb, 0); /* number of samples */
+        avio_wl64_xij(pb, av_double2int(par->sample_rate));
+        avio_wl32_xij(pb, par->channels);
+        avio_wl32_xij(pb, comment_size);
     } else if (par->codec_id == AV_CODEC_ID_PCM_S32BE) {
         ffio_wfourcc(pb, "XoS.");
-        avio_wb32(pb, sox->header_size);
-        avio_wb64(pb, 0); /* number of samples */
-        avio_wb64(pb, av_double2int(par->sample_rate));
-        avio_wb32(pb, par->channels);
-        avio_wb32(pb, comment_size);
+        avio_wb32_xij(pb, sox->header_size);
+        avio_wb64_xij(pb, 0); /* number of samples */
+        avio_wb64_xij(pb, av_double2int(par->sample_rate));
+        avio_wb32_xij(pb, par->channels);
+        avio_wb32_xij(pb, comment_size);
     } else {
         av_log(s, AV_LOG_ERROR, "invalid codec; use pcm_s32le or pcm_s32be\n");
         return AVERROR(EINVAL);
     }
 
     if (comment_len)
-        avio_write(pb, comment->value, comment_len);
+        avio_write_xij(pb, comment->value, comment_len);
 
-    ffio_fill(pb, 0, comment_size - comment_len);
+    ffio_fill_xij(pb, 0, comment_size - comment_len);
 
-    avio_flush(pb);
+    avio_flush_xij(pb);
 
     return 0;
 }
@@ -95,14 +95,14 @@ static int sox_write_trailer(AVFormatContext *s)
         /* update number of samples */
         int64_t file_size = avio_tell(pb);
         int64_t num_samples = (file_size - sox->header_size - 4LL) >> 2LL;
-        avio_seek(pb, 8, SEEK_SET);
+        avio_seek_xij(pb, 8, SEEK_SET);
         if (par->codec_id == AV_CODEC_ID_PCM_S32LE) {
-            avio_wl64(pb, num_samples);
+            avio_wl64_xij(pb, num_samples);
         } else
-            avio_wb64(pb, num_samples);
-        avio_seek(pb, file_size, SEEK_SET);
+            avio_wb64_xij(pb, num_samples);
+        avio_seek_xij(pb, file_size, SEEK_SET);
 
-        avio_flush(pb);
+        avio_flush_xij(pb);
     }
 
     return 0;

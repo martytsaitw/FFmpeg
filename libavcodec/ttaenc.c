@@ -154,7 +154,7 @@ pkt_alloc:
             if (unary + 100LL > put_bits_left(&pb)) {
                 if (pkt_size < INT_MAX/2) {
                     pkt_size *= 2;
-                    av_packet_unref(avpkt);
+                    av_packet_unref_ijk(avpkt);
                     goto pkt_alloc;
                 } else
                     return AVERROR(ENOMEM);

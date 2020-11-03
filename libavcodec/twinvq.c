@@ -487,7 +487,7 @@ int ff_twinvq_decode_frame(AVCodecContext *avctx, void *data,
     /* get output buffer */
     if (tctx->discarded_packets >= 2) {
         frame->nb_samples = mtab->size * tctx->frames_per_packet;
-        if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+        if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
             return ret;
         out = (float **)frame->extended_data;
     }

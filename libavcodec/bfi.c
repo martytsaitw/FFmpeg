@@ -60,7 +60,7 @@ static int bfi_decode_frame(AVCodecContext *avctx, void *data,
     uint32_t *pal;
     int i, j, ret, height = avctx->height;
 
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     bytestream2_init(&g, avpkt->data, buf_size);

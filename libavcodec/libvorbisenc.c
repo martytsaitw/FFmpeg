@@ -238,8 +238,8 @@ static av_cold int libvorbis_encode_init(AVCodecContext *avctx)
     }
     p[0]    = 2;
     offset  = 1;
-    offset += av_xiphlacing(&p[offset], header.bytes);
-    offset += av_xiphlacing(&p[offset], header_comm.bytes);
+    offset += av_xiphlacing_xij(&p[offset], header.bytes);
+    offset += av_xiphlacing_xij(&p[offset], header_comm.bytes);
     memcpy(&p[offset], header.packet, header.bytes);
     offset += header.bytes;
     memcpy(&p[offset], header_comm.packet, header_comm.bytes);

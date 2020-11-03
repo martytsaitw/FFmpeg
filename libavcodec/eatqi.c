@@ -138,14 +138,14 @@ static int tqi_decode_frame(AVCodecContext *avctx,
     tqi_calculate_qtable(t, buf[4]);
     buf += 8;
 
-    ret = ff_set_dimensions(avctx, w, h);
+    ret = ff_set_dimensions_xij(avctx, w, h);
     if (ret < 0)
         return ret;
 
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
-    av_fast_padded_malloc(&t->bitstream_buf, &t->bitstream_buf_size,
+    av_fast_padded_malloc_xij(&t->bitstream_buf, &t->bitstream_buf_size,
                           buf_end - buf);
     if (!t->bitstream_buf)
         return AVERROR(ENOMEM);

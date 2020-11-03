@@ -62,7 +62,7 @@ void ff_tlog_ref(void *ctx, AVFrame *ref, int end)
                 !ref->interlaced_frame     ? 'P' :         /* Progressive  */
                 ref->top_field_first ? 'T' : 'B',    /* Top / Bottom */
                 ref->key_frame,
-                av_get_picture_type_char(ref->pict_type));
+                av_get_picture_type_char_xij(ref->pict_type));
     }
     if (ref->nb_samples) {
         ff_tlog(ctx, " cl:%"PRId64"d n:%d r:%d",
@@ -74,7 +74,7 @@ void ff_tlog_ref(void *ctx, AVFrame *ref, int end)
     ff_tlog(ctx, "]%s", end ? "\n" : "");
 }
 
-unsigned avfilter_version(void)
+unsigned avfilter_version_ijk(void)
 {
     av_assert0(LIBAVFILTER_VERSION_MICRO >= 100);
     return LIBAVFILTER_VERSION_INT;
@@ -148,8 +148,8 @@ int avfilter_link(AVFilterContext *src, unsigned srcpad,
     if (src->output_pads[srcpad].type != dst->input_pads[dstpad].type) {
         av_log(src, AV_LOG_ERROR,
                "Media type mismatch between the '%s' filter output pad %d (%s) and the '%s' filter input pad %d (%s)\n",
-               src->name, srcpad, (char *)av_x_if_null(av_get_media_type_string(src->output_pads[srcpad].type), "?"),
-               dst->name, dstpad, (char *)av_x_if_null(av_get_media_type_string(dst-> input_pads[dstpad].type), "?"));
+               src->name, srcpad, (char *)av_x_if_null(av_get_media_type_string_xij(src->output_pads[srcpad].type), "?"),
+               dst->name, dstpad, (char *)av_x_if_null(av_get_media_type_string_xij(dst-> input_pads[dstpad].type), "?"));
         return AVERROR(EINVAL);
     }
 
@@ -176,7 +176,7 @@ void avfilter_link_free(AVFilterLink **link)
     if (!*link)
         return;
 
-    av_frame_free(&(*link)->partial_buf);
+    av_frame_free_xij(&(*link)->partial_buf);
     ff_framequeue_free(&(*link)->fifo);
     ff_frame_pool_uninit((FFFramePool**)&(*link)->frame_pool);
 
@@ -360,7 +360,7 @@ int avfilter_config_links(AVFilterContext *filter)
                 !(link->src->filter->flags_internal & FF_FILTER_FLAG_HWFRAME_AWARE)) {
                 av_assert0(!link->hw_frames_ctx &&
                            "should not be set by non-hwframe-aware filter");
-                link->hw_frames_ctx = av_buffer_ref(link->src->inputs[0]->hw_frames_ctx);
+                link->hw_frames_ctx = av_buffer_ref_ijk(link->src->inputs[0]->hw_frames_ctx);
                 if (!link->hw_frames_ctx)
                     return AVERROR(ENOMEM);
             }
@@ -746,7 +746,7 @@ static void free_link(AVFilterLink *link)
     if (link->dst)
         link->dst->inputs[link->dstpad - link->dst->input_pads] = NULL;
 
-    av_buffer_unref(&link->hw_frames_ctx);
+    av_buffer_unref_xij(&link->hw_frames_ctx);
 
     ff_formats_unref(&link->in_formats);
     ff_formats_unref(&link->out_formats);
@@ -780,7 +780,7 @@ void avfilter_free(AVFilterContext *filter)
     if (filter->filter->priv_class)
         av_opt_free(filter->priv);
 
-    av_buffer_unref(&filter->hw_device_ctx);
+    av_buffer_unref_xij(&filter->hw_device_ctx);
 
     av_freep(&filter->name);
     av_freep(&filter->input_pads);
@@ -1073,7 +1073,7 @@ static int ff_filter_frame_framed(AVFilterLink *link, AVFrame *frame)
     return ret;
 
 fail:
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
     return ret;
 }
 
@@ -1117,14 +1117,14 @@ int ff_filter_frame(AVFilterLink *link, AVFrame *frame)
     filter_unblock(link->dst);
     ret = ff_framequeue_add(&link->fifo, frame);
     if (ret < 0) {
-        av_frame_free(&frame);
+        av_frame_free_xij(&frame);
         return ret;
     }
     ff_filter_set_ready(link->dst, 300);
     return 0;
 
 error:
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
     return AVERROR_PATCHWELCOME;
 }
 
@@ -1168,9 +1168,9 @@ static int take_samples(AVFilterLink *link, unsigned min, unsigned max,
     buf = ff_get_audio_buffer(link, nb_samples);
     if (!buf)
         return AVERROR(ENOMEM);
-    ret = av_frame_copy_props(buf, frame0);
+    ret = av_frame_copy_props_xij(buf, frame0);
     if (ret < 0) {
-        av_frame_free(&buf);
+        av_frame_free_xij(&buf);
         return ret;
     }
     buf->pts = frame0->pts;
@@ -1181,7 +1181,7 @@ static int take_samples(AVFilterLink *link, unsigned min, unsigned max,
         av_samples_copy(buf->extended_data, frame->extended_data, p, 0,
                         frame->nb_samples, link->channels, link->format);
         p += frame->nb_samples;
-        av_frame_free(&frame);
+        av_frame_free_xij(&frame);
     }
     if (p < nb_samples) {
         unsigned n = nb_samples - p;
@@ -1513,7 +1513,7 @@ int ff_inlink_make_frame_writable(AVFilterLink *link, AVFrame **rframe)
     AVFrame *out;
     int ret;
 
-    if (av_frame_is_writable(frame))
+    if (av_frame_is_writable_xij(frame))
         return 0;
     av_log(link->dst, AV_LOG_DEBUG, "Copying data in avfilter.\n");
 
@@ -1530,9 +1530,9 @@ int ff_inlink_make_frame_writable(AVFilterLink *link, AVFrame **rframe)
     if (!out)
         return AVERROR(ENOMEM);
 
-    ret = av_frame_copy_props(out, frame);
+    ret = av_frame_copy_props_xij(out, frame);
     if (ret < 0) {
-        av_frame_free(&out);
+        av_frame_free_xij(&out);
         return ret;
     }
 
@@ -1551,7 +1551,7 @@ int ff_inlink_make_frame_writable(AVFilterLink *link, AVFrame **rframe)
         av_assert0(!"reached");
     }
 
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
     *rframe = out;
     return 0;
 }
@@ -1606,7 +1606,7 @@ void ff_inlink_set_status(AVFilterLink *link, int status)
     ff_avfilter_link_set_out_status(link, status, AV_NOPTS_VALUE);
     while (ff_framequeue_queued_frames(&link->fifo)) {
            AVFrame *frame = ff_framequeue_take(&link->fifo);
-           av_frame_free(&frame);
+           av_frame_free_xij(&frame);
     }
     if (!link->status_in)
         link->status_in = status;

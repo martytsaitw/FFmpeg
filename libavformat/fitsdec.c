@@ -52,14 +52,14 @@ static int fits_read_header(AVFormatContext *s)
     AVStream *st;
     FITSContext * fits = s->priv_data;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id = AV_CODEC_ID_FITS;
 
-    avpriv_set_pts_info(st, 64, fits->framerate.den, fits->framerate.num);
+    avpriv_set_pts_info_ijk(st, 64, fits->framerate.den, fits->framerate.num);
     fits->pts = 0;
     fits->first_image = 1;
     return 0;
@@ -83,7 +83,7 @@ static int64_t is_image(AVFormatContext *s, FITSContext *fits, FITSHeader *heade
     int64_t buf_size = 0, size = 0, t;
 
     do {
-        ret = avio_read(s->pb, buf, FITS_BLOCK_SIZE);
+        ret = avio_read_xij(s->pb, buf, FITS_BLOCK_SIZE);
         if (ret < 0) {
             return ret;
         } else if (ret < FITS_BLOCK_SIZE) {
@@ -157,7 +157,7 @@ static int fits_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     av_bprint_init(&avbuf, FITS_BLOCK_SIZE, AV_BPRINT_SIZE_UNLIMITED);
     while ((ret = is_image(s, fits, &header, &avbuf, &size)) == 0) {
-        pos = avio_skip(s->pb, size);
+        pos = avio_skip_xij(s->pb, size);
         if (pos < 0)
             return pos;
 
@@ -174,7 +174,7 @@ static int fits_read_packet(AVFormatContext *s, AVPacket *pkt)
     }
 
     // Header is sent with the first line removed...
-    ret = av_new_packet(pkt, avbuf.len - 80 + size);
+    ret = av_new_packet_ijk(pkt, avbuf.len - 80 + size);
     if (ret < 0)
         goto fail;
 
@@ -183,16 +183,16 @@ static int fits_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     ret = av_bprint_finalize(&avbuf, &buf);
     if (ret < 0) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return ret;
     }
 
     memcpy(pkt->data, buf + 80, avbuf.len - 80);
     pkt->size = avbuf.len - 80;
     av_freep(&buf);
-    ret = avio_read(s->pb, pkt->data + pkt->size, size);
+    ret = avio_read_xij(s->pb, pkt->data + pkt->size, size);
     if (ret < 0) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return ret;
     }
 

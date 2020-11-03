@@ -223,10 +223,10 @@ static int mpc7_decode_frame(AVCodecContext * avctx, void *data,
 
     /* get output buffer */
     frame->nb_samples = MPC_FRAME_SIZE;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
-    av_fast_padded_malloc(&c->bits, &c->buf_size, buf_size);
+    av_fast_padded_malloc_xij(&c->bits, &c->buf_size, buf_size);
     if (!c->bits)
         return AVERROR(ENOMEM);
     c->bdsp.bswap_buf((uint32_t *) c->bits, (const uint32_t *) buf,

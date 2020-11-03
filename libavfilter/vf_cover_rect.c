@@ -182,7 +182,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     x = av_clip(x, 0, in->width  - w);
     y = av_clip(y, 0, in->height - h);
 
-    av_frame_make_writable(in);
+    av_frame_make_writable_xij(in);
 
     if (cover->mode == MODE_BLUR) {
         blur (cover, in, x, y);
@@ -211,7 +211,7 @@ static av_cold int init(AVFilterContext *ctx)
             return AVERROR(EINVAL);
         }
 
-        cover->cover_frame = av_frame_alloc();
+        cover->cover_frame = av_frame_alloc_ijk();
         if (!cover->cover_frame)
             return AVERROR(ENOMEM);
 

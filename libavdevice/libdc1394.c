@@ -138,12 +138,12 @@ static inline int dc1394_read_common(AVFormatContext *c,
     }
 
     /* create a video stream */
-    vst = avformat_new_stream(c, NULL);
+    vst = avformat_new_stream_ijk(c, NULL);
     if (!vst) {
         ret = AVERROR(ENOMEM);
         goto out;
     }
-    avpriv_set_pts_info(vst, 64, 1, 1000);
+    avpriv_set_pts_info_ijk(vst, 64, 1, 1000);
     vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     vst->codecpar->codec_id = AV_CODEC_ID_RAWVIDEO;
     vst->codecpar->width = fmt->width;

@@ -69,12 +69,12 @@ static int read_header(AVFormatContext *s)
 
     int min,sec,msec;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
-    avio_skip(pb, 16);
-    size=avio_rl32(pb);
+    avio_skip_xij(pb, 16);
+    size=avio_rl32_xij(pb);
     ff_get_wav_header(s, pb, st->codecpar, size, 0);
 
     /*
@@ -88,20 +88,20 @@ static int read_header(AVFormatContext *s)
 
     st->codecpar->frame_size=80;
     st->codecpar->channels=1;
-    avpriv_set_pts_info(st, 64, 1, 100);
+    avpriv_set_pts_info_ijk(st, 64, 1, 100);
 
     st->codecpar->codec_id=AV_CODEC_ID_G729;
 
-    avio_seek(pb, 257, SEEK_SET);
-    msec=avio_rl16(pb);
-    sec=avio_r8(pb);
-    min=avio_rl32(pb);
+    avio_seek_xij(pb, 257, SEEK_SET);
+    msec=avio_rl16_xij(pb);
+    sec=avio_r8_xij(pb);
+    min=avio_rl32_xij(pb);
 
     st->duration = av_rescale(1000*(min*60+sec)+msec, st->codecpar->sample_rate, 1000 * st->codecpar->frame_size);
 
     ctx->bytes_left_in_chunk=CHUNK_SIZE;
 
-    avio_seek(pb, 512, SEEK_SET);
+    avio_seek_xij(pb, 512, SEEK_SET);
 
     return 0;
 }
@@ -117,16 +117,16 @@ static int read_packet(AVFormatContext *s,
 
 
     if(s->streams[0]->codecpar->sample_rate==8000)
-        ret=av_new_packet(pkt, 10);
+        ret=av_new_packet_ijk(pkt, 10);
     else
-        ret=av_new_packet(pkt, 11);
+        ret=av_new_packet_ijk(pkt, 11);
 
     if(ret)
         return ret;
 
     if(s->streams[0]->codecpar->sample_rate==4400 && !ctx->second_packet)
     {
-        ret = avio_read(pb, ctx->audio_buffer, frame_size);
+        ret = avio_read_xij(pb, ctx->audio_buffer, frame_size);
 
         if(ret<0)
             return ret;
@@ -165,7 +165,7 @@ static int read_packet(AVFormatContext *s,
     }
     else // 8000 Hz
     {
-        ret = avio_read(pb, ctx->audio_buffer, frame_size);
+        ret = avio_read_xij(pb, ctx->audio_buffer, frame_size);
 
         if(ret<0)
             return ret;
@@ -188,7 +188,7 @@ static int read_packet(AVFormatContext *s,
 
     if(ctx->bytes_left_in_chunk < frame_size)
     {
-        avio_skip(pb, ctx->bytes_left_in_chunk);
+        avio_skip_xij(pb, ctx->bytes_left_in_chunk);
         ctx->bytes_left_in_chunk=CHUNK_SIZE;
     }
 

@@ -132,7 +132,7 @@ static AVBufferRef *dxva2_pool_alloc(void *opaque, int size)
 
     if (s->nb_surfaces_used < hwctx->nb_surfaces) {
         s->nb_surfaces_used++;
-        return av_buffer_create((uint8_t*)s->surfaces_internal[s->nb_surfaces_used - 1],
+        return av_buffer_create_ijk((uint8_t*)s->surfaces_internal[s->nb_surfaces_used - 1],
                                 sizeof(*hwctx->surfaces), dxva2_pool_release_dummy, 0, 0);
     }
 
@@ -195,7 +195,7 @@ static int dxva2_init_pool(AVHWFramesContext *ctx)
         return AVERROR_UNKNOWN;
     }
 
-    ctx->internal->pool_internal = av_buffer_pool_init2(sizeof(*s->surfaces_internal),
+    ctx->internal->pool_internal = av_buffer_pool_init2_xij(sizeof(*s->surfaces_internal),
                                                         ctx, dxva2_pool_alloc, NULL);
     if (!ctx->internal->pool_internal)
         return AVERROR(ENOMEM);
@@ -235,7 +235,7 @@ static int dxva2_frames_init(AVHWFramesContext *ctx)
 
 static int dxva2_get_buffer(AVHWFramesContext *ctx, AVFrame *frame)
 {
-    frame->buf[0] = av_buffer_pool_get(ctx->pool);
+    frame->buf[0] = av_buffer_pool_get_xij(ctx->pool);
     if (!frame->buf[0])
         return AVERROR(ENOMEM);
 
@@ -339,7 +339,7 @@ static int dxva2_transfer_data_to(AVHWFramesContext *ctx, AVFrame *dst,
     if (src->format != ctx->sw_format)
         return AVERROR(ENOSYS);
 
-    map = av_frame_alloc();
+    map = av_frame_alloc_ijk();
     if (!map)
         return AVERROR(ENOMEM);
     map->format = dst->format;
@@ -352,7 +352,7 @@ static int dxva2_transfer_data_to(AVHWFramesContext *ctx, AVFrame *dst,
                   ctx->sw_format, src->width, src->height);
 
 fail:
-    av_frame_free(&map);
+    av_frame_free_xij(&map);
     return ret;
 }
 
@@ -366,7 +366,7 @@ static int dxva2_transfer_data_from(AVHWFramesContext *ctx, AVFrame *dst,
     if (dst->format != ctx->sw_format)
         return AVERROR(ENOSYS);
 
-    map = av_frame_alloc();
+    map = av_frame_alloc_ijk();
     if (!map)
         return AVERROR(ENOMEM);
     map->format = dst->format;
@@ -382,7 +382,7 @@ static int dxva2_transfer_data_from(AVHWFramesContext *ctx, AVFrame *dst,
     av_image_copy_uc_from(dst->data, dst_linesize, map->data, src_linesize,
                           ctx->sw_format, src->width, src->height);
 fail:
-    av_frame_free(&map);
+    av_frame_free_xij(&map);
     return ret;
 }
 
@@ -399,7 +399,7 @@ static int dxva2_map_from(AVHWFramesContext *ctx,
     if (err < 0)
         return err;
 
-    err = av_frame_copy_props(dst, src);
+    err = av_frame_copy_props_xij(dst, src);
     if (err < 0)
         return err;
 

@@ -41,7 +41,7 @@ static int v210_read_header(AVFormatContext *ctx)
     AVStream *st;
     int ret;
 
-    st = avformat_new_stream(ctx, NULL);
+    st = avformat_new_stream_ijk(ctx, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -49,7 +49,7 @@ static int v210_read_header(AVFormatContext *ctx)
 
     st->codecpar->codec_id = ctx->iformat->raw_codec_id;
 
-    avpriv_set_pts_info(st, 64, s->framerate.den, s->framerate.num);
+    avpriv_set_pts_info_ijk(st, 64, s->framerate.den, s->framerate.num);
 
     ret = av_image_check_size(s->width, s->height, 0, ctx);
     if (ret < 0)
@@ -70,7 +70,7 @@ static int v210_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     int ret;
 
-    ret = av_get_packet(s->pb, pkt, s->packet_size);
+    ret = av_get_packet_xij(s->pb, pkt, s->packet_size);
     pkt->pts = pkt->dts = pkt->pos / s->packet_size;
 
     pkt->stream_index = 0;

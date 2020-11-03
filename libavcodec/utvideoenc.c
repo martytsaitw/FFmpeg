@@ -553,7 +553,7 @@ static int utvideo_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
 
     bytestream2_init_writer(&pb, dst, pkt->size);
 
-    av_fast_padded_malloc(&c->slice_bits, &c->slice_bits_size, width * height + 4);
+    av_fast_padded_malloc_xij(&c->slice_bits, &c->slice_bits_size, width * height + 4);
 
     if (!c->slice_bits) {
         av_log(avctx, AV_LOG_ERROR, "Cannot allocate temporary buffer 2.\n");

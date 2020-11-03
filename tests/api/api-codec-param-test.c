@@ -34,28 +34,28 @@ static int try_decode_video_frame(AVCodecContext *codec_ctx, AVPacket *pkt, int 
     AVFrame *frame = NULL;
     int skip_frame = codec_ctx->skip_frame;
 
-    if (!avcodec_is_open(codec_ctx)) {
-        const AVCodec *codec = avcodec_find_decoder(codec_ctx->codec_id);
+    if (!avcodec_is_open_xij(codec_ctx)) {
+        const AVCodec *codec = avcodec_find_decoder_ijk(codec_ctx->codec_id);
 
-        ret = avcodec_open2(codec_ctx, codec, NULL);
+        ret = avcodec_open2_xij(codec_ctx, codec, NULL);
         if (ret < 0) {
             av_log(codec_ctx, AV_LOG_ERROR, "Failed to open codec\n");
             goto end;
         }
     }
 
-    frame = av_frame_alloc();
+    frame = av_frame_alloc_ijk();
     if (!frame) {
         av_log(NULL, AV_LOG_ERROR, "Failed to allocate frame\n");
         goto end;
     }
 
-    if (!decode && avpriv_codec_get_cap_skip_frame_fill_param(codec_ctx->codec)) {
+    if (!decode && avpriv_codec_get_cap_skip_frame_fill_param_xij(codec_ctx->codec)) {
         codec_ctx->skip_frame = AVDISCARD_ALL;
     }
 
     do {
-        ret = avcodec_decode_video2(codec_ctx, frame, &got_frame, pkt);
+        ret = avcodec_decode_video2_xij(codec_ctx, frame, &got_frame, pkt);
         av_assert0(decode || (!decode && !got_frame));
         if (ret < 0)
             break;
@@ -70,7 +70,7 @@ static int try_decode_video_frame(AVCodecContext *codec_ctx, AVPacket *pkt, int 
 end:
     codec_ctx->skip_frame = skip_frame;
 
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
     return ret;
 }
 
@@ -80,13 +80,13 @@ static int find_video_stream_info(AVFormatContext *fmt_ctx, int decode)
     int i, done = 0;
     AVPacket pkt;
 
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
 
     while (!done) {
         AVCodecContext *codec_ctx = NULL;
         AVStream *st;
 
-        if ((ret = av_read_frame(fmt_ctx, &pkt)) < 0) {
+        if ((ret = av_read_frame_ijk(fmt_ctx, &pkt)) < 0) {
             av_log(fmt_ctx, AV_LOG_ERROR, "Failed to read frame\n");
             goto end;
         }
@@ -96,12 +96,12 @@ static int find_video_stream_info(AVFormatContext *fmt_ctx, int decode)
 
         /* Writing to AVStream.codec_info_nb_frames must not be done by
          * user applications. It is done here for testing purposing as
-         * find_video_stream_info tries to mimic avformat_find_stream_info
+         * find_video_stream_info tries to mimic avformat_find_stream_info_ijk
          * which writes to this field.
          * */
         if (codec_ctx->codec_type != AVMEDIA_TYPE_VIDEO ||
             st->codec_info_nb_frames++ > 0) {
-            av_packet_unref(&pkt);
+            av_packet_unref_ijk(&pkt);
             continue;
         }
 
@@ -111,7 +111,7 @@ static int find_video_stream_info(AVFormatContext *fmt_ctx, int decode)
             goto end;
         }
 
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
 
         /* check if all video streams have demuxed a packet */
         done = 1;
@@ -127,12 +127,12 @@ static int find_video_stream_info(AVFormatContext *fmt_ctx, int decode)
     }
 
 end:
-    av_packet_unref(&pkt);
+    av_packet_unref_ijk(&pkt);
 
     /* close all codecs opened in try_decode_video_frame */
     for (i = 0; i < fmt_ctx->nb_streams; i++) {
         AVStream *st = fmt_ctx->streams[i];
-        avcodec_close(st->codec);
+        avcodec_close_xij(st->codec);
     }
 
     return ret < 0;
@@ -169,7 +169,7 @@ static int open_and_probe_video_streams(AVFormatContext **fmt_ctx, const char *f
 {
     int ret = 0;
 
-    ret = avformat_open_input(fmt_ctx, filename, NULL, NULL);
+    ret = avformat_open_input_ijk(fmt_ctx, filename, NULL, NULL);
     if (ret < 0) {
         av_log(NULL, AV_LOG_ERROR, "Failed to open input '%s'", filename);
         goto end;
@@ -249,8 +249,8 @@ int main(int argc, char* argv[])
     ret = check_video_streams(fmt_ctx, fmt_ctx_no_decode);
 
 end:
-    avformat_close_input(&fmt_ctx);
-    avformat_close_input(&fmt_ctx_no_decode);
+    avformat_close_input_xij(&fmt_ctx);
+    avformat_close_input_xij(&fmt_ctx_no_decode);
 
     return ret;
 }

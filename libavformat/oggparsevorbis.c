@@ -51,7 +51,7 @@ static int ogm_chapter(AVFormatContext *as, uint8_t *key, uint8_t *val)
         if (sscanf(val, "%02d:%02d:%02d.%03d", &h, &m, &s, &ms) < 4)
             return 0;
 
-        avpriv_new_chapter(as, cnum, (AVRational) { 1, 1000 },
+        avpriv_new_chapter_xij(as, cnum, (AVRational) { 1, 1000 },
                            ms + 1000 * (s + 60 * (m + 60 * h)),
                            AV_NOPTS_VALUE, NULL);
         av_free(val);
@@ -241,8 +241,8 @@ static int fixup_vorbis_headers(AVFormatContext *as,
 
     ptr[0]  = 2;
     offset  = 1;
-    offset += av_xiphlacing(&ptr[offset], priv->len[0]);
-    offset += av_xiphlacing(&ptr[offset], priv->len[1]);
+    offset += av_xiphlacing_xij(&ptr[offset], priv->len[0]);
+    offset += av_xiphlacing_xij(&ptr[offset], priv->len[1]);
     for (i = 0; i < 3; i++) {
         memcpy(&ptr[offset], priv->packet[i], priv->len[i]);
         offset += priv->len[i];
@@ -286,7 +286,7 @@ static int vorbis_update_metadata(AVFormatContext *s, int idx)
     /* Update the metadata if possible. */
     av_freep(&os->new_metadata);
     if (st->metadata) {
-        os->new_metadata = av_packet_pack_dictionary(st->metadata, &os->new_metadata_size);
+        os->new_metadata = av_packet_pack_dictionary_xij(st->metadata, &os->new_metadata_size);
     /* Send an empty dictionary to indicate that metadata has been cleared. */
     } else {
         os->new_metadata = av_malloc(1);
@@ -368,7 +368,7 @@ static int vorbis_header(AVFormatContext *s, int idx)
 
         if (srate > 0) {
             st->codecpar->sample_rate = srate;
-            avpriv_set_pts_info(st, 64, 1, srate);
+            avpriv_set_pts_info_ijk(st, 64, 1, srate);
         }
     } else if (os->buf[os->pstart] == 3) {
         if (vorbis_update_metadata(s, idx) >= 0 && priv->len[1] > 10) {

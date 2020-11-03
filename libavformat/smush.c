@@ -52,79 +52,79 @@ static int smush_read_header(AVFormatContext *ctx)
     uint32_t width = 0, height = 0, got_audio = 0, read = 0;
     uint32_t sample_rate, channels, palette[256];
 
-    magic = avio_rb32(pb);
-    avio_skip(pb, 4); // skip movie size
+    magic = avio_rb32_xij(pb);
+    avio_skip_xij(pb, 4); // skip movie size
 
     if (magic == MKBETAG('A', 'N', 'I', 'M')) {
-        if (avio_rb32(pb) != MKBETAG('A', 'H', 'D', 'R'))
+        if (avio_rb32_xij(pb) != MKBETAG('A', 'H', 'D', 'R'))
             return AVERROR_INVALIDDATA;
 
-        size = avio_rb32(pb);
+        size = avio_rb32_xij(pb);
         if (size < 3 * 256 + 6)
             return AVERROR_INVALIDDATA;
 
         smush->version = 0;
-        subversion     = avio_rl16(pb);
-        nframes        = avio_rl16(pb);
+        subversion     = avio_rl16_xij(pb);
+        nframes        = avio_rl16_xij(pb);
         if (!nframes)
             return AVERROR_INVALIDDATA;
 
-        avio_skip(pb, 2); // skip pad
+        avio_skip_xij(pb, 2); // skip pad
 
         for (i = 0; i < 256; i++)
-            palette[i] = avio_rb24(pb);
+            palette[i] = avio_rb24_xij(pb);
 
-        avio_skip(pb, size - (3 * 256 + 6));
+        avio_skip_xij(pb, size - (3 * 256 + 6));
     } else if (magic == MKBETAG('S', 'A', 'N', 'M')) {
-        if (avio_rb32(pb) != MKBETAG('S', 'H', 'D', 'R'))
+        if (avio_rb32_xij(pb) != MKBETAG('S', 'H', 'D', 'R'))
             return AVERROR_INVALIDDATA;
 
-        size = avio_rb32(pb);
+        size = avio_rb32_xij(pb);
         if (size < 14)
             return AVERROR_INVALIDDATA;
 
         smush->version = 1;
-        subversion = avio_rl16(pb);
-        nframes = avio_rl32(pb);
+        subversion = avio_rl16_xij(pb);
+        nframes = avio_rl32_xij(pb);
         if (!nframes)
             return AVERROR_INVALIDDATA;
 
-        avio_skip(pb, 2); // skip pad
-        width  = avio_rl16(pb);
-        height = avio_rl16(pb);
-        avio_skip(pb, 2); // skip pad
-        avio_skip(pb, size - 14);
+        avio_skip_xij(pb, 2); // skip pad
+        width  = avio_rl16_xij(pb);
+        height = avio_rl16_xij(pb);
+        avio_skip_xij(pb, 2); // skip pad
+        avio_skip_xij(pb, size - 14);
 
-        if (avio_rb32(pb) != MKBETAG('F', 'L', 'H', 'D'))
+        if (avio_rb32_xij(pb) != MKBETAG('F', 'L', 'H', 'D'))
             return AVERROR_INVALIDDATA;
 
-        size = avio_rb32(pb);
+        size = avio_rb32_xij(pb);
         while (!got_audio && ((read + 8) < size)) {
             uint32_t sig, chunk_size;
 
-            if (avio_feof(pb))
+            if (avio_feof_xij(pb))
                 return AVERROR_EOF;
 
-            sig        = avio_rb32(pb);
-            chunk_size = avio_rb32(pb);
+            sig        = avio_rb32_xij(pb);
+            chunk_size = avio_rb32_xij(pb);
             read      += 8;
             switch (sig) {
             case MKBETAG('W', 'a', 'v', 'e'):
                 got_audio = 1;
-                sample_rate = avio_rl32(pb);
+                sample_rate = avio_rl32_xij(pb);
                 if (!sample_rate)
                     return AVERROR_INVALIDDATA;
 
-                channels = avio_rl32(pb);
+                channels = avio_rl32_xij(pb);
                 if (!channels)
                     return AVERROR_INVALIDDATA;
 
-                avio_skip(pb, chunk_size - 8);
+                avio_skip_xij(pb, chunk_size - 8);
                 read += chunk_size;
                 break;
             case MKBETAG('B', 'l', '1', '6'):
             case MKBETAG('A', 'N', 'N', 'O'):
-                avio_skip(pb, chunk_size);
+                avio_skip_xij(pb, chunk_size);
                 read += chunk_size;
                 break;
             default:
@@ -132,19 +132,19 @@ static int smush_read_header(AVFormatContext *ctx)
             }
         }
 
-        avio_skip(pb, size - read);
+        avio_skip_xij(pb, size - read);
     } else {
         av_log(ctx, AV_LOG_ERROR, "Wrong magic\n");
         return AVERROR_INVALIDDATA;
     }
 
-    vst = avformat_new_stream(ctx, 0);
+    vst = avformat_new_stream_ijk(ctx, 0);
     if (!vst)
         return AVERROR(ENOMEM);
 
     smush->video_stream_index = vst->index;
 
-    avpriv_set_pts_info(vst, 64, 1, 15);
+    avpriv_set_pts_info_ijk(vst, 64, 1, 15);
 
     vst->start_time        = 0;
     vst->duration          =
@@ -157,7 +157,7 @@ static int smush_read_header(AVFormatContext *ctx)
     vst->codecpar->height     = height;
 
     if (!smush->version) {
-        if (ff_alloc_extradata(vst->codecpar, 1024 + 2))
+        if (ff_alloc_extradata_xij(vst->codecpar, 1024 + 2))
             return AVERROR(ENOMEM);
 
         AV_WL16(vst->codecpar->extradata, subversion);
@@ -166,7 +166,7 @@ static int smush_read_header(AVFormatContext *ctx)
     }
 
     if (got_audio) {
-        ast = avformat_new_stream(ctx, 0);
+        ast = avformat_new_stream_ijk(ctx, 0);
         if (!ast)
             return AVERROR(ENOMEM);
 
@@ -179,7 +179,7 @@ static int smush_read_header(AVFormatContext *ctx)
         ast->codecpar->sample_rate = sample_rate;
         ast->codecpar->channels    = channels;
 
-        avpriv_set_pts_info(ast, 64, 1, ast->codecpar->sample_rate);
+        avpriv_set_pts_info_ijk(ast, 64, 1, ast->codecpar->sample_rate);
     }
 
     return 0;
@@ -195,24 +195,24 @@ static int smush_read_packet(AVFormatContext *ctx, AVPacket *pkt)
     while (!done) {
         uint32_t sig, size;
 
-        if (avio_feof(pb))
+        if (avio_feof_xij(pb))
             return AVERROR_EOF;
 
-        sig  = avio_rb32(pb);
-        size = avio_rb32(pb);
+        sig  = avio_rb32_xij(pb);
+        size = avio_rb32_xij(pb);
 
         switch (sig) {
         case MKBETAG('F', 'R', 'M', 'E'):
             if (smush->version)
                 break;
-            if ((ret = av_get_packet(pb, pkt, size)) < 0)
+            if ((ret = av_get_packet_xij(pb, pkt, size)) < 0)
                 return ret;
 
             pkt->stream_index = smush->video_stream_index;
             done = 1;
             break;
         case MKBETAG('B', 'l', '1', '6'):
-            if ((ret = av_get_packet(pb, pkt, size)) < 0)
+            if ((ret = av_get_packet_xij(pb, pkt, size)) < 0)
                 return ret;
 
             pkt->stream_index = smush->video_stream_index;
@@ -222,7 +222,7 @@ static int smush_read_packet(AVFormatContext *ctx, AVPacket *pkt)
         case MKBETAG('W', 'a', 'v', 'e'):
             if (size < 13)
                 return AVERROR_INVALIDDATA;
-            if (av_get_packet(pb, pkt, size) < 13)
+            if (av_get_packet_xij(pb, pkt, size) < 13)
                 return AVERROR(EIO);
 
             pkt->stream_index = smush->audio_stream_index;
@@ -233,7 +233,7 @@ static int smush_read_packet(AVFormatContext *ctx, AVPacket *pkt)
             done = 1;
             break;
         default:
-            avio_skip(pb, size);
+            avio_skip_xij(pb, size);
             break;
         }
     }

@@ -92,7 +92,7 @@ static int failing_write_packet(AVFormatContext *avf, AVPacket *pkt)
 
         if (!ret) {
             ctx->pts_written[ctx->pts_written_nr++] = pkt->pts;
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
         }
     }
     return ret;

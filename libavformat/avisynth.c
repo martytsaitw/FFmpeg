@@ -245,7 +245,7 @@ static int avisynth_create_stream_video(AVFormatContext *s, AVStream *st)
     st->start_time        = 0;
     st->duration          = avs->vi->num_frames;
     st->nb_frames         = avs->vi->num_frames;
-    avpriv_set_pts_info(st, 32, avs->vi->fps_denominator, avs->vi->fps_numerator);
+    avpriv_set_pts_info_ijk(st, 32, avs->vi->fps_denominator, avs->vi->fps_numerator);
 
     switch (avs->vi->pixel_type) {
 #ifdef USING_AVISYNTH
@@ -466,7 +466,7 @@ static int avisynth_create_stream_audio(AVFormatContext *s, AVStream *st)
     st->codecpar->sample_rate = avs->vi->audio_samples_per_second;
     st->codecpar->channels    = avs->vi->nchannels;
     st->duration              = avs->vi->num_audio_samples;
-    avpriv_set_pts_info(st, 64, 1, avs->vi->audio_samples_per_second);
+    avpriv_set_pts_info_ijk(st, 64, 1, avs->vi->audio_samples_per_second);
 
     switch (avs->vi->sample_type) {
     case AVS_SAMPLE_INT8:
@@ -501,7 +501,7 @@ static int avisynth_create_stream(AVFormatContext *s)
     int id = 0;
 
     if (avs_has_video(avs->vi)) {
-        st = avformat_new_stream(s, NULL);
+        st = avformat_new_stream_ijk(s, NULL);
         if (!st)
             return AVERROR_UNKNOWN;
         st->id = id++;
@@ -509,7 +509,7 @@ static int avisynth_create_stream(AVFormatContext *s)
             return ret;
     }
     if (avs_has_audio(avs->vi)) {
-        st = avformat_new_stream(s, NULL);
+        st = avformat_new_stream_ijk(s, NULL);
         if (!st)
             return AVERROR_UNKNOWN;
         st->id = id++;
@@ -644,7 +644,7 @@ static int avisynth_read_packet_video(AVFormatContext *s, AVPacket *pkt,
     if (!pkt->size)
         return AVERROR_UNKNOWN;
 
-    if (av_new_packet(pkt, pkt->size) < 0)
+    if (av_new_packet_ijk(pkt, pkt->size) < 0)
         return AVERROR(ENOMEM);
 
     pkt->pts      = n;
@@ -657,7 +657,7 @@ static int avisynth_read_packet_video(AVFormatContext *s, AVPacket *pkt,
     if (error) {
         av_log(s, AV_LOG_ERROR, "%s\n", error);
         avs->error = 1;
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return AVERROR_UNKNOWN;
     }
 
@@ -750,7 +750,7 @@ static int avisynth_read_packet_audio(AVFormatContext *s, AVPacket *pkt,
     if (!pkt->size)
         return AVERROR_UNKNOWN;
 
-    if (av_new_packet(pkt, pkt->size) < 0)
+    if (av_new_packet_ijk(pkt, pkt->size) < 0)
         return AVERROR(ENOMEM);
 
     pkt->pts      = n;
@@ -763,7 +763,7 @@ static int avisynth_read_packet_audio(AVFormatContext *s, AVPacket *pkt,
     if (error) {
         av_log(s, AV_LOG_ERROR, "%s\n", error);
         avs->error = 1;
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return AVERROR_UNKNOWN;
     }
     return 0;
@@ -774,15 +774,15 @@ static av_cold int avisynth_read_header(AVFormatContext *s)
     int ret;
 
     // Calling library must implement a lock for thread-safe opens.
-    if (ret = ff_lock_avformat())
+    if (ret = ff_lock_avformat_xij())
         return ret;
 
     if (ret = avisynth_open_file(s)) {
-        ff_unlock_avformat();
+        ff_unlock_avformat_xij();
         return ret;
     }
 
-    ff_unlock_avformat();
+    ff_unlock_avformat_xij();
     return 0;
 }
 
@@ -818,11 +818,11 @@ static int avisynth_read_packet(AVFormatContext *s, AVPacket *pkt)
 
 static av_cold int avisynth_read_close(AVFormatContext *s)
 {
-    if (ff_lock_avformat())
+    if (ff_lock_avformat_xij())
         return AVERROR_UNKNOWN;
 
     avisynth_context_destroy(s->priv_data);
-    ff_unlock_avformat();
+    ff_unlock_avformat_xij();
     return 0;
 }
 

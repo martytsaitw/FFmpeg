@@ -42,16 +42,16 @@ static int avr_read_header(AVFormatContext *s)
     uint16_t chan, sign, bps;
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
 
-    avio_skip(s->pb, 4); // magic
-    avio_skip(s->pb, 8); // sample_name
+    avio_skip_xij(s->pb, 4); // magic
+    avio_skip_xij(s->pb, 8); // sample_name
 
-    chan = avio_rb16(s->pb);
+    chan = avio_rb16_xij(s->pb);
     if (!chan) {
         st->codecpar->channels = 1;
     } else if (chan == 0xFFFFu) {
@@ -61,21 +61,21 @@ static int avr_read_header(AVFormatContext *s)
         return AVERROR_PATCHWELCOME;
     }
 
-    st->codecpar->bits_per_coded_sample = bps = avio_rb16(s->pb);
+    st->codecpar->bits_per_coded_sample = bps = avio_rb16_xij(s->pb);
 
-    sign = avio_rb16(s->pb);
+    sign = avio_rb16_xij(s->pb);
 
-    avio_skip(s->pb, 2); // loop
-    avio_skip(s->pb, 2); // midi
-    avio_skip(s->pb, 1); // replay speed
+    avio_skip_xij(s->pb, 2); // loop
+    avio_skip_xij(s->pb, 2); // midi
+    avio_skip_xij(s->pb, 1); // replay speed
 
-    st->codecpar->sample_rate = avio_rb24(s->pb);
-    avio_skip(s->pb, 4 * 3);
-    avio_skip(s->pb, 2 * 3);
-    avio_skip(s->pb, 20);
-    avio_skip(s->pb, 64);
+    st->codecpar->sample_rate = avio_rb24_xij(s->pb);
+    avio_skip_xij(s->pb, 4 * 3);
+    avio_skip_xij(s->pb, 2 * 3);
+    avio_skip_xij(s->pb, 20);
+    avio_skip_xij(s->pb, 64);
 
-    st->codecpar->codec_id = ff_get_pcm_codec_id(bps, 0, 1, sign);
+    st->codecpar->codec_id = ff_get_pcm_codec_id_xij(bps, 0, 1, sign);
     if (st->codecpar->codec_id == AV_CODEC_ID_NONE) {
         avpriv_request_sample(s, "Bps %d and sign %d", bps, sign);
         return AVERROR_PATCHWELCOME;
@@ -83,7 +83,7 @@ static int avr_read_header(AVFormatContext *s)
 
     st->codecpar->block_align = bps * st->codecpar->channels / 8;
 
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
     return 0;
 }
 

@@ -50,9 +50,9 @@ typedef struct FlacMuxerContext {
 static int flac_write_block_padding(AVIOContext *pb, unsigned int n_padding_bytes,
                                     int last_block)
 {
-    avio_w8(pb, last_block ? 0x81 : 0x01);
-    avio_wb24(pb, n_padding_bytes);
-    ffio_fill(pb, 0, n_padding_bytes);
+    avio_w8_xij(pb, last_block ? 0x81 : 0x01);
+    avio_wb24_xij(pb, n_padding_bytes);
+    ffio_fill_xij(pb, 0, n_padding_bytes);
     return 0;
 }
 
@@ -77,7 +77,7 @@ static int flac_write_block_comment(AVIOContext *pb, AVDictionary **m,
     bytestream_put_be24(&p, len);
     ff_vorbiscomment_write(&p, m, vendor);
 
-    avio_write(pb, p0, len+4);
+    avio_write_xij(pb, p0, len+4);
     av_freep(&p0);
     p = NULL;
 
@@ -140,27 +140,27 @@ static int flac_write_picture(struct AVFormatContext *s, AVPacket *pkt)
         desc = e->value;
     desclen = strlen(desc);
 
-    avio_w8(pb, 0x06);
-    avio_wb24(pb, 4 + 4 + mimelen + 4 + desclen + 4 + 4 + 4 + 4 + 4 + pkt->size);
+    avio_w8_xij(pb, 0x06);
+    avio_wb24_xij(pb, 4 + 4 + mimelen + 4 + desclen + 4 + 4 + 4 + 4 + 4 + pkt->size);
 
-    avio_wb32(pb, type);
+    avio_wb32_xij(pb, type);
 
-    avio_wb32(pb, mimelen);
-    avio_write(pb, mimetype, mimelen);
+    avio_wb32_xij(pb, mimelen);
+    avio_write_xij(pb, mimetype, mimelen);
 
-    avio_wb32(pb, desclen);
-    avio_write(pb, desc, desclen);
+    avio_wb32_xij(pb, desclen);
+    avio_write_xij(pb, desc, desclen);
 
-    avio_wb32(pb, st->codecpar->width);
-    avio_wb32(pb, st->codecpar->height);
+    avio_wb32_xij(pb, st->codecpar->width);
+    avio_wb32_xij(pb, st->codecpar->height);
     if ((pixdesc = av_pix_fmt_desc_get(st->codecpar->format)))
-        avio_wb32(pb, av_get_bits_per_pixel(pixdesc));
+        avio_wb32_xij(pb, av_get_bits_per_pixel(pixdesc));
     else
-        avio_wb32(pb, 0);
-    avio_wb32(pb, 0);
+        avio_wb32_xij(pb, 0);
+    avio_wb32_xij(pb, 0);
 
-    avio_wb32(pb, pkt->size);
-    avio_write(pb, pkt->data, pkt->size);
+    avio_wb32_xij(pb, pkt->size);
+    avio_write_xij(pb, pkt->data, pkt->size);
     return 0;
 }
 
@@ -179,7 +179,7 @@ static int flac_finish_header(struct AVFormatContext *s)
         if (!pkt)
             continue;
         ret = flac_write_picture(s, pkt);
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         if (ret < 0 && (s->error_recognition & AV_EF_EXPLODE))
             return ret;
     }
@@ -285,7 +285,7 @@ static int flac_write_audio_packet(struct AVFormatContext *s, AVPacket *pkt)
     int streaminfo_size;
 
     /* check for updated streaminfo */
-    streaminfo = av_packet_get_side_data(pkt, AV_PKT_DATA_NEW_EXTRADATA,
+    streaminfo = av_packet_get_side_data_xij(pkt, AV_PKT_DATA_NEW_EXTRADATA,
                                          &streaminfo_size);
     if (streaminfo && streaminfo_size == FLAC_STREAMINFO_SIZE) {
         av_freep(&c->streaminfo);
@@ -297,7 +297,7 @@ static int flac_write_audio_packet(struct AVFormatContext *s, AVPacket *pkt)
     }
 
     if (pkt->size)
-        avio_write(s->pb, pkt->data, pkt->size);
+        avio_write_xij(s->pb, pkt->data, pkt->size);
     return 0;
 }
 
@@ -312,10 +312,10 @@ static int flac_queue_flush(AVFormatContext *s)
         write = 0;
 
     while (c->queue) {
-        ff_packet_list_get(&c->queue, &c->queue_end, &pkt);
+        ff_packet_list_get_xij(&c->queue, &c->queue_end, &pkt);
         if (write && (ret = flac_write_audio_packet(s, &pkt)) < 0)
             write = 0;
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
     }
     return ret;
 }
@@ -340,10 +340,10 @@ static int flac_write_trailer(struct AVFormatContext *s)
     if (pb->seekable & AVIO_SEEKABLE_NORMAL) {
         /* rewrite the STREAMINFO header block data */
         file_size = avio_tell(pb);
-        avio_seek(pb, 8, SEEK_SET);
-        avio_write(pb, streaminfo, FLAC_STREAMINFO_SIZE);
-        avio_seek(pb, file_size, SEEK_SET);
-        avio_flush(pb);
+        avio_seek_xij(pb, 8, SEEK_SET);
+        avio_write_xij(pb, streaminfo, FLAC_STREAMINFO_SIZE);
+        avio_seek_xij(pb, file_size, SEEK_SET);
+        avio_flush_xij(pb);
     } else {
         av_log(s, AV_LOG_WARNING, "unable to rewrite FLAC header.\n");
     }
@@ -361,7 +361,7 @@ static int flac_write_packet(struct AVFormatContext *s, AVPacket *pkt)
     if (pkt->stream_index == c->audio_stream_idx) {
         if (c->waiting_pics) {
             /* buffer audio packets until we get all the pictures */
-            ret = ff_packet_list_put(&c->queue, &c->queue_end, pkt, FF_PACKETLIST_FLAG_REF_PACKET);
+            ret = ff_packet_list_put_xij(&c->queue, &c->queue_end, pkt, FF_PACKETLIST_FLAG_REF_PACKET);
             if (ret < 0) {
                 av_log(s, AV_LOG_ERROR, "Out of memory in packet queue; skipping attached pictures\n");
                 c->waiting_pics = 0;
@@ -387,7 +387,7 @@ static int flac_write_packet(struct AVFormatContext *s, AVPacket *pkt)
         if (st->nb_frames >= 1)
             return 0;
 
-        st->priv_data = av_packet_clone(pkt);
+        st->priv_data = av_packet_clone_xij(pkt);
         if (!st->priv_data)
             av_log(s, AV_LOG_ERROR, "Out of memory queueing an attached picture; skipping\n");
         c->waiting_pics--;

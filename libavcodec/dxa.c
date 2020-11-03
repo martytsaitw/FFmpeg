@@ -229,7 +229,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame, AVPac
         pc = 1;
     }
 
-    if ((ret = ff_get_buffer(avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
         return ret;
     memcpy(frame->data[1], c->pal, AVPALETTE_SIZE);
     frame->palette_has_changed = pc;
@@ -315,8 +315,8 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame, AVPac
         return AVERROR_INVALIDDATA;
     }
 
-    av_frame_unref(c->prev);
-    if ((ret = av_frame_ref(c->prev, frame)) < 0)
+    av_frame_unref_xij(c->prev);
+    if ((ret = av_frame_ref_xij(c->prev, frame)) < 0)
         return ret;
 
     *got_frame = 1;
@@ -334,7 +334,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
         return AVERROR_INVALIDDATA;
     }
 
-    c->prev = av_frame_alloc();
+    c->prev = av_frame_alloc_ijk();
     if (!c->prev)
         return AVERROR(ENOMEM);
 
@@ -343,7 +343,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
     c->dsize = avctx->width * avctx->height * 2;
     c->decomp_buf = av_malloc(c->dsize + DECOMP_BUF_PADDING);
     if (!c->decomp_buf) {
-        av_frame_free(&c->prev);
+        av_frame_free_xij(&c->prev);
         av_log(avctx, AV_LOG_ERROR, "Can't allocate decompression buffer.\n");
         return AVERROR(ENOMEM);
     }
@@ -356,7 +356,7 @@ static av_cold int decode_end(AVCodecContext *avctx)
     DxaDecContext * const c = avctx->priv_data;
 
     av_freep(&c->decomp_buf);
-    av_frame_free(&c->prev);
+    av_frame_free_xij(&c->prev);
 
     return 0;
 }

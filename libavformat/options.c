@@ -59,22 +59,22 @@ static const AVClass *format_child_class_next(const AVClass *prev)
     AVOutputFormat *ofmt = NULL;
 
     if (!prev)
-        return &ff_avio_class;
+        return &ff_avio_class_xij;
 
-    while ((ifmt = av_iformat_next(ifmt)))
+    while ((ifmt = av_iformat_next_ijk(ifmt)))
         if (ifmt->priv_class == prev)
             break;
 
     if (!ifmt)
-        while ((ofmt = av_oformat_next(ofmt)))
+        while ((ofmt = av_oformat_next_xij(ofmt)))
             if (ofmt->priv_class == prev)
                 break;
     if (!ofmt)
-        while (ifmt = av_iformat_next(ifmt))
+        while (ifmt = av_iformat_next_ijk(ifmt))
             if (ifmt->priv_class)
                 return ifmt->priv_class;
 
-    while (ofmt = av_oformat_next(ofmt))
+    while (ofmt = av_oformat_next_xij(ofmt))
         if (ofmt->priv_class)
             return ofmt->priv_class;
 
@@ -121,12 +121,12 @@ FF_DISABLE_DEPRECATION_WARNINGS
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
 
-    return ffio_open_whitelist(pb, url, flags, &s->interrupt_callback, options, s->protocol_whitelist, s->protocol_blacklist);
+    return ffio_open_whitelist_xij(pb, url, flags, &s->interrupt_callback, options, s->protocol_whitelist, s->protocol_blacklist);
 }
 
 static void io_close_default(AVFormatContext *s, AVIOContext *pb)
 {
-    avio_close(pb);
+    avio_close_xij(pb);
 }
 
 static void avformat_get_context_defaults(AVFormatContext *s)
@@ -141,7 +141,7 @@ static void avformat_get_context_defaults(AVFormatContext *s)
     av_opt_set_defaults(s);
 }
 
-AVFormatContext *avformat_alloc_context(void)
+AVFormatContext *avformat_alloc_context_ijk(void)
 {
     AVFormatContext *ic;
     ic = av_malloc(sizeof(AVFormatContext));
@@ -150,7 +150,7 @@ AVFormatContext *avformat_alloc_context(void)
 
     ic->internal = av_mallocz(sizeof(*ic->internal));
     if (!ic->internal) {
-        avformat_free_context(ic);
+        avformat_free_context_ijk(ic);
         return NULL;
     }
     ic->internal->offset = AV_NOPTS_VALUE;
@@ -160,12 +160,12 @@ AVFormatContext *avformat_alloc_context(void)
     return ic;
 }
 
-enum AVDurationEstimationMethod av_fmt_ctx_get_duration_estimation_method(const AVFormatContext* ctx)
+enum AVDurationEstimationMethod av_fmt_ctx_get_duration_estimation_method_xij(const AVFormatContext* ctx)
 {
     return ctx->duration_estimation_method;
 }
 
-const AVClass *avformat_get_class(void)
+const AVClass *avformat_get_class_ijk(void)
 {
     return &av_format_context_class;
 }

@@ -68,7 +68,7 @@ static int cbs_read_ue_golomb(CodedBitstreamContext *ctx, GetBitContext *gbc,
     --value;
 
     if (ctx->trace_enable)
-        ff_cbs_trace_syntax_element(ctx, position, name, bits, value);
+        ff_cbs_trace_syntax_element_xij(ctx, position, name, bits, value);
 
     if (value < range_min || value > range_max) {
         av_log(ctx->log_ctx, AV_LOG_ERROR, "%s out of range: "
@@ -122,7 +122,7 @@ static int cbs_read_se_golomb(CodedBitstreamContext *ctx, GetBitContext *gbc,
         value = v / 2;
 
     if (ctx->trace_enable)
-        ff_cbs_trace_syntax_element(ctx, position, name, bits, value);
+        ff_cbs_trace_syntax_element_xij(ctx, position, name, bits, value);
 
     if (value < range_min || value > range_max) {
         av_log(ctx->log_ctx, AV_LOG_ERROR, "%s out of range: "
@@ -164,7 +164,7 @@ static int cbs_write_ue_golomb(CodedBitstreamContext *ctx, PutBitContext *pbc,
             bits[len + i + 1] = (value + 1) >> (len - i - 1) & 1 ? '1' : '0';
         bits[len + len + 1] = 0;
 
-        ff_cbs_trace_syntax_element(ctx, put_bits_count(pbc), name, bits, value);
+        ff_cbs_trace_syntax_element_xij(ctx, put_bits_count(pbc), name, bits, value);
     }
 
     put_bits(pbc, len, 0);
@@ -213,7 +213,7 @@ static int cbs_write_se_golomb(CodedBitstreamContext *ctx, PutBitContext *pbc,
             bits[len + i + 1] = (uvalue + 1) >> (len - i - 1) & 1 ? '1' : '0';
         bits[len + len + 1] = 0;
 
-        ff_cbs_trace_syntax_element(ctx, put_bits_count(pbc), name, bits, value);
+        ff_cbs_trace_syntax_element_xij(ctx, put_bits_count(pbc), name, bits, value);
     }
 
     put_bits(pbc, len, 0);
@@ -226,7 +226,7 @@ static int cbs_write_se_golomb(CodedBitstreamContext *ctx, PutBitContext *pbc,
 }
 
 #define HEADER(name) do { \
-        ff_cbs_trace_header(ctx, name); \
+        ff_cbs_trace_header_xij(ctx, name); \
     } while (0)
 
 #define CHECK(call) do { \
@@ -246,7 +246,7 @@ static int cbs_write_se_golomb(CodedBitstreamContext *ctx, PutBitContext *pbc,
 
 #define xu(width, name, var, range_min, range_max) do { \
         uint32_t value = range_min; \
-        CHECK(ff_cbs_read_unsigned(ctx, rw, width, #name, \
+        CHECK(ff_cbs_read_unsigned_xij(ctx, rw, width, #name, \
                                    &value, range_min, range_max)); \
         var = value; \
     } while (0)
@@ -291,7 +291,7 @@ static int cbs_h2645_read_more_rbsp_data(GetBitContext *gbc)
 #define byte_alignment(rw) (get_bits_count(rw) % 8)
 
 #define allocate(name, size) do { \
-        name ## _ref = av_buffer_allocz(size); \
+        name ## _ref = av_buffer_allocz_xij(size); \
         if (!name ## _ref) \
             return AVERROR(ENOMEM); \
         name = name ## _ref->data; \
@@ -327,7 +327,7 @@ static int cbs_h2645_read_more_rbsp_data(GetBitContext *gbc)
 
 #define xu(width, name, var, range_min, range_max) do { \
         uint32_t value = var; \
-        CHECK(ff_cbs_write_unsigned(ctx, rw, width, #name, \
+        CHECK(ff_cbs_write_unsigned_xij(ctx, rw, width, #name, \
                                     value, range_min, range_max)); \
     } while (0)
 #define xue(name, var, range_min, range_max) do { \
@@ -397,7 +397,7 @@ static int cbs_h2645_read_more_rbsp_data(GetBitContext *gbc)
 static void cbs_h264_free_pps(void *unit, uint8_t *content)
 {
     H264RawPPS *pps = (H264RawPPS*)content;
-    av_buffer_unref(&pps->slice_group_id_ref);
+    av_buffer_unref_xij(&pps->slice_group_id_ref);
     av_freep(&content);
 }
 
@@ -410,13 +410,13 @@ static void cbs_h264_free_sei_payload(H264RawSEIPayload *payload)
     case H264_SEI_TYPE_DISPLAY_ORIENTATION:
         break;
     case H264_SEI_TYPE_USER_DATA_REGISTERED:
-        av_buffer_unref(&payload->payload.user_data_registered.data_ref);
+        av_buffer_unref_xij(&payload->payload.user_data_registered.data_ref);
         break;
     case H264_SEI_TYPE_USER_DATA_UNREGISTERED:
-        av_buffer_unref(&payload->payload.user_data_unregistered.data_ref);
+        av_buffer_unref_xij(&payload->payload.user_data_unregistered.data_ref);
         break;
     default:
-        av_buffer_unref(&payload->payload.other.data_ref);
+        av_buffer_unref_xij(&payload->payload.other.data_ref);
         break;
     }
 }
@@ -433,35 +433,35 @@ static void cbs_h264_free_sei(void *unit, uint8_t *content)
 static void cbs_h264_free_slice(void *unit, uint8_t *content)
 {
     H264RawSlice *slice = (H264RawSlice*)content;
-    av_buffer_unref(&slice->data_ref);
+    av_buffer_unref_xij(&slice->data_ref);
     av_freep(&content);
 }
 
 static void cbs_h265_free_vps(void *unit, uint8_t *content)
 {
     H265RawVPS *vps = (H265RawVPS*)content;
-    av_buffer_unref(&vps->extension_data.data_ref);
+    av_buffer_unref_xij(&vps->extension_data.data_ref);
     av_freep(&content);
 }
 
 static void cbs_h265_free_sps(void *unit, uint8_t *content)
 {
     H265RawSPS *sps = (H265RawSPS*)content;
-    av_buffer_unref(&sps->extension_data.data_ref);
+    av_buffer_unref_xij(&sps->extension_data.data_ref);
     av_freep(&content);
 }
 
 static void cbs_h265_free_pps(void *unit, uint8_t *content)
 {
     H265RawPPS *pps = (H265RawPPS*)content;
-    av_buffer_unref(&pps->extension_data.data_ref);
+    av_buffer_unref_xij(&pps->extension_data.data_ref);
     av_freep(&content);
 }
 
 static void cbs_h265_free_slice(void *unit, uint8_t *content)
 {
     H265RawSlice *slice = (H265RawSlice*)content;
-    av_buffer_unref(&slice->data_ref);
+    av_buffer_unref_xij(&slice->data_ref);
     av_freep(&content);
 }
 
@@ -487,7 +487,7 @@ static int cbs_h2645_fragment_add_nals(CodedBitstreamContext *ctx,
         memcpy(data, nal->data, size);
         memset(data + size, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 
-        err = ff_cbs_insert_unit_data(ctx, frag, -1, nal->type,
+        err = ff_cbs_insert_unit_data_xij(ctx, frag, -1, nal->type,
                                       data, size, NULL);
         if (err < 0) {
             av_freep(&data);
@@ -699,7 +699,7 @@ static int cbs_h264_read_nal_unit(CodedBitstreamContext *ctx,
         {
             H264RawSPS *sps;
 
-            err = ff_cbs_alloc_unit_content(ctx, unit, sizeof(*sps), NULL);
+            err = ff_cbs_alloc_unit_content_xij(ctx, unit, sizeof(*sps), NULL);
             if (err < 0)
                 return err;
             sps = unit->content;
@@ -716,7 +716,7 @@ static int cbs_h264_read_nal_unit(CodedBitstreamContext *ctx,
 
     case H264_NAL_SPS_EXT:
         {
-            err = ff_cbs_alloc_unit_content(ctx, unit,
+            err = ff_cbs_alloc_unit_content_xij(ctx, unit,
                                             sizeof(H264RawSPSExtension),
                                             NULL);
             if (err < 0)
@@ -732,7 +732,7 @@ static int cbs_h264_read_nal_unit(CodedBitstreamContext *ctx,
         {
             H264RawPPS *pps;
 
-            err = ff_cbs_alloc_unit_content(ctx, unit, sizeof(*pps),
+            err = ff_cbs_alloc_unit_content_xij(ctx, unit, sizeof(*pps),
                                             &cbs_h264_free_pps);
             if (err < 0)
                 return err;
@@ -755,7 +755,7 @@ static int cbs_h264_read_nal_unit(CodedBitstreamContext *ctx,
             H264RawSlice *slice;
             int pos, len;
 
-            err = ff_cbs_alloc_unit_content(ctx, unit, sizeof(*slice),
+            err = ff_cbs_alloc_unit_content_xij(ctx, unit, sizeof(*slice),
                                             &cbs_h264_free_slice);
             if (err < 0)
                 return err;
@@ -776,7 +776,7 @@ static int cbs_h264_read_nal_unit(CodedBitstreamContext *ctx,
             }
 
             slice->data_size = len - pos / 8;
-            slice->data_ref  = av_buffer_alloc(slice->data_size +
+            slice->data_ref  = av_buffer_alloc_ijk(slice->data_size +
                                                AV_INPUT_BUFFER_PADDING_SIZE);
             if (!slice->data_ref)
                 return AVERROR(ENOMEM);
@@ -791,7 +791,7 @@ static int cbs_h264_read_nal_unit(CodedBitstreamContext *ctx,
 
     case H264_NAL_AUD:
         {
-            err = ff_cbs_alloc_unit_content(ctx, unit,
+            err = ff_cbs_alloc_unit_content_xij(ctx, unit,
                                             sizeof(H264RawAUD), NULL);
             if (err < 0)
                 return err;
@@ -804,7 +804,7 @@ static int cbs_h264_read_nal_unit(CodedBitstreamContext *ctx,
 
     case H264_NAL_SEI:
         {
-            err = ff_cbs_alloc_unit_content(ctx, unit, sizeof(H264RawSEI),
+            err = ff_cbs_alloc_unit_content_xij(ctx, unit, sizeof(H264RawSEI),
                                             &cbs_h264_free_sei);
             if (err < 0)
                 return err;
@@ -817,7 +817,7 @@ static int cbs_h264_read_nal_unit(CodedBitstreamContext *ctx,
 
     case H264_NAL_FILLER_DATA:
         {
-            err = ff_cbs_alloc_unit_content(ctx, unit,
+            err = ff_cbs_alloc_unit_content_xij(ctx, unit,
                                             sizeof(H264RawFiller), NULL);
             if (err < 0)
                 return err;
@@ -850,7 +850,7 @@ static int cbs_h265_read_nal_unit(CodedBitstreamContext *ctx,
         {
             H265RawVPS *vps;
 
-            err = ff_cbs_alloc_unit_content(ctx, unit, sizeof(*vps),
+            err = ff_cbs_alloc_unit_content_xij(ctx, unit, sizeof(*vps),
                                             &cbs_h265_free_vps);
             if (err < 0)
                 return err;
@@ -869,7 +869,7 @@ static int cbs_h265_read_nal_unit(CodedBitstreamContext *ctx,
         {
             H265RawSPS *sps;
 
-            err = ff_cbs_alloc_unit_content(ctx, unit, sizeof(*sps),
+            err = ff_cbs_alloc_unit_content_xij(ctx, unit, sizeof(*sps),
                                             &cbs_h265_free_sps);
             if (err < 0)
                 return err;
@@ -889,7 +889,7 @@ static int cbs_h265_read_nal_unit(CodedBitstreamContext *ctx,
         {
             H265RawPPS *pps;
 
-            err = ff_cbs_alloc_unit_content(ctx, unit, sizeof(*pps),
+            err = ff_cbs_alloc_unit_content_xij(ctx, unit, sizeof(*pps),
                                             &cbs_h265_free_pps);
             if (err < 0)
                 return err;
@@ -925,7 +925,7 @@ static int cbs_h265_read_nal_unit(CodedBitstreamContext *ctx,
             H265RawSlice *slice;
             int pos, len;
 
-            err = ff_cbs_alloc_unit_content(ctx, unit, sizeof(*slice),
+            err = ff_cbs_alloc_unit_content_xij(ctx, unit, sizeof(*slice),
                                             &cbs_h265_free_slice);
             if (err < 0)
                 return err;
@@ -946,7 +946,7 @@ static int cbs_h265_read_nal_unit(CodedBitstreamContext *ctx,
             }
 
             slice->data_size = len - pos / 8;
-            slice->data_ref  = av_buffer_alloc(slice->data_size +
+            slice->data_ref  = av_buffer_alloc_ijk(slice->data_size +
                                                AV_INPUT_BUFFER_PADDING_SIZE);
             if (!slice->data_ref)
                 return AVERROR(ENOMEM);
@@ -961,7 +961,7 @@ static int cbs_h265_read_nal_unit(CodedBitstreamContext *ctx,
 
     case HEVC_NAL_AUD:
         {
-            err = ff_cbs_alloc_unit_content(ctx, unit,
+            err = ff_cbs_alloc_unit_content_xij(ctx, unit,
                                             sizeof(H265RawAUD), NULL);
             if (err < 0)
                 return err;
@@ -1271,7 +1271,7 @@ static int cbs_h2645_write_nal_unit(CodedBitstreamContext *ctx,
     unit->data_size = (put_bits_count(&pbc) + 7) / 8;
     flush_put_bits(&pbc);
 
-    err = ff_cbs_alloc_unit_data(ctx, unit, unit->data_size);
+    err = ff_cbs_alloc_unit_data_xij(ctx, unit, unit->data_size);
     if (err < 0)
         return err;
 
@@ -1354,7 +1354,7 @@ static int cbs_h2645_assemble_fragment(CodedBitstreamContext *ctx,
         return err;
     memset(data + dp, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 
-    frag->data_ref = av_buffer_create(data, dp + AV_INPUT_BUFFER_PADDING_SIZE,
+    frag->data_ref = av_buffer_create_ijk(data, dp + AV_INPUT_BUFFER_PADDING_SIZE,
                                       NULL, NULL, 0);
     if (!frag->data_ref) {
         av_freep(&data);
@@ -1455,7 +1455,7 @@ int ff_cbs_h264_add_sei_message(CodedBitstreamContext *ctx,
         sei->nal_unit_header.nal_unit_type = H264_NAL_SEI;
         sei->nal_unit_header.nal_ref_idc   = 0;
 
-        sei_ref = av_buffer_create((uint8_t*)sei, sizeof(*sei),
+        sei_ref = av_buffer_create_ijk((uint8_t*)sei, sizeof(*sei),
                                    &cbs_h264_free_sei, ctx, 0);
         if (!sei_ref) {
             av_freep(&sei);
@@ -1468,9 +1468,9 @@ int ff_cbs_h264_add_sei_message(CodedBitstreamContext *ctx,
                 break;
         }
 
-        err = ff_cbs_insert_unit_content(ctx, au, i, H264_NAL_SEI,
+        err = ff_cbs_insert_unit_content_xij(ctx, au, i, H264_NAL_SEI,
                                          sei, sei_ref);
-        av_buffer_unref(&sei_ref);
+        av_buffer_unref_xij(&sei_ref);
         if (err < 0)
             return err;
     }
@@ -1507,7 +1507,7 @@ int ff_cbs_h264_delete_sei_message(CodedBitstreamContext *ctx,
         }
         av_assert0(i < au->nb_units && "NAL unit not in access unit.");
 
-        return ff_cbs_delete_unit(ctx, au, i);
+        return ff_cbs_delete_unit_xij(ctx, au, i);
     } else {
         cbs_h264_free_sei_payload(&sei->payload[position]);
 

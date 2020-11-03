@@ -34,7 +34,7 @@ struct PayloadContext {
 
 static av_cold void dv_close_context(PayloadContext *data)
 {
-    ffio_free_dyn_buf(&data->buf);
+    ffio_free_dyn_buf_xij(&data->buf);
 }
 
 static av_cold int dv_sdp_parse_fmtp_config(AVFormatContext *s,
@@ -97,7 +97,7 @@ static int dv_handle_packet(AVFormatContext *ctx, PayloadContext *rtp_dv_ctx,
 
     /* drop data of previous packets in case of non-continuous (lossy) packet stream */
     if (rtp_dv_ctx->buf && rtp_dv_ctx->timestamp != *timestamp) {
-        ffio_free_dyn_buf(&rtp_dv_ctx->buf);
+        ffio_free_dyn_buf_xij(&rtp_dv_ctx->buf);
     }
 
     /* sanity check for size of input packet: 1 byte payload at least */
@@ -108,7 +108,7 @@ static int dv_handle_packet(AVFormatContext *ctx, PayloadContext *rtp_dv_ctx,
 
     /* start frame buffering with new dynamic buffer */
     if (!rtp_dv_ctx->buf) {
-        res = avio_open_dyn_buf(&rtp_dv_ctx->buf);
+        res = avio_open_dyn_buf_xij(&rtp_dv_ctx->buf);
         if (res < 0)
             return res;
         /* update the timestamp in the frame packet with the one from the RTP packet */
@@ -116,7 +116,7 @@ static int dv_handle_packet(AVFormatContext *ctx, PayloadContext *rtp_dv_ctx,
     }
 
     /* write the fragment to the dyn. buffer */
-    avio_write(rtp_dv_ctx->buf, buf, len);
+    avio_write_xij(rtp_dv_ctx->buf, buf, len);
 
     /* RTP marker bit means: last fragment of current frame was received;
        otherwise, an additional fragment is needed for the current frame */

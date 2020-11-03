@@ -1105,7 +1105,7 @@ static int output_data(MLPDecodeContext *m, unsigned int substr,
 
     /* get output buffer */
     frame->nb_samples = s->blockpos;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
     s->lossless_check_data = m->dsp.mlp_pack_output(s->lossless_check_data,
                                                     s->blockpos,
@@ -1117,7 +1117,7 @@ static int output_data(MLPDecodeContext *m, unsigned int substr,
                                                     is32);
 
     /* Update matrix encoding side data */
-    if ((ret = ff_side_data_update_matrix_encoding(frame, s->matrix_encoding)) < 0)
+    if ((ret = ff_side_data_update_matrix_encoding_xij(frame, s->matrix_encoding)) < 0)
         return ret;
 
     *got_frame_ptr = 1;

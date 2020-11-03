@@ -957,7 +957,7 @@ static int decode_frame_headers(Indeo3DecodeContext *ctx, AVCodecContext *avctx,
         free_frame_buffers(ctx);
         if ((res = allocate_frame_buffers(ctx, avctx, width, height)) < 0)
              return res;
-        if ((res = ff_set_dimensions(avctx, width, height)) < 0)
+        if ((res = ff_set_dimensions_xij(avctx, width, height)) < 0)
             return res;
     }
 
@@ -1096,7 +1096,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     /* use BS_BUFFER flag for buffer switching */
     ctx->buf_sel = (ctx->frame_flags >> BS_BUFFER) & 1;
 
-    if ((res = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((res = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return res;
 
     /* decode luma plane */

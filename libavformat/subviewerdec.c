@@ -69,7 +69,7 @@ static int read_ts(const char *s, int64_t *start, int *duration)
 static int subviewer_read_header(AVFormatContext *s)
 {
     SubViewerContext *subviewer = s->priv_data;
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     AVBPrint header;
     int res = 0, new_event = 1;
     int64_t pts_start = AV_NOPTS_VALUE;
@@ -78,16 +78,16 @@ static int subviewer_read_header(AVFormatContext *s)
 
     if (!st)
         return AVERROR(ENOMEM);
-    avpriv_set_pts_info(st, 64, 1, 100);
+    avpriv_set_pts_info_ijk(st, 64, 1, 100);
     st->codecpar->codec_type = AVMEDIA_TYPE_SUBTITLE;
     st->codecpar->codec_id   = AV_CODEC_ID_SUBVIEWER;
 
     av_bprint_init(&header, 0, AV_BPRINT_SIZE_UNLIMITED);
 
-    while (!avio_feof(s->pb)) {
+    while (!avio_feof_xij(s->pb)) {
         char line[2048];
         int64_t pos = 0;
-        int len = ff_get_line(s->pb, line, sizeof(line));
+        int len = ff_get_line_xij(s->pb, line, sizeof(line));
 
         if (!len)
             break;
@@ -105,7 +105,7 @@ static int subviewer_read_header(AVFormatContext *s)
                 av_bprintf(&header, "%s\n", line);
                 if (!strncmp(line, "[END INFORMATION]", 17) || !strncmp(line, "[SUBTITLE]", 10)) {
                     /* end of header */
-                    res = ff_bprint_to_codecpar_extradata(st->codecpar, &header);
+                    res = ff_bprint_to_codecpar_extradata_xij(st->codecpar, &header);
                     if (res < 0)
                         goto end;
                 } else if (strncmp(line, "[INFORMATION]", 13)) {

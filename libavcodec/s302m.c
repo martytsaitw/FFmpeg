@@ -110,7 +110,7 @@ static int s302m_decode_frame(AVCodecContext *avctx, void *data,
     /* get output buffer */
     block_size = (avctx->bits_per_raw_sample + 4) / 4;
     frame->nb_samples = 2 * (buf_size / block_size) / avctx->channels;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     avctx->bit_rate = 48000 * avctx->channels * (avctx->bits_per_raw_sample + 4) +

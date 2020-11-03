@@ -139,7 +139,7 @@ void ff_h263_encode_picture_header(MpegEncContext * s, int picture_number)
     put_bits(&s->pb, 1, 0);     /* camera  off */
     put_bits(&s->pb, 1, 0);     /* freeze picture release off */
 
-    format = ff_match_2uint16(ff_h263_format, FF_ARRAY_ELEMS(ff_h263_format), s->width, s->height);
+    format = ff_match_2uint16_xij(ff_h263_format, FF_ARRAY_ELEMS(ff_h263_format), s->width, s->height);
     if (!s->h263_plus) {
         /* H.263v1 */
         put_bits(&s->pb, 3, format);

@@ -936,59 +936,59 @@ static int hvcc_write(AVIOContext *pb, HEVCDecoderConfigurationRecord *hvcc)
         return AVERROR_INVALIDDATA;
 
     /* unsigned int(8) configurationVersion = 1; */
-    avio_w8(pb, hvcc->configurationVersion);
+    avio_w8_xij(pb, hvcc->configurationVersion);
 
     /*
      * unsigned int(2) general_profile_space;
      * unsigned int(1) general_tier_flag;
      * unsigned int(5) general_profile_idc;
      */
-    avio_w8(pb, hvcc->general_profile_space << 6 |
+    avio_w8_xij(pb, hvcc->general_profile_space << 6 |
                 hvcc->general_tier_flag     << 5 |
                 hvcc->general_profile_idc);
 
     /* unsigned int(32) general_profile_compatibility_flags; */
-    avio_wb32(pb, hvcc->general_profile_compatibility_flags);
+    avio_wb32_xij(pb, hvcc->general_profile_compatibility_flags);
 
     /* unsigned int(48) general_constraint_indicator_flags; */
-    avio_wb32(pb, hvcc->general_constraint_indicator_flags >> 16);
-    avio_wb16(pb, hvcc->general_constraint_indicator_flags);
+    avio_wb32_xij(pb, hvcc->general_constraint_indicator_flags >> 16);
+    avio_wb16_xij(pb, hvcc->general_constraint_indicator_flags);
 
     /* unsigned int(8) general_level_idc; */
-    avio_w8(pb, hvcc->general_level_idc);
+    avio_w8_xij(pb, hvcc->general_level_idc);
 
     /*
      * bit(4) reserved = ‘1111’b;
      * unsigned int(12) min_spatial_segmentation_idc;
      */
-    avio_wb16(pb, hvcc->min_spatial_segmentation_idc | 0xf000);
+    avio_wb16_xij(pb, hvcc->min_spatial_segmentation_idc | 0xf000);
 
     /*
      * bit(6) reserved = ‘111111’b;
      * unsigned int(2) parallelismType;
      */
-    avio_w8(pb, hvcc->parallelismType | 0xfc);
+    avio_w8_xij(pb, hvcc->parallelismType | 0xfc);
 
     /*
      * bit(6) reserved = ‘111111’b;
      * unsigned int(2) chromaFormat;
      */
-    avio_w8(pb, hvcc->chromaFormat | 0xfc);
+    avio_w8_xij(pb, hvcc->chromaFormat | 0xfc);
 
     /*
      * bit(5) reserved = ‘11111’b;
      * unsigned int(3) bitDepthLumaMinus8;
      */
-    avio_w8(pb, hvcc->bitDepthLumaMinus8 | 0xf8);
+    avio_w8_xij(pb, hvcc->bitDepthLumaMinus8 | 0xf8);
 
     /*
      * bit(5) reserved = ‘11111’b;
      * unsigned int(3) bitDepthChromaMinus8;
      */
-    avio_w8(pb, hvcc->bitDepthChromaMinus8 | 0xf8);
+    avio_w8_xij(pb, hvcc->bitDepthChromaMinus8 | 0xf8);
 
     /* bit(16) avgFrameRate; */
-    avio_wb16(pb, hvcc->avgFrameRate);
+    avio_wb16_xij(pb, hvcc->avgFrameRate);
 
     /*
      * bit(2) constantFrameRate;
@@ -996,13 +996,13 @@ static int hvcc_write(AVIOContext *pb, HEVCDecoderConfigurationRecord *hvcc)
      * bit(1) temporalIdNested;
      * unsigned int(2) lengthSizeMinusOne;
      */
-    avio_w8(pb, hvcc->constantFrameRate << 6 |
+    avio_w8_xij(pb, hvcc->constantFrameRate << 6 |
                 hvcc->numTemporalLayers << 3 |
                 hvcc->temporalIdNested  << 2 |
                 hvcc->lengthSizeMinusOne);
 
     /* unsigned int(8) numOfArrays; */
-    avio_w8(pb, hvcc->numOfArrays);
+    avio_w8_xij(pb, hvcc->numOfArrays);
 
     for (i = 0; i < hvcc->numOfArrays; i++) {
         /*
@@ -1010,18 +1010,18 @@ static int hvcc_write(AVIOContext *pb, HEVCDecoderConfigurationRecord *hvcc)
          * unsigned int(1) reserved = 0;
          * unsigned int(6) NAL_unit_type;
          */
-        avio_w8(pb, hvcc->array[i].array_completeness << 7 |
+        avio_w8_xij(pb, hvcc->array[i].array_completeness << 7 |
                     hvcc->array[i].NAL_unit_type & 0x3f);
 
         /* unsigned int(16) numNalus; */
-        avio_wb16(pb, hvcc->array[i].numNalus);
+        avio_wb16_xij(pb, hvcc->array[i].numNalus);
 
         for (j = 0; j < hvcc->array[i].numNalus; j++) {
             /* unsigned int(16) nalUnitLength; */
-            avio_wb16(pb, hvcc->array[i].nalUnitLength[j]);
+            avio_wb16_xij(pb, hvcc->array[i].nalUnitLength[j]);
 
             /* bit(8*nalUnitLength) nalUnit; */
-            avio_write(pb, hvcc->array[i].nalUnit[j],
+            avio_write_xij(pb, hvcc->array[i].nalUnit[j],
                        hvcc->array[i].nalUnitLength[j]);
         }
     }
@@ -1062,8 +1062,8 @@ int ff_hevc_annexb2mp4(AVIOContext *pb, const uint8_t *buf_in,
             break;
         default:
             ret += 4 + len;
-            avio_wb32(pb, len);
-            avio_write(pb, buf, len);
+            avio_wb32_xij(pb, len);
+            avio_write_xij(pb, buf, len);
             break;
         }
 
@@ -1083,12 +1083,12 @@ int ff_hevc_annexb2mp4_buf(const uint8_t *buf_in, uint8_t **buf_out,
     AVIOContext *pb;
     int ret;
 
-    ret = avio_open_dyn_buf(&pb);
+    ret = avio_open_dyn_buf_xij(&pb);
     if (ret < 0)
         return ret;
 
     ret   = ff_hevc_annexb2mp4(pb, buf_in, *size, filter_ps, ps_count);
-    *size = avio_close_dyn_buf(pb, buf_out);
+    *size = avio_close_dyn_buf_xij(pb, buf_out);
 
     return ret;
 }
@@ -1108,7 +1108,7 @@ int ff_isom_write_hvcc(AVIOContext *pb, const uint8_t *data,
         goto end;
     } else if (*data == 1) {
         /* Data is already hvcC-formatted */
-        avio_write(pb, data, size);
+        avio_write_xij(pb, data, size);
         goto end;
     } else if (!(AV_RB24(data) == 1 || AV_RB32(data) == 1)) {
         /* Not a valid Annex B start code prefix */

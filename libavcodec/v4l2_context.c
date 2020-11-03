@@ -96,7 +96,7 @@ static inline int v4l2_get_framesize_compressed(V4L2Context* ctx, int width, int
     const int SZ_4K = 0x1000;
     int size;
 
-    if (av_codec_is_decoder(s->avctx->codec))
+    if (av_codec_is_decoder_xij(s->avctx->codec))
         return ((width * height * 3 / 2) / 2) + 128;
 
     /* encoder */
@@ -193,7 +193,7 @@ static int v4l2_handle_event(V4L2Context *ctx)
     }
 
     if (reinit) {
-        ret = ff_set_dimensions(s->avctx, s->capture.width, s->capture.height);
+        ret = ff_set_dimensions_xij(s->avctx, s->capture.width, s->capture.height);
         if (ret < 0)
             av_log(logger(ctx), AV_LOG_WARNING, "update avcodec height and width\n");
 

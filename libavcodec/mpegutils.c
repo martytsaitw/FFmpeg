@@ -177,7 +177,7 @@ void ff_print_debug_info2(AVCodecContext *avctx, AVFrame *pict, uint8_t *mbskip_
             AVFrameSideData *sd;
 
             av_log(avctx, AV_LOG_DEBUG, "Adding %d MVs info to frame %d\n", mbcount, avctx->frame_number);
-            sd = av_frame_new_side_data(pict, AV_FRAME_DATA_MOTION_VECTORS, mbcount * sizeof(AVMotionVector));
+            sd = av_frame_new_side_data_xij(pict, AV_FRAME_DATA_MOTION_VECTORS, mbcount * sizeof(AVMotionVector));
             if (!sd) {
                 av_freep(&mvs);
                 return;
@@ -197,7 +197,7 @@ void ff_print_debug_info2(AVCodecContext *avctx, AVFrame *pict, uint8_t *mbskip_
         int x,y;
 
         av_log(avctx, AV_LOG_DEBUG, "New frame, type: %c\n",
-               av_get_picture_type_char(pict->pict_type));
+               av_get_picture_type_char_xij(pict->pict_type));
         for (y = 0; y < mb_height; y++) {
             for (x = 0; x < mb_width; x++) {
                 if (avctx->debug & FF_DEBUG_SKIP) {
@@ -280,7 +280,7 @@ void ff_print_debug_info2(AVCodecContext *avctx, AVFrame *pict, uint8_t *mbskip_
         if (ret)
             return ret;
 
-        av_frame_make_writable(pict);
+        av_frame_make_writable_xij(pict);
 
         pict->opaque = NULL;
         block_height = 16 >> v_chroma_shift;

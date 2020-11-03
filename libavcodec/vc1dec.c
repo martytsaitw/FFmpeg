@@ -292,8 +292,8 @@ static int vc1_decode_sprites(VC1Context *v, GetBitContext* gb)
         v->two_sprites = 0;
     }
 
-    av_frame_unref(v->sprite_output_frame);
-    if ((ret = ff_get_buffer(avctx, v->sprite_output_frame, 0)) < 0)
+    av_frame_unref_xij(v->sprite_output_frame);
+    if ((ret = ff_get_buffer_xij(avctx, v->sprite_output_frame, 0)) < 0)
         return ret;
 
     vc1_draw_sprites(v, &sd);
@@ -513,7 +513,7 @@ static av_cold int vc1_decode_init(AVCodecContext *avctx)
         avctx->level = v->level;
 
     if (!CONFIG_GRAY || !(avctx->flags & AV_CODEC_FLAG_GRAY))
-        avctx->pix_fmt = ff_get_format(avctx, avctx->codec->pix_fmts);
+        avctx->pix_fmt = ff_get_format_xij(avctx, avctx->codec->pix_fmts);
     else {
         avctx->pix_fmt = AV_PIX_FMT_GRAY8;
         if (avctx->color_range == AVCOL_RANGE_UNSPECIFIED)
@@ -532,11 +532,11 @@ static av_cold int vc1_decode_init(AVCodecContext *avctx)
 
     ff_blockdsp_init(&s->bdsp, avctx);
     ff_h264chroma_init(&v->h264chroma, 8);
-    ff_qpeldsp_init(&s->qdsp);
+    ff_qpeldsp_init_xij(&s->qdsp);
 
     // Must happen after calling ff_vc1_decode_end
     // to avoid de-allocating the sprite_output_frame
-    v->sprite_output_frame = av_frame_alloc();
+    v->sprite_output_frame = av_frame_alloc_ijk();
     if (!v->sprite_output_frame)
         return AVERROR(ENOMEM);
 
@@ -589,7 +589,7 @@ av_cold int ff_vc1_decode_end(AVCodecContext *avctx)
     VC1Context *v = avctx->priv_data;
     int i;
 
-    av_frame_free(&v->sprite_output_frame);
+    av_frame_free_xij(&v->sprite_output_frame);
 
     for (i = 0; i < 4; i++)
         av_freep(&v->sr_rows[i >> 1][i & 1]);
@@ -647,7 +647,7 @@ static int vc1_decode_frame(AVCodecContext *avctx, void *data,
     if (buf_size == 0 || (buf_size == 4 && AV_RB32(buf) == VC1_CODE_ENDOFSEQ)) {
         /* special case for last picture */
         if (s->low_delay == 0 && s->next_picture_ptr) {
-            if ((ret = av_frame_ref(pict, s->next_picture_ptr->f)) < 0)
+            if ((ret = av_frame_ref_xij(pict, s->next_picture_ptr->f)) < 0)
                 return ret;
             s->next_picture_ptr = NULL;
 
@@ -836,7 +836,7 @@ static int vc1_decode_frame(AVCodecContext *avctx, void *data,
     v->first_pic_header_flag = 0;
 
     if (avctx->debug & FF_DEBUG_PICT_INFO)
-        av_log(v->s.avctx, AV_LOG_DEBUG, "pict_type: %c\n", av_get_picture_type_char(s->pict_type));
+        av_log(v->s.avctx, AV_LOG_DEBUG, "pict_type: %c\n", av_get_picture_type_char_xij(s->pict_type));
 
     if ((avctx->codec_id == AV_CODEC_ID_WMV3IMAGE || avctx->codec_id == AV_CODEC_ID_VC1IMAGE)
         && s->pict_type != AV_PICTURE_TYPE_I) {
@@ -1079,17 +1079,17 @@ image:
         if ((ret = vc1_decode_sprites(v, &s->gb)) < 0)
             goto err;
 #endif
-        if ((ret = av_frame_ref(pict, v->sprite_output_frame)) < 0)
+        if ((ret = av_frame_ref_xij(pict, v->sprite_output_frame)) < 0)
             goto err;
         *got_frame = 1;
     } else {
         if (s->pict_type == AV_PICTURE_TYPE_B || s->low_delay) {
-            if ((ret = av_frame_ref(pict, s->current_picture_ptr->f)) < 0)
+            if ((ret = av_frame_ref_xij(pict, s->current_picture_ptr->f)) < 0)
                 goto err;
             ff_print_debug_info(s, s->current_picture_ptr, pict);
             *got_frame = 1;
         } else if (s->last_picture_ptr) {
-            if ((ret = av_frame_ref(pict, s->last_picture_ptr->f)) < 0)
+            if ((ret = av_frame_ref_xij(pict, s->last_picture_ptr->f)) < 0)
                 goto err;
             ff_print_debug_info(s, s->last_picture_ptr, pict);
             *got_frame = 1;

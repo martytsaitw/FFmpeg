@@ -102,7 +102,7 @@ static int sbc_parse(AVCodecParserContext *s, AVCodecContext *avctx,
             next = END_NOT_FOUND;
         }
 
-        if (ff_combine_frame(&pc->pc, next, &buf, &buf_size) < 0) {
+        if (ff_combine_frame_xij(&pc->pc, next, &buf, &buf_size) < 0) {
             *poutbuf      = NULL;
             *poutbuf_size = 0;
             return buf_size;
@@ -118,5 +118,5 @@ AVCodecParser ff_sbc_parser = {
     .codec_ids      = { AV_CODEC_ID_SBC },
     .priv_data_size = sizeof(SBCParseContext),
     .parser_parse   = sbc_parse,
-    .parser_close   = ff_parse_close,
+    .parser_close   = ff_parse_close_xij,
 };

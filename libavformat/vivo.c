@@ -75,13 +75,13 @@ static int vivo_get_packet_header(AVFormatContext *s)
     AVIOContext *pb = s->pb;
     unsigned c, get_length = 0;
 
-    if (avio_feof(pb))
+    if (avio_feof_xij(pb))
         return AVERROR_EOF;
 
-    c = avio_r8(pb);
+    c = avio_r8_xij(pb);
     if (c == 0x82) {
         get_length = 1;
-        c = avio_r8(pb);
+        c = avio_r8_xij(pb);
     }
 
     vivo->type     = c >> 4;
@@ -99,10 +99,10 @@ static int vivo_get_packet_header(AVFormatContext *s)
     }
 
     if (get_length) {
-        c = avio_r8(pb);
+        c = avio_r8_xij(pb);
         vivo->length = c & 0x7F;
         if (c & 0x80) {
-            c = avio_r8(pb);
+            c = avio_r8_xij(pb);
             vivo->length = (vivo->length << 7) | (c & 0x7F);
 
             if (c & 0x80) {
@@ -126,8 +126,8 @@ static int vivo_read_header(AVFormatContext *s)
     int64_t duration = 0;
     char *end_value;
 
-    vst = avformat_new_stream(s, NULL);
-    ast = avformat_new_stream(s, NULL);
+    vst = avformat_new_stream_ijk(s, NULL);
+    ast = avformat_new_stream_ijk(s, NULL);
     if (!ast || !vst)
         return AVERROR(ENOMEM);
 
@@ -142,11 +142,11 @@ static int vivo_read_header(AVFormatContext *s)
             break;
 
         if (vivo->length <= 1024) {
-            avio_read(s->pb, vivo->text, vivo->length);
+            avio_read_xij(s->pb, vivo->text, vivo->length);
             vivo->text[vivo->length] = 0;
         } else {
             av_log(s, AV_LOG_WARNING, "too big header, skipping\n");
-            avio_skip(s->pb, vivo->length);
+            avio_skip_xij(s->pb, vivo->length);
             continue;
         }
 
@@ -216,8 +216,8 @@ static int vivo_read_header(AVFormatContext *s)
         }
     }
 
-    avpriv_set_pts_info(ast, 64, 1, ast->codecpar->sample_rate);
-    avpriv_set_pts_info(vst, 64, fps.num, fps.den);
+    avpriv_set_pts_info_ijk(ast, 64, 1, ast->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(vst, 64, fps.num, fps.den);
     if (duration)
         s->duration = av_rescale(duration, 1000, 1);
 
@@ -250,12 +250,12 @@ static int vivo_read_packet(AVFormatContext *s, AVPacket *pkt)
 
 restart:
 
-    if (avio_feof(pb))
+    if (avio_feof_xij(pb))
         return AVERROR_EOF;
 
     switch (vivo->type) {
     case 0:
-        avio_skip(pb, vivo->length);
+        avio_skip_xij(pb, vivo->length);
         if ((ret = vivo_get_packet_header(s)) < 0)
             return ret;
         goto restart;
@@ -272,7 +272,7 @@ restart:
         return AVERROR_INVALIDDATA;
     }
 
-    if ((ret = av_get_packet(pb, pkt, vivo->length)) < 0)
+    if ((ret = av_get_packet_xij(pb, pkt, vivo->length)) < 0)
         goto fail;
 
     // get next packet header
@@ -281,12 +281,12 @@ restart:
 
     while (vivo->sequence == old_sequence &&
            (((vivo->type - 1) >> 1) == ((old_type - 1) >> 1))) {
-        if (avio_feof(pb)) {
+        if (avio_feof_xij(pb)) {
             ret = AVERROR_EOF;
             break;
         }
 
-        if ((ret = av_append_packet(pb, pkt, vivo->length)) < 0)
+        if ((ret = av_append_packet_xij(pb, pkt, vivo->length)) < 0)
             break;
 
         // get next packet header
@@ -298,7 +298,7 @@ restart:
 
 fail:
     if (ret < 0)
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
     return ret;
 }
 

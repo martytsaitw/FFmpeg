@@ -29,7 +29,7 @@
 typedef struct AVCodecHWConfigInternal {
     /**
      * This is the structure which will be returned to the user by
-     * avcodec_get_hw_config().
+     * avcodec_get_hw_config_xij().
      */
     AVCodecHWConfig public;
     /**

@@ -30,7 +30,7 @@ static int dca_core_filter(AVBSFContext *ctx, AVPacket *pkt)
     uint32_t syncword;
     int core_size = 0, ret;
 
-    ret = ff_bsf_get_packet_ref(ctx, pkt);
+    ret = ff_bsf_get_packet_ref_xij(ctx, pkt);
     if (ret < 0)
         return ret;
 

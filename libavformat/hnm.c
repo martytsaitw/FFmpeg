@@ -73,22 +73,22 @@ static int hnm_read_header(AVFormatContext *s)
 
     /* default context members */
     hnm->pts = 0;
-    av_init_packet(&hnm->vpkt);
+    av_init_packet_ijk(&hnm->vpkt);
     hnm->vpkt.data = NULL;
     hnm->vpkt.size = 0;
 
     hnm->superchunk_remaining = 0;
 
-    avio_skip(pb, 8);
-    hnm->width     = avio_rl16(pb);
-    hnm->height    = avio_rl16(pb);
-    hnm->filesize  = avio_rl32(pb);
-    hnm->frames    = avio_rl32(pb);
-    hnm->taboffset = avio_rl32(pb);
-    hnm->bits      = avio_rl16(pb);
-    hnm->channels  = avio_rl16(pb);
-    hnm->framesize = avio_rl32(pb);
-    avio_skip(pb, 32);
+    avio_skip_xij(pb, 8);
+    hnm->width     = avio_rl16_xij(pb);
+    hnm->height    = avio_rl16_xij(pb);
+    hnm->filesize  = avio_rl32_xij(pb);
+    hnm->frames    = avio_rl32_xij(pb);
+    hnm->taboffset = avio_rl32_xij(pb);
+    hnm->bits      = avio_rl16_xij(pb);
+    hnm->channels  = avio_rl16_xij(pb);
+    hnm->framesize = avio_rl32_xij(pb);
+    avio_skip_xij(pb, 32);
 
     hnm->currentframe = 0;
 
@@ -105,7 +105,7 @@ static int hnm_read_header(AVFormatContext *s)
     else
         hnm->version = 0x40;
 
-    if (!(vst = avformat_new_stream(s, NULL)))
+    if (!(vst = avformat_new_stream_ijk(s, NULL)))
         return AVERROR(ENOMEM);
 
     vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
@@ -120,7 +120,7 @@ static int hnm_read_header(AVFormatContext *s)
 
     vst->start_time = 0;
 
-    avpriv_set_pts_info(vst, 33, 1, HNM4_FRAME_FPS);
+    avpriv_set_pts_info_ijk(vst, 33, 1, HNM4_FRAME_FPS);
 
     return 0;
 }
@@ -139,22 +139,22 @@ static int hnm_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     if (hnm->superchunk_remaining == 0) {
         /* parse next superchunk */
-        superchunk_size = avio_rl24(pb);
-        avio_skip(pb, 1);
+        superchunk_size = avio_rl24_xij(pb);
+        avio_skip_xij(pb, 1);
 
         hnm->superchunk_remaining = superchunk_size - 4;
     }
 
-    chunk_size = avio_rl24(pb);
-    avio_skip(pb, 1);
-    chunk_id = avio_rl16(pb);
-    avio_skip(pb, 2);
+    chunk_size = avio_rl24_xij(pb);
+    avio_skip_xij(pb, 1);
+    chunk_id = avio_rl16_xij(pb);
+    avio_skip_xij(pb, 2);
 
     if (chunk_size > hnm->superchunk_remaining || !chunk_size) {
         av_log(s, AV_LOG_ERROR,
                "invalid chunk size: %"PRIu32", offset: %"PRId64"\n",
                chunk_size, avio_tell(pb));
-        avio_skip(pb, hnm->superchunk_remaining - 8);
+        avio_skip_xij(pb, hnm->superchunk_remaining - 8);
         hnm->superchunk_remaining = 0;
     }
 
@@ -162,22 +162,22 @@ static int hnm_read_packet(AVFormatContext *s, AVPacket *pkt)
     case HNM4_CHUNK_ID_PL:
     case HNM4_CHUNK_ID_IZ:
     case HNM4_CHUNK_ID_IU:
-        avio_seek(pb, -8, SEEK_CUR);
-        ret += av_get_packet(pb, pkt, chunk_size);
+        avio_seek_xij(pb, -8, SEEK_CUR);
+        ret += av_get_packet_xij(pb, pkt, chunk_size);
         hnm->superchunk_remaining -= chunk_size;
         if (chunk_id == HNM4_CHUNK_ID_IZ || chunk_id == HNM4_CHUNK_ID_IU)
             hnm->currentframe++;
         break;
 
     case HNM4_CHUNK_ID_SD:
-        avio_skip(pb, chunk_size - 8);
+        avio_skip_xij(pb, chunk_size - 8);
         hnm->superchunk_remaining -= chunk_size;
         break;
 
     default:
         av_log(s, AV_LOG_WARNING, "unknown chunk found: %"PRIu16", offset: %"PRId64"\n",
                chunk_id, avio_tell(pb));
-        avio_skip(pb, chunk_size - 8);
+        avio_skip_xij(pb, chunk_size - 8);
         hnm->superchunk_remaining -= chunk_size;
         break;
     }
@@ -190,7 +190,7 @@ static int hnm_read_close(AVFormatContext *s)
     Hnm4DemuxContext *hnm = s->priv_data;
 
     if (hnm->vpkt.size > 0)
-        av_packet_unref(&hnm->vpkt);
+        av_packet_unref_ijk(&hnm->vpkt);
 
     return 0;
 }

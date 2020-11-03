@@ -32,8 +32,8 @@ static void write_escape_str(AVIOContext *s, const uint8_t *str)
 
     while (*p) {
         if (*p == '#' || *p == ';' || *p == '=' || *p == '\\' || *p == '\n')
-            avio_w8(s, '\\');
-        avio_w8(s, *p);
+            avio_w8_xij(s, '\\');
+        avio_w8_xij(s, *p);
         p++;
     }
 }
@@ -43,18 +43,18 @@ static void write_tags(AVIOContext *s, AVDictionary *m)
     AVDictionaryEntry *t = NULL;
     while ((t = av_dict_get(m, "", t, AV_DICT_IGNORE_SUFFIX))) {
         write_escape_str(s, t->key);
-        avio_w8(s, '=');
+        avio_w8_xij(s, '=');
         write_escape_str(s, t->value);
-        avio_w8(s, '\n');
+        avio_w8_xij(s, '\n');
     }
 }
 
 static int write_header(AVFormatContext *s)
 {
-    avio_write(s->pb, ID_STRING, sizeof(ID_STRING) - 1);
-    avio_w8(s->pb, '1');          // version
-    avio_w8(s->pb, '\n');
-    avio_flush(s->pb);
+    avio_write_xij(s->pb, ID_STRING, sizeof(ID_STRING) - 1);
+    avio_w8_xij(s->pb, '1');          // version
+    avio_w8_xij(s->pb, '\n');
+    avio_flush_xij(s->pb);
     return 0;
 }
 
@@ -65,18 +65,18 @@ static int write_trailer(AVFormatContext *s)
     write_tags(s->pb, s->metadata);
 
     for (i = 0; i < s->nb_streams; i++) {
-        avio_write(s->pb, ID_STREAM, sizeof(ID_STREAM) - 1);
-        avio_w8(s->pb, '\n');
+        avio_write_xij(s->pb, ID_STREAM, sizeof(ID_STREAM) - 1);
+        avio_w8_xij(s->pb, '\n');
         write_tags(s->pb, s->streams[i]->metadata);
     }
 
     for (i = 0; i < s->nb_chapters; i++) {
         AVChapter *ch = s->chapters[i];
-        avio_write(s->pb, ID_CHAPTER, sizeof(ID_CHAPTER) - 1);
-        avio_w8(s->pb, '\n');
-        avio_printf(s->pb, "TIMEBASE=%d/%d\n", ch->time_base.num, ch->time_base.den);
-        avio_printf(s->pb, "START=%"PRId64"\n", ch->start);
-        avio_printf(s->pb, "END=%"PRId64"\n",   ch->end);
+        avio_write_xij(s->pb, ID_CHAPTER, sizeof(ID_CHAPTER) - 1);
+        avio_w8_xij(s->pb, '\n');
+        avio_printf_xij(s->pb, "TIMEBASE=%d/%d\n", ch->time_base.num, ch->time_base.den);
+        avio_printf_xij(s->pb, "START=%"PRId64"\n", ch->start);
+        avio_printf_xij(s->pb, "END=%"PRId64"\n",   ch->end);
         write_tags(s->pb, ch->metadata);
     }
 

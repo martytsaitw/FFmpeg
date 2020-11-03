@@ -722,7 +722,7 @@ static int get_frame(AVFilterContext *ctx, int is_second)
     s->dst = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!s->dst)
         return AVERROR(ENOMEM);
-    av_frame_copy_props(s->dst, src);
+    av_frame_copy_props_xij(s->dst, src);
     s->dst->interlaced_frame = 0;
 
     frame_data = &s->frame_data;
@@ -808,9 +808,9 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *src)
         s->src = s->second;
         ret = get_frame(ctx, 1);
         if (ret < 0) {
-            av_frame_free(&s->dst);
-            av_frame_free(&s->src);
-            av_frame_free(&s->second);
+            av_frame_free_xij(&s->dst);
+            av_frame_free_xij(&s->src);
+            av_frame_free_xij(&s->second);
             return ret;
         }
         dst = s->dst;
@@ -827,7 +827,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *src)
         if (s->eof)
             return 0;
         s->cur_pts = s->second->pts;
-        av_frame_free(&s->second);
+        av_frame_free_xij(&s->second);
 second:
         if ((s->deint && src->interlaced_frame &&
              !ctx->is_disabled) ||
@@ -837,20 +837,20 @@ second:
     }
 
     if ((s->deint && !src->interlaced_frame) || ctx->is_disabled) {
-        AVFrame *dst = av_frame_clone(src);
+        AVFrame *dst = av_frame_clone_xij(src);
         if (!dst) {
-            av_frame_free(&src);
-            av_frame_free(&s->second);
+            av_frame_free_xij(&src);
+            av_frame_free_xij(&s->second);
             return AVERROR(ENOMEM);
         }
 
         if (s->field > 1 || s->field == -2) {
-            av_frame_free(&s->second);
+            av_frame_free_xij(&s->second);
             if ((s->deint && src->interlaced_frame) ||
                 (!s->deint))
                 s->second = src;
         } else {
-            av_frame_free(&src);
+            av_frame_free_xij(&src);
         }
         if (dst->pts != AV_NOPTS_VALUE)
             dst->pts *= 2;
@@ -860,16 +860,16 @@ second:
     s->src = src;
     ret = get_frame(ctx, 0);
     if (ret < 0) {
-        av_frame_free(&s->dst);
-        av_frame_free(&s->src);
-        av_frame_free(&s->second);
+        av_frame_free_xij(&s->dst);
+        av_frame_free_xij(&s->src);
+        av_frame_free_xij(&s->second);
         return ret;
     }
 
     if (src->pts != AV_NOPTS_VALUE)
         s->dst->pts = src->pts * 2;
     if (s->field <= 1 && s->field > -2) {
-        av_frame_free(&src);
+        av_frame_free_xij(&src);
         s->src = NULL;
     }
 
@@ -888,7 +888,7 @@ static int request_frame(AVFilterLink *link)
     ret  = ff_request_frame(ctx->inputs[0]);
 
     if (ret == AVERROR_EOF && s->second) {
-        AVFrame *next = av_frame_clone(s->second);
+        AVFrame *next = av_frame_clone_xij(s->second);
 
         if (!next)
             return AVERROR(ENOMEM);
@@ -1174,7 +1174,7 @@ static av_cold void uninit(AVFilterContext *ctx)
     av_freep(&s->frame_data.input);
     av_freep(&s->frame_data.temp);
     av_freep(&s->fdsp);
-    av_frame_free(&s->second);
+    av_frame_free_xij(&s->second);
 }
 
 static const AVFilterPad inputs[] = {

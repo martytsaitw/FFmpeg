@@ -45,14 +45,14 @@ static int mxg_read_header(AVFormatContext *s)
     MXGContext *mxg = s->priv_data;
 
     /* video parameters will be extracted from the compressed bitstream */
-    video_st = avformat_new_stream(s, NULL);
+    video_st = avformat_new_stream_ijk(s, NULL);
     if (!video_st)
         return AVERROR(ENOMEM);
     video_st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     video_st->codecpar->codec_id = AV_CODEC_ID_MXPEG;
-    avpriv_set_pts_info(video_st, 64, 1, 1000000);
+    avpriv_set_pts_info_ijk(video_st, 64, 1, 1000000);
 
-    audio_st = avformat_new_stream(s, NULL);
+    audio_st = avformat_new_stream_ijk(s, NULL);
     if (!audio_st)
         return AVERROR(ENOMEM);
     audio_st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -62,7 +62,7 @@ static int mxg_read_header(AVFormatContext *s)
     audio_st->codecpar->sample_rate = 8000;
     audio_st->codecpar->bits_per_coded_sample = 8;
     audio_st->codecpar->block_align = 1;
-    avpriv_set_pts_info(audio_st, 64, 1, 1000000);
+    avpriv_set_pts_info_ijk(audio_st, 64, 1, 1000000);
 
     mxg->soi_ptr = mxg->buffer_ptr = mxg->buffer = 0;
     mxg->buffer_size = 0;
@@ -119,7 +119,7 @@ static int mxg_update_cache(AVFormatContext *s, unsigned int cache_size)
     if (mxg->soi_ptr) mxg->soi_ptr = mxg->buffer + soi_pos;
 
     /* get data */
-    ret = avio_read(s->pb, mxg->buffer_ptr + mxg->cache_size,
+    ret = avio_read_xij(s->pb, mxg->buffer_ptr + mxg->cache_size,
                      cache_size - mxg->cache_size);
     if (ret < 0)
         return ret;
@@ -136,7 +136,7 @@ static int mxg_read_packet(AVFormatContext *s, AVPacket *pkt)
     uint8_t *startmarker_ptr, *end, *search_end, marker;
     MXGContext *mxg = s->priv_data;
 
-    while (!avio_feof(s->pb) && !s->pb->error){
+    while (!avio_feof_xij(s->pb) && !s->pb->error){
         if (mxg->cache_size <= OVERREAD_SIZE) {
             /* update internal buffer */
             ret = mxg_update_cache(s, DEFAULT_PACKET_SIZE + OVERREAD_SIZE);
@@ -170,7 +170,7 @@ static int mxg_read_packet(AVFormatContext *s, AVPacket *pkt)
                 }
 
                 size = mxg->buffer_ptr - mxg->soi_ptr;
-                ret = av_new_packet(pkt, size);
+                ret = av_new_packet_ijk(pkt, size);
                 if (ret < 0)
                     return ret;
                 memcpy(pkt->data, mxg->soi_ptr, size);
@@ -209,7 +209,7 @@ static int mxg_read_packet(AVFormatContext *s, AVPacket *pkt)
                 mxg->buffer_ptr += size;
 
                 if (marker == APP13 && size >= 16) { /* audio data */
-                    ret = av_new_packet(pkt, size - 14);
+                    ret = av_new_packet_ijk(pkt, size - 14);
                     if (ret < 0)
                         return ret;
                     memcpy(pkt->data, startmarker_ptr + 16, size - 14);

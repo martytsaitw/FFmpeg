@@ -60,7 +60,7 @@ static int write_keyword_value(AVFormatContext *s, const char *keyword, int valu
     ret = snprintf(header + 10, 70, "%d", value);
     memset(&header[ret + 10], ' ', sizeof(header) - (ret + 10));
 
-    avio_write(s->pb, header, sizeof(header));
+    avio_write_xij(s->pb, header, sizeof(header));
     *lines_written += 1;
     return 0;
 }
@@ -114,11 +114,11 @@ static int write_image_header(AVFormatContext *s)
         memcpy(buffer, "SIMPLE  = ", 10);
         memset(buffer + 10, ' ', 70);
         buffer[29] = 'T';
-        avio_write(s->pb, buffer, sizeof(buffer));
+        avio_write_xij(s->pb, buffer, sizeof(buffer));
     } else {
         memcpy(buffer, "XTENSION= 'IMAGE   '", 20);
         memset(buffer + 20, ' ', 60);
-        avio_write(s->pb, buffer, sizeof(buffer));
+        avio_write_xij(s->pb, buffer, sizeof(buffer));
     }
     lines_written++;
 
@@ -148,19 +148,19 @@ static int write_image_header(AVFormatContext *s)
     if (rgb) {
         memcpy(buffer, "CTYPE3  = 'RGB     '", 20);
         memset(buffer + 20, ' ', 60);
-        avio_write(s->pb, buffer, sizeof(buffer));
+        avio_write_xij(s->pb, buffer, sizeof(buffer));
         lines_written++;
     }
 
     memcpy(buffer, "END", 3);
     memset(buffer + 3, ' ', 77);
-    avio_write(s->pb, buffer, sizeof(buffer));
+    avio_write_xij(s->pb, buffer, sizeof(buffer));
     lines_written++;
 
     lines_left = ((lines_written + 35) / 36) * 36 - lines_written;
     memset(buffer, ' ', 80);
     while (lines_left > 0) {
-        avio_write(s->pb, buffer, sizeof(buffer));
+        avio_write_xij(s->pb, buffer, sizeof(buffer));
         lines_left--;
     }
     return 0;
@@ -171,7 +171,7 @@ static int fits_write_packet(AVFormatContext *s, AVPacket *pkt)
     int ret = write_image_header(s);
     if (ret < 0)
         return ret;
-    avio_write(s->pb, pkt->data, pkt->size);
+    avio_write_xij(s->pb, pkt->data, pkt->size);
     return 0;
 }
 

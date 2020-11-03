@@ -251,7 +251,7 @@ static void init_band_stepsize(AVCodecContext *avctx,
 
     /* FIXME: In OpenJPEG code stepsize = stepsize * 0.5. Why?
      * If not set output of entropic decoder is not correct. */
-    if (!av_codec_is_encoder(avctx->codec))
+    if (!av_codec_is_encoder_xij(avctx->codec))
         band->f_stepsize *= 0.5;
 }
 

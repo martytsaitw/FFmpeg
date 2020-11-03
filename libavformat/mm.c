@@ -91,22 +91,22 @@ static int read_header(AVFormatContext *s)
     unsigned int type, length;
     unsigned int frame_rate, width, height;
 
-    type = avio_rl16(pb);
-    length = avio_rl32(pb);
+    type = avio_rl16_xij(pb);
+    length = avio_rl32_xij(pb);
 
     if (type != MM_TYPE_HEADER)
         return AVERROR_INVALIDDATA;
 
     /* read header */
-    avio_rl16(pb);   /* total number of chunks */
-    frame_rate = avio_rl16(pb);
-    avio_rl16(pb);   /* ibm-pc video bios mode */
-    width = avio_rl16(pb);
-    height = avio_rl16(pb);
-    avio_skip(pb, length - 10);  /* unknown data */
+    avio_rl16_xij(pb);   /* total number of chunks */
+    frame_rate = avio_rl16_xij(pb);
+    avio_rl16_xij(pb);   /* ibm-pc video bios mode */
+    width = avio_rl16_xij(pb);
+    height = avio_rl16_xij(pb);
+    avio_skip_xij(pb, length - 10);  /* unknown data */
 
     /* video stream */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
@@ -114,11 +114,11 @@ static int read_header(AVFormatContext *s)
     st->codecpar->codec_tag = 0;  /* no fourcc */
     st->codecpar->width = width;
     st->codecpar->height = height;
-    avpriv_set_pts_info(st, 64, 1, frame_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, frame_rate);
 
     /* audio stream */
     if (length == MM_HEADER_LEN_AV) {
-        st = avformat_new_stream(s, NULL);
+        st = avformat_new_stream_ijk(s, NULL);
         if (!st)
             return AVERROR(ENOMEM);
         st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -127,7 +127,7 @@ static int read_header(AVFormatContext *s)
         st->codecpar->channels = 1;
         st->codecpar->channel_layout = AV_CH_LAYOUT_MONO;
         st->codecpar->sample_rate = 8000;
-        avpriv_set_pts_info(st, 64, 1, 8000); /* 8000 hz */
+        avpriv_set_pts_info_ijk(st, 64, 1, 8000); /* 8000 hz */
     }
 
     mm->audio_pts = 0;
@@ -145,7 +145,7 @@ static int read_packet(AVFormatContext *s,
 
     while(1) {
 
-        if (avio_read(pb, preamble, MM_PREAMBLE_SIZE) != MM_PREAMBLE_SIZE) {
+        if (avio_read_xij(pb, preamble, MM_PREAMBLE_SIZE) != MM_PREAMBLE_SIZE) {
             return AVERROR(EIO);
         }
 
@@ -161,10 +161,10 @@ static int read_packet(AVFormatContext *s,
         case MM_TYPE_INTRA_HHV :
         case MM_TYPE_INTER_HHV :
             /* output preamble + data */
-            if (av_new_packet(pkt, length + MM_PREAMBLE_SIZE))
+            if (av_new_packet_ijk(pkt, length + MM_PREAMBLE_SIZE))
                 return AVERROR(ENOMEM);
             memcpy(pkt->data, preamble, MM_PREAMBLE_SIZE);
-            if (avio_read(pb, pkt->data + MM_PREAMBLE_SIZE, length) != length)
+            if (avio_read_xij(pb, pkt->data + MM_PREAMBLE_SIZE, length) != length)
                 return AVERROR(EIO);
             pkt->size = length + MM_PREAMBLE_SIZE;
             pkt->stream_index = 0;
@@ -174,7 +174,7 @@ static int read_packet(AVFormatContext *s,
             return 0;
 
         case MM_TYPE_AUDIO :
-            if (av_get_packet(s->pb, pkt, length)<0)
+            if (av_get_packet_xij(s->pb, pkt, length)<0)
                 return AVERROR(ENOMEM);
             pkt->stream_index = 1;
             pkt->pts = mm->audio_pts++;
@@ -182,7 +182,7 @@ static int read_packet(AVFormatContext *s,
 
         default :
             av_log(s, AV_LOG_INFO, "unknown chunk type 0x%x\n", type);
-            avio_skip(pb, length);
+            avio_skip_xij(pb, length);
         }
     }
 }

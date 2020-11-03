@@ -98,11 +98,11 @@ extern AVInputFormat  ff_codec2_demuxer;
 extern AVOutputFormat ff_codec2_muxer;
 extern AVInputFormat  ff_codec2raw_demuxer;
 extern AVOutputFormat ff_codec2raw_muxer;
-extern AVInputFormat  ff_concat_demuxer;
+extern AVInputFormat  ff_concat_ijk_demuxer;
 extern AVOutputFormat ff_crc_muxer;
 extern AVInputFormat  ff_dash_demuxer;
 extern AVOutputFormat ff_dash_muxer;
-extern AVInputFormat  ff_data_demuxer;
+extern AVInputFormat  ff_data_demuxer_xij;
 extern AVOutputFormat ff_data_muxer;
 extern AVInputFormat  ff_daud_demuxer;
 extern AVOutputFormat ff_daud_muxer;
@@ -140,9 +140,9 @@ extern AVOutputFormat ff_fits_muxer;
 extern AVInputFormat  ff_flac_demuxer;
 extern AVOutputFormat ff_flac_muxer;
 extern AVInputFormat  ff_flic_demuxer;
-extern AVInputFormat  ff_flv_demuxer;
+extern AVInputFormat  ff_flv_demuxer_xij;
 extern AVOutputFormat ff_flv_muxer;
-extern AVInputFormat  ff_live_flv_demuxer;
+extern AVInputFormat  ff_live_flv_demuxer_xij;
 extern AVInputFormat  ff_fourxm_demuxer;
 extern AVOutputFormat ff_framecrc_muxer;
 extern AVOutputFormat ff_framehash_muxer;
@@ -222,7 +222,7 @@ extern AVOutputFormat ff_matroska_audio_muxer;
 extern AVInputFormat  ff_mgsts_demuxer;
 extern AVInputFormat  ff_microdvd_demuxer;
 extern AVOutputFormat ff_microdvd_muxer;
-extern AVInputFormat  ff_mjpeg_demuxer;
+extern AVInputFormat  ff_mjpeg_xij_demuxer;
 extern AVOutputFormat ff_mjpeg_muxer;
 extern AVInputFormat  ff_mjpeg_2000_demuxer;
 extern AVInputFormat  ff_mlp_demuxer;
@@ -231,7 +231,7 @@ extern AVInputFormat  ff_mlv_demuxer;
 extern AVInputFormat  ff_mm_demuxer;
 extern AVInputFormat  ff_mmf_demuxer;
 extern AVOutputFormat ff_mmf_muxer;
-extern AVInputFormat  ff_mov_demuxer;
+extern AVInputFormat  ff_mov_ijk_demuxer;
 extern AVOutputFormat ff_mov_muxer;
 extern AVOutputFormat ff_mp2_muxer;
 extern AVInputFormat  ff_mp3_demuxer;
@@ -246,7 +246,7 @@ extern AVOutputFormat ff_mpeg2dvd_muxer;
 extern AVOutputFormat ff_mpeg2svcd_muxer;
 extern AVOutputFormat ff_mpeg2video_muxer;
 extern AVOutputFormat ff_mpeg2vob_muxer;
-extern AVInputFormat  ff_mpegps_demuxer;
+extern AVInputFormat  ff_mpegps_demuxer_xij;
 extern AVInputFormat  ff_mpegts_demuxer;
 extern AVOutputFormat ff_mpegts_muxer;
 extern AVInputFormat  ff_mpegtsraw_demuxer;
@@ -346,7 +346,7 @@ extern AVOutputFormat ff_rso_muxer;
 extern AVInputFormat  ff_rtp_demuxer;
 extern AVOutputFormat ff_rtp_muxer;
 extern AVOutputFormat ff_rtp_mpegts_muxer;
-extern AVInputFormat  ff_rtsp_demuxer;
+extern AVInputFormat  ff_rtsp_ijk_demuxer;
 extern AVOutputFormat ff_rtsp_muxer;
 extern AVInputFormat  ff_s337m_demuxer;
 extern AVInputFormat  ff_sami_demuxer;
@@ -487,20 +487,20 @@ extern AVInputFormat  ff_libgme_demuxer;
 extern AVInputFormat  ff_libmodplug_demuxer;
 extern AVInputFormat  ff_libopenmpt_demuxer;
 
-#include "libavformat/muxer_list.c"
-#include "libavformat/demuxer_list.c"
+#include "libavformat/muxer_list_ijk.c"
+#include "libavformat/demuxer_list_ijk.c"
 
 static const AVInputFormat * const *indev_list = NULL;
 static const AVOutputFormat * const *outdev_list = NULL;
 
-const AVOutputFormat *av_muxer_iterate(void **opaque)
+const AVOutputFormat *av_muxer_iterate_ijk(void **opaque)
 {
-    static const uintptr_t size = sizeof(muxer_list)/sizeof(muxer_list[0]) - 1;
+    static const uintptr_t size = sizeof(muxer_list_ijk)/sizeof(muxer_list_ijk[0]) - 1;
     uintptr_t i = (uintptr_t)*opaque;
     const AVOutputFormat *f = NULL;
 
     if (i < size) {
-        f = muxer_list[i];
+        f = muxer_list_ijk[i];
     } else if (indev_list) {
         f = outdev_list[i - size];
     }
@@ -510,14 +510,14 @@ const AVOutputFormat *av_muxer_iterate(void **opaque)
     return f;
 }
 
-const AVInputFormat *av_demuxer_iterate(void **opaque)
+const AVInputFormat *av_demuxer_iterate_ijk(void **opaque)
 {
-    static const uintptr_t size = sizeof(demuxer_list)/sizeof(demuxer_list[0]) - 1;
+    static const uintptr_t size = sizeof(demuxer_list_ijk)/sizeof(demuxer_list_ijk[0]) - 1;
     uintptr_t i = (uintptr_t)*opaque;
     const AVInputFormat *f = NULL;
 
     if (i < size) {
-        f = demuxer_list[i];
+        f = demuxer_list_ijk[i];
     } else if (outdev_list) {
         f = indev_list[i - size];
     }
@@ -540,7 +540,7 @@ static void av_format_init_next(void)
 
     ff_mutex_lock(&avpriv_register_devices_mutex);
 
-    for (int i = 0; (out = (AVOutputFormat*)muxer_list[i]); i++) {
+    for (int i = 0; (out = (AVOutputFormat*)muxer_list_ijk[i]); i++) {
         if (prevout)
             prevout->next = out;
         prevout = out;
@@ -554,7 +554,7 @@ static void av_format_init_next(void)
         }
     }
 
-    for (int i = 0; (in = (AVInputFormat*)demuxer_list[i]); i++) {
+    for (int i = 0; (in = (AVInputFormat*)demuxer_list_ijk[i]); i++) {
         if (previn)
             previn->next = in;
         previn = in;
@@ -571,7 +571,7 @@ static void av_format_init_next(void)
     ff_mutex_unlock(&avpriv_register_devices_mutex);
 }
 
-AVInputFormat *av_iformat_next(const AVInputFormat *f)
+AVInputFormat *av_iformat_next_ijk(const AVInputFormat *f)
 {
     ff_thread_once(&av_format_next_init, av_format_init_next);
 
@@ -579,11 +579,11 @@ AVInputFormat *av_iformat_next(const AVInputFormat *f)
         return f->next;
     else {
         void *opaque = NULL;
-        return (AVInputFormat *)av_demuxer_iterate(&opaque);
+        return (AVInputFormat *)av_demuxer_iterate_ijk(&opaque);
     }
 }
 
-AVOutputFormat *av_oformat_next(const AVOutputFormat *f)
+AVOutputFormat *av_oformat_next_xij(const AVOutputFormat *f)
 {
     ff_thread_once(&av_format_next_init, av_format_init_next);
 
@@ -591,28 +591,28 @@ AVOutputFormat *av_oformat_next(const AVOutputFormat *f)
         return f->next;
     else {
         void *opaque = NULL;
-        return (AVOutputFormat *)av_muxer_iterate(&opaque);
+        return (AVOutputFormat *)av_muxer_iterate_ijk(&opaque);
     }
 }
 
-void av_register_all(void)
+void av_register_all_xij(void)
 {
     ff_thread_once(&av_format_next_init, av_format_init_next);
 }
 
-void av_register_input_format(AVInputFormat *format)
+void av_register_input_format_xij(AVInputFormat *format)
 {
     ff_thread_once(&av_format_next_init, av_format_init_next);
 }
 
-void av_register_output_format(AVOutputFormat *format)
+void av_register_output_format_xij(AVOutputFormat *format)
 {
     ff_thread_once(&av_format_next_init, av_format_init_next);
 }
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
 
-void avpriv_register_devices(const AVOutputFormat * const o[], const AVInputFormat * const i[])
+void avpriv_register_devices_xij(const AVOutputFormat * const o[], const AVInputFormat * const i[])
 {
     ff_mutex_lock(&avpriv_register_devices_mutex);
     outdev_list = o;

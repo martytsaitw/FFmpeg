@@ -145,7 +145,7 @@ read_header:
         return buf_size;
     }
 
-    if ((ret = av_frame_ref(data, s->picture_ptr)) < 0)
+    if ((ret = av_frame_ref_xij(data, s->picture_ptr)) < 0)
         return ret;
     *got_frame = 1;
 

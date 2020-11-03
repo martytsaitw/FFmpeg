@@ -86,7 +86,7 @@ static int cavsvideo_parse(AVCodecParserContext *s,
     }else{
         next= cavs_find_frame_end(pc, buf, buf_size);
 
-        if (ff_combine_frame(pc, next, &buf, &buf_size) < 0) {
+        if (ff_combine_frame_xij(pc, next, &buf, &buf_size) < 0) {
             *poutbuf = NULL;
             *poutbuf_size = 0;
             return buf_size;
@@ -101,6 +101,6 @@ AVCodecParser ff_cavsvideo_parser = {
     .codec_ids      = { AV_CODEC_ID_CAVS },
     .priv_data_size = sizeof(ParseContext),
     .parser_parse   = cavsvideo_parse,
-    .parser_close   = ff_parse_close,
-    .split          = ff_mpeg4video_split,
+    .parser_close   = ff_parse_close_xij,
+    .split          = ff_mpeg4video_split_xij,
 };

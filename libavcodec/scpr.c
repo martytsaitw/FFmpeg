@@ -758,11 +758,11 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     int ret, type;
 
     if (avctx->bits_per_coded_sample == 16) {
-        if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+        if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
             return ret;
     }
 
-    if ((ret = ff_reget_buffer(avctx, s->current_frame)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, s->current_frame)) < 0)
         return ret;
 
     bytestream2_init(gb, avpkt->data, avpkt->size);
@@ -807,7 +807,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     } else if (type == 0 || type == 1) {
         frame->key_frame = 0;
 
-        ret = av_frame_copy(s->current_frame, s->last_frame);
+        ret = av_frame_copy_xij(s->current_frame, s->last_frame);
         if (ret < 0)
             return ret;
 
@@ -823,14 +823,14 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         return ret;
 
     if (avctx->bits_per_coded_sample != 16) {
-        ret = av_frame_ref(data, s->current_frame);
+        ret = av_frame_ref_xij(data, s->current_frame);
         if (ret < 0)
             return ret;
     } else {
         uint8_t *dst = frame->data[0];
         int x, y;
 
-        ret = av_frame_copy(frame, s->current_frame);
+        ret = av_frame_copy_xij(frame, s->current_frame);
         if (ret < 0)
             return ret;
 
@@ -890,8 +890,8 @@ static av_cold int decode_init(AVCodecContext *avctx)
     if (!s->blocks)
         return AVERROR(ENOMEM);
 
-    s->last_frame = av_frame_alloc();
-    s->current_frame = av_frame_alloc();
+    s->last_frame = av_frame_alloc_ijk();
+    s->current_frame = av_frame_alloc_ijk();
     if (!s->last_frame || !s->current_frame)
         return AVERROR(ENOMEM);
 
@@ -903,8 +903,8 @@ static av_cold int decode_close(AVCodecContext *avctx)
     SCPRContext *s = avctx->priv_data;
 
     av_freep(&s->blocks);
-    av_frame_free(&s->last_frame);
-    av_frame_free(&s->current_frame);
+    av_frame_free_xij(&s->last_frame);
+    av_frame_free_xij(&s->current_frame);
 
     return 0;
 }

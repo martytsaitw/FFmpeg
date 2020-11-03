@@ -71,12 +71,12 @@ static void hex_dump_internal(void *avcl, FILE *f, int level,
     }
 }
 
-void av_hex_dump(FILE *f, const uint8_t *buf, int size)
+void av_hex_dump_xij(FILE *f, const uint8_t *buf, int size)
 {
     hex_dump_internal(NULL, f, 0, buf, size);
 }
 
-void av_hex_dump_log(void *avcl, int level, const uint8_t *buf, int size)
+void av_hex_dump_log_xij(void *avcl, int level, const uint8_t *buf, int size)
 {
     hex_dump_internal(avcl, NULL, level, buf, size);
 }
@@ -87,7 +87,7 @@ static void pkt_dump_internal(void *avcl, FILE *f, int level, const AVPacket *pk
     HEXDUMP_PRINT("stream #%d:\n", pkt->stream_index);
     HEXDUMP_PRINT("  keyframe=%d\n", (pkt->flags & AV_PKT_FLAG_KEY) != 0);
     HEXDUMP_PRINT("  duration=%0.3f\n", pkt->duration * av_q2d(time_base));
-    /* DTS is _always_ valid after av_read_frame() */
+    /* DTS is _always_ valid after av_read_frame_ijk() */
     HEXDUMP_PRINT("  dts=");
     if (pkt->dts == AV_NOPTS_VALUE)
         HEXDUMP_PRINT("N/A");
@@ -105,12 +105,12 @@ static void pkt_dump_internal(void *avcl, FILE *f, int level, const AVPacket *pk
         hex_dump_internal(avcl, f, level, pkt->data, pkt->size);
 }
 
-void av_pkt_dump2(FILE *f, const AVPacket *pkt, int dump_payload, const AVStream *st)
+void av_pkt_dump2_xij(FILE *f, const AVPacket *pkt, int dump_payload, const AVStream *st)
 {
     pkt_dump_internal(NULL, f, 0, pkt, dump_payload, st->time_base);
 }
 
-void av_pkt_dump_log2(void *avcl, int level, const AVPacket *pkt, int dump_payload,
+void av_pkt_dump_log2_xij(void *avcl, int level, const AVPacket *pkt, int dump_payload,
                       const AVStream *st)
 {
     pkt_dump_internal(avcl, NULL, level, pkt, dump_payload, st->time_base);
@@ -423,7 +423,7 @@ static void dump_sidedata(void *ctx, AVStream *st, const char *indent)
             break;
         case AV_PKT_DATA_QUALITY_STATS:
             av_log(ctx, AV_LOG_INFO, "quality factor: %"PRId32", pict_type: %c",
-                   AV_RL32(sd.data), av_get_picture_type_char(sd.data[4]));
+                   AV_RL32(sd.data), av_get_picture_type_char_xij(sd.data[4]));
             break;
         case AV_PKT_DATA_CPB_PROPERTIES:
             av_log(ctx, AV_LOG_INFO, "cpb: ");
@@ -450,7 +450,7 @@ static void dump_sidedata(void *ctx, AVStream *st, const char *indent)
 }
 
 /* "user interface" functions */
-static void dump_stream_format(AVFormatContext *ic, int i,
+static void dump_stream_format_ijk(AVFormatContext *ic, int i,
                                int index, int is_output)
 {
     char buf[256];
@@ -461,13 +461,13 @@ static void dump_stream_format(AVFormatContext *ic, int i,
     AVCodecContext *avctx;
     int ret;
 
-    avctx = avcodec_alloc_context3(NULL);
+    avctx = avcodec_alloc_context3_ijk(NULL);
     if (!avctx)
         return;
 
-    ret = avcodec_parameters_to_context(avctx, st->codecpar);
+    ret = avcodec_parameters_to_context_ijk(avctx, st->codecpar);
     if (ret < 0) {
-        avcodec_free_context(&avctx);
+        avcodec_free_context_ijk(&avctx);
         return;
     }
 
@@ -481,8 +481,8 @@ static void dump_stream_format(AVFormatContext *ic, int i,
 
     if (separator)
         av_opt_set(avctx, "dump_separator", separator, 0);
-    avcodec_string(buf, sizeof(buf), avctx, is_output);
-    avcodec_free_context(&avctx);
+    avcodec_string_xij(buf, sizeof(buf), avctx, is_output);
+    avcodec_free_context_ijk(&avctx);
 
     av_log(NULL, AV_LOG_INFO, "    Stream #%d:%d", index, i);
 
@@ -558,7 +558,7 @@ static void dump_stream_format(AVFormatContext *ic, int i,
     dump_sidedata(NULL, st, "    ");
 }
 
-void av_dump_format(AVFormatContext *ic, int index,
+void av_dump_format_ijk(AVFormatContext *ic, int index,
                     const char *url, int is_output)
 {
     int i;
@@ -627,7 +627,7 @@ void av_dump_format(AVFormatContext *ic, int index,
                    name ? name->value : "");
             dump_metadata(NULL, ic->programs[j]->metadata, "    ");
             for (k = 0; k < ic->programs[j]->nb_stream_indexes; k++) {
-                dump_stream_format(ic, ic->programs[j]->stream_index[k],
+                dump_stream_format_ijk(ic, ic->programs[j]->stream_index[k],
                                    index, is_output);
                 printed[ic->programs[j]->stream_index[k]] = 1;
             }
@@ -639,7 +639,7 @@ void av_dump_format(AVFormatContext *ic, int index,
 
     for (i = 0; i < ic->nb_streams; i++)
         if (!printed[i])
-            dump_stream_format(ic, i, index, is_output);
+            dump_stream_format_ijk(ic, i, index, is_output);
 
     av_free(printed);
 }

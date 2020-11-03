@@ -55,19 +55,19 @@ static int rso_write_header(AVFormatContext *s)
     }
 
     /* format header */
-    avio_wb16(pb, par->codec_tag);   /* codec ID */
-    avio_wb16(pb, 0);                /* data size, will be written at EOF */
-    avio_wb16(pb, par->sample_rate);
-    avio_wb16(pb, 0x0000);           /* play mode ? (0x0000 = don't loop) */
+    avio_wb16_xij(pb, par->codec_tag);   /* codec ID */
+    avio_wb16_xij(pb, 0);                /* data size, will be written at EOF */
+    avio_wb16_xij(pb, par->sample_rate);
+    avio_wb16_xij(pb, 0x0000);           /* play mode ? (0x0000 = don't loop) */
 
-    avio_flush(pb);
+    avio_flush_xij(pb);
 
     return 0;
 }
 
 static int rso_write_packet(AVFormatContext *s, AVPacket *pkt)
 {
-    avio_write(s->pb, pkt->data, pkt->size);
+    avio_write_xij(s->pb, pkt->data, pkt->size);
     return 0;
 }
 
@@ -91,9 +91,9 @@ static int rso_write_trailer(AVFormatContext *s)
     }
 
     /* update file size */
-    avio_seek(pb, 2, SEEK_SET);
-    avio_wb16(pb, coded_file_size);
-    avio_seek(pb, file_size, SEEK_SET);
+    avio_seek_xij(pb, 2, SEEK_SET);
+    avio_wb16_xij(pb, coded_file_size);
+    avio_seek_xij(pb, file_size, SEEK_SET);
 
     return 0;
 }

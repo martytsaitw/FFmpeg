@@ -61,7 +61,7 @@ const AVOption av_device_capabilities[] = {
 #undef V
 #undef OFFSET
 
-unsigned avdevice_version(void)
+unsigned avdevice_version_ijk(void)
 {
     av_assert0(LIBAVDEVICE_VERSION_MICRO >= 100);
     return LIBAVDEVICE_VERSION_INT;
@@ -85,11 +85,11 @@ static void *device_next(void *prev, int output,
     AVClassCategory category = AV_CLASS_CATEGORY_NA;
     do {
         if (output) {
-            if (!(prev = av_oformat_next(prev)))
+            if (!(prev = av_oformat_next_xij(prev)))
                 break;
             pc = ((AVOutputFormat *)prev)->priv_class;
         } else {
-            if (!(prev = av_iformat_next(prev)))
+            if (!(prev = av_iformat_next_ijk(prev)))
                 break;
             pc = ((AVInputFormat *)prev)->priv_class;
         }
@@ -221,7 +221,7 @@ static int list_devices_for_context(AVFormatContext *s, AVDictionary *options,
     ret = avdevice_list_devices(s, device_list);
   fail:
     av_dict_free(&tmp);
-    avformat_free_context(s);
+    avformat_free_context_ijk(s);
     return ret;
 }
 
@@ -242,7 +242,7 @@ int avdevice_list_output_sinks(AVOutputFormat *device, const char *device_name,
     AVFormatContext *s = NULL;
     int ret;
 
-    if ((ret = avformat_alloc_output_context2(&s, device, device_name, NULL)) < 0)
+    if ((ret = avformat_alloc_output_context2_ijk(&s, device, device_name, NULL)) < 0)
         return ret;
     return list_devices_for_context(s, device_options, device_list);
 }

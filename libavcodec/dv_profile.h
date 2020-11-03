@@ -66,18 +66,18 @@ typedef struct AVDVProfile {
  * @param buf_size size of the buffer in bytes
  * @return the DV profile for the supplied data or NULL on failure
  */
-const AVDVProfile *av_dv_frame_profile(const AVDVProfile *sys,
+const AVDVProfile *av_dv_frame_profile_xij(const AVDVProfile *sys,
                                        const uint8_t *frame, unsigned buf_size);
 
 /**
  * Get a DV profile for the provided stream parameters.
  */
-const AVDVProfile *av_dv_codec_profile(int width, int height, enum AVPixelFormat pix_fmt);
+const AVDVProfile *av_dv_codec_profile_xij(int width, int height, enum AVPixelFormat pix_fmt);
 
 /**
  * Get a DV profile for the provided stream parameters.
  * The frame rate is used as a best-effort parameter.
  */
-const AVDVProfile *av_dv_codec_profile2(int width, int height, enum AVPixelFormat pix_fmt, AVRational frame_rate);
+const AVDVProfile *av_dv_codec_profile2_xij(int width, int height, enum AVPixelFormat pix_fmt, AVRational frame_rate);
 
 #endif /* AVCODEC_DV_PROFILE_H */

@@ -2005,7 +2005,7 @@ static void free_avframe(
     const void *plane_addresses[])
 {
     AVFrame *frame = release_ctx;
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
 }
 #else
 //Not used on OSX - frame is never copied.
@@ -2188,12 +2188,12 @@ static int create_cv_pixel_buffer(AVCodecContext   *avctx,
         return status;
     }
 #else
-    AVFrame *enc_frame = av_frame_alloc();
+    AVFrame *enc_frame = av_frame_alloc_ijk();
     if (!enc_frame) return AVERROR(ENOMEM);
 
-    status = av_frame_ref(enc_frame, frame);
+    status = av_frame_ref_xij(enc_frame, frame);
     if (status) {
-        av_frame_free(&enc_frame);
+        av_frame_free_xij(&enc_frame);
         return status;
     }
 
@@ -2263,13 +2263,13 @@ static int vtenc_send_frame(AVCodecContext *avctx,
         return status;
     }
 
-    side_data = av_frame_get_side_data(frame, AV_FRAME_DATA_A53_CC);
+    side_data = av_frame_get_side_data_xij(frame, AV_FRAME_DATA_A53_CC);
     if (vtctx->a53_cc && side_data && side_data->size) {
         sei = av_mallocz(sizeof(*sei));
         if (!sei) {
             av_log(avctx, AV_LOG_ERROR, "Not enough memory for closed captions, skipping\n");
         } else {
-            int ret = ff_alloc_a53_sei(frame, 0, &sei->data, &sei->size);
+            int ret = ff_alloc_a53_sei_xij(frame, 0, &sei->data, &sei->size);
             if (ret < 0) {
                 av_log(avctx, AV_LOG_ERROR, "Not enough memory for closed captions, skipping\n");
                 av_free(sei);
@@ -2363,7 +2363,7 @@ static av_cold int vtenc_frame(
     return 0;
 
 end_nopkt:
-    av_packet_unref(pkt);
+    av_packet_unref_ijk(pkt);
     return status;
 }
 
@@ -2375,7 +2375,7 @@ static int vtenc_populate_extradata(AVCodecContext   *avctx,
                                     CFDictionaryRef  pixel_buffer_info)
 {
     VTEncContext *vtctx = avctx->priv_data;
-    AVFrame *frame = av_frame_alloc();
+    AVFrame *frame = av_frame_alloc_ijk();
     int y_size = avctx->width * avctx->height;
     int chroma_size = (avctx->width / 2) * (avctx->height / 2);
     CMSampleBufferRef buf = NULL;
@@ -2384,7 +2384,7 @@ static int vtenc_populate_extradata(AVCodecContext   *avctx,
     if (!frame)
         return AVERROR(ENOMEM);
 
-    frame->buf[0] = av_buffer_alloc(y_size + 2 * chroma_size);
+    frame->buf[0] = av_buffer_alloc_ijk(y_size + 2 * chroma_size);
 
     if(!frame->buf[0]){
         status = AVERROR(ENOMEM);
@@ -2461,8 +2461,8 @@ pe_cleanup:
     vtctx->session = NULL;
     vtctx->frame_ct_out = 0;
 
-    av_frame_unref(frame);
-    av_frame_free(&frame);
+    av_frame_unref_xij(frame);
+    av_frame_free_xij(&frame);
 
     av_assert0(status != 0 || (avctx->extradata && avctx->extradata_size > 0));
 

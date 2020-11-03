@@ -63,14 +63,14 @@ static int lmlm4_read_header(AVFormatContext *s)
 {
     AVStream *st;
 
-    if (!(st = avformat_new_stream(s, NULL)))
+    if (!(st = avformat_new_stream_ijk(s, NULL)))
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id   = AV_CODEC_ID_MPEG4;
     st->need_parsing      = AVSTREAM_PARSE_HEADERS;
-    avpriv_set_pts_info(st, 64, 1001, 30000);
+    avpriv_set_pts_info_ijk(st, 64, 1001, 30000);
 
-    if (!(st = avformat_new_stream(s, NULL)))
+    if (!(st = avformat_new_stream_ijk(s, NULL)))
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id   = AV_CODEC_ID_MP2;
@@ -86,9 +86,9 @@ static int lmlm4_read_packet(AVFormatContext *s, AVPacket *pkt)
     int ret;
     unsigned int frame_type, packet_size, padding, frame_size;
 
-    avio_rb16(pb);                       /* channel number */
-    frame_type  = avio_rb16(pb);
-    packet_size = avio_rb32(pb);
+    avio_rb16_xij(pb);                       /* channel number */
+    frame_type  = avio_rb16_xij(pb);
+    packet_size = avio_rb32_xij(pb);
     padding     = -packet_size & 511;
     frame_size  = packet_size - 8;
 
@@ -101,10 +101,10 @@ static int lmlm4_read_packet(AVFormatContext *s, AVPacket *pkt)
         return AVERROR(EIO);
     }
 
-    if ((ret = av_get_packet(pb, pkt, frame_size)) <= 0)
+    if ((ret = av_get_packet_xij(pb, pkt, frame_size)) <= 0)
         return AVERROR(EIO);
 
-    avio_skip(pb, padding);
+    avio_skip_xij(pb, padding);
 
     switch (frame_type) {
     case LMLM4_I_FRAME:

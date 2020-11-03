@@ -54,21 +54,21 @@ static int frm_read_probe(AVProbeData *p)
 static int frm_read_header(AVFormatContext *avctx)
 {
     AVIOContext *pb = avctx->pb;
-    AVStream *st = avformat_new_stream(avctx, 0);
+    AVStream *st = avformat_new_stream_ijk(avctx, 0);
     if (!st)
         return AVERROR(ENOMEM);
 
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id   = AV_CODEC_ID_RAWVIDEO;
-    avio_skip(pb, 3);
+    avio_skip_xij(pb, 3);
 
-    st->codecpar->format    = avpriv_find_pix_fmt(frm_pix_fmt_tags, avio_r8(pb));
+    st->codecpar->format    = avpriv_find_pix_fmt_xij(frm_pix_fmt_tags, avio_r8_xij(pb));
     if (!st->codecpar->format)
         return AVERROR_INVALIDDATA;
 
     st->codecpar->codec_tag  = 0;
-    st->codecpar->width      = avio_rl16(pb);
-    st->codecpar->height     = avio_rl16(pb);
+    st->codecpar->width      = avio_rl16_xij(pb);
+    st->codecpar->height     = avio_rl16_xij(pb);
     return 0;
 }
 
@@ -85,7 +85,7 @@ static int frm_read_packet(AVFormatContext *avctx, AVPacket *pkt)
     if (packet_size < 0)
         return AVERROR_INVALIDDATA;
 
-    ret = av_get_packet(avctx->pb, pkt, packet_size);
+    ret = av_get_packet_xij(avctx->pb, pkt, packet_size);
     if (ret < 0)
         return ret;
 

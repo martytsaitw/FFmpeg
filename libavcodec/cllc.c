@@ -404,7 +404,7 @@ static int cllc_decode_frame(AVCodecContext *avctx, void *data,
     data_size = (avpkt->size - info_offset) & ~1;
 
     /* Make sure our bswap16'd buffer is big enough */
-    av_fast_padded_malloc(&ctx->swapped_buf,
+    av_fast_padded_malloc_xij(&ctx->swapped_buf,
                           &ctx->swapped_buf_size, data_size);
     if (!ctx->swapped_buf) {
         av_log(avctx, AV_LOG_ERROR, "Could not allocate swapped buffer.\n");

@@ -49,14 +49,14 @@ static int pmp_header(AVFormatContext *s)
     int srate, channels;
     unsigned i;
     uint64_t pos;
-    int64_t fsize = avio_size(pb);
+    int64_t fsize = avio_size_xij(pb);
 
-    AVStream *vst = avformat_new_stream(s, NULL);
+    AVStream *vst = avformat_new_stream_ijk(s, NULL);
     if (!vst)
         return AVERROR(ENOMEM);
     vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
-    avio_skip(pb, 8);
-    switch (avio_rl32(pb)) {
+    avio_skip_xij(pb, 8);
+    switch (avio_rl32_xij(pb)) {
     case 0:
         vst->codecpar->codec_id = AV_CODEC_ID_MPEG4;
         break;
@@ -67,17 +67,17 @@ static int pmp_header(AVFormatContext *s)
         av_log(s, AV_LOG_ERROR, "Unsupported video format\n");
         break;
     }
-    index_cnt          = avio_rl32(pb);
-    vst->codecpar->width  = avio_rl32(pb);
-    vst->codecpar->height = avio_rl32(pb);
+    index_cnt          = avio_rl32_xij(pb);
+    vst->codecpar->width  = avio_rl32_xij(pb);
+    vst->codecpar->height = avio_rl32_xij(pb);
 
-    tb_num = avio_rl32(pb);
-    tb_den = avio_rl32(pb);
-    avpriv_set_pts_info(vst, 32, tb_num, tb_den);
+    tb_num = avio_rl32_xij(pb);
+    tb_den = avio_rl32_xij(pb);
+    avpriv_set_pts_info_ijk(vst, 32, tb_num, tb_den);
     vst->nb_frames = index_cnt;
     vst->duration = index_cnt;
 
-    switch (avio_rl32(pb)) {
+    switch (avio_rl32_xij(pb)) {
     case 0:
         audio_codec_id = AV_CODEC_ID_MP3;
         break;
@@ -89,15 +89,15 @@ static int pmp_header(AVFormatContext *s)
         av_log(s, AV_LOG_ERROR, "Unsupported audio format\n");
         break;
     }
-    pmp->num_streams = avio_rl16(pb) + 1;
-    avio_skip(pb, 10);
-    srate = avio_rl32(pb);
-    channels = avio_rl32(pb) + 1;
+    pmp->num_streams = avio_rl16_xij(pb) + 1;
+    avio_skip_xij(pb, 10);
+    srate = avio_rl32_xij(pb);
+    channels = avio_rl32_xij(pb) + 1;
     pos = avio_tell(pb) + 4LL*index_cnt;
     for (i = 0; i < index_cnt; i++) {
-        uint32_t size = avio_rl32(pb);
+        uint32_t size = avio_rl32_xij(pb);
         int flags = size & 1 ? AVINDEX_KEYFRAME : 0;
-        if (avio_feof(pb)) {
+        if (avio_feof_xij(pb)) {
             av_log(s, AV_LOG_FATAL, "Encountered EOF while reading index.\n");
             return AVERROR_INVALIDDATA;
         }
@@ -106,7 +106,7 @@ static int pmp_header(AVFormatContext *s)
             av_log(s, AV_LOG_ERROR, "Packet too small\n");
             return AVERROR_INVALIDDATA;
         }
-        av_add_index_entry(vst, pos, i, size, 0, flags);
+        av_add_index_entry_xij(vst, pos, i, size, 0, flags);
         pos += size;
         if (fsize > 0 && i == 0 && pos > fsize) {
             av_log(s, AV_LOG_ERROR, "File ends before first packet\n");
@@ -114,14 +114,14 @@ static int pmp_header(AVFormatContext *s)
         }
     }
     for (i = 1; i < pmp->num_streams; i++) {
-        AVStream *ast = avformat_new_stream(s, NULL);
+        AVStream *ast = avformat_new_stream_ijk(s, NULL);
         if (!ast)
             return AVERROR(ENOMEM);
         ast->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
         ast->codecpar->codec_id    = audio_codec_id;
         ast->codecpar->channels    = channels;
         ast->codecpar->sample_rate = srate;
-        avpriv_set_pts_info(ast, 32, 1, srate);
+        avpriv_set_pts_info_ijk(ast, 32, 1, srate);
     }
     return 0;
 }
@@ -133,11 +133,11 @@ static int pmp_packet(AVFormatContext *s, AVPacket *pkt)
     int ret = 0;
     int i;
 
-    if (avio_feof(pb))
+    if (avio_feof_xij(pb))
         return AVERROR_EOF;
     if (pmp->cur_stream == 0) {
         int num_packets;
-        pmp->audio_packets = avio_r8(pb);
+        pmp->audio_packets = avio_r8_xij(pb);
 
         if (!pmp->audio_packets) {
             av_log(s, AV_LOG_ERROR, "No audio packets.\n");
@@ -145,7 +145,7 @@ static int pmp_packet(AVFormatContext *s, AVPacket *pkt)
         }
 
         num_packets = (pmp->num_streams - 1) * pmp->audio_packets + 1;
-        avio_skip(pb, 8);
+        avio_skip_xij(pb, 8);
         pmp->current_packet = 0;
         av_fast_malloc(&pmp->packet_sizes,
                        &pmp->packet_sizes_alloc,
@@ -155,9 +155,9 @@ static int pmp_packet(AVFormatContext *s, AVPacket *pkt)
             return AVERROR(ENOMEM);
         }
         for (i = 0; i < num_packets; i++)
-            pmp->packet_sizes[i] = avio_rl32(pb);
+            pmp->packet_sizes[i] = avio_rl32_xij(pb);
     }
-    ret = av_get_packet(pb, pkt, pmp->packet_sizes[pmp->current_packet]);
+    ret = av_get_packet_xij(pb, pkt, pmp->packet_sizes[pmp->current_packet]);
     if (ret >= 0) {
         ret = 0;
         pkt->stream_index = pmp->cur_stream;

@@ -38,25 +38,25 @@ static int apc_read_header(AVFormatContext *s)
     AVIOContext *pb = s->pb;
     AVStream *st;
 
-    avio_rl32(pb); /* CRYO */
-    avio_rl32(pb); /* _APC */
-    avio_rl32(pb); /* 1.20 */
+    avio_rl32_xij(pb); /* CRYO */
+    avio_rl32_xij(pb); /* _APC */
+    avio_rl32_xij(pb); /* 1.20 */
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id = AV_CODEC_ID_ADPCM_IMA_APC;
 
-    avio_rl32(pb); /* number of samples */
-    st->codecpar->sample_rate = avio_rl32(pb);
+    avio_rl32_xij(pb); /* number of samples */
+    st->codecpar->sample_rate = avio_rl32_xij(pb);
 
     /* initial predictor values for adpcm decoder */
-    if (ff_get_extradata(s, st->codecpar, pb, 2 * 4) < 0)
+    if (ff_get_extradata_xij(s, st->codecpar, pb, 2 * 4) < 0)
         return AVERROR(ENOMEM);
 
-    if (avio_rl32(pb)) {
+    if (avio_rl32_xij(pb)) {
         st->codecpar->channels       = 2;
         st->codecpar->channel_layout = AV_CH_LAYOUT_STEREO;
     } else {
@@ -76,7 +76,7 @@ static int apc_read_header(AVFormatContext *s)
 
 static int apc_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
-    if (av_get_packet(s->pb, pkt, MAX_READ_SIZE) <= 0)
+    if (av_get_packet_xij(s->pb, pkt, MAX_READ_SIZE) <= 0)
         return AVERROR(EIO);
     pkt->flags &= ~AV_PKT_FLAG_CORRUPT;
     pkt->stream_index = 0;

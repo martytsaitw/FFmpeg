@@ -53,7 +53,7 @@ static int cdata_read_header(AVFormatContext *s)
     AVStream *st;
     int64_t channel_layout = 0;
 
-    header = avio_rb16(pb);
+    header = avio_rb16_xij(pb);
     switch (header) {
         case 0x0400: cdata->channels = 1; break;
         case 0x0404: cdata->channels = 2; break;
@@ -64,10 +64,10 @@ static int cdata_read_header(AVFormatContext *s)
             return -1;
     };
 
-    sample_rate = avio_rb16(pb);
-    avio_skip(pb, (avio_r8(pb) & 0x20) ? 15 : 11);
+    sample_rate = avio_rb16_xij(pb);
+    avio_skip_xij(pb, (avio_r8_xij(pb) & 0x20) ? 15 : 11);
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -76,7 +76,7 @@ static int cdata_read_header(AVFormatContext *s)
     st->codecpar->channels = cdata->channels;
     st->codecpar->channel_layout = channel_layout;
     st->codecpar->sample_rate = sample_rate;
-    avpriv_set_pts_info(st, 64, 1, sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, sample_rate);
 
     cdata->audio_pts = 0;
     return 0;
@@ -87,7 +87,7 @@ static int cdata_read_packet(AVFormatContext *s, AVPacket *pkt)
     CdataDemuxContext *cdata = s->priv_data;
     int packet_size = 76*cdata->channels;
 
-    int ret = av_get_packet(s->pb, pkt, packet_size);
+    int ret = av_get_packet_xij(s->pb, pkt, packet_size);
     if (ret < 0)
         return ret;
     pkt->pts = cdata->audio_pts++;

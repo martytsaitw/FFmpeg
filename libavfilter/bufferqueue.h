@@ -73,7 +73,7 @@ static inline void ff_bufqueue_add(void *log, struct FFBufQueue *queue,
 {
     if (ff_bufqueue_is_full(queue)) {
         av_log(log, AV_LOG_WARNING, "Buffer queue overflow, dropping.\n");
-        av_frame_free(&BUCKET(--queue->available));
+        av_frame_free_xij(&BUCKET(--queue->available));
     }
     BUCKET(queue->available++) = buf;
 }
@@ -112,7 +112,7 @@ static inline void ff_bufqueue_discard_all(struct FFBufQueue *queue)
 {
     while (queue->available) {
         AVFrame *buf = ff_bufqueue_get(queue);
-        av_frame_free(&buf);
+        av_frame_free_xij(&buf);
     }
 }
 

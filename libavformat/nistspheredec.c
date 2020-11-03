@@ -39,20 +39,20 @@ static int nist_read_header(AVFormatContext *s)
     int32_t header_size = -1;
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
 
-    ff_get_line(s->pb, buffer, sizeof(buffer));
-    ff_get_line(s->pb, buffer, sizeof(buffer));
+    ff_get_line_xij(s->pb, buffer, sizeof(buffer));
+    ff_get_line_xij(s->pb, buffer, sizeof(buffer));
     sscanf(buffer, "%"SCNd32, &header_size);
     if (header_size <= 0)
         return AVERROR_INVALIDDATA;
 
-    while (!avio_feof(s->pb)) {
-        ff_get_line(s->pb, buffer, sizeof(buffer));
+    while (!avio_feof_xij(s->pb)) {
+        ff_get_line_xij(s->pb, buffer, sizeof(buffer));
 
         if (avio_tell(s->pb) >= header_size)
             return AVERROR_INVALIDDATA;
@@ -63,7 +63,7 @@ static int nist_read_header(AVFormatContext *s)
 
             if (!av_strcasecmp(coding, "pcm")) {
                 if (st->codecpar->codec_id == AV_CODEC_ID_NONE)
-                    st->codecpar->codec_id = ff_get_pcm_codec_id(st->codecpar->bits_per_coded_sample,
+                    st->codecpar->codec_id = ff_get_pcm_codec_id_xij(st->codecpar->bits_per_coded_sample,
                                                               0, be, 0xFFFF);
             } else if (!av_strcasecmp(coding, "alaw")) {
                 st->codecpar->codec_id = AV_CODEC_ID_PCM_ALAW;
@@ -72,20 +72,20 @@ static int nist_read_header(AVFormatContext *s)
                 st->codecpar->codec_id = AV_CODEC_ID_PCM_MULAW;
             } else if (!av_strncasecmp(coding, "pcm,embedded-shorten", 20)) {
                 st->codecpar->codec_id = AV_CODEC_ID_SHORTEN;
-                if (ff_alloc_extradata(st->codecpar, 1))
+                if (ff_alloc_extradata_xij(st->codecpar, 1))
                     st->codecpar->extradata[0] = 1;
             } else {
                 avpriv_request_sample(s, "coding %s", coding);
             }
 
-            avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+            avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
             st->codecpar->block_align = st->codecpar->bits_per_coded_sample * st->codecpar->channels / 8;
 
             if (avio_tell(s->pb) > header_size)
                 return AVERROR_INVALIDDATA;
 
-            avio_skip(s->pb, header_size - avio_tell(s->pb));
+            avio_skip_xij(s->pb, header_size - avio_tell(s->pb));
 
             return 0;
         } else if (!memcmp(buffer, "channel_count", 13)) {

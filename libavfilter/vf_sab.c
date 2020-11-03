@@ -131,7 +131,7 @@ static av_cold int init(AVFilterContext *ctx)
 static void close_filter_param(FilterParam *f)
 {
     if (f->pre_filter_context) {
-        sws_freeContext(f->pre_filter_context);
+        sws_freeContext_xij(f->pre_filter_context);
         f->pre_filter_context = NULL;
     }
     av_freep(&f->pre_filter_buf);
@@ -158,15 +158,15 @@ static int open_filter_param(FilterParam *f, int width, int height, unsigned int
         return AVERROR(ENOMEM);
 
     f->pre_filter_linesize = linesize;
-    vec = sws_getGaussianVec(f->pre_filter_radius, f->quality);
+    vec = sws_getGaussianVec_xij(f->pre_filter_radius, f->quality);
     sws_f.lumH = sws_f.lumV = vec;
     sws_f.chrH = sws_f.chrV = NULL;
-    f->pre_filter_context = sws_getContext(width, height, AV_PIX_FMT_GRAY8,
+    f->pre_filter_context = sws_getContext_xij(width, height, AV_PIX_FMT_GRAY8,
                                            width, height, AV_PIX_FMT_GRAY8,
                                            sws_flags, &sws_f, NULL, NULL);
-    sws_freeVec(vec);
+    sws_freeVec_xij(vec);
 
-    vec = sws_getGaussianVec(f->strength, 5.0);
+    vec = sws_getGaussianVec_xij(f->strength, 5.0);
     for (i = 0; i < COLOR_DIFF_COEFF_SIZE; i++) {
         double d;
         int index = i-COLOR_DIFF_COEFF_SIZE/2 + vec->length/2;
@@ -176,14 +176,14 @@ static int open_filter_param(FilterParam *f, int width, int height, unsigned int
 
         f->color_diff_coeff[i] = (int)(d/vec->coeff[vec->length/2]*(1<<12) + 0.5);
     }
-    sws_freeVec(vec);
+    sws_freeVec_xij(vec);
 
-    vec = sws_getGaussianVec(f->radius, f->quality);
+    vec = sws_getGaussianVec_xij(f->radius, f->quality);
     f->dist_width    = vec->length;
     f->dist_linesize = FFALIGN(vec->length, 8);
     f->dist_coeff    = av_malloc_array(f->dist_width, f->dist_linesize * sizeof(*f->dist_coeff));
     if (!f->dist_coeff) {
-        sws_freeVec(vec);
+        sws_freeVec_xij(vec);
         return AVERROR(ENOMEM);
     }
 
@@ -193,7 +193,7 @@ static int open_filter_param(FilterParam *f, int width, int height, unsigned int
             f->dist_coeff[x + y*f->dist_linesize] = (int)(d*(1<<10) + 0.5);
         }
     }
-    sws_freeVec(vec);
+    sws_freeVec_xij(vec);
 
     return 0;
 }
@@ -287,10 +287,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
 
     outpic = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!outpic) {
-        av_frame_free(&inpic);
+        av_frame_free_xij(&inpic);
         return AVERROR(ENOMEM);
     }
-    av_frame_copy_props(outpic, inpic);
+    av_frame_copy_props_xij(outpic, inpic);
 
     blur(outpic->data[0], outpic->linesize[0], inpic->data[0],  inpic->linesize[0],
          inlink->w, inlink->h, &s->luma);
@@ -301,7 +301,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
         blur(outpic->data[2], outpic->linesize[2], inpic->data[2], inpic->linesize[2], cw, ch, &s->chroma);
     }
 
-    av_frame_free(&inpic);
+    av_frame_free_xij(&inpic);
     return ff_filter_frame(outlink, outpic);
 }
 

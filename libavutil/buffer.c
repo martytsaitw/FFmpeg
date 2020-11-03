@@ -25,7 +25,7 @@
 #include "mem.h"
 #include "thread.h"
 
-AVBufferRef *av_buffer_create(uint8_t *data, int size,
+AVBufferRef *av_buffer_create_ijk(uint8_t *data, int size,
                               void (*free)(void *opaque, uint8_t *data),
                               void *opaque, int flags)
 {
@@ -38,7 +38,7 @@ AVBufferRef *av_buffer_create(uint8_t *data, int size,
 
     buf->data     = data;
     buf->size     = size;
-    buf->free     = free ? free : av_buffer_default_free;
+    buf->free     = free ? free : av_buffer_default_free_xij;
     buf->opaque   = opaque;
 
     atomic_init(&buf->refcount, 1);
@@ -59,12 +59,12 @@ AVBufferRef *av_buffer_create(uint8_t *data, int size,
     return ref;
 }
 
-void av_buffer_default_free(void *opaque, uint8_t *data)
+void av_buffer_default_free_xij(void *opaque, uint8_t *data)
 {
     av_free(data);
 }
 
-AVBufferRef *av_buffer_alloc(int size)
+AVBufferRef *av_buffer_alloc_ijk(int size)
 {
     AVBufferRef *ret = NULL;
     uint8_t    *data = NULL;
@@ -73,16 +73,16 @@ AVBufferRef *av_buffer_alloc(int size)
     if (!data)
         return NULL;
 
-    ret = av_buffer_create(data, size, av_buffer_default_free, NULL, 0);
+    ret = av_buffer_create_ijk(data, size, av_buffer_default_free_xij, NULL, 0);
     if (!ret)
         av_freep(&data);
 
     return ret;
 }
 
-AVBufferRef *av_buffer_allocz(int size)
+AVBufferRef *av_buffer_allocz_xij(int size)
 {
-    AVBufferRef *ret = av_buffer_alloc(size);
+    AVBufferRef *ret = av_buffer_alloc_ijk(size);
     if (!ret)
         return NULL;
 
@@ -90,7 +90,7 @@ AVBufferRef *av_buffer_allocz(int size)
     return ret;
 }
 
-AVBufferRef *av_buffer_ref(AVBufferRef *buf)
+AVBufferRef *av_buffer_ref_ijk(AVBufferRef *buf)
 {
     AVBufferRef *ret = av_mallocz(sizeof(*ret));
 
@@ -122,7 +122,7 @@ static void buffer_replace(AVBufferRef **dst, AVBufferRef **src)
     }
 }
 
-void av_buffer_unref(AVBufferRef **buf)
+void av_buffer_unref_xij(AVBufferRef **buf)
 {
     if (!buf || !*buf)
         return;
@@ -130,7 +130,7 @@ void av_buffer_unref(AVBufferRef **buf)
     buffer_replace(buf, NULL);
 }
 
-int av_buffer_is_writable(const AVBufferRef *buf)
+int av_buffer_is_writable_xij(const AVBufferRef *buf)
 {
     if (buf->buffer->flags & AV_BUFFER_FLAG_READONLY)
         return 0;
@@ -138,24 +138,24 @@ int av_buffer_is_writable(const AVBufferRef *buf)
     return atomic_load(&buf->buffer->refcount) == 1;
 }
 
-void *av_buffer_get_opaque(const AVBufferRef *buf)
+void *av_buffer_get_opaque_xij(const AVBufferRef *buf)
 {
     return buf->buffer->opaque;
 }
 
-int av_buffer_get_ref_count(const AVBufferRef *buf)
+int av_buffer_get_ref_count_xij(const AVBufferRef *buf)
 {
     return atomic_load(&buf->buffer->refcount);
 }
 
-int av_buffer_make_writable(AVBufferRef **pbuf)
+int av_buffer_make_writable_xij(AVBufferRef **pbuf)
 {
     AVBufferRef *newbuf, *buf = *pbuf;
 
-    if (av_buffer_is_writable(buf))
+    if (av_buffer_is_writable_xij(buf))
         return 0;
 
-    newbuf = av_buffer_alloc(buf->size);
+    newbuf = av_buffer_alloc_ijk(buf->size);
     if (!newbuf)
         return AVERROR(ENOMEM);
 
@@ -166,7 +166,7 @@ int av_buffer_make_writable(AVBufferRef **pbuf)
     return 0;
 }
 
-int av_buffer_realloc(AVBufferRef **pbuf, int size)
+int av_buffer_realloc_ijk(AVBufferRef **pbuf, int size)
 {
     AVBufferRef *buf = *pbuf;
     uint8_t *tmp;
@@ -178,7 +178,7 @@ int av_buffer_realloc(AVBufferRef **pbuf, int size)
         if (!data)
             return AVERROR(ENOMEM);
 
-        buf = av_buffer_create(data, size, av_buffer_default_free, NULL, 0);
+        buf = av_buffer_create_ijk(data, size, av_buffer_default_free_xij, NULL, 0);
         if (!buf) {
             av_freep(&data);
             return AVERROR(ENOMEM);
@@ -192,11 +192,11 @@ int av_buffer_realloc(AVBufferRef **pbuf, int size)
         return 0;
 
     if (!(buf->buffer->flags & BUFFER_FLAG_REALLOCATABLE) ||
-        !av_buffer_is_writable(buf) || buf->data != buf->buffer->data) {
+        !av_buffer_is_writable_xij(buf) || buf->data != buf->buffer->data) {
         /* cannot realloc, allocate a new reallocable buffer and copy data */
         AVBufferRef *new = NULL;
 
-        av_buffer_realloc(&new, size);
+        av_buffer_realloc_ijk(&new, size);
         if (!new)
             return AVERROR(ENOMEM);
 
@@ -215,7 +215,7 @@ int av_buffer_realloc(AVBufferRef **pbuf, int size)
     return 0;
 }
 
-AVBufferPool *av_buffer_pool_init2(int size, void *opaque,
+AVBufferPool *av_buffer_pool_init2_xij(int size, void *opaque,
                                    AVBufferRef* (*alloc)(void *opaque, int size),
                                    void (*pool_free)(void *opaque))
 {
@@ -235,7 +235,7 @@ AVBufferPool *av_buffer_pool_init2(int size, void *opaque,
     return pool;
 }
 
-AVBufferPool *av_buffer_pool_init(int size, AVBufferRef* (*alloc)(int size))
+AVBufferPool *av_buffer_pool_init_xij(int size, AVBufferRef* (*alloc)(int size))
 {
     AVBufferPool *pool = av_mallocz(sizeof(*pool));
     if (!pool)
@@ -244,7 +244,7 @@ AVBufferPool *av_buffer_pool_init(int size, AVBufferRef* (*alloc)(int size))
     ff_mutex_init(&pool->mutex, NULL);
 
     pool->size     = size;
-    pool->alloc    = alloc ? alloc : av_buffer_alloc;
+    pool->alloc    = alloc ? alloc : av_buffer_alloc_ijk;
 
     atomic_init(&pool->refcount, 1);
 
@@ -272,7 +272,7 @@ static void buffer_pool_free(AVBufferPool *pool)
     av_freep(&pool);
 }
 
-void av_buffer_pool_uninit(AVBufferPool **ppool)
+void av_buffer_pool_uninit_xij(AVBufferPool **ppool)
 {
     AVBufferPool *pool;
 
@@ -316,7 +316,7 @@ static AVBufferRef *pool_alloc_buffer(AVBufferPool *pool)
 
     buf = av_mallocz(sizeof(*buf));
     if (!buf) {
-        av_buffer_unref(&ret);
+        av_buffer_unref_xij(&ret);
         return NULL;
     }
 
@@ -331,7 +331,7 @@ static AVBufferRef *pool_alloc_buffer(AVBufferPool *pool)
     return ret;
 }
 
-AVBufferRef *av_buffer_pool_get(AVBufferPool *pool)
+AVBufferRef *av_buffer_pool_get_xij(AVBufferPool *pool)
 {
     AVBufferRef *ret;
     BufferPoolEntry *buf;
@@ -339,7 +339,7 @@ AVBufferRef *av_buffer_pool_get(AVBufferPool *pool)
     ff_mutex_lock(&pool->mutex);
     buf = pool->pool;
     if (buf) {
-        ret = av_buffer_create(buf->data, pool->size, pool_release_buffer,
+        ret = av_buffer_create_ijk(buf->data, pool->size, pool_release_buffer,
                                buf, 0);
         if (ret) {
             pool->pool = buf->next;

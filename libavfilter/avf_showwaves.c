@@ -123,7 +123,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 {
     ShowWavesContext *showwaves = ctx->priv;
 
-    av_frame_free(&showwaves->outpicref);
+    av_frame_free_xij(&showwaves->outpicref);
     av_freep(&showwaves->buf_idy);
     av_freep(&showwaves->fg);
 
@@ -133,7 +133,7 @@ static av_cold void uninit(AVFilterContext *ctx)
             struct frame_node *tmp = node;
 
             node = node->next;
-            av_frame_free(&tmp->frame);
+            av_frame_free_xij(&tmp->frame);
             av_freep(&tmp);
         }
         av_freep(&showwaves->sum);
@@ -709,7 +709,7 @@ static int showwaves_filter_frame(AVFilterLink *inlink, AVFrame *insamples)
     }
 
 end:
-    av_frame_free(&insamples);
+    av_frame_free_xij(&insamples);
     return ret;
 }
 
@@ -816,7 +816,7 @@ static int showwavespic_filter_frame(AVFilterLink *inlink, AVFrame *insamples)
     }
 
 end:
-    av_frame_free(&insamples);
+    av_frame_free_xij(&insamples);
     return ret;
 }
 

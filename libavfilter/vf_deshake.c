@@ -400,7 +400,7 @@ static int config_props(AVFilterLink *link)
 static av_cold void uninit(AVFilterContext *ctx)
 {
     DeshakeContext *deshake = ctx->priv;
-    av_frame_free(&deshake->ref);
+    av_frame_free_xij(&deshake->ref);
     av_freep(&deshake->angles);
     deshake->angles_size = 0;
     if (deshake->fp)
@@ -424,10 +424,10 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
 
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out) {
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         return AVERROR(ENOMEM);
     }
-    av_frame_copy_props(out, in);
+    av_frame_copy_props_xij(out, in);
 
     aligned = !((intptr_t)in->data[0] & 15 | in->linesize[0] & 15);
     deshake->sad = av_pixelutils_get_sad_fn(4, 4, aligned, deshake); // 16x16, 2nd source unaligned
@@ -514,7 +514,7 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
                              matrix_y, matrix_uv, INTERPOLATE_BILINEAR, deshake->edge, in, out);
 
     // Cleanup the old reference frame
-    av_frame_free(&deshake->ref);
+    av_frame_free_xij(&deshake->ref);
 
     if (ret < 0)
         goto fail;
@@ -525,7 +525,7 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
 
     return ff_filter_frame(outlink, out);
 fail:
-    av_frame_free(&out);
+    av_frame_free_xij(&out);
     return ret;
 }
 

@@ -77,7 +77,7 @@ static int msnwc_tcp_read_header(AVFormatContext *ctx)
     AVCodecParameters *par;
     AVStream *st;
 
-    st = avformat_new_stream(ctx, NULL);
+    st = avformat_new_stream_ijk(ctx, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -86,13 +86,13 @@ static int msnwc_tcp_read_header(AVFormatContext *ctx)
     par->codec_id   = AV_CODEC_ID_MIMIC;
     par->codec_tag  = MKTAG('M', 'L', '2', '0');
 
-    avpriv_set_pts_info(st, 32, 1, 1000);
+    avpriv_set_pts_info_ijk(st, 32, 1, 1000);
 
     /* Some files start with "connected\r\n\r\n".
      * So skip until we find the first byte of struct size */
-    while(avio_r8(pb) != HEADER_SIZE && !avio_feof(pb)) ;
+    while(avio_r8_xij(pb) != HEADER_SIZE && !avio_feof_xij(pb)) ;
 
-    if(avio_feof(pb)) {
+    if(avio_feof_xij(pb)) {
         av_log(ctx, AV_LOG_ERROR, "Could not find valid start.\n");
         return AVERROR_INVALIDDATA;
     }
@@ -107,22 +107,22 @@ static int msnwc_tcp_read_packet(AVFormatContext *ctx, AVPacket *pkt)
     uint32_t size, timestamp;
     int ret;
 
-    avio_skip(pb, 1); /* one byte has been read ahead */
-    avio_skip(pb, 2);
-    avio_skip(pb, 2);
-    keyframe = avio_rl16(pb);
-    size     = avio_rl32(pb);
-    avio_skip(pb, 4);
-    avio_skip(pb, 4);
-    timestamp = avio_rl32(pb);
+    avio_skip_xij(pb, 1); /* one byte has been read ahead */
+    avio_skip_xij(pb, 2);
+    avio_skip_xij(pb, 2);
+    keyframe = avio_rl16_xij(pb);
+    size     = avio_rl32_xij(pb);
+    avio_skip_xij(pb, 4);
+    avio_skip_xij(pb, 4);
+    timestamp = avio_rl32_xij(pb);
 
     if (!size)
         return AVERROR_INVALIDDATA;
 
-    if ((ret = av_get_packet(pb, pkt, size)) < 0)
+    if ((ret = av_get_packet_xij(pb, pkt, size)) < 0)
         return ret;
 
-    avio_skip(pb, 1); /* Read ahead one byte of struct size like read_header */
+    avio_skip_xij(pb, 1); /* Read ahead one byte of struct size like read_header */
 
     pkt->pts          = timestamp;
     pkt->dts          = timestamp;

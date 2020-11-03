@@ -43,21 +43,21 @@ static int ast_read_header(AVFormatContext *s)
     int depth;
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
-    avio_skip(s->pb, 8);
+    avio_skip_xij(s->pb, 8);
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
-    st->codecpar->codec_id   = ff_codec_get_id(ff_codec_ast_tags, avio_rb16(s->pb));
+    st->codecpar->codec_id   = ff_codec_get_id_xij(ff_codec_ast_tags, avio_rb16_xij(s->pb));
 
-    depth = avio_rb16(s->pb);
+    depth = avio_rb16_xij(s->pb);
     if (depth != 16) {
         avpriv_request_sample(s, "depth %d", depth);
         return AVERROR_INVALIDDATA;
     }
 
-    st->codecpar->channels = avio_rb16(s->pb);
+    st->codecpar->channels = avio_rb16_xij(s->pb);
     if (!st->codecpar->channels)
         return AVERROR_INVALIDDATA;
 
@@ -66,14 +66,14 @@ static int ast_read_header(AVFormatContext *s)
     else if (st->codecpar->channels == 4)
         st->codecpar->channel_layout = AV_CH_LAYOUT_4POINT0;
 
-    avio_skip(s->pb, 2);
-    st->codecpar->sample_rate = avio_rb32(s->pb);
+    avio_skip_xij(s->pb, 2);
+    st->codecpar->sample_rate = avio_rb32_xij(s->pb);
     if (st->codecpar->sample_rate <= 0)
         return AVERROR_INVALIDDATA;
     st->start_time         = 0;
-    st->duration           = avio_rb32(s->pb);
-    avio_skip(s->pb, 40);
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    st->duration           = avio_rb32_xij(s->pb);
+    avio_skip_xij(s->pb, 40);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }
@@ -84,26 +84,26 @@ static int ast_read_packet(AVFormatContext *s, AVPacket *pkt)
     int64_t pos;
     int ret;
 
-    if (avio_feof(s->pb))
+    if (avio_feof_xij(s->pb))
         return AVERROR_EOF;
 
     pos  = avio_tell(s->pb);
-    type = avio_rl32(s->pb);
-    size = avio_rb32(s->pb);
+    type = avio_rl32_xij(s->pb);
+    size = avio_rb32_xij(s->pb);
     if (!s->streams[0]->codecpar->channels || size > INT_MAX / s->streams[0]->codecpar->channels)
         return AVERROR_INVALIDDATA;
 
     size *= s->streams[0]->codecpar->channels;
-    if ((ret = avio_skip(s->pb, 24)) < 0) // padding
+    if ((ret = avio_skip_xij(s->pb, 24)) < 0) // padding
         return ret;
 
     if (type == MKTAG('B','L','C','K')) {
-        ret = av_get_packet(s->pb, pkt, size);
+        ret = av_get_packet_xij(s->pb, pkt, size);
         pkt->stream_index = 0;
         pkt->pos = pos;
     } else {
         av_log(s, AV_LOG_ERROR, "unknown chunk %"PRIx32"\n", type);
-        avio_skip(s->pb, size);
+        avio_skip_xij(s->pb, size);
         ret = AVERROR_INVALIDDATA;
     }
 

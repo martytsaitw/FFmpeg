@@ -223,7 +223,7 @@ static void v4l2_free_buffer(void *opaque, uint8_t *unused)
                 ff_v4l2_buffer_enqueue(avbuf);
         }
 
-        av_buffer_unref(&avbuf->context_ref);
+        av_buffer_unref_xij(&avbuf->context_ref);
     }
 }
 
@@ -235,7 +235,7 @@ static int v4l2_buf_to_bufref(V4L2Buffer *in, int plane, AVBufferRef **buf)
         return AVERROR(EINVAL);
 
     /* even though most encoders return 0 in data_offset encoding vp8 does require this value */
-    *buf = av_buffer_create((char *)in->plane_info[plane].mm_addr + in->planes[plane].data_offset,
+    *buf = av_buffer_create_ijk((char *)in->plane_info[plane].mm_addr + in->planes[plane].data_offset,
                             in->plane_info[plane].length, v4l2_free_buffer, in, 0);
     if (!*buf)
         return AVERROR(ENOMEM);
@@ -243,9 +243,9 @@ static int v4l2_buf_to_bufref(V4L2Buffer *in, int plane, AVBufferRef **buf)
     if (in->context_ref)
         atomic_fetch_add(&in->context_refcount, 1);
     else {
-        in->context_ref = av_buffer_ref(s->self_ref);
+        in->context_ref = av_buffer_ref_ijk(s->self_ref);
         if (!in->context_ref) {
-            av_buffer_unref(buf);
+            av_buffer_unref_xij(buf);
             return AVERROR(ENOMEM);
         }
         in->context_refcount = 1;
@@ -306,7 +306,7 @@ int ff_v4l2_buffer_buf_to_avframe(AVFrame *frame, V4L2Buffer *avbuf)
     V4L2m2mContext *s = buf_to_m2mctx(avbuf);
     int i, ret;
 
-    av_frame_unref(frame);
+    av_frame_unref_xij(frame);
 
     /* 1. get references to the actual data */
     for (i = 0; i < avbuf->num_planes; i++) {
@@ -356,7 +356,7 @@ int ff_v4l2_buffer_buf_to_avpkt(AVPacket *pkt, V4L2Buffer *avbuf)
 {
     int ret;
 
-    av_packet_unref(pkt);
+    av_packet_unref_ijk(pkt);
     ret = v4l2_buf_to_bufref(avbuf, 0, &pkt->buf);
     if (ret)
         return ret;

@@ -609,7 +609,7 @@ static int vqa_decode_frame(AVCodecContext *avctx,
     AVFrame *frame = data;
     int res;
 
-    if ((res = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((res = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return res;
 
     bytestream2_init(&s->gb, avpkt->data, avpkt->size);

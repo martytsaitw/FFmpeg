@@ -67,7 +67,7 @@ static int hwdownload_config_input(AVFilterLink *inlink)
     AVFilterContext *avctx = inlink->dst;
     HWDownloadContext *ctx = avctx->priv;
 
-    av_buffer_unref(&ctx->hwframes_ref);
+    av_buffer_unref_xij(&ctx->hwframes_ref);
 
     if (!inlink->hw_frames_ctx) {
         av_log(ctx, AV_LOG_ERROR, "The input must have a hardware frame "
@@ -75,7 +75,7 @@ static int hwdownload_config_input(AVFilterLink *inlink)
         return AVERROR(EINVAL);
     }
 
-    ctx->hwframes_ref = av_buffer_ref(inlink->hw_frames_ctx);
+    ctx->hwframes_ref = av_buffer_ref_ijk(inlink->hw_frames_ctx);
     if (!ctx->hwframes_ref)
         return AVERROR(ENOMEM);
 
@@ -158,17 +158,17 @@ static int hwdownload_filter_frame(AVFilterLink *link, AVFrame *input)
     output->width  = outlink->w;
     output->height = outlink->h;
 
-    err = av_frame_copy_props(output, input);
+    err = av_frame_copy_props_xij(output, input);
     if (err < 0)
         goto fail;
 
-    av_frame_free(&input);
+    av_frame_free_xij(&input);
 
     return ff_filter_frame(avctx->outputs[0], output);
 
 fail:
-    av_frame_free(&input);
-    av_frame_free(&output);
+    av_frame_free_xij(&input);
+    av_frame_free_xij(&output);
     return err;
 }
 
@@ -176,7 +176,7 @@ static av_cold void hwdownload_uninit(AVFilterContext *avctx)
 {
     HWDownloadContext *ctx = avctx->priv;
 
-    av_buffer_unref(&ctx->hwframes_ref);
+    av_buffer_unref_xij(&ctx->hwframes_ref);
 }
 
 static const AVClass hwdownload_class = {

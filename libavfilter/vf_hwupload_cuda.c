@@ -48,8 +48,8 @@ static av_cold void cudaupload_uninit(AVFilterContext *ctx)
 {
     CudaUploadContext *s = ctx->priv;
 
-    av_buffer_unref(&s->hwframe);
-    av_buffer_unref(&s->hwdevice);
+    av_buffer_unref_xij(&s->hwframe);
+    av_buffer_unref_xij(&s->hwdevice);
 }
 
 static int cudaupload_query_formats(AVFilterContext *ctx)
@@ -89,7 +89,7 @@ static int cudaupload_config_output(AVFilterLink *outlink)
     AVHWFramesContext *hwframe_ctx;
     int ret;
 
-    av_buffer_unref(&s->hwframe);
+    av_buffer_unref_xij(&s->hwframe);
     s->hwframe = av_hwframe_ctx_alloc(s->hwdevice);
     if (!s->hwframe)
         return AVERROR(ENOMEM);
@@ -104,7 +104,7 @@ static int cudaupload_config_output(AVFilterLink *outlink)
     if (ret < 0)
         return ret;
 
-    outlink->hw_frames_ctx = av_buffer_ref(s->hwframe);
+    outlink->hw_frames_ctx = av_buffer_ref_ijk(s->hwframe);
     if (!outlink->hw_frames_ctx)
         return AVERROR(ENOMEM);
 
@@ -134,16 +134,16 @@ static int cudaupload_filter_frame(AVFilterLink *link, AVFrame *in)
         goto fail;
     }
 
-    ret = av_frame_copy_props(out, in);
+    ret = av_frame_copy_props_xij(out, in);
     if (ret < 0)
         goto fail;
 
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
 
     return ff_filter_frame(ctx->outputs[0], out);
 fail:
-    av_frame_free(&in);
-    av_frame_free(&out);
+    av_frame_free_xij(&in);
+    av_frame_free_xij(&out);
     return ret;
 }
 

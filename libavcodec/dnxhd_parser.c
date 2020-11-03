@@ -124,7 +124,7 @@ static int dnxhd_parse(AVCodecParserContext *s,
         next = buf_size;
     } else {
         next = dnxhd_find_frame_end(dctx, buf, buf_size);
-        if (ff_combine_frame(pc, next, &buf, &buf_size) < 0) {
+        if (ff_combine_frame_xij(pc, next, &buf, &buf_size) < 0) {
             *poutbuf      = NULL;
             *poutbuf_size = 0;
             return buf_size;
@@ -139,5 +139,5 @@ AVCodecParser ff_dnxhd_parser = {
     .codec_ids      = { AV_CODEC_ID_DNXHD },
     .priv_data_size = sizeof(DNXHDParserContext),
     .parser_parse   = dnxhd_parse,
-    .parser_close   = ff_parse_close,
+    .parser_close   = ff_parse_close_xij,
 };

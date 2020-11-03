@@ -56,7 +56,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         return AVERROR_INVALIDDATA;
     }
 
-    if ((ret = ff_get_buffer(avctx, pic, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, pic, 0)) < 0)
         return ret;
 
     pic->pict_type = AV_PICTURE_TYPE_I;

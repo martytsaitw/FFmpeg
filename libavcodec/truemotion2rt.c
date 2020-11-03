@@ -94,7 +94,7 @@ static int truemotion2rt_decode_header(AVCodecContext *avctx, const AVPacket *av
     height = AV_RL16(header_buffer + 5);
     width  = AV_RL16(header_buffer + 7);
 
-    ret = ff_set_dimensions(avctx, width, height);
+    ret = ff_set_dimensions_xij(avctx, width, height);
     if (ret < 0)
         return ret;
 
@@ -123,7 +123,7 @@ static int truemotion2rt_decode_frame(AVCodecContext *avctx, void *data,
     if (ret < 0)
         return ret;
 
-    ret = ff_get_buffer(avctx, p, 0);
+    ret = ff_get_buffer_xij(avctx, p, 0);
     if (ret < 0)
         return ret;
 

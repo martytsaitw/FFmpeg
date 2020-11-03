@@ -624,14 +624,14 @@ static AVFrame *create_weave_frame(AVFilterContext *ctx, int match, int field,
     FieldMatchContext *fm = ctx->priv;
 
     if (match == mC) {
-        dst = av_frame_clone(src);
+        dst = av_frame_clone_xij(src);
     } else {
         AVFilterLink *outlink = ctx->outputs[0];
 
         dst = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!dst)
             return NULL;
-        av_frame_copy_props(dst, src);
+        av_frame_copy_props_xij(dst, src);
 
         switch (match) {
         case mP: copy_fields(fm, dst, src, 1-field); copy_fields(fm, dst, prv,   field); break;
@@ -685,7 +685,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     /* update frames queue(s) */
 #define SLIDING_FRAME_WINDOW(prv, src, nxt) do {                \
         if (prv != src) /* 2nd loop exception (1st has prv==src and we don't want to loose src) */ \
-            av_frame_free(&prv);                                \
+            av_frame_free_xij(&prv);                                \
         prv = src;                                              \
         src = nxt;                                              \
         if (in)                                                 \
@@ -728,7 +728,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         av_log(ctx, AV_LOG_INFO, "COMBS: %3d %3d %3d %3d %3d\n",
                combs[0], combs[1], combs[2], combs[3], combs[4]);
     } else {
-        gen_frames[mC] = av_frame_clone(fm->src);
+        gen_frames[mC] = av_frame_clone_xij(fm->src);
         if (!gen_frames[mC])
             return AVERROR(ENOMEM);
     }
@@ -800,7 +800,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     if (!dst)
         return AVERROR(ENOMEM);
     for (i = 0; i < FF_ARRAY_ELEMS(gen_frames); i++)
-        av_frame_free(&gen_frames[i]);
+        av_frame_free_xij(&gen_frames[i]);
 
     /* mark the frame we are unable to match properly as interlaced so a proper
      * de-interlacer can take the relay */
@@ -944,10 +944,10 @@ static av_cold void fieldmatch_uninit(AVFilterContext *ctx)
     FieldMatchContext *fm = ctx->priv;
 
     if (fm->prv != fm->src)
-        av_frame_free(&fm->prv);
+        av_frame_free_xij(&fm->prv);
     if (fm->nxt != fm->src)
-        av_frame_free(&fm->nxt);
-    av_frame_free(&fm->src);
+        av_frame_free_xij(&fm->nxt);
+    av_frame_free_xij(&fm->src);
     av_freep(&fm->map_data[0]);
     av_freep(&fm->cmask_data[0]);
     av_freep(&fm->tbuffer);

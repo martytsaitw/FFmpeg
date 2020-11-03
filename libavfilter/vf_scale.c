@@ -148,9 +148,9 @@ static av_cold int init_dict(AVFilterContext *ctx, AVDictionary **opts)
 static av_cold void uninit(AVFilterContext *ctx)
 {
     ScaleContext *scale = ctx->priv;
-    sws_freeContext(scale->sws);
-    sws_freeContext(scale->isws[0]);
-    sws_freeContext(scale->isws[1]);
+    sws_freeContext_xij(scale->sws);
+    sws_freeContext_xij(scale->isws[0]);
+    sws_freeContext_xij(scale->isws[1]);
     scale->sws = NULL;
     av_dict_free(&scale->opts);
 }
@@ -166,8 +166,8 @@ static int query_formats(AVFilterContext *ctx)
         formats = NULL;
         while ((desc = av_pix_fmt_desc_next(desc))) {
             pix_fmt = av_pix_fmt_desc_get_id(desc);
-            if ((sws_isSupportedInput(pix_fmt) ||
-                 sws_isSupportedEndiannessConversion(pix_fmt))
+            if ((sws_isSupportedInput_xij(pix_fmt) ||
+                 sws_isSupportedEndiannessConversion_xij(pix_fmt))
                 && (ret = ff_add_format(&formats, pix_fmt)) < 0) {
                 return ret;
             }
@@ -180,8 +180,8 @@ static int query_formats(AVFilterContext *ctx)
         formats = NULL;
         while ((desc = av_pix_fmt_desc_next(desc))) {
             pix_fmt = av_pix_fmt_desc_get_id(desc);
-            if ((sws_isSupportedOutput(pix_fmt) || pix_fmt == AV_PIX_FMT_PAL8 ||
-                 sws_isSupportedEndiannessConversion(pix_fmt))
+            if ((sws_isSupportedOutput_xij(pix_fmt) || pix_fmt == AV_PIX_FMT_PAL8 ||
+                 sws_isSupportedEndiannessConversion_xij(pix_fmt))
                 && (ret = ff_add_format(&formats, pix_fmt)) < 0) {
                 return ret;
             }
@@ -267,11 +267,11 @@ static int config_props(AVFilterLink *outlink)
                            av_pix_fmt_desc_get(outfmt)->flags & FF_PSEUDOPAL;
 
     if (scale->sws)
-        sws_freeContext(scale->sws);
+        sws_freeContext_xij(scale->sws);
     if (scale->isws[0])
-        sws_freeContext(scale->isws[0]);
+        sws_freeContext_xij(scale->isws[0]);
     if (scale->isws[1])
-        sws_freeContext(scale->isws[1]);
+        sws_freeContext_xij(scale->isws[1]);
     scale->isws[0] = scale->isws[1] = scale->sws = NULL;
     if (inlink0->w == outlink->w &&
         inlink0->h == outlink->h &&
@@ -286,7 +286,7 @@ static int config_props(AVFilterLink *outlink)
         for (i = 0; i < 3; i++) {
             int in_v_chr_pos = scale->in_v_chr_pos, out_v_chr_pos = scale->out_v_chr_pos;
             struct SwsContext **s = swscs[i];
-            *s = sws_alloc_context();
+            *s = sws_alloc_context_xij();
             if (!*s)
                 return AVERROR(ENOMEM);
 
@@ -329,7 +329,7 @@ static int config_props(AVFilterLink *outlink)
             av_opt_set_int(*s, "dst_h_chr_pos", scale->out_h_chr_pos, 0);
             av_opt_set_int(*s, "dst_v_chr_pos", out_v_chr_pos, 0);
 
-            if ((ret = sws_init_context(*s, NULL, NULL)) < 0)
+            if ((ret = sws_init_context_xij(*s, NULL, NULL)) < 0)
                 return ret;
             if (!scale->interlaced)
                 break;
@@ -445,11 +445,11 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
 
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out) {
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         return AVERROR(ENOMEM);
     }
 
-    av_frame_copy_props(out, in);
+    av_frame_copy_props_xij(out, in);
     out->width  = outlink->w;
     out->height = outlink->h;
 
@@ -466,7 +466,7 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
         int in_full, out_full, brightness, contrast, saturation;
         const int *inv_table, *table;
 
-        sws_getColorspaceDetails(scale->sws, (int **)&inv_table, &in_full,
+        sws_getColorspaceDetails_xij(scale->sws, (int **)&inv_table, &in_full,
                                  (int **)&table, &out_full,
                                  &brightness, &contrast, &saturation);
 
@@ -484,15 +484,15 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
         if (scale->out_range != AVCOL_RANGE_UNSPECIFIED)
             out_full = (scale->out_range == AVCOL_RANGE_JPEG);
 
-        sws_setColorspaceDetails(scale->sws, inv_table, in_full,
+        sws_setColorspaceDetails_xij(scale->sws, inv_table, in_full,
                                  table, out_full,
                                  brightness, contrast, saturation);
         if (scale->isws[0])
-            sws_setColorspaceDetails(scale->isws[0], inv_table, in_full,
+            sws_setColorspaceDetails_xij(scale->isws[0], inv_table, in_full,
                                      table, out_full,
                                      brightness, contrast, saturation);
         if (scale->isws[1])
-            sws_setColorspaceDetails(scale->isws[1], inv_table, in_full,
+            sws_setColorspaceDetails_xij(scale->isws[1], inv_table, in_full,
                                      table, out_full,
                                      brightness, contrast, saturation);
 
@@ -520,7 +520,7 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
         scale_slice(link, out, in, scale->sws, 0, link->h, 1, 0);
     }
 
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
     return ff_filter_frame(outlink, out);
 }
 

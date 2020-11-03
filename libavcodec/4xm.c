@@ -460,7 +460,7 @@ static int decode_p_frame(FourXContext *f, const uint8_t *buf, int length)
         return AVERROR_INVALIDDATA;
     }
 
-    av_fast_padded_malloc(&f->bitstream_buffer, &f->bitstream_buffer_size,
+    av_fast_padded_malloc_xij(&f->bitstream_buffer, &f->bitstream_buffer_size,
                           bitstream_size);
     if (!f->bitstream_buffer)
         return AVERROR(ENOMEM);
@@ -799,7 +799,7 @@ static int decode_i_frame(FourXContext *f, const uint8_t *buf, int length)
 
     prestream_size = length + buf - prestream;
 
-    av_fast_padded_malloc(&f->bitstream_buffer, &f->bitstream_buffer_size,
+    av_fast_padded_malloc_xij(&f->bitstream_buffer, &f->bitstream_buffer_size,
                           prestream_size);
     if (!f->bitstream_buffer)
         return AVERROR(ENOMEM);
@@ -917,7 +917,7 @@ static int decode_frame(AVCodecContext *avctx, void *data,
         frame_size = buf_size - 12;
     }
 
-    if ((ret = ff_get_buffer(avctx, picture, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, picture, 0)) < 0)
         return ret;
 
     if (frame_4cc == AV_RL32("ifr2")) {

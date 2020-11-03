@@ -60,7 +60,7 @@ static int read_ts(const char *s)
 static int realtext_read_header(AVFormatContext *s)
 {
     RealTextContext *rt = s->priv_data;
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     AVBPrint buf;
     char c = 0;
     int res = 0, duration = read_ts("60"); // default duration is 60 seconds
@@ -69,7 +69,7 @@ static int realtext_read_header(AVFormatContext *s)
 
     if (!st)
         return AVERROR(ENOMEM);
-    avpriv_set_pts_info(st, 64, 1, 100);
+    avpriv_set_pts_info_ijk(st, 64, 1, 100);
     st->codecpar->codec_type = AVMEDIA_TYPE_SUBTITLE;
     st->codecpar->codec_id   = AV_CODEC_ID_REALTEXT;
 

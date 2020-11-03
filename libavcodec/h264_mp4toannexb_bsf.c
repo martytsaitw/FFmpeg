@@ -45,7 +45,7 @@ static int alloc_and_copy(AVPacket *out,
     uint8_t start_code_size = offset == 0 || ps ? 4 : 3;
     int err;
 
-    err = av_grow_packet(out, sps_pps_size + in_size + start_code_size);
+    err = av_grow_packet_ijk(out, sps_pps_size + in_size + start_code_size);
     if (err < 0)
         return err;
 
@@ -180,14 +180,14 @@ static int h264_mp4toannexb_filter(AVBSFContext *ctx, AVPacket *out)
     int            buf_size;
     int ret = 0, i;
 
-    ret = ff_bsf_get_packet(ctx, &in);
+    ret = ff_bsf_get_packet_xij(ctx, &in);
     if (ret < 0)
         return ret;
 
     /* nothing to filter */
     if (!s->extradata_parsed) {
-        av_packet_move_ref(out, in);
-        av_packet_free(&in);
+        av_packet_move_ref_xij(out, in);
+        av_packet_free_xij(&in);
         return 0;
     }
 
@@ -267,14 +267,14 @@ next_nal:
         cumul_size += nal_size + s->length_size;
     } while (cumul_size < buf_size);
 
-    ret = av_packet_copy_props(out, in);
+    ret = av_packet_copy_props_ijk(out, in);
     if (ret < 0)
         goto fail;
 
 fail:
     if (ret < 0)
-        av_packet_unref(out);
-    av_packet_free(&in);
+        av_packet_unref_ijk(out);
+    av_packet_free_xij(&in);
 
     return ret;
 }
@@ -283,7 +283,7 @@ static const enum AVCodecID codec_ids[] = {
     AV_CODEC_ID_H264, AV_CODEC_ID_NONE,
 };
 
-const AVBitStreamFilter ff_h264_mp4toannexb_bsf = {
+const AVBitStreamFilter ff_h264_mp4toannexb_bsf_ijk = {
     .name           = "h264_mp4toannexb",
     .priv_data_size = sizeof(H264BSFContext),
     .init           = h264_mp4toannexb_init,

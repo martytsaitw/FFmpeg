@@ -29,12 +29,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
-void ff_put_pixels8x8_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride);
-void ff_avg_pixels8x8_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride);
-void ff_put_pixels16x16_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride);
-void ff_avg_pixels16x16_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride);
+void ff_put_pixels8x8_c_xij(uint8_t *dst, const uint8_t *src, ptrdiff_t stride);
+void ff_avg_pixels8x8_c_xij(uint8_t *dst, const uint8_t *src, ptrdiff_t stride);
+void ff_put_pixels16x16_c_xij(uint8_t *dst, const uint8_t *src, ptrdiff_t stride);
+void ff_avg_pixels16x16_c_xij(uint8_t *dst, const uint8_t *src, ptrdiff_t stride);
 
-void ff_put_pixels8_l2_8(uint8_t *dst, const uint8_t *src1, const uint8_t *src2,
+void ff_put_pixels8_l2_8_xij(uint8_t *dst, const uint8_t *src1, const uint8_t *src2,
                          int dst_stride, int src_stride1, int src_stride2,
                          int h);
 
@@ -75,7 +75,7 @@ typedef struct QpelDSPContext {
     qpel_mc_func put_no_rnd_qpel_pixels_tab[2][16];
 } QpelDSPContext;
 
-void ff_qpeldsp_init(QpelDSPContext *c);
+void ff_qpeldsp_init_xij(QpelDSPContext *c);
 
 void ff_qpeldsp_init_x86(QpelDSPContext *c);
 void ff_qpeldsp_init_mips(QpelDSPContext *c);

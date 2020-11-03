@@ -194,7 +194,7 @@ static int process_frame(AVFilterLink *inlink, AVFrame *buf)
     if (in_no < cat->cur_idx) {
         av_log(ctx, AV_LOG_ERROR, "Frame after EOF on input %s\n",
                ctx->input_pads[in_no].name);
-        av_frame_free(&buf);
+        av_frame_free_xij(&buf);
     } else if (in_no >= cat->cur_idx + ctx->nb_outputs) {
         ff_bufqueue_add(ctx, &cat->in[in_no].queue, buf);
     } else {

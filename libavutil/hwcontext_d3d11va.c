@@ -163,7 +163,7 @@ static AVBufferRef *wrap_texture_buf(ID3D11Texture2D *tex, int index)
     desc->texture = tex;
     desc->index   = index;
 
-    buf = av_buffer_create((uint8_t *)desc, sizeof(desc), free_texture, tex, 0);
+    buf = av_buffer_create_ijk((uint8_t *)desc, sizeof(desc), free_texture, tex, 0);
     if (!buf) {
         ID3D11Texture2D_Release(tex);
         av_free(desc);
@@ -274,7 +274,7 @@ static int d3d11va_frames_init(AVHWFramesContext *ctx)
         }
     }
 
-    ctx->internal->pool_internal = av_buffer_pool_init2(sizeof(AVD3D11FrameDescriptor),
+    ctx->internal->pool_internal = av_buffer_pool_init2_xij(sizeof(AVD3D11FrameDescriptor),
                                                         ctx, d3d11va_pool_alloc, NULL);
     if (!ctx->internal->pool_internal)
         return AVERROR(ENOMEM);
@@ -286,7 +286,7 @@ static int d3d11va_get_buffer(AVHWFramesContext *ctx, AVFrame *frame)
 {
     AVD3D11FrameDescriptor *desc;
 
-    frame->buf[0] = av_buffer_pool_get(ctx->pool);
+    frame->buf[0] = av_buffer_pool_get_xij(ctx->pool);
     if (!frame->buf[0])
         return AVERROR(ENOMEM);
 

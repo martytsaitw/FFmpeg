@@ -305,7 +305,7 @@ static void bufref_free_interface(void *opaque, uint8_t *data)
 
 static AVBufferRef *bufref_wrap_interface(IUnknown *iface)
 {
-    return av_buffer_create((uint8_t*)iface, 1, bufref_free_interface, iface, 0);
+    return av_buffer_create_ijk((uint8_t*)iface, 1, bufref_free_interface, iface, 0);
 }
 
 #if CONFIG_DXVA2
@@ -661,7 +661,7 @@ int ff_dxva2_decode_init(AVCodecContext *avctx)
     // (avctx->pix_fmt is not updated yet at this point)
     sctx->pix_fmt = avctx->hwaccel->pix_fmt;
 
-    ret = ff_decode_get_hw_frames_ctx(avctx, dev_type);
+    ret = ff_decode_get_hw_frames_ctx_xij(avctx, dev_type);
     if (ret < 0)
         return ret;
 
@@ -726,7 +726,7 @@ int ff_dxva2_decode_uninit(AVCodecContext *avctx)
     FFDXVASharedContext *sctx = DXVA_SHARED_CONTEXT(avctx);
     int i;
 
-    av_buffer_unref(&sctx->decoder_ref);
+    av_buffer_unref_xij(&sctx->decoder_ref);
 
 #if CONFIG_D3D11VA
     for (i = 0; i < sctx->nb_d3d11_views; i++) {
@@ -867,7 +867,7 @@ static int frame_add_buf(AVFrame *frame, AVBufferRef *ref)
 
     for (i = 0; i < AV_NUM_DATA_POINTERS; i++) {
         if (!frame->buf[i]) {
-            frame->buf[i] = av_buffer_ref(ref);
+            frame->buf[i] = av_buffer_ref_ijk(ref);
             return frame->buf[i] ? 0 : AVERROR(ENOMEM);
         }
     }

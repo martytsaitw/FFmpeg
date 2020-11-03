@@ -677,7 +677,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
     ctx->dst_buf   = 0;
     ctx->ref_buf   = 1;
     ctx->b_ref_buf = 3; /* buffer 2 is used for scalability mode */
-    ctx->p_frame = av_frame_alloc();
+    ctx->p_frame = av_frame_alloc_ijk();
     if (!ctx->p_frame)
         return AVERROR(ENOMEM);
 

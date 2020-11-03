@@ -75,7 +75,7 @@ static int h261_parse(AVCodecParserContext *s,
         next = buf_size;
     } else {
         next = h261_find_frame_end(pc, avctx, buf, buf_size);
-        if (ff_combine_frame(pc, next, &buf, &buf_size) < 0) {
+        if (ff_combine_frame_xij(pc, next, &buf, &buf_size) < 0) {
             *poutbuf      = NULL;
             *poutbuf_size = 0;
             return buf_size;
@@ -90,5 +90,5 @@ AVCodecParser ff_h261_parser = {
     .codec_ids      = { AV_CODEC_ID_H261 },
     .priv_data_size = sizeof(ParseContext),
     .parser_parse   = h261_parse,
-    .parser_close   = ff_parse_close,
+    .parser_close   = ff_parse_close_xij,
 };

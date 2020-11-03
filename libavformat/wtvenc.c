@@ -128,7 +128,7 @@ typedef struct {
     WTVHeaderWriteFunc *write_header;
 } WTVRootEntryTable;
 
-#define write_pad(pb, size) ffio_fill(pb, 0, size)
+#define write_pad(pb, size) ffio_fill_xij(pb, 0, size)
 
 /**
  * Write chunk header. If header chunk (0x80000000 set) then add to list of header chunks
@@ -140,9 +140,9 @@ static void write_chunk_header(AVFormatContext *s, const ff_asf_guid *guid, int 
 
     wctx->last_chunk_pos = avio_tell(pb) - wctx->timeline_start_pos;
     ff_put_guid(pb, guid);
-    avio_wl32(pb, 32 + length);
-    avio_wl32(pb, stream_id);
-    avio_wl64(pb, wctx->serial);
+    avio_wl32_xij(pb, 32 + length);
+    avio_wl32_xij(pb, stream_id);
+    avio_wl64_xij(pb, wctx->serial);
 
     if ((stream_id & 0x80000000) && guid != &ff_index_guid) {
         WtvChunkEntry *t = wctx->index + wctx->nb_index;
@@ -162,7 +162,7 @@ static void write_chunk_header2(AVFormatContext *s, const ff_asf_guid *guid, int
 
     int64_t last_chunk_pos = wctx->last_chunk_pos;
     write_chunk_header(s, guid, 0, stream_id); // length updated later
-    avio_wl64(pb, last_chunk_pos);
+    avio_wl64_xij(pb, last_chunk_pos);
 }
 
 static void finish_chunk_noindex(AVFormatContext *s)
@@ -172,9 +172,9 @@ static void finish_chunk_noindex(AVFormatContext *s)
 
     // update the chunk_len field and pad.
     int64_t chunk_len = avio_tell(pb) - (wctx->last_chunk_pos + wctx->timeline_start_pos);
-    avio_seek(pb, -(chunk_len - 16), SEEK_CUR);
-    avio_wl32(pb, chunk_len);
-    avio_seek(pb, chunk_len - (16 + 4), SEEK_CUR);
+    avio_seek_xij(pb, -(chunk_len - 16), SEEK_CUR);
+    avio_wl32_xij(pb, chunk_len);
+    avio_seek_xij(pb, chunk_len - (16 + 4), SEEK_CUR);
 
     write_pad(pb, WTV_PAD8(chunk_len) - chunk_len);
     wctx->serial++;
@@ -187,16 +187,16 @@ static void write_index(AVFormatContext *s)
     int i;
 
     write_chunk_header2(s, &ff_index_guid, 0x80000000);
-    avio_wl32(pb, 0);
-    avio_wl32(pb, 0);
+    avio_wl32_xij(pb, 0);
+    avio_wl32_xij(pb, 0);
 
     for (i = 0; i < wctx->nb_index; i++) {
         WtvChunkEntry *t = wctx->index + i;
         ff_put_guid(pb,  t->guid);
-        avio_wl64(pb, t->pos);
-        avio_wl32(pb, t->stream_id);
-        avio_wl32(pb, 0); // checksum?
-        avio_wl64(pb, t->serial);
+        avio_wl64_xij(pb, t->pos);
+        avio_wl32_xij(pb, t->stream_id);
+        avio_wl32_xij(pb, 0); // checksum?
+        avio_wl64_xij(pb, t->serial);
     }
     wctx->nb_index = 0;   // reset index
     finish_chunk_noindex(s);
@@ -220,39 +220,39 @@ static void put_videoinfoheader2(AVIOContext *pb, AVStream *st)
     av_reduce(&num, &den, dar.num, dar.den, 0xFFFFFFFF);
 
     /* VIDEOINFOHEADER2 */
-    avio_wl32(pb, 0);
-    avio_wl32(pb, 0);
-    avio_wl32(pb, st->codecpar->width);
-    avio_wl32(pb, st->codecpar->height);
+    avio_wl32_xij(pb, 0);
+    avio_wl32_xij(pb, 0);
+    avio_wl32_xij(pb, st->codecpar->width);
+    avio_wl32_xij(pb, st->codecpar->height);
 
-    avio_wl32(pb, 0);
-    avio_wl32(pb, 0);
-    avio_wl32(pb, 0);
-    avio_wl32(pb, 0);
+    avio_wl32_xij(pb, 0);
+    avio_wl32_xij(pb, 0);
+    avio_wl32_xij(pb, 0);
+    avio_wl32_xij(pb, 0);
 
-    avio_wl32(pb, st->codecpar->bit_rate);
-    avio_wl32(pb, 0);
-    avio_wl64(pb, st->avg_frame_rate.num && st->avg_frame_rate.den ? INT64_C(10000000) / av_q2d(st->avg_frame_rate) : 0);
-    avio_wl32(pb, 0);
-    avio_wl32(pb, 0);
+    avio_wl32_xij(pb, st->codecpar->bit_rate);
+    avio_wl32_xij(pb, 0);
+    avio_wl64_xij(pb, st->avg_frame_rate.num && st->avg_frame_rate.den ? INT64_C(10000000) / av_q2d(st->avg_frame_rate) : 0);
+    avio_wl32_xij(pb, 0);
+    avio_wl32_xij(pb, 0);
 
-    avio_wl32(pb, num);
-    avio_wl32(pb, den);
-    avio_wl32(pb, 0);
-    avio_wl32(pb, 0);
+    avio_wl32_xij(pb, num);
+    avio_wl32_xij(pb, den);
+    avio_wl32_xij(pb, 0);
+    avio_wl32_xij(pb, 0);
 
     ff_put_bmp_header(pb, st->codecpar, 0, 1);
 
     if (st->codecpar->codec_id == AV_CODEC_ID_MPEG2VIDEO) {
         int padding = (st->codecpar->extradata_size & 3) ? 4 - (st->codecpar->extradata_size & 3) : 0;
         /* MPEG2VIDEOINFO */
-        avio_wl32(pb, 0);
-        avio_wl32(pb, st->codecpar->extradata_size + padding);
-        avio_wl32(pb, -1);
-        avio_wl32(pb, -1);
-        avio_wl32(pb, 0);
-        avio_write(pb, st->codecpar->extradata, st->codecpar->extradata_size);
-        ffio_fill(pb, 0, padding);
+        avio_wl32_xij(pb, 0);
+        avio_wl32_xij(pb, st->codecpar->extradata_size + padding);
+        avio_wl32_xij(pb, -1);
+        avio_wl32_xij(pb, -1);
+        avio_wl32_xij(pb, 0);
+        avio_write_xij(pb, st->codecpar->extradata, st->codecpar->extradata_size);
+        ffio_fill_xij(pb, 0, padding);
     }
 }
 
@@ -283,7 +283,7 @@ static int write_stream_codec_info(AVFormatContext *s, AVStream *st)
     ff_put_guid(pb, &ff_mediasubtype_cpfilters_processed); // subtype
     write_pad(pb, 12);
     ff_put_guid(pb,&ff_format_cpfilters_processed); // format type
-    avio_wl32(pb, 0); // size
+    avio_wl32_xij(pb, 0); // size
 
     hdr_pos_start = avio_tell(pb);
     if (st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
@@ -295,19 +295,19 @@ static int write_stream_codec_info(AVFormatContext *s, AVStream *st)
     hdr_size = avio_tell(pb) - hdr_pos_start;
 
     // seek back write hdr_size
-    avio_seek(pb, -(hdr_size + 4), SEEK_CUR);
-    avio_wl32(pb, hdr_size + 32);
-    avio_seek(pb, hdr_size, SEEK_CUR);
+    avio_seek_xij(pb, -(hdr_size + 4), SEEK_CUR);
+    avio_wl32_xij(pb, hdr_size + 32);
+    avio_seek_xij(pb, hdr_size, SEEK_CUR);
     if (g) {
         ff_put_guid(pb, g);           // actual_subtype
     } else {
-        int tag = ff_codec_get_tag(tags, st->codecpar->codec_id);
+        int tag = ff_codec_get_tag_xij(tags, st->codecpar->codec_id);
         if (!tag) {
             av_log(s, AV_LOG_ERROR, "unsupported codec_id (0x%x)\n", st->codecpar->codec_id);
             return -1;
         }
-        avio_wl32(pb, tag);
-        avio_write(pb, (const uint8_t[]){FF_MEDIASUBTYPE_BASE_GUID}, 12);
+        avio_wl32_xij(pb, tag);
+        avio_write_xij(pb, (const uint8_t[]){FF_MEDIASUBTYPE_BASE_GUID}, 12);
     }
     ff_put_guid(pb, format_type); // actual_formattype
 
@@ -320,7 +320,7 @@ static int write_stream_codec(AVFormatContext *s, AVStream * st)
     int ret;
     write_chunk_header2(s, &ff_stream1_guid, 0x80000000 | 0x01);
 
-    avio_wl32(pb,  0x01);
+    avio_wl32_xij(pb,  0x01);
     write_pad(pb, 4);
     write_pad(pb, 4);
 
@@ -341,9 +341,9 @@ static void write_sync(AVFormatContext *s)
     int64_t last_chunk_pos = wctx->last_chunk_pos;
 
     write_chunk_header(s, &ff_sync_guid, 0x18, 0);
-    avio_wl64(pb, wctx->first_index_pos);
-    avio_wl64(pb, wctx->last_timestamp_pos);
-    avio_wl64(pb, 0);
+    avio_wl64_xij(pb, wctx->first_index_pos);
+    avio_wl64_xij(pb, wctx->last_timestamp_pos);
+    avio_wl64_xij(pb, 0);
 
     finish_chunk(s);
     add_serial_pair(&wctx->sp_pairs, &wctx->nb_sp_pairs, wctx->serial, wctx->last_chunk_pos);
@@ -357,9 +357,9 @@ static int write_stream_data(AVFormatContext *s, AVStream *st)
     int ret;
 
     write_chunk_header2(s, &ff_SBE2_STREAM_DESC_EVENT, 0x80000000 | (st->index + INDEX_BASE));
-    avio_wl32(pb, 0x00000001);
-    avio_wl32(pb, st->index + INDEX_BASE); //stream_id
-    avio_wl32(pb, 0x00000001);
+    avio_wl32_xij(pb, 0x00000001);
+    avio_wl32_xij(pb, st->index + INDEX_BASE); //stream_id
+    avio_wl32_xij(pb, 0x00000001);
     write_pad(pb, 8);
 
     ret = write_stream_codec_info(s, st);
@@ -369,7 +369,7 @@ static int write_stream_data(AVFormatContext *s, AVStream *st)
     }
     finish_chunk(s);
 
-    avpriv_set_pts_info(st, 64, 1, 10000000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 10000000);
 
     return 0;
 }
@@ -387,18 +387,18 @@ static int write_header(AVFormatContext *s)
     ff_put_guid(pb, &ff_wtv_guid);
     ff_put_guid(pb, &sub_wtv_guid);
 
-    avio_wl32(pb, 0x01);
-    avio_wl32(pb, 0x02);
-    avio_wl32(pb, 1 << WTV_SECTOR_BITS);
-    avio_wl32(pb, 1 << WTV_BIGSECTOR_BITS);
+    avio_wl32_xij(pb, 0x01);
+    avio_wl32_xij(pb, 0x02);
+    avio_wl32_xij(pb, 1 << WTV_SECTOR_BITS);
+    avio_wl32_xij(pb, 1 << WTV_BIGSECTOR_BITS);
 
     //write initial root fields
-    avio_wl32(pb, 0); // root_size, update later
+    avio_wl32_xij(pb, 0); // root_size, update later
     write_pad(pb, 4);
-    avio_wl32(pb, 0); // root_sector, update it later.
+    avio_wl32_xij(pb, 0); // root_sector, update it later.
 
     write_pad(pb, 32);
-    avio_wl32(pb, 0); // file ends pointer, update it later.
+    avio_wl32_xij(pb, 0); // file ends pointer, update it later.
 
     pad = (1 << WTV_SECTOR_BITS) - avio_tell(pb);
     write_pad(pb, pad);
@@ -447,12 +447,12 @@ static void write_timestamp(AVFormatContext *s, AVPacket *pkt)
 
     write_chunk_header(s, &ff_timestamp_guid, 56, 0x40000000 | (INDEX_BASE + pkt->stream_index));
     write_pad(pb, 8);
-    avio_wl64(pb, pkt->pts == AV_NOPTS_VALUE ? -1 : pkt->pts);
-    avio_wl64(pb, pkt->pts == AV_NOPTS_VALUE ? -1 : pkt->pts);
-    avio_wl64(pb, pkt->pts == AV_NOPTS_VALUE ? -1 : pkt->pts);
-    avio_wl64(pb, 0);
-    avio_wl64(pb, par->codec_type == AVMEDIA_TYPE_VIDEO && (pkt->flags & AV_PKT_FLAG_KEY) ? 1 : 0);
-    avio_wl64(pb, 0);
+    avio_wl64_xij(pb, pkt->pts == AV_NOPTS_VALUE ? -1 : pkt->pts);
+    avio_wl64_xij(pb, pkt->pts == AV_NOPTS_VALUE ? -1 : pkt->pts);
+    avio_wl64_xij(pb, pkt->pts == AV_NOPTS_VALUE ? -1 : pkt->pts);
+    avio_wl64_xij(pb, 0);
+    avio_wl64_xij(pb, par->codec_type == AVMEDIA_TYPE_VIDEO && (pkt->flags & AV_PKT_FLAG_KEY) ? 1 : 0);
+    avio_wl64_xij(pb, 0);
 
     wctx->last_timestamp_pos = wctx->last_chunk_pos;
 }
@@ -464,7 +464,7 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
     AVStream    *st   = s->streams[pkt->stream_index];
 
     if (st->codecpar->codec_id == AV_CODEC_ID_MJPEG && !wctx->thumbnail.size) {
-        av_packet_ref(&wctx->thumbnail, pkt);
+        av_packet_ref_ijk(&wctx->thumbnail, pkt);
         return 0;
     } else if (st->codecpar->codec_id == AV_CODEC_ID_H264) {
         int ret = ff_check_h264_startcode(s, st, pkt);
@@ -489,7 +489,7 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
     write_timestamp(s, pkt);
 
     write_chunk_header(s, &ff_data_guid, pkt->size, INDEX_BASE + pkt->stream_index);
-    avio_write(pb, pkt->data, pkt->size);
+    avio_write_xij(pb, pkt->data, pkt->size);
     write_pad(pb, WTV_PAD8(pkt->size) - pkt->size);
 
     wctx->serial++;
@@ -498,18 +498,18 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
 
 static int write_table0_header_events(AVIOContext *pb)
 {
-    avio_wl32(pb, 0x10);
+    avio_wl32_xij(pb, 0x10);
     write_pad(pb, 84);
-    avio_wl64(pb, 0x32);
+    avio_wl64_xij(pb, 0x32);
     return 96;
 }
 
 static int write_table0_header_legacy_attrib(AVIOContext *pb)
 {
     int pad = 0;
-    avio_wl32(pb, 0xFFFFFFFF);
+    avio_wl32_xij(pb, 0xFFFFFFFF);
     write_pad(pb, 12);
-    avio_write(pb, legacy_attrib, sizeof(legacy_attrib));
+    avio_write_xij(pb, legacy_attrib, sizeof(legacy_attrib));
     pad = WTV_PAD8(sizeof(legacy_attrib)) - sizeof(legacy_attrib);
     write_pad(pb, pad);
     write_pad(pb, 32);
@@ -518,9 +518,9 @@ static int write_table0_header_legacy_attrib(AVIOContext *pb)
 
 static int write_table0_header_time(AVIOContext *pb)
 {
-    avio_wl32(pb, 0x10);
+    avio_wl32_xij(pb, 0x10);
     write_pad(pb, 76);
-    avio_wl64(pb, 0x40);
+    avio_wl64_xij(pb, 0x40);
     return 88;
 }
 
@@ -552,25 +552,25 @@ static int write_root_table(AVFormatContext *s, int64_t sector_pos)
 
         ff_put_guid(pb, &ff_dir_entry_guid);
         len_pos = avio_tell(pb);
-        avio_wl16(pb, 40 + h->header_size + filename_padding + 8); // maybe updated later
+        avio_wl16_xij(pb, 40 + h->header_size + filename_padding + 8); // maybe updated later
         write_pad(pb, 6);
-        avio_wl64(pb, write ? 0 : w->length);// maybe update later
-        avio_wl32(pb, (h->header_size + filename_padding) >> 1);
+        avio_wl64_xij(pb, write ? 0 : w->length);// maybe update later
+        avio_wl32_xij(pb, (h->header_size + filename_padding) >> 1);
         write_pad(pb, 4);
 
-        avio_write(pb, h->header, h->header_size);
+        avio_write_xij(pb, h->header, h->header_size);
         write_pad(pb, filename_padding);
 
         if (write) {
             len = write(pb);
             // update length field
-            avio_seek(pb, len_pos, SEEK_SET);
-            avio_wl64(pb, 40 + h->header_size + filename_padding + len);
-            avio_wl64(pb, len |(1ULL<<62) | (1ULL<<60));
-            avio_seek(pb, 8 + h->header_size + filename_padding + len, SEEK_CUR);
+            avio_seek_xij(pb, len_pos, SEEK_SET);
+            avio_wl64_xij(pb, 40 + h->header_size + filename_padding + len);
+            avio_wl64_xij(pb, len |(1ULL<<62) | (1ULL<<60));
+            avio_seek_xij(pb, 8 + h->header_size + filename_padding + len, SEEK_CUR);
         } else {
-            avio_wl32(pb, w->first_sector);
-            avio_wl32(pb, w->depth);
+            avio_wl32_xij(pb, w->first_sector);
+            avio_wl32_xij(pb, w->depth);
         }
     }
 
@@ -586,7 +586,7 @@ static void write_fat(AVIOContext *pb, int start_sector, int nb_sectors, int shi
 {
     int i;
     for (i = 0; i < nb_sectors; i++) {
-        avio_wl32(pb, start_sector + (i << shift));
+        avio_wl32_xij(pb, start_sector + (i << shift));
     }
     // pad left sector pointer size
     write_pad(pb, WTV_SECTOR_SIZE - ((nb_sectors << 2) % WTV_SECTOR_SIZE));
@@ -618,8 +618,8 @@ static void write_table_entries_events(AVFormatContext *s)
     WtvContext *wctx = s->priv_data;
     int i;
     for (i = 0; i < wctx->nb_sp_pairs; i++) {
-        avio_wl64(pb, wctx->sp_pairs[i].serial);
-        avio_wl64(pb, wctx->sp_pairs[i].value);
+        avio_wl64_xij(pb, wctx->sp_pairs[i].serial);
+        avio_wl64_xij(pb, wctx->sp_pairs[i].value);
     }
 }
 
@@ -629,19 +629,19 @@ static void write_table_entries_time(AVFormatContext *s)
     WtvContext *wctx = s->priv_data;
     int i;
     for (i = 0; i < wctx->nb_st_pairs; i++) {
-        avio_wl64(pb, wctx->st_pairs[i].value);
-        avio_wl64(pb, wctx->st_pairs[i].serial);
+        avio_wl64_xij(pb, wctx->st_pairs[i].value);
+        avio_wl64_xij(pb, wctx->st_pairs[i].serial);
     }
-    avio_wl64(pb, wctx->last_pts);
-    avio_wl64(pb, wctx->last_serial);
+    avio_wl64_xij(pb, wctx->last_pts);
+    avio_wl64_xij(pb, wctx->last_serial);
 }
 
 static void write_metadata_header(AVIOContext *pb, int type, const char *key, int value_size)
 {
     ff_put_guid(pb, &ff_metadata_guid);
-    avio_wl32(pb, type);
-    avio_wl32(pb, value_size);
-    avio_put_str16le(pb, key);
+    avio_wl32_xij(pb, type);
+    avio_wl32_xij(pb, value_size);
+    avio_put_str16le_xij(pb, key);
 }
 
 static int metadata_header_size(const char *key)
@@ -652,13 +652,13 @@ static int metadata_header_size(const char *key)
 static void write_tag_int32(AVIOContext *pb, const char *key, int value)
 {
     write_metadata_header(pb, 0, key, 4);
-    avio_wl32(pb, value);
+    avio_wl32_xij(pb, value);
 }
 
 static void write_tag(AVIOContext *pb, const char *key, const char *value)
 {
     write_metadata_header(pb, 1, key, strlen(value)*2 + 2);
-    avio_put_str16le(pb, value);
+    avio_put_str16le_xij(pb, value);
 }
 
 static int attachment_value_size(const AVPacket *pkt, const AVDictionaryEntry *e)
@@ -672,7 +672,7 @@ static void write_table_entries_attrib(AVFormatContext *s)
     AVIOContext *pb = s->pb;
     AVDictionaryEntry *tag = 0;
 
-    ff_standardize_creation_time(s);
+    ff_standardize_creation_time_xij(s);
     //FIXME: translate special tags (e.g. WM/Bitrate) to binary representation
     ff_metadata_conv(&s->metadata, ff_asf_metadata_conv, NULL);
     while ((tag = av_dict_get(s->metadata, "", tag, AV_DICT_IGNORE_SUFFIX)))
@@ -683,12 +683,12 @@ static void write_table_entries_attrib(AVFormatContext *s)
         tag = av_dict_get(st->metadata, "title", NULL, 0);
         write_metadata_header(pb, 2, "WM/Picture", attachment_value_size(&wctx->thumbnail, tag));
 
-        avio_put_str16le(pb, "image/jpeg");
-        avio_w8(pb, 0x10);
-        avio_put_str16le(pb, tag ? tag->value : "");
+        avio_put_str16le_xij(pb, "image/jpeg");
+        avio_w8_xij(pb, 0x10);
+        avio_put_str16le_xij(pb, tag ? tag->value : "");
 
-        avio_wl32(pb, wctx->thumbnail.size);
-        avio_write(pb, wctx->thumbnail.data, wctx->thumbnail.size);
+        avio_wl32_xij(pb, wctx->thumbnail.size);
+        avio_write_xij(pb, wctx->thumbnail.data, wctx->thumbnail.size);
 
         write_tag_int32(pb, "WM/MediaThumbType", 2);
     }
@@ -703,16 +703,16 @@ static void write_table_redirector_legacy_attrib(AVFormatContext *s)
 
     //FIXME: translate special tags to binary representation
     while ((tag = av_dict_get(s->metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
-        avio_wl64(pb, pos);
+        avio_wl64_xij(pb, pos);
         pos += metadata_header_size(tag->key) + strlen(tag->value)*2 + 2;
     }
 
     if (wctx->thumbnail.size) {
         AVStream *st = s->streams[wctx->thumbnail.stream_index];
-        avio_wl64(pb, pos);
+        avio_wl64_xij(pb, pos);
         pos += metadata_header_size("WM/Picture") + attachment_value_size(&wctx->thumbnail, av_dict_get(st->metadata, "title", NULL, 0));
 
-        avio_wl64(pb, pos);
+        avio_wl64_xij(pb, pos);
         pos += metadata_header_size("WM/MediaThumbType") + 4;
     }
 }
@@ -816,18 +816,18 @@ static int write_trailer(AVFormatContext *s)
 
     file_end_pos = avio_tell(pb);
     // update root value
-    avio_seek(pb, 0x30, SEEK_SET);
-    avio_wl32(pb, root_size);
-    avio_seek(pb, 4, SEEK_CUR);
-    avio_wl32(pb, sector_pos >> WTV_SECTOR_BITS);
-    avio_seek(pb, 0x5c, SEEK_SET);
-    avio_wl32(pb, file_end_pos >> WTV_SECTOR_BITS);
+    avio_seek_xij(pb, 0x30, SEEK_SET);
+    avio_wl32_xij(pb, root_size);
+    avio_seek_xij(pb, 4, SEEK_CUR);
+    avio_wl32_xij(pb, sector_pos >> WTV_SECTOR_BITS);
+    avio_seek_xij(pb, 0x5c, SEEK_SET);
+    avio_wl32_xij(pb, file_end_pos >> WTV_SECTOR_BITS);
 
-    avio_flush(pb);
+    avio_flush_xij(pb);
 
     av_free(wctx->sp_pairs);
     av_free(wctx->st_pairs);
-    av_packet_unref(&wctx->thumbnail);
+    av_packet_unref_ijk(&wctx->thumbnail);
     return 0;
 }
 

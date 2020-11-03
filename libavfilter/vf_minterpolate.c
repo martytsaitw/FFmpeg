@@ -744,7 +744,7 @@ static int inject_frame(AVFilterLink *inlink, AVFrame *avf_in)
     Frame frame_tmp;
     int mb_x, mb_y, dir;
 
-    av_frame_free(&mi_ctx->frames[0].avf);
+    av_frame_free_xij(&mi_ctx->frames[0].avf);
     frame_tmp = mi_ctx->frames[0];
     memmove(&mi_ctx->frames[0], &mi_ctx->frames[1], sizeof(mi_ctx->frames[0]) * (NB_FRAMES - 1));
     mi_ctx->frames[NB_FRAMES - 1] = frame_tmp;
@@ -1094,19 +1094,19 @@ static void interpolate(AVFilterLink *inlink, AVFrame *avf_out)
     alpha = av_clip(alpha, 0, ALPHA_MAX);
 
     if (alpha == 0 || alpha == ALPHA_MAX) {
-        av_frame_copy(avf_out, alpha ? mi_ctx->frames[2].avf : mi_ctx->frames[1].avf);
+        av_frame_copy_xij(avf_out, alpha ? mi_ctx->frames[2].avf : mi_ctx->frames[1].avf);
         return;
     }
 
     if (mi_ctx->scene_changed) {
         /* duplicate frame */
-        av_frame_copy(avf_out, alpha > ALPHA_MAX / 2 ? mi_ctx->frames[2].avf : mi_ctx->frames[1].avf);
+        av_frame_copy_xij(avf_out, alpha > ALPHA_MAX / 2 ? mi_ctx->frames[2].avf : mi_ctx->frames[1].avf);
         return;
     }
 
     switch(mi_ctx->mi_mode) {
         case MI_MODE_DUP:
-            av_frame_copy(avf_out, alpha > ALPHA_MAX / 2 ? mi_ctx->frames[2].avf : mi_ctx->frames[1].avf);
+            av_frame_copy_xij(avf_out, alpha > ALPHA_MAX / 2 ? mi_ctx->frames[2].avf : mi_ctx->frames[1].avf);
 
             break;
         case MI_MODE_BLEND:
@@ -1178,7 +1178,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *avf_in)
     }
 
     if (!mi_ctx->frames[NB_FRAMES - 1].avf)
-        if (ret = inject_frame(inlink, av_frame_clone(avf_in)))
+        if (ret = inject_frame(inlink, av_frame_clone_xij(avf_in)))
             return ret;
 
     if (ret = inject_frame(inlink, avf_in))
@@ -1198,7 +1198,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *avf_in)
         if (!(avf_out = ff_get_video_buffer(ctx->outputs[0], inlink->w, inlink->h)))
             return AVERROR(ENOMEM);
 
-        av_frame_copy_props(avf_out, mi_ctx->frames[NB_FRAMES - 1].avf);
+        av_frame_copy_props_xij(avf_out, mi_ctx->frames[NB_FRAMES - 1].avf);
         avf_out->pts = mi_ctx->out_pts++;
 
         interpolate(inlink, avf_out);
@@ -1234,7 +1234,7 @@ static av_cold void uninit(AVFilterContext *ctx)
     for (i = 0; i < NB_FRAMES; i++) {
         Frame *frame = &mi_ctx->frames[i];
         av_freep(&frame->blocks);
-        av_frame_free(&frame->avf);
+        av_frame_free_xij(&frame->avf);
     }
 
     for (i = 0; i < 3; i++)

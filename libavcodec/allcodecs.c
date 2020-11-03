@@ -772,7 +772,7 @@ static void av_codec_init_static(void)
     }
 }
 
-const AVCodec *av_codec_iterate(void **opaque)
+const AVCodec *av_codec_iterate_xij(void **opaque)
 {
     uintptr_t i = (uintptr_t)*opaque;
     const AVCodec *c = codec_list[i];
@@ -793,7 +793,7 @@ static void av_codec_init_next(void)
 {
     AVCodec *prev = NULL, *p;
     void *i = 0;
-    while ((p = (AVCodec*)av_codec_iterate(&i))) {
+    while ((p = (AVCodec*)av_codec_iterate_xij(&i))) {
         if (prev)
             prev->next = p;
         prev = p;
@@ -802,12 +802,12 @@ static void av_codec_init_next(void)
 
 
 
-av_cold void avcodec_register(AVCodec *codec)
+av_cold void avcodec_register_xij(AVCodec *codec)
 {
     ff_thread_once(&av_codec_next_init, av_codec_init_next);
 }
 
-AVCodec *av_codec_next(const AVCodec *c)
+AVCodec *av_codec_next_xij(const AVCodec *c)
 {
     ff_thread_once(&av_codec_next_init, av_codec_init_next);
 
@@ -817,7 +817,7 @@ AVCodec *av_codec_next(const AVCodec *c)
         return (AVCodec*)codec_list[0];
 }
 
-void avcodec_register_all(void)
+void avcodec_register_all_xij(void)
 {
     ff_thread_once(&av_codec_next_init, av_codec_init_next);
 }
@@ -840,7 +840,7 @@ static AVCodec *find_codec(enum AVCodecID id, int (*x)(const AVCodec *))
 
     id = remap_deprecated_codec_id(id);
 
-    while ((p = av_codec_iterate(&i))) {
+    while ((p = av_codec_iterate_xij(&i))) {
         if (!x(p))
             continue;
         if (p->id == id) {
@@ -854,14 +854,14 @@ static AVCodec *find_codec(enum AVCodecID id, int (*x)(const AVCodec *))
     return (AVCodec*)experimental;
 }
 
-AVCodec *avcodec_find_encoder(enum AVCodecID id)
+AVCodec *avcodec_find_encoder_ijk(enum AVCodecID id)
 {
-    return find_codec(id, av_codec_is_encoder);
+    return find_codec(id, av_codec_is_encoder_xij);
 }
 
-AVCodec *avcodec_find_decoder(enum AVCodecID id)
+AVCodec *avcodec_find_decoder_ijk(enum AVCodecID id)
 {
-    return find_codec(id, av_codec_is_decoder);
+    return find_codec(id, av_codec_is_decoder_xij);
 }
 
 static AVCodec *find_codec_by_name(const char *name, int (*x)(const AVCodec *))
@@ -872,7 +872,7 @@ static AVCodec *find_codec_by_name(const char *name, int (*x)(const AVCodec *))
     if (!name)
         return NULL;
 
-    while ((p = av_codec_iterate(&i))) {
+    while ((p = av_codec_iterate_xij(&i))) {
         if (!x(p))
             continue;
         if (strcmp(name, p->name) == 0)
@@ -882,12 +882,12 @@ static AVCodec *find_codec_by_name(const char *name, int (*x)(const AVCodec *))
     return NULL;
 }
 
-AVCodec *avcodec_find_encoder_by_name(const char *name)
+AVCodec *avcodec_find_encoder_by_name_xij(const char *name)
 {
-    return find_codec_by_name(name, av_codec_is_encoder);
+    return find_codec_by_name(name, av_codec_is_encoder_xij);
 }
 
-AVCodec *avcodec_find_decoder_by_name(const char *name)
+AVCodec *avcodec_find_decoder_by_name_xij(const char *name)
 {
-    return find_codec_by_name(name, av_codec_is_decoder);
+    return find_codec_by_name(name, av_codec_is_decoder_xij);
 }

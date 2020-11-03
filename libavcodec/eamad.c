@@ -73,7 +73,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
     ff_init_scantable(s->idsp.idct_permutation, &s->scantable, ff_zigzag_direct);
     ff_mpeg12_init_vlcs();
 
-    s->last_frame = av_frame_alloc();
+    s->last_frame = av_frame_alloc_ijk();
     if (!s->last_frame)
         return AVERROR(ENOMEM);
 
@@ -283,19 +283,19 @@ static int decode_frame(AVCodecContext *avctx,
     }
 
     if (avctx->width != width || avctx->height != height) {
-        av_frame_unref(s->last_frame);
+        av_frame_unref_xij(s->last_frame);
         if((width * (int64_t)height)/2048*7 > bytestream2_get_bytes_left(&gb))
             return AVERROR_INVALIDDATA;
-        if ((ret = ff_set_dimensions(avctx, width, height)) < 0)
+        if ((ret = ff_set_dimensions_xij(avctx, width, height)) < 0)
             return ret;
     }
 
-    if ((ret = ff_get_buffer(avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
         return ret;
 
     if (inter && !s->last_frame->data[0]) {
         av_log(avctx, AV_LOG_WARNING, "Missing reference frame.\n");
-        ret = ff_get_buffer(avctx, s->last_frame, AV_GET_BUFFER_FLAG_REF);
+        ret = ff_get_buffer_xij(avctx, s->last_frame, AV_GET_BUFFER_FLAG_REF);
         if (ret < 0)
             return ret;
         memset(s->last_frame->data[0], 0, s->last_frame->height *
@@ -306,7 +306,7 @@ static int decode_frame(AVCodecContext *avctx,
                s->last_frame->linesize[2]);
     }
 
-    av_fast_padded_malloc(&s->bitstream_buf, &s->bitstream_buf_size,
+    av_fast_padded_malloc_xij(&s->bitstream_buf, &s->bitstream_buf_size,
                           bytestream2_get_bytes_left(&gb));
     if (!s->bitstream_buf)
         return AVERROR(ENOMEM);
@@ -323,8 +323,8 @@ static int decode_frame(AVCodecContext *avctx,
     *got_frame = 1;
 
     if (chunk_type != MADe_TAG) {
-        av_frame_unref(s->last_frame);
-        if ((ret = av_frame_ref(s->last_frame, frame)) < 0)
+        av_frame_unref_xij(s->last_frame);
+        if ((ret = av_frame_ref_xij(s->last_frame, frame)) < 0)
             return ret;
     }
 
@@ -334,7 +334,7 @@ static int decode_frame(AVCodecContext *avctx,
 static av_cold int decode_end(AVCodecContext *avctx)
 {
     MadContext *t = avctx->priv_data;
-    av_frame_free(&t->last_frame);
+    av_frame_free_xij(&t->last_frame);
     av_freep(&t->bitstream_buf);
     return 0;
 }

@@ -75,9 +75,9 @@ static int dss_read_metadata_date(AVFormatContext *s, unsigned int offset,
     int y, month, d, h, minute, sec;
     int ret;
 
-    avio_seek(pb, offset, SEEK_SET);
+    avio_seek_xij(pb, offset, SEEK_SET);
 
-    ret = avio_read(s->pb, string, DSS_TIME_SIZE);
+    ret = avio_read_xij(s->pb, string, DSS_TIME_SIZE);
     if (ret < DSS_TIME_SIZE)
         return ret < 0 ? ret : AVERROR_EOF;
 
@@ -97,13 +97,13 @@ static int dss_read_metadata_string(AVFormatContext *s, unsigned int offset,
     char *value;
     int ret;
 
-    avio_seek(pb, offset, SEEK_SET);
+    avio_seek_xij(pb, offset, SEEK_SET);
 
     value = av_mallocz(size + 1);
     if (!value)
         return AVERROR(ENOMEM);
 
-    ret = avio_read(s->pb, value, size);
+    ret = avio_read_xij(s->pb, value, size);
     if (ret < size) {
         ret = ret < 0 ? ret : AVERROR_EOF;
         goto exit;
@@ -123,11 +123,11 @@ static int dss_read_header(AVFormatContext *s)
     AVStream *st;
     int ret, version;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
-    version = avio_r8(pb);
+    version = avio_r8_xij(pb);
     ctx->dss_header_size = version * DSS_BLOCK_SIZE;
 
     ret = dss_read_metadata_string(s, DSS_HEAD_OFFSET_AUTHOR,
@@ -144,8 +144,8 @@ static int dss_read_header(AVFormatContext *s)
     if (ret)
         return ret;
 
-    avio_seek(pb, DSS_HEAD_OFFSET_ACODEC, SEEK_SET);
-    ctx->audio_codec = avio_r8(pb);
+    avio_seek_xij(pb, DSS_HEAD_OFFSET_ACODEC, SEEK_SET);
+    ctx->audio_codec = avio_r8_xij(pb);
 
     if (ctx->audio_codec == DSS_ACODEC_DSS_SP) {
         st->codecpar->codec_id    = AV_CODEC_ID_DSS_SP;
@@ -163,12 +163,12 @@ static int dss_read_header(AVFormatContext *s)
     st->codecpar->channel_layout = AV_CH_LAYOUT_MONO;
     st->codecpar->channels       = 1;
 
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
     st->start_time = 0;
 
     /* Jump over header */
 
-    if (avio_seek(pb, ctx->dss_header_size, SEEK_SET) != ctx->dss_header_size)
+    if (avio_seek_xij(pb, ctx->dss_header_size, SEEK_SET) != ctx->dss_header_size)
         return AVERROR(EIO);
 
     ctx->counter = 0;
@@ -186,7 +186,7 @@ static void dss_skip_audio_header(AVFormatContext *s, AVPacket *pkt)
     DSSDemuxContext *ctx = s->priv_data;
     AVIOContext *pb = s->pb;
 
-    avio_skip(pb, DSS_AUDIO_BLOCK_HEADER_SIZE);
+    avio_skip_xij(pb, DSS_AUDIO_BLOCK_HEADER_SIZE);
     ctx->counter += DSS_BLOCK_SIZE - DSS_AUDIO_BLOCK_HEADER_SIZE;
 }
 
@@ -232,7 +232,7 @@ static int dss_sp_read_packet(AVFormatContext *s, AVPacket *pkt)
     ctx->counter -= read_size;
     ctx->packet_size = DSS_FRAME_SIZE - 1;
 
-    ret = av_new_packet(pkt, DSS_FRAME_SIZE);
+    ret = av_new_packet_ijk(pkt, DSS_FRAME_SIZE);
     if (ret < 0)
         return ret;
 
@@ -244,7 +244,7 @@ static int dss_sp_read_packet(AVFormatContext *s, AVPacket *pkt)
     if (ctx->counter < 0) {
         int size2 = ctx->counter + read_size;
 
-        ret = avio_read(s->pb, ctx->dss_sp_buf + offset + buff_offset,
+        ret = avio_read_xij(s->pb, ctx->dss_sp_buf + offset + buff_offset,
                         size2 - offset);
         if (ret < size2 - offset)
             goto error_eof;
@@ -253,7 +253,7 @@ static int dss_sp_read_packet(AVFormatContext *s, AVPacket *pkt)
         offset = size2;
     }
 
-    ret = avio_read(s->pb, ctx->dss_sp_buf + offset + buff_offset,
+    ret = avio_read_xij(s->pb, ctx->dss_sp_buf + offset + buff_offset,
                     read_size - offset);
     if (ret < read_size - offset)
         goto error_eof;
@@ -268,7 +268,7 @@ static int dss_sp_read_packet(AVFormatContext *s, AVPacket *pkt)
     return pkt->size;
 
 error_eof:
-    av_packet_unref(pkt);
+    av_packet_unref_ijk(pkt);
     return ret < 0 ? ret : AVERROR_EOF;
 }
 
@@ -283,7 +283,7 @@ static int dss_723_1_read_packet(AVFormatContext *s, AVPacket *pkt)
         dss_skip_audio_header(s, pkt);
 
     /* We make one byte-step here. Don't forget to add offset. */
-    byte = avio_r8(s->pb);
+    byte = avio_r8_xij(s->pb);
     if (byte == 0xff)
         return AVERROR_INVALIDDATA;
 
@@ -292,7 +292,7 @@ static int dss_723_1_read_packet(AVFormatContext *s, AVPacket *pkt)
     ctx->packet_size = size;
     ctx->counter -= size;
 
-    ret = av_new_packet(pkt, size);
+    ret = av_new_packet_ijk(pkt, size);
     if (ret < 0)
         return ret;
     pkt->pos = pos;
@@ -307,10 +307,10 @@ static int dss_723_1_read_packet(AVFormatContext *s, AVPacket *pkt)
     if (ctx->counter < 0) {
         int size2 = ctx->counter + size;
 
-        ret = avio_read(s->pb, pkt->data + offset,
+        ret = avio_read_xij(s->pb, pkt->data + offset,
                         size2 - offset);
         if (ret < size2 - offset) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return ret < 0 ? ret : AVERROR_EOF;
         }
 
@@ -318,9 +318,9 @@ static int dss_723_1_read_packet(AVFormatContext *s, AVPacket *pkt)
         offset = size2;
     }
 
-    ret = avio_read(s->pb, pkt->data + offset, size - offset);
+    ret = avio_read_xij(s->pb, pkt->data + offset, size - offset);
     if (ret < size - offset) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return ret < 0 ? ret : AVERROR_EOF;
     }
 
@@ -364,21 +364,21 @@ static int dss_read_seek(AVFormatContext *s, int stream_index,
 
     seekto += ctx->dss_header_size;
 
-    ret = avio_seek(s->pb, seekto, SEEK_SET);
+    ret = avio_seek_xij(s->pb, seekto, SEEK_SET);
     if (ret < 0)
         return ret;
 
-    avio_read(s->pb, header, DSS_AUDIO_BLOCK_HEADER_SIZE);
+    avio_read_xij(s->pb, header, DSS_AUDIO_BLOCK_HEADER_SIZE);
     ctx->swap = !!(header[0] & 0x80);
     offset = 2*header[1] + 2*ctx->swap;
     if (offset < DSS_AUDIO_BLOCK_HEADER_SIZE)
         return AVERROR_INVALIDDATA;
     if (offset == DSS_AUDIO_BLOCK_HEADER_SIZE) {
         ctx->counter = 0;
-        offset = avio_skip(s->pb, -DSS_AUDIO_BLOCK_HEADER_SIZE);
+        offset = avio_skip_xij(s->pb, -DSS_AUDIO_BLOCK_HEADER_SIZE);
     } else {
         ctx->counter = DSS_BLOCK_SIZE - offset;
-        offset = avio_skip(s->pb, offset - DSS_AUDIO_BLOCK_HEADER_SIZE);
+        offset = avio_skip_xij(s->pb, offset - DSS_AUDIO_BLOCK_HEADER_SIZE);
     }
     ctx->dss_sp_swap_byte = -1;
     return 0;

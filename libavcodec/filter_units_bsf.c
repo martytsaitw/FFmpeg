@@ -106,17 +106,17 @@ static int filter_units_filter(AVBSFContext *bsf, AVPacket *out)
     int err, i, j;
 
     while (1) {
-        err = ff_bsf_get_packet(bsf, &in);
+        err = ff_bsf_get_packet_xij(bsf, &in);
         if (err < 0)
             return err;
 
         if (ctx->mode == NOOP) {
-            av_packet_move_ref(out, in);
-            av_packet_free(&in);
+            av_packet_move_ref_xij(out, in);
+            av_packet_free_xij(&in);
             return 0;
         }
 
-        err = ff_cbs_read_packet(ctx->cbc, frag, in);
+        err = ff_cbs_read_packet_xij(ctx->cbc, frag, in);
         if (err < 0) {
             av_log(bsf, AV_LOG_ERROR, "Failed to read packet.\n");
             goto fail;
@@ -129,7 +129,7 @@ static int filter_units_filter(AVBSFContext *bsf, AVPacket *out)
             }
             if (ctx->mode == REMOVE ? j <  ctx->nb_types
                                     : j >= ctx->nb_types) {
-                ff_cbs_delete_unit(ctx->cbc, frag, i);
+                ff_cbs_delete_unit_xij(ctx->cbc, frag, i);
                 --i;
             }
         }
@@ -138,23 +138,23 @@ static int filter_units_filter(AVBSFContext *bsf, AVPacket *out)
             break;
 
         // Don't return packets with nothing in them.
-        av_packet_free(&in);
+        av_packet_free_xij(&in);
         ff_cbs_fragment_uninit(ctx->cbc, frag);
     }
 
-    err = ff_cbs_write_packet(ctx->cbc, out, frag);
+    err = ff_cbs_write_packet_xij(ctx->cbc, out, frag);
     if (err < 0) {
         av_log(bsf, AV_LOG_ERROR, "Failed to write packet.\n");
         goto fail;
     }
 
-    err = av_packet_copy_props(out, in);
+    err = av_packet_copy_props_ijk(out, in);
     if (err < 0)
         goto fail;
 
 fail:
     ff_cbs_fragment_uninit(ctx->cbc, frag);
-    av_packet_free(&in);
+    av_packet_free_xij(&in);
 
     return err;
 }
@@ -190,7 +190,7 @@ static int filter_units_init(AVBSFContext *bsf)
         return 0;
     }
 
-    err = ff_cbs_init(&ctx->cbc, bsf->par_in->codec_id, bsf);
+    err = ff_cbs_init_xij(&ctx->cbc, bsf->par_in->codec_id, bsf);
     if (err < 0)
         return err;
 
@@ -201,11 +201,11 @@ static int filter_units_init(AVBSFContext *bsf)
     if (bsf->par_in->extradata) {
         CodedBitstreamFragment ps;
 
-        err = ff_cbs_read_extradata(ctx->cbc, &ps, bsf->par_in);
+        err = ff_cbs_read_extradata_xij(ctx->cbc, &ps, bsf->par_in);
         if (err < 0) {
             av_log(bsf, AV_LOG_ERROR, "Failed to read extradata.\n");
         } else {
-            err = ff_cbs_write_extradata(ctx->cbc, bsf->par_out, &ps);
+            err = ff_cbs_write_extradata_xij(ctx->cbc, bsf->par_out, &ps);
             if (err < 0)
                 av_log(bsf, AV_LOG_ERROR, "Failed to write extradata.\n");
         }
@@ -222,7 +222,7 @@ static void filter_units_close(AVBSFContext *bsf)
 
     av_freep(&ctx->type_list);
 
-    ff_cbs_close(&ctx->cbc);
+    ff_cbs_close_xij(&ctx->cbc);
 }
 
 #define OFFSET(x) offsetof(FilterUnitsContext, x)
@@ -252,5 +252,5 @@ const AVBitStreamFilter ff_filter_units_bsf = {
     .init           = &filter_units_init,
     .close          = &filter_units_close,
     .filter         = &filter_units_filter,
-    .codec_ids      = ff_cbs_all_codec_ids,
+    .codec_ids      = ff_cbs_all_codec_ids_xij,
 };

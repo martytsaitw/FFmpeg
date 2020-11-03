@@ -190,7 +190,7 @@ static int sctp_open(URLContext *h, const char *uri, int flags)
     char hostname[1024], proto[1024], path[1024];
     char portstr[10];
 
-    av_url_split(proto, sizeof(proto), NULL, 0, hostname, sizeof(hostname),
+    av_url_split_xij(proto, sizeof(proto), NULL, 0, hostname, sizeof(hostname),
                  &port, path, sizeof(path), uri);
     if (strcmp(proto, "sctp"))
         return AVERROR(EINVAL);

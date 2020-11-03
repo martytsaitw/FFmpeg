@@ -69,7 +69,7 @@ void ff_snow_inner_add_yblock(const uint8_t *obmc, const int obmc_stride, uint8_
 int ff_snow_get_buffer(SnowContext *s, AVFrame *frame)
 {
     int ret, i;
-    int edges_needed = av_codec_is_encoder(s->avctx->codec);
+    int edges_needed = av_codec_is_encoder_xij(s->avctx->codec);
 
     frame->width  = s->avctx->width ;
     frame->height = s->avctx->height;
@@ -77,7 +77,7 @@ int ff_snow_get_buffer(SnowContext *s, AVFrame *frame)
         frame->width  += 2 * EDGE_WIDTH;
         frame->height += 2 * EDGE_WIDTH;
     }
-    if ((ret = ff_get_buffer(s->avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
+    if ((ret = ff_get_buffer_xij(s->avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
         return ret;
     if (edges_needed) {
         for (i = 0; frame->data[i]; i++) {
@@ -496,13 +496,13 @@ av_cold int ff_snow_common_init(AVCodecContext *avctx){
     for(i=0; i<MAX_REF_FRAMES; i++) {
         for(j=0; j<MAX_REF_FRAMES; j++)
             ff_scale_mv_ref[i][j] = 256*(i+1)/(j+1);
-        s->last_picture[i] = av_frame_alloc();
+        s->last_picture[i] = av_frame_alloc_ijk();
         if (!s->last_picture[i])
             goto fail;
     }
 
-    s->mconly_picture = av_frame_alloc();
-    s->current_picture = av_frame_alloc();
+    s->mconly_picture = av_frame_alloc_ijk();
+    s->current_picture = av_frame_alloc_ijk();
     if (!s->mconly_picture || !s->current_picture)
         goto fail;
 
@@ -517,7 +517,7 @@ int ff_snow_common_init_after_header(AVCodecContext *avctx) {
     int ret, emu_buf_size;
 
     if(!s->scratchbuf) {
-        if ((ret = ff_get_buffer(s->avctx, s->mconly_picture,
+        if ((ret = ff_get_buffer_xij(s->avctx, s->mconly_picture,
                                  AV_GET_BUFFER_FLAG_REF)) < 0)
             return ret;
         FF_ALLOCZ_ARRAY_OR_GOTO(avctx, s->scratchbuf, FFMAX(s->mconly_picture->linesize[0], 2*avctx->width+256), 7*MB_SIZE, fail);
@@ -643,7 +643,7 @@ void ff_snow_release_buffer(AVCodecContext *avctx)
     int i;
 
     if(s->last_picture[s->max_ref_frames-1]->data[0]){
-        av_frame_unref(s->last_picture[s->max_ref_frames-1]);
+        av_frame_unref_xij(s->last_picture[s->max_ref_frames-1]);
         for(i=0; i<9; i++)
             if(s->halfpel_plane[s->max_ref_frames-1][1+i/3][i%3]) {
                 av_free(s->halfpel_plane[s->max_ref_frames-1][1+i/3][i%3] - EDGE_WIDTH*(1+s->current_picture->linesize[i%3]));
@@ -716,7 +716,7 @@ av_cold void ff_snow_common_end(SnowContext *s)
         if(s->last_picture[i] && s->last_picture[i]->data[0]) {
             av_assert0(s->last_picture[i]->data[0] != s->current_picture->data[0]);
         }
-        av_frame_free(&s->last_picture[i]);
+        av_frame_free_xij(&s->last_picture[i]);
     }
 
     for(plane_index=0; plane_index < MAX_PLANES; plane_index++){
@@ -728,6 +728,6 @@ av_cold void ff_snow_common_end(SnowContext *s)
             }
         }
     }
-    av_frame_free(&s->mconly_picture);
-    av_frame_free(&s->current_picture);
+    av_frame_free_xij(&s->mconly_picture);
+    av_frame_free_xij(&s->current_picture);
 }

@@ -99,7 +99,7 @@ static int png_parse(AVCodecParserContext *s, AVCodecContext *avctx,
     }
 
 flush:
-    if (ff_combine_frame(&ppc->pc, next, &buf, &buf_size) < 0)
+    if (ff_combine_frame_xij(&ppc->pc, next, &buf, &buf_size) < 0)
         return buf_size;
 
     ppc->chunk_pos = ppc->pc.frame_start_found = 0;
@@ -113,5 +113,5 @@ AVCodecParser ff_png_parser = {
     .codec_ids      = { AV_CODEC_ID_PNG },
     .priv_data_size = sizeof(PNGParseContext),
     .parser_parse   = png_parse,
-    .parser_close   = ff_parse_close,
+    .parser_close   = ff_parse_close_xij,
 };

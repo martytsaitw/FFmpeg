@@ -58,7 +58,7 @@ static void svq1_write_header(SVQ1EncContext *s, int frame_type)
         /* output 5 unknown bits (2 + 2 + 1) */
         put_bits(&s->pb, 5, 2); /* 2 needed by quicktime decoder */
 
-        i = ff_match_2uint16((void*)ff_svq1_frame_size_table,
+        i = ff_match_2uint16_xij((void*)ff_svq1_frame_size_table,
                              FF_ARRAY_ELEMS(ff_svq1_frame_size_table),
                              s->frame_width, s->frame_height);
         put_bits(&s->pb, 3, i);
@@ -505,8 +505,8 @@ static av_cold int svq1_encode_end(AVCodecContext *avctx)
         av_freep(&s->motion_val16[i]);
     }
 
-    av_frame_free(&s->current_picture);
-    av_frame_free(&s->last_picture);
+    av_frame_free_xij(&s->current_picture);
+    av_frame_free_xij(&s->last_picture);
 
     return 0;
 }
@@ -525,8 +525,8 @@ static av_cold int svq1_encode_init(AVCodecContext *avctx)
     ff_me_cmp_init(&s->mecc, avctx);
     ff_mpegvideoencdsp_init(&s->m.mpvencdsp, avctx);
 
-    s->current_picture = av_frame_alloc();
-    s->last_picture    = av_frame_alloc();
+    s->current_picture = av_frame_alloc_ijk();
+    s->last_picture    = av_frame_alloc_ijk();
     if (!s->current_picture || !s->last_picture) {
         svq1_encode_end(avctx);
         return AVERROR(ENOMEM);
@@ -593,12 +593,12 @@ static int svq1_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     }
 
     if (!s->current_picture->data[0]) {
-        if ((ret = ff_get_buffer(avctx, s->current_picture, 0)) < 0) {
+        if ((ret = ff_get_buffer_xij(avctx, s->current_picture, 0)) < 0) {
             return ret;
         }
     }
     if (!s->last_picture->data[0]) {
-        ret = ff_get_buffer(avctx, s->last_picture, 0);
+        ret = ff_get_buffer_xij(avctx, s->last_picture, 0);
         if (ret < 0)
             return ret;
     }
@@ -625,7 +625,7 @@ FF_DISABLE_DEPRECATION_WARNINGS
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
 
-    ff_side_data_set_encoder_stats(pkt, pict->quality, NULL, 0, s->pict_type);
+    ff_side_data_set_encoder_stats_xij(pkt, pict->quality, NULL, 0, s->pict_type);
 
     svq1_write_header(s, s->pict_type);
     for (i = 0; i < 3; i++) {

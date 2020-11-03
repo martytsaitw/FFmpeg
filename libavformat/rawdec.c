@@ -32,29 +32,29 @@
 
 #define RAW_PACKET_SIZE 1024
 
-int ff_raw_read_partial_packet(AVFormatContext *s, AVPacket *pkt)
+int ff_raw_read_partial_packet_xij(AVFormatContext *s, AVPacket *pkt)
 {
     int ret, size;
 
     size = RAW_PACKET_SIZE;
 
-    if (av_new_packet(pkt, size) < 0)
+    if (av_new_packet_ijk(pkt, size) < 0)
         return AVERROR(ENOMEM);
 
     pkt->pos= avio_tell(s->pb);
     pkt->stream_index = 0;
-    ret = avio_read_partial(s->pb, pkt->data, size);
+    ret = avio_read_partial_xij(s->pb, pkt->data, size);
     if (ret < 0) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return ret;
     }
-    av_shrink_packet(pkt, ret);
+    av_shrink_packet_xij(pkt, ret);
     return ret;
 }
 
-int ff_raw_audio_read_header(AVFormatContext *s)
+int ff_raw_audio_read_header_xij(AVFormatContext *s)
 {
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -67,14 +67,14 @@ int ff_raw_audio_read_header(AVFormatContext *s)
 }
 
 /* MPEG-1/H.263 input */
-int ff_raw_video_read_header(AVFormatContext *s)
+int ff_raw_video_read_header_xij(AVFormatContext *s)
 {
     AVStream *st;
     FFRawVideoDemuxerContext *s1 = s->priv_data;
     int ret = 0;
 
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st) {
         ret = AVERROR(ENOMEM);
         goto fail;
@@ -85,15 +85,15 @@ int ff_raw_video_read_header(AVFormatContext *s)
     st->need_parsing = AVSTREAM_PARSE_FULL_RAW;
 
     st->internal->avctx->framerate = s1->framerate;
-    avpriv_set_pts_info(st, 64, 1, 1200000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 1200000);
 
 fail:
     return ret;
 }
 
-int ff_raw_data_read_header(AVFormatContext *s)
+int ff_raw_data_read_header_xij(AVFormatContext *s)
 {
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_DATA;
@@ -106,17 +106,17 @@ int ff_raw_data_read_header(AVFormatContext *s)
 
 #define OFFSET(x) offsetof(FFRawVideoDemuxerContext, x)
 #define DEC AV_OPT_FLAG_DECODING_PARAM
-const AVOption ff_rawvideo_options[] = {
+const AVOption ff_rawvideo_options_xij[] = {
     { "framerate", "", OFFSET(framerate), AV_OPT_TYPE_VIDEO_RATE, {.str = "25"}, 0, INT_MAX, DEC},
     { NULL },
 };
 
 #if CONFIG_DATA_DEMUXER
-AVInputFormat ff_data_demuxer = {
+AVInputFormat ff_data_demuxer_xij = {
     .name           = "data",
     .long_name      = NULL_IF_CONFIG_SMALL("raw data"),
-    .read_header    = ff_raw_data_read_header,
-    .read_packet    = ff_raw_read_partial_packet,
+    .read_header    = ff_raw_data_read_header_xij,
+    .read_packet    = ff_raw_read_partial_packet_xij,
     .raw_codec_id   = AV_CODEC_ID_NONE,
     .flags          = AVFMT_NOTIMESTAMPS,
 };

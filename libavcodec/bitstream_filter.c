@@ -34,9 +34,9 @@ const AVBitStreamFilter *av_bitstream_filter_next(const AVBitStreamFilter *f)
     void *opaque = NULL;
 
     while (filter != f)
-        filter = av_bsf_iterate(&opaque);
+        filter = av_bsf_iterate_xij(&opaque);
 
-    return av_bsf_iterate(&opaque);
+    return av_bsf_iterate_xij(&opaque);
 }
 
 void av_register_bitstream_filter(AVBitStreamFilter *bsf)
@@ -54,7 +54,7 @@ AVBitStreamFilterContext *av_bitstream_filter_init(const char *name)
     BSFCompatContext         *priv = NULL;
     const AVBitStreamFilter *bsf;
 
-    bsf = av_bsf_get_by_name(name);
+    bsf = av_bsf_get_by_name_ijk(name);
     if (!bsf)
         return NULL;
 
@@ -74,7 +74,7 @@ AVBitStreamFilterContext *av_bitstream_filter_init(const char *name)
 
 fail:
     if (priv)
-        av_bsf_free(&priv->ctx);
+        av_bsf_free_xij(&priv->ctx);
     av_freep(&priv);
     av_freep(&ctx);
     return NULL;
@@ -89,7 +89,7 @@ void av_bitstream_filter_close(AVBitStreamFilterContext *bsfc)
 
     priv = bsfc->priv_data;
 
-    av_bsf_free(&priv->ctx);
+    av_bsf_free_xij(&priv->ctx);
     av_freep(&bsfc->priv_data);
     av_free(bsfc);
 }
@@ -104,11 +104,11 @@ int av_bitstream_filter_filter(AVBitStreamFilterContext *bsfc,
     int ret;
 
     if (!priv->ctx) {
-        ret = av_bsf_alloc(bsfc->filter, &priv->ctx);
+        ret = av_bsf_alloc_ijk(bsfc->filter, &priv->ctx);
         if (ret < 0)
             return ret;
 
-        ret = avcodec_parameters_from_context(priv->ctx->par_in, avctx);
+        ret = avcodec_parameters_from_context_ijk(priv->ctx->par_in, avctx);
         if (ret < 0)
             return ret;
 
@@ -126,7 +126,7 @@ int av_bitstream_filter_filter(AVBitStreamFilterContext *bsfc,
                 return ret;
         }
 
-        ret = av_bsf_init(priv->ctx);
+        ret = av_bsf_init_ijk(priv->ctx);
         if (ret < 0)
             return ret;
     }
@@ -134,14 +134,14 @@ int av_bitstream_filter_filter(AVBitStreamFilterContext *bsfc,
     pkt.data = (uint8_t *)buf;
     pkt.size = buf_size;
 
-    ret = av_bsf_send_packet(priv->ctx, &pkt);
+    ret = av_bsf_send_packet_ijk(priv->ctx, &pkt);
     if (ret < 0)
         return ret;
 
     *poutbuf      = NULL;
     *poutbuf_size = 0;
 
-    ret = av_bsf_receive_packet(priv->ctx, &pkt);
+    ret = av_bsf_receive_packet_ijk(priv->ctx, &pkt);
     if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
         return 0;
     else if (ret < 0)
@@ -149,19 +149,19 @@ int av_bitstream_filter_filter(AVBitStreamFilterContext *bsfc,
 
     *poutbuf = av_malloc(pkt.size + AV_INPUT_BUFFER_PADDING_SIZE);
     if (!*poutbuf) {
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
         return AVERROR(ENOMEM);
     }
 
     *poutbuf_size = pkt.size;
     memcpy(*poutbuf, pkt.data, pkt.size);
 
-    av_packet_unref(&pkt);
+    av_packet_unref_ijk(&pkt);
 
     /* drain all the remaining packets we cannot return */
     while (ret >= 0) {
-        ret = av_bsf_receive_packet(priv->ctx, &pkt);
-        av_packet_unref(&pkt);
+        ret = av_bsf_receive_packet_ijk(priv->ctx, &pkt);
+        av_packet_unref_ijk(&pkt);
     }
 
     if (!priv->extradata_updated) {

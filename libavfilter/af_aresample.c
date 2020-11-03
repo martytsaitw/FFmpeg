@@ -73,7 +73,7 @@ end:
 static av_cold void uninit(AVFilterContext *ctx)
 {
     AResampleContext *aresample = ctx->priv;
-    swr_free(&aresample->swr);
+    swr_free_xij(&aresample->swr);
 }
 
 static int query_formats(AVFilterContext *ctx)
@@ -144,7 +144,7 @@ static int config_output(AVFilterLink *outlink)
     enum AVSampleFormat out_format;
     char inchl_buf[128], outchl_buf[128];
 
-    aresample->swr = swr_alloc_set_opts(aresample->swr,
+    aresample->swr = swr_alloc_set_opts_xij(aresample->swr,
                                         outlink->channel_layout, outlink->format, outlink->sample_rate,
                                         inlink->channel_layout, inlink->format, inlink->sample_rate,
                                         0, ctx);
@@ -155,7 +155,7 @@ static int config_output(AVFilterLink *outlink)
     if (!outlink->channel_layout)
         av_opt_set_int(aresample->swr, "och", outlink->channels, 0);
 
-    ret = swr_init(aresample->swr);
+    ret = swr_init_xij(aresample->swr);
     if (ret < 0)
         return ret;
 
@@ -189,18 +189,18 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamplesref)
     AVFrame *outsamplesref;
     int ret;
 
-    delay = swr_get_delay(aresample->swr, outlink->sample_rate);
+    delay = swr_get_delay_xij(aresample->swr, outlink->sample_rate);
     if (delay > 0)
         n_out += FFMIN(delay, FFMAX(4096, n_out));
 
     outsamplesref = ff_get_audio_buffer(outlink, n_out);
 
     if(!outsamplesref) {
-        av_frame_free(&insamplesref);
+        av_frame_free_xij(&insamplesref);
         return AVERROR(ENOMEM);
     }
 
-    av_frame_copy_props(outsamplesref, insamplesref);
+    av_frame_copy_props_xij(outsamplesref, insamplesref);
     outsamplesref->format                = outlink->format;
     outsamplesref->channels              = outlink->channels;
     outsamplesref->channel_layout        = outlink->channel_layout;
@@ -208,17 +208,17 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamplesref)
 
     if(insamplesref->pts != AV_NOPTS_VALUE) {
         int64_t inpts = av_rescale(insamplesref->pts, inlink->time_base.num * (int64_t)outlink->sample_rate * inlink->sample_rate, inlink->time_base.den);
-        int64_t outpts= swr_next_pts(aresample->swr, inpts);
+        int64_t outpts= swr_next_pts_xij(aresample->swr, inpts);
         aresample->next_pts =
         outsamplesref->pts  = ROUNDED_DIV(outpts, inlink->sample_rate);
     } else {
         outsamplesref->pts  = AV_NOPTS_VALUE;
     }
-    n_out = swr_convert(aresample->swr, outsamplesref->extended_data, n_out,
+    n_out = swr_convert_xij(aresample->swr, outsamplesref->extended_data, n_out,
                                  (void *)insamplesref->extended_data, n_in);
     if (n_out <= 0) {
-        av_frame_free(&outsamplesref);
-        av_frame_free(&insamplesref);
+        av_frame_free_xij(&outsamplesref);
+        av_frame_free_xij(&insamplesref);
         return 0;
     }
 
@@ -227,7 +227,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamplesref)
     outsamplesref->nb_samples  = n_out;
 
     ret = ff_filter_frame(outlink, outsamplesref);
-    av_frame_free(&insamplesref);
+    av_frame_free_xij(&insamplesref);
     return ret;
 }
 
@@ -245,12 +245,12 @@ static int flush_frame(AVFilterLink *outlink, int final, AVFrame **outsamplesref
     if (!outsamplesref)
         return AVERROR(ENOMEM);
 
-    pts = swr_next_pts(aresample->swr, INT64_MIN);
+    pts = swr_next_pts_xij(aresample->swr, INT64_MIN);
     pts = ROUNDED_DIV(pts, inlink->sample_rate);
 
-    n_out = swr_convert(aresample->swr, outsamplesref->extended_data, n_out, final ? NULL : (void*)outsamplesref->extended_data, 0);
+    n_out = swr_convert_xij(aresample->swr, outsamplesref->extended_data, n_out, final ? NULL : (void*)outsamplesref->extended_data, 0);
     if (n_out <= 0) {
-        av_frame_free(&outsamplesref);
+        av_frame_free_xij(&outsamplesref);
         return (n_out == 0) ? AVERROR_EOF : n_out;
     }
 

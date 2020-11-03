@@ -44,7 +44,7 @@ static int remove_extradata(AVBSFContext *ctx, AVPacket *pkt)
 
     int ret;
 
-    ret = ff_bsf_get_packet_ref(ctx, pkt);
+    ret = ff_bsf_get_packet_ref_xij(ctx, pkt);
     if (ret < 0)
         return ret;
 
@@ -66,14 +66,14 @@ static int remove_extradata_init(AVBSFContext *ctx)
     RemoveExtradataContext *s = ctx->priv_data;
     int ret;
 
-    s->parser = av_parser_init(ctx->par_in->codec_id);
+    s->parser = av_parser_init_xij(ctx->par_in->codec_id);
 
     if (s->parser) {
-        s->avctx = avcodec_alloc_context3(NULL);
+        s->avctx = avcodec_alloc_context3_ijk(NULL);
         if (!s->avctx)
             return AVERROR(ENOMEM);
 
-        ret = avcodec_parameters_to_context(s->avctx, ctx->par_in);
+        ret = avcodec_parameters_to_context_ijk(s->avctx, ctx->par_in);
         if (ret < 0)
             return ret;
     }
@@ -85,8 +85,8 @@ static void remove_extradata_close(AVBSFContext *ctx)
 {
     RemoveExtradataContext *s = ctx->priv_data;
 
-    avcodec_free_context(&s->avctx);
-    av_parser_close(s->parser);
+    avcodec_free_context_ijk(&s->avctx);
+    av_parser_close_ijk(s->parser);
 }
 
 #define OFFSET(x) offsetof(RemoveExtradataContext, x)

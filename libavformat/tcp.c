@@ -184,7 +184,7 @@ static int tcp_getaddrinfo_request_create(TCPAddrinfoRequest **request,
         req->hints.ai_flags    = hints->ai_flags;
     }
 
-    req->buffer = av_buffer_create(NULL, 0, tcp_getaddrinfo_request_free_buffer, req, 0);
+    req->buffer = av_buffer_create_ijk(NULL, 0, tcp_getaddrinfo_request_free_buffer, req, 0);
     if (!req->buffer)
         goto fail;
 
@@ -204,7 +204,7 @@ static void *tcp_getaddrinfo_worker(void *arg)
     req->finished = 1;
     pthread_cond_signal(&req->cond);
     pthread_mutex_unlock(&req->mutex);
-    av_buffer_unref(&req->buffer);
+    av_buffer_unref_xij(&req->buffer);
     return NULL;
 }
 
@@ -245,7 +245,7 @@ static void *tcp_getaddrinfo_one_by_one_worker(void *arg)
     req->finished = 1;
     pthread_cond_signal(&req->cond);
     pthread_mutex_unlock(&req->mutex);
-    av_buffer_unref(&req->buffer);
+    av_buffer_unref_xij(&req->buffer);
     return NULL;
 }
 
@@ -271,7 +271,7 @@ int ijk_tcp_getaddrinfo_nonblock(const char *hostname, const char *servname,
     if (ret)
         goto fail;
 
-    req_ref = av_buffer_ref(req->buffer);
+    req_ref = av_buffer_ref_ijk(req->buffer);
     if (req_ref == NULL) {
         ret = AVERROR(ENOMEM);
         goto fail;
@@ -329,7 +329,7 @@ int ijk_tcp_getaddrinfo_nonblock(const char *hostname, const char *servname,
     }
     pthread_mutex_unlock(&req->mutex);
 fail:
-    av_buffer_unref(&req_ref);
+    av_buffer_unref_xij(&req_ref);
     return ret;
 }
 
@@ -374,7 +374,7 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
         return 0;
     }
 
-    av_url_split(proto, sizeof(proto), NULL, 0, hostname, sizeof(hostname),
+    av_url_split_xij(proto, sizeof(proto), NULL, 0, hostname, sizeof(hostname),
         &port, path, sizeof(path), uri);
     if (strcmp(proto, "tcp"))
         return AVERROR(EINVAL);
@@ -596,7 +596,7 @@ static int tcp_fast_open(URLContext *h, const char *http_request, const char *ur
     char portstr[10];
     AVAppTcpIOControl control = {0};
     DnsCacheEntry *dns_entry = NULL;
-    av_url_split(proto, sizeof(proto), NULL, 0, hostname, sizeof(hostname),
+    av_url_split_xij(proto, sizeof(proto), NULL, 0, hostname, sizeof(hostname),
         &port, path, sizeof(path), uri);
     if (strcmp(proto, "tcp"))
         return AVERROR(EINVAL);
@@ -925,7 +925,7 @@ static int tcp_get_window_size(URLContext *h)
     return avail;
 }
 
-const URLProtocol ff_tcp_protocol = {
+const URLProtocol ff_tcp_ijk_protocol = {
     .name                = "tcp",
     .url_open            = tcp_open,
     .url_accept          = tcp_accept,

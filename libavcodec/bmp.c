@@ -133,7 +133,7 @@ static int bmp_decode_frame(AVCodecContext *avctx,
         alpha = bytestream_get_le32(&buf);
     }
 
-    ret = ff_set_dimensions(avctx, width, height > 0 ? height : -(unsigned)height);
+    ret = ff_set_dimensions_xij(avctx, width, height > 0 ? height : -(unsigned)height);
     if (ret < 0) {
         av_log(avctx, AV_LOG_ERROR, "Failed to set dimensions %d %d\n", width, height);
         return AVERROR_INVALIDDATA;
@@ -208,7 +208,7 @@ static int bmp_decode_frame(AVCodecContext *avctx,
         return AVERROR_INVALIDDATA;
     }
 
-    if ((ret = ff_get_buffer(avctx, p, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, p, 0)) < 0)
         return ret;
     p->pict_type = AV_PICTURE_TYPE_I;
     p->key_frame = 1;

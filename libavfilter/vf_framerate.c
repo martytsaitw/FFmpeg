@@ -198,7 +198,7 @@ static int blend_frames(AVFilterContext *ctx, int interpolate)
         if (!s->work)
             return AVERROR(ENOMEM);
 
-        av_frame_copy_props(s->work, s->f0);
+        av_frame_copy_props_xij(s->work, s->f0);
 
         ff_dlog(ctx, "blend_frames() INTERPOLATE to create work frame\n");
         ctx->internal->execute(ctx, filter_slice, &td, NULL, FFMIN(FFMAX(1, outlink->h >> 2), ff_filter_get_nb_threads(ctx)));
@@ -225,7 +225,7 @@ static int process_work_frame(AVFilterContext *ctx)
         return 0;
 
     if (!s->f0) {
-        s->work = av_frame_clone(s->f1);
+        s->work = av_frame_clone_xij(s->f1);
     } else {
         if (work_pts >= s->pts1 + s->delta && s->flush)
             return 0;
@@ -234,15 +234,15 @@ static int process_work_frame(AVFilterContext *ctx)
         interpolate8 = av_rescale(work_pts - s->pts0, 256, s->delta);
         ff_dlog(ctx, "process_work_frame() interpolate: %"PRId64"/256\n", interpolate8);
         if (interpolate >= s->blend_factor_max || interpolate8 > s->interp_end) {
-            s->work = av_frame_clone(s->f1);
+            s->work = av_frame_clone_xij(s->f1);
         } else if (interpolate <= 0 || interpolate8 < s->interp_start) {
-            s->work = av_frame_clone(s->f0);
+            s->work = av_frame_clone_xij(s->f0);
         } else {
             ret = blend_frames(ctx, interpolate);
             if (ret < 0)
                 return ret;
             if (ret == 0)
-                s->work = av_frame_clone(interpolate > (s->blend_factor_max >> 1) ? s->f1 : s->f0);
+                s->work = av_frame_clone_xij(interpolate > (s->blend_factor_max >> 1) ? s->f1 : s->f0);
         }
     }
 
@@ -265,8 +265,8 @@ static av_cold int init(AVFilterContext *ctx)
 static av_cold void uninit(AVFilterContext *ctx)
 {
     FrameRateContext *s = ctx->priv;
-    av_frame_free(&s->f0);
-    av_frame_free(&s->f1);
+    av_frame_free_xij(&s->f0);
+    av_frame_free_xij(&s->f1);
 }
 
 static int query_formats(AVFilterContext *ctx)
@@ -381,7 +381,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
         return 0;
     }
 
-    av_frame_free(&s->f0);
+    av_frame_free_xij(&s->f0);
     s->f0 = s->f1;
     s->pts0 = s->pts1;
     s->f1 = inpicref;
@@ -393,7 +393,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
         av_log(ctx, AV_LOG_WARNING, "PTS discontinuity.\n");
         s->start_pts = s->pts1;
         s->n = 0;
-        av_frame_free(&s->f0);
+        av_frame_free_xij(&s->f0);
     }
 
     if (s->start_pts == AV_NOPTS_VALUE)

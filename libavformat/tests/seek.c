@@ -57,7 +57,7 @@ static void ts_str(char buffer[60], int64_t ts, AVRational base)
 int main(int argc, char **argv)
 {
     const char *filename;
-    AVFormatContext *ic = avformat_alloc_context();
+    AVFormatContext *ic = avformat_alloc_context_ijk();
     int i, ret, stream_id;
     int j;
     int64_t timestamp;
@@ -99,22 +99,22 @@ int main(int argc, char **argv)
 
     filename = argv[1];
 
-    ret = avformat_open_input(&ic, filename, NULL, &format_opts);
+    ret = avformat_open_input_ijk(&ic, filename, NULL, &format_opts);
     av_dict_free(&format_opts);
     if (ret < 0) {
         fprintf(stderr, "cannot open %s\n", filename);
         return 1;
     }
 
-    ret = avformat_find_stream_info(ic, NULL);
+    ret = avformat_find_stream_info_ijk(ic, NULL);
     if (ret < 0) {
         fprintf(stderr, "%s: could not find codec parameters\n", filename);
         return 1;
     }
 
     if(seekfirst != AV_NOPTS_VALUE){
-        if(firstback)   avformat_seek_file(ic, -1, INT64_MIN, seekfirst, seekfirst, 0);
-        else            avformat_seek_file(ic, -1, seekfirst, seekfirst, INT64_MAX, 0);
+        if(firstback)   avformat_seek_file_ijk(ic, -1, INT64_MIN, seekfirst, seekfirst, 0);
+        else            avformat_seek_file_ijk(ic, -1, seekfirst, seekfirst, INT64_MAX, 0);
     }
     for(i=0; ; i++){
         AVPacket pkt = { 0 };
@@ -123,14 +123,14 @@ int main(int argc, char **argv)
 
         if(ret>=0){
             for(j=0; j<frame_count; j++) {
-            ret= av_read_frame(ic, &pkt);
+            ret= av_read_frame_ijk(ic, &pkt);
             if(ret>=0){
                 char dts_buf[60];
                 st= ic->streams[pkt.stream_index];
                 ts_str(dts_buf, pkt.dts, st->time_base);
                 ts_str(ts_buf,  pkt.pts, st->time_base);
                 printf("ret:%-10s st:%2d flags:%d dts:%s pts:%s pos:%7" PRId64 " size:%6d", ret_str(ret), pkt.stream_index, pkt.flags, dts_buf, ts_buf, pkt.pos, pkt.size);
-                av_packet_unref(&pkt);
+                av_packet_unref_ijk(&pkt);
             } else
                 printf("ret:%s", ret_str(ret)); // necessary to avoid trailing whitespace
             printf("\n");
@@ -146,13 +146,13 @@ int main(int argc, char **argv)
             timestamp= av_rescale_q(timestamp, AV_TIME_BASE_Q, st->time_base);
         }
         //FIXME fully test the new seek API
-        if(i&1) ret = avformat_seek_file(ic, stream_id, INT64_MIN, timestamp, timestamp, 0);
-        else    ret = avformat_seek_file(ic, stream_id, timestamp, timestamp, INT64_MAX, 0);
+        if(i&1) ret = avformat_seek_file_ijk(ic, stream_id, INT64_MIN, timestamp, timestamp, 0);
+        else    ret = avformat_seek_file_ijk(ic, stream_id, timestamp, timestamp, INT64_MAX, 0);
         ts_str(ts_buf, timestamp, stream_id < 0 ? AV_TIME_BASE_Q : st->time_base);
         printf("ret:%-10s st:%2d flags:%d  ts:%s\n", ret_str(ret), stream_id, i&1, ts_buf);
     }
 
-    avformat_close_input(&ic);
+    avformat_close_input_xij(&ic);
 
     return 0;
 }

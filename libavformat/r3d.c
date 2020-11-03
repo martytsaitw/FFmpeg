@@ -42,10 +42,10 @@ typedef struct Atom {
 static int read_atom(AVFormatContext *s, Atom *atom)
 {
     atom->offset = avio_tell(s->pb);
-    atom->size = avio_rb32(s->pb);
+    atom->size = avio_rb32_xij(s->pb);
     if (atom->size < 8)
         return -1;
-    atom->tag = avio_rl32(s->pb);
+    atom->tag = avio_rl32_xij(s->pb);
     av_log(s, AV_LOG_TRACE, "atom %u %.4s offset %#"PRIx64"\n",
             atom->size, (char*)&atom->tag, atom->offset);
     return atom->size;
@@ -53,7 +53,7 @@ static int read_atom(AVFormatContext *s, Atom *atom)
 
 static int r3d_read_red1(AVFormatContext *s)
 {
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     R3DContext *r3d = s->priv_data;
     char filename[258];
     int tmp;
@@ -65,29 +65,29 @@ static int r3d_read_red1(AVFormatContext *s)
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id = AV_CODEC_ID_JPEG2000;
 
-    tmp  = avio_r8(s->pb); // major version
-    tmp2 = avio_r8(s->pb); // minor version
+    tmp  = avio_r8_xij(s->pb); // major version
+    tmp2 = avio_r8_xij(s->pb); // minor version
     av_log(s, AV_LOG_TRACE, "version %d.%d\n", tmp, tmp2);
 
-    tmp = avio_rb16(s->pb); // unknown
+    tmp = avio_rb16_xij(s->pb); // unknown
     av_log(s, AV_LOG_TRACE, "unknown1 %d\n", tmp);
 
-    tmp = avio_rb32(s->pb);
-    avpriv_set_pts_info(st, 32, 1, tmp);
+    tmp = avio_rb32_xij(s->pb);
+    avpriv_set_pts_info_ijk(st, 32, 1, tmp);
 
-    tmp = avio_rb32(s->pb); // filenum
+    tmp = avio_rb32_xij(s->pb); // filenum
     av_log(s, AV_LOG_TRACE, "filenum %d\n", tmp);
 
-    avio_skip(s->pb, 32); // unknown
+    avio_skip_xij(s->pb, 32); // unknown
 
-    st->codecpar->width  = avio_rb32(s->pb);
-    st->codecpar->height = avio_rb32(s->pb);
+    st->codecpar->width  = avio_rb32_xij(s->pb);
+    st->codecpar->height = avio_rb32_xij(s->pb);
 
-    tmp = avio_rb16(s->pb); // unknown
+    tmp = avio_rb16_xij(s->pb); // unknown
     av_log(s, AV_LOG_TRACE, "unknown2 %d\n", tmp);
 
-    framerate.num = avio_rb16(s->pb);
-    framerate.den = avio_rb16(s->pb);
+    framerate.num = avio_rb16_xij(s->pb);
+    framerate.den = avio_rb16_xij(s->pb);
     if (framerate.num > 0 && framerate.den > 0) {
 #if FF_API_R_FRAME_RATE
         st->r_frame_rate =
@@ -95,10 +95,10 @@ static int r3d_read_red1(AVFormatContext *s)
         st->avg_frame_rate = framerate;
     }
 
-    r3d->audio_channels = avio_r8(s->pb); // audio channels
+    r3d->audio_channels = avio_r8_xij(s->pb); // audio channels
     av_log(s, AV_LOG_TRACE, "audio channels %d\n", tmp);
 
-    avio_read(s->pb, filename, 257);
+    avio_read_xij(s->pb, filename, 257);
     filename[sizeof(filename)-1] = 0;
     av_dict_set(&st->metadata, "filename", filename, 0);
 
@@ -123,7 +123,7 @@ static int r3d_read_rdvo(AVFormatContext *s, Atom *atom)
         return AVERROR(ENOMEM);
 
     for (i = 0; i < r3d->video_offsets_count; i++) {
-        r3d->video_offsets[i] = avio_rb32(s->pb);
+        r3d->video_offsets[i] = avio_rb32_xij(s->pb);
         if (!r3d->video_offsets[i]) {
             r3d->video_offsets_count = i;
             break;
@@ -145,18 +145,18 @@ static void r3d_read_reos(AVFormatContext *s)
     R3DContext *r3d = s->priv_data;
     int av_unused tmp;
 
-    r3d->rdvo_offset = avio_rb32(s->pb);
-    avio_rb32(s->pb); // rdvs offset
-    avio_rb32(s->pb); // rdao offset
-    avio_rb32(s->pb); // rdas offset
+    r3d->rdvo_offset = avio_rb32_xij(s->pb);
+    avio_rb32_xij(s->pb); // rdvs offset
+    avio_rb32_xij(s->pb); // rdao offset
+    avio_rb32_xij(s->pb); // rdas offset
 
-    tmp = avio_rb32(s->pb);
+    tmp = avio_rb32_xij(s->pb);
     av_log(s, AV_LOG_TRACE, "num video chunks %d\n", tmp);
 
-    tmp = avio_rb32(s->pb);
+    tmp = avio_rb32_xij(s->pb);
     av_log(s, AV_LOG_TRACE, "num audio chunks %d\n", tmp);
 
-    avio_skip(s->pb, 6*4);
+    avio_skip_xij(s->pb, 6*4);
 }
 
 static int r3d_read_header(AVFormatContext *s)
@@ -189,7 +189,7 @@ static int r3d_read_header(AVFormatContext *s)
     if (!(s->pb->seekable & AVIO_SEEKABLE_NORMAL))
         return 0;
     // find REOB/REOF/REOS to load index
-    avio_seek(s->pb, avio_size(s->pb)-48-8, SEEK_SET);
+    avio_seek_xij(s->pb, avio_size_xij(s->pb)-48-8, SEEK_SET);
     if (read_atom(s, &atom) < 0)
         av_log(s, AV_LOG_ERROR, "error reading end atom\n");
 
@@ -201,7 +201,7 @@ static int r3d_read_header(AVFormatContext *s)
     r3d_read_reos(s);
 
     if (r3d->rdvo_offset) {
-        avio_seek(s->pb, r3d->rdvo_offset, SEEK_SET);
+        avio_seek_xij(s->pb, r3d->rdvo_offset, SEEK_SET);
         if (read_atom(s, &atom) < 0)
             av_log(s, AV_LOG_ERROR, "error reading 'rdvo' atom\n");
         if (atom.tag == MKTAG('R','D','V','O')) {
@@ -211,7 +211,7 @@ static int r3d_read_header(AVFormatContext *s)
     }
 
  out:
-    avio_seek(s->pb, s->internal->data_offset, SEEK_SET);
+    avio_seek_xij(s->pb, s->internal->data_offset, SEEK_SET);
     return 0;
 }
 
@@ -224,37 +224,37 @@ static int r3d_read_redv(AVFormatContext *s, AVPacket *pkt, Atom *atom)
     unsigned dts;
     int ret;
 
-    dts = avio_rb32(s->pb);
+    dts = avio_rb32_xij(s->pb);
 
-    tmp = avio_rb32(s->pb);
+    tmp = avio_rb32_xij(s->pb);
     av_log(s, AV_LOG_TRACE, "frame num %d\n", tmp);
 
-    tmp  = avio_r8(s->pb); // major version
-    tmp2 = avio_r8(s->pb); // minor version
+    tmp  = avio_r8_xij(s->pb); // major version
+    tmp2 = avio_r8_xij(s->pb); // minor version
     av_log(s, AV_LOG_TRACE, "version %d.%d\n", tmp, tmp2);
 
-    tmp = avio_rb16(s->pb); // unknown
+    tmp = avio_rb16_xij(s->pb); // unknown
     av_log(s, AV_LOG_TRACE, "unknown %d\n", tmp);
 
     if (tmp > 4) {
-        tmp = avio_rb16(s->pb); // unknown
+        tmp = avio_rb16_xij(s->pb); // unknown
         av_log(s, AV_LOG_TRACE, "unknown %d\n", tmp);
 
-        tmp = avio_rb16(s->pb); // unknown
+        tmp = avio_rb16_xij(s->pb); // unknown
         av_log(s, AV_LOG_TRACE, "unknown %d\n", tmp);
 
-        tmp = avio_rb32(s->pb);
+        tmp = avio_rb32_xij(s->pb);
         av_log(s, AV_LOG_TRACE, "width %d\n", tmp);
-        tmp = avio_rb32(s->pb);
+        tmp = avio_rb32_xij(s->pb);
         av_log(s, AV_LOG_TRACE, "height %d\n", tmp);
 
-        tmp = avio_rb32(s->pb);
+        tmp = avio_rb32_xij(s->pb);
         av_log(s, AV_LOG_TRACE, "metadata len %d\n", tmp);
     }
     tmp = atom->size - 8 - (avio_tell(s->pb) - pos);
     if (tmp < 0)
         return -1;
-    ret = av_get_packet(s->pb, pkt, tmp);
+    ret = av_get_packet_xij(s->pb, pkt, tmp);
     if (ret < 0) {
         av_log(s, AV_LOG_ERROR, "error reading video packet\n");
         return -1;
@@ -281,44 +281,44 @@ static int r3d_read_reda(AVFormatContext *s, AVPacket *pkt, Atom *atom)
     int ret;
 
     if (s->nb_streams < 2) {
-        st = avformat_new_stream(s, NULL);
+        st = avformat_new_stream_ijk(s, NULL);
         if (!st)
             return AVERROR(ENOMEM);
         st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
         st->codecpar->codec_id = AV_CODEC_ID_PCM_S32BE;
         st->codecpar->channels = r3d->audio_channels;
-        avpriv_set_pts_info(st, 32, 1, s->streams[0]->time_base.den);
+        avpriv_set_pts_info_ijk(st, 32, 1, s->streams[0]->time_base.den);
     } else {
         st = s->streams[1];
     }
 
-    dts = avio_rb32(s->pb);
+    dts = avio_rb32_xij(s->pb);
 
-    st->codecpar->sample_rate = avio_rb32(s->pb);
+    st->codecpar->sample_rate = avio_rb32_xij(s->pb);
     if (st->codecpar->sample_rate <= 0) {
         av_log(s, AV_LOG_ERROR, "Bad sample rate\n");
         return AVERROR_INVALIDDATA;
     }
 
-    samples = avio_rb32(s->pb);
+    samples = avio_rb32_xij(s->pb);
 
-    tmp = avio_rb32(s->pb);
+    tmp = avio_rb32_xij(s->pb);
     av_log(s, AV_LOG_TRACE, "packet num %d\n", tmp);
 
-    tmp = avio_rb16(s->pb); // unknown
+    tmp = avio_rb16_xij(s->pb); // unknown
     av_log(s, AV_LOG_TRACE, "unknown %d\n", tmp);
 
-    tmp  = avio_r8(s->pb); // major version
-    tmp2 = avio_r8(s->pb); // minor version
+    tmp  = avio_r8_xij(s->pb); // major version
+    tmp2 = avio_r8_xij(s->pb); // minor version
     av_log(s, AV_LOG_TRACE, "version %d.%d\n", tmp, tmp2);
 
-    tmp = avio_rb32(s->pb); // unknown
+    tmp = avio_rb32_xij(s->pb); // unknown
     av_log(s, AV_LOG_TRACE, "unknown %d\n", tmp);
 
     size = atom->size - 8 - (avio_tell(s->pb) - pos);
     if (size < 0)
         return -1;
-    ret = av_get_packet(s->pb, pkt, size);
+    ret = av_get_packet_xij(s->pb, pkt, size);
     if (ret < 0) {
         av_log(s, AV_LOG_ERROR, "error reading audio packet\n");
         return ret;
@@ -362,7 +362,7 @@ static int r3d_read_packet(AVFormatContext *s, AVPacket *pkt)
             break;
         default:
         skip:
-            avio_skip(s->pb, atom.size-8);
+            avio_skip_xij(s->pb, atom.size-8);
         }
     }
     return err;
@@ -390,7 +390,7 @@ static int r3d_seek(AVFormatContext *s, int stream_index, int64_t sample_time, i
             frame_num, sample_time);
 
     if (frame_num < r3d->video_offsets_count) {
-        if (avio_seek(s->pb, r3d->video_offsets_count, SEEK_SET) < 0)
+        if (avio_seek_xij(s->pb, r3d->video_offsets_count, SEEK_SET) < 0)
             return -1;
     } else {
         av_log(s, AV_LOG_ERROR, "could not seek to frame %d\n", frame_num);

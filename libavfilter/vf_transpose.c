@@ -351,10 +351,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out) {
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         return AVERROR(ENOMEM);
     }
-    av_frame_copy_props(out, in);
+    av_frame_copy_props_xij(out, in);
 
     if (in->sample_aspect_ratio.num == 0) {
         out->sample_aspect_ratio = in->sample_aspect_ratio;
@@ -365,7 +365,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
     td.in = in, td.out = out;
     ctx->internal->execute(ctx, filter_slice, &td, NULL, FFMIN(outlink->h, ff_filter_get_nb_threads(ctx)));
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
     return ff_filter_frame(outlink, out);
 }
 

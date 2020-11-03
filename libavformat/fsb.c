@@ -40,16 +40,16 @@ static int fsb_read_header(AVFormatContext *s)
     unsigned format, version, c;
     int64_t offset;
     AVCodecParameters *par;
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
 
-    avio_skip(pb, 3); // "FSB"
-    version = avio_r8(pb) - '0';
+    avio_skip_xij(pb, 3); // "FSB"
+    version = avio_r8_xij(pb) - '0';
     if (version != 4 && version != 3) {
         avpriv_request_sample(s, "version %d", version);
         return AVERROR_PATCHWELCOME;
     }
 
-    avio_skip(pb, 4);
+    avio_skip_xij(pb, 4);
 
     if (!st)
         return AVERROR(ENOMEM);
@@ -58,16 +58,16 @@ static int fsb_read_header(AVFormatContext *s)
     par->codec_tag   = 0;
 
     if (version == 3) {
-        offset = avio_rl32(pb) + 0x18;
-        avio_skip(pb, 44);
-        st->duration = avio_rl32(pb);
-        avio_skip(pb, 12);
-        format = avio_rl32(pb);
-        par->sample_rate = avio_rl32(pb);
+        offset = avio_rl32_xij(pb) + 0x18;
+        avio_skip_xij(pb, 44);
+        st->duration = avio_rl32_xij(pb);
+        avio_skip_xij(pb, 12);
+        format = avio_rl32_xij(pb);
+        par->sample_rate = avio_rl32_xij(pb);
         if (par->sample_rate <= 0)
             return AVERROR_INVALIDDATA;
-        avio_skip(pb, 6);
-        par->channels    = avio_rl16(pb);
+        avio_skip_xij(pb, 6);
+        par->channels    = avio_rl16_xij(pb);
         if (!par->channels)
             return AVERROR_INVALIDDATA;
 
@@ -86,24 +86,24 @@ static int fsb_read_header(AVFormatContext *s)
             par->block_align = 8 * par->channels;
             if (par->channels > INT_MAX / 32)
                 return AVERROR_INVALIDDATA;
-            ff_alloc_extradata(par, 32 * par->channels);
+            ff_alloc_extradata_xij(par, 32 * par->channels);
             if (!par->extradata)
                 return AVERROR(ENOMEM);
-            avio_seek(pb, 0x68, SEEK_SET);
+            avio_seek_xij(pb, 0x68, SEEK_SET);
             for (c = 0; c < par->channels; c++) {
-                avio_read(pb, par->extradata + 32 * c, 32);
-                avio_skip(pb, 14);
+                avio_read_xij(pb, par->extradata + 32 * c, 32);
+                avio_skip_xij(pb, 14);
             }
         } else {
             avpriv_request_sample(s, "format 0x%X", format);
             return AVERROR_PATCHWELCOME;
         }
     } else if (version == 4) {
-        offset = avio_rl32(pb) + 0x30;
-        avio_skip(pb, 80);
-        st->duration = avio_rl32(pb);
+        offset = avio_rl32_xij(pb) + 0x30;
+        avio_skip_xij(pb, 80);
+        st->duration = avio_rl32_xij(pb);
 
-        format = avio_rb32(pb);
+        format = avio_rb32_xij(pb);
         switch(format) {
         case 0x40001001:
         case 0x00001005:
@@ -119,18 +119,18 @@ static int fsb_read_header(AVFormatContext *s)
             return AVERROR_PATCHWELCOME;
         }
 
-        par->sample_rate = avio_rl32(pb);
+        par->sample_rate = avio_rl32_xij(pb);
         if (par->sample_rate <= 0)
             return AVERROR_INVALIDDATA;
-        avio_skip(pb, 6);
+        avio_skip_xij(pb, 6);
 
-        par->channels    = avio_rl16(pb);
+        par->channels    = avio_rl16_xij(pb);
         if (!par->channels)
             return AVERROR_INVALIDDATA;
 
         switch (par->codec_id) {
         case AV_CODEC_ID_XMA2:
-            ff_alloc_extradata(par, 34);
+            ff_alloc_extradata_xij(par, 34);
             if (!par->extradata)
                 return AVERROR(ENOMEM);
             memset(par->extradata, 0, 34);
@@ -139,13 +139,13 @@ static int fsb_read_header(AVFormatContext *s)
         case AV_CODEC_ID_ADPCM_THP:
             if (par->channels > INT_MAX / 32)
                 return AVERROR_INVALIDDATA;
-            ff_alloc_extradata(par, 32 * par->channels);
+            ff_alloc_extradata_xij(par, 32 * par->channels);
             if (!par->extradata)
                 return AVERROR(ENOMEM);
-            avio_seek(pb, 0x80, SEEK_SET);
+            avio_seek_xij(pb, 0x80, SEEK_SET);
             for (c = 0; c < par->channels; c++) {
-                avio_read(pb, par->extradata + 32 * c, 32);
-                avio_skip(pb, 14);
+                avio_read_xij(pb, par->extradata + 32 * c, 32);
+                avio_skip_xij(pb, 14);
             }
             par->block_align = 8 * par->channels;
             break;
@@ -154,10 +154,10 @@ static int fsb_read_header(AVFormatContext *s)
         av_assert0(0);
     }
 
-    avio_skip(pb, offset - avio_tell(pb));
+    avio_skip_xij(pb, offset - avio_tell(pb));
     s->internal->data_offset = avio_tell(pb);
 
-    avpriv_set_pts_info(st, 64, 1, par->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, par->sample_rate);
 
     return 0;
 }
@@ -168,7 +168,7 @@ static int fsb_read_packet(AVFormatContext *s, AVPacket *pkt)
     int64_t pos;
     int ret;
 
-    if (avio_feof(s->pb))
+    if (avio_feof_xij(s->pb))
         return AVERROR_EOF;
 
     pos = avio_tell(s->pb);
@@ -176,18 +176,18 @@ static int fsb_read_packet(AVFormatContext *s, AVPacket *pkt)
                par->channels > 1) {
         int i, ch;
 
-        ret = av_new_packet(pkt, par->block_align);
+        ret = av_new_packet_ijk(pkt, par->block_align);
         if (ret < 0)
             return ret;
         for (i = 0; i < 4; i++) {
             for (ch = 0; ch < par->channels; ch++) {
-                pkt->data[ch * 8 + i * 2 + 0] = avio_r8(s->pb);
-                pkt->data[ch * 8 + i * 2 + 1] = avio_r8(s->pb);
+                pkt->data[ch * 8 + i * 2 + 0] = avio_r8_xij(s->pb);
+                pkt->data[ch * 8 + i * 2 + 1] = avio_r8_xij(s->pb);
             }
         }
         ret = 0;
     } else {
-        ret = av_get_packet(s->pb, pkt, par->block_align);
+        ret = av_get_packet_xij(s->pb, pkt, par->block_align);
     }
 
     if (par->codec_id == AV_CODEC_ID_XMA2 && pkt->size >= 1)

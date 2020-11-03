@@ -87,13 +87,13 @@ static int read_header_openmpt(AVFormatContext *s)
 #endif
     int ret;
 
-    size = avio_size(s->pb);
+    size = avio_size_xij(s->pb);
     if (size <= 0)
         return AVERROR_INVALIDDATA;
     buf = av_malloc(size);
     if (!buf)
         return AVERROR(ENOMEM);
-    size = avio_read(s->pb, buf, size);
+    size = avio_read_xij(s->pb, buf, size);
     if (size < 0) {
         av_log(s, AV_LOG_ERROR, "Reading input buffer failed.\n");
         av_freep(&buf);
@@ -147,13 +147,13 @@ static int read_header_openmpt(AVFormatContext *s)
     add_meta(s, "comment", openmpt_module_get_metadata(openmpt->module, "message"));
     add_meta(s, "date",    openmpt_module_get_metadata(openmpt->module, "date"));
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st) {
         openmpt_module_destroy(openmpt->module);
         openmpt->module = NULL;
         return AVERROR(ENOMEM);
     }
-    avpriv_set_pts_info(st, 64, 1, AV_TIME_BASE);
+    avpriv_set_pts_info_ijk(st, 64, 1, AV_TIME_BASE);
     st->duration = llrint(openmpt->duration*AV_TIME_BASE);
 
     st->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
@@ -172,7 +172,7 @@ static int read_packet_openmpt(AVFormatContext *s, AVPacket *pkt)
     int n_samples = AUDIO_PKT_SIZE / (openmpt->channels ? openmpt->channels*4 : 4);
     int ret;
 
-    if ((ret = av_new_packet(pkt, AUDIO_PKT_SIZE)) < 0)
+    if ((ret = av_new_packet_ijk(pkt, AUDIO_PKT_SIZE)) < 0)
         return ret;
 
     switch (openmpt->channels) {

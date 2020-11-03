@@ -97,7 +97,7 @@ static int cdxl_read_header(AVFormatContext *s)
     cdxl->video_stream_index = -1;
     cdxl->audio_stream_index = -1;
 
-    cdxl->filesize = avio_size(s->pb);
+    cdxl->filesize = avio_size_xij(s->pb);
 
     s->ctx_flags |= AVFMTCTX_NOHEADER;
 
@@ -113,12 +113,12 @@ static int cdxl_read_packet(AVFormatContext *s, AVPacket *pkt)
     int64_t  pos;
     int      format, frames, ret;
 
-    if (avio_feof(pb))
+    if (avio_feof_xij(pb))
         return AVERROR_EOF;
 
     pos = avio_tell(pb);
     if (!cdxl->read_chunk &&
-        avio_read(pb, cdxl->header, CDXL_HEADER_SIZE) != CDXL_HEADER_SIZE)
+        avio_read_xij(pb, cdxl->header, CDXL_HEADER_SIZE) != CDXL_HEADER_SIZE)
         return AVERROR_EOF;
     if (cdxl->header[0] != 1) {
         av_log(s, AV_LOG_ERROR, "non-standard cdxl file\n");
@@ -146,7 +146,7 @@ static int cdxl_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     if (cdxl->read_chunk && audio_size) {
         if (cdxl->audio_stream_index == -1) {
-            AVStream *st = avformat_new_stream(s, NULL);
+            AVStream *st = avformat_new_stream_ijk(s, NULL);
             if (!st)
                 return AVERROR(ENOMEM);
 
@@ -163,10 +163,10 @@ static int cdxl_read_packet(AVFormatContext *s, AVPacket *pkt)
             st->codecpar->sample_rate   = cdxl->sample_rate;
             st->start_time           = 0;
             cdxl->audio_stream_index = st->index;
-            avpriv_set_pts_info(st, 64, 1, cdxl->sample_rate);
+            avpriv_set_pts_info_ijk(st, 64, 1, cdxl->sample_rate);
         }
 
-        ret = av_get_packet(pb, pkt, audio_size);
+        ret = av_get_packet_xij(pb, pkt, audio_size);
         if (ret < 0)
             return ret;
         pkt->stream_index = cdxl->audio_stream_index;
@@ -175,7 +175,7 @@ static int cdxl_read_packet(AVFormatContext *s, AVPacket *pkt)
         cdxl->read_chunk  = 0;
     } else {
         if (cdxl->video_stream_index == -1) {
-            AVStream *st = avformat_new_stream(s, NULL);
+            AVStream *st = avformat_new_stream_ijk(s, NULL);
             if (!st)
                 return AVERROR(ENOMEM);
 
@@ -196,20 +196,20 @@ static int cdxl_read_packet(AVFormatContext *s, AVPacket *pkt)
             st->start_time           = 0;
             cdxl->video_stream_index = st->index;
             if (cdxl->framerate)
-                avpriv_set_pts_info(st, 64, cdxl->fps.den, cdxl->fps.num);
+                avpriv_set_pts_info_ijk(st, 64, cdxl->fps.den, cdxl->fps.num);
             else
-                avpriv_set_pts_info(st, 64, 1, cdxl->sample_rate);
+                avpriv_set_pts_info_ijk(st, 64, 1, cdxl->sample_rate);
         }
 
-        if (av_new_packet(pkt, video_size + CDXL_HEADER_SIZE) < 0)
+        if (av_new_packet_ijk(pkt, video_size + CDXL_HEADER_SIZE) < 0)
             return AVERROR(ENOMEM);
         memcpy(pkt->data, cdxl->header, CDXL_HEADER_SIZE);
-        ret = avio_read(pb, pkt->data + CDXL_HEADER_SIZE, video_size);
+        ret = avio_read_xij(pb, pkt->data + CDXL_HEADER_SIZE, video_size);
         if (ret < 0) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return ret;
         }
-        av_shrink_packet(pkt, CDXL_HEADER_SIZE + ret);
+        av_shrink_packet_xij(pkt, CDXL_HEADER_SIZE + ret);
         pkt->stream_index  = cdxl->video_stream_index;
         pkt->flags        |= AV_PKT_FLAG_KEY;
         pkt->pos           = pos;
@@ -218,7 +218,7 @@ static int cdxl_read_packet(AVFormatContext *s, AVPacket *pkt)
     }
 
     if (!cdxl->read_chunk)
-        avio_skip(pb, current_size - audio_size - video_size - CDXL_HEADER_SIZE);
+        avio_skip_xij(pb, current_size - audio_size - video_size - CDXL_HEADER_SIZE);
     return ret;
 }
 

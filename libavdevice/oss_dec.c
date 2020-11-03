@@ -47,7 +47,7 @@ static int audio_read_header(AVFormatContext *s1)
     AVStream *st;
     int ret;
 
-    st = avformat_new_stream(s1, NULL);
+    st = avformat_new_stream_ijk(s1, NULL);
     if (!st) {
         return AVERROR(ENOMEM);
     }
@@ -63,7 +63,7 @@ static int audio_read_header(AVFormatContext *s1)
     st->codecpar->sample_rate = s->sample_rate;
     st->codecpar->channels = s->channels;
 
-    avpriv_set_pts_info(st, 64, 1, 1000000);  /* 64 bits pts in us */
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000000);  /* 64 bits pts in us */
     return 0;
 }
 
@@ -74,12 +74,12 @@ static int audio_read_packet(AVFormatContext *s1, AVPacket *pkt)
     int64_t cur_time;
     struct audio_buf_info abufi;
 
-    if ((ret=av_new_packet(pkt, s->frame_size)) < 0)
+    if ((ret=av_new_packet_ijk(pkt, s->frame_size)) < 0)
         return ret;
 
     ret = read(s->fd, pkt->data, pkt->size);
     if (ret <= 0){
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         pkt->size = 0;
         if (ret<0)  return AVERROR(errno);
         else        return AVERROR_EOF;

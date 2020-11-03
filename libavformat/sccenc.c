@@ -43,11 +43,11 @@ static int scc_write_header(AVFormatContext *avf)
     if (avf->streams[0]->codecpar->codec_id != AV_CODEC_ID_EIA_608) {
         av_log(avf, AV_LOG_ERROR,
                "Unsupported subtitles codec: %s\n",
-               avcodec_get_name(avf->streams[0]->codecpar->codec_id));
+               avcodec_get_name_xij(avf->streams[0]->codecpar->codec_id));
         return AVERROR(EINVAL);
     }
-    avpriv_set_pts_info(avf->streams[0], 64, 1, 1000);
-    avio_printf(avf->pb, "Scenarist_SCC V1.0\n");
+    avpriv_set_pts_info_ijk(avf->streams[0], 64, 1, 1000);
+    avio_printf_xij(avf->pb, "Scenarist_SCC V1.0\n");
 
     scc->prev_h = scc->prev_m = scc->prev_s = scc->prev_f = -1;
     scc->inside = 0;
@@ -80,7 +80,7 @@ static int scc_write_packet(AVFormatContext *avf, AVPacket *pkt)
         return 0;
 
     if (!scc->inside && (scc->prev_h != h || scc->prev_m != m || scc->prev_s != s || scc->prev_f != f)) {
-        avio_printf(avf->pb, "\n%02d:%02d:%02d:%02d\t", h, m, s, f);
+        avio_printf_xij(avf->pb, "\n%02d:%02d:%02d:%02d\t", h, m, s, f);
         scc->inside = 1;
     }
     for (i = 0; i < pkt->size; i+=3) {
@@ -90,16 +90,16 @@ static int scc_write_packet(AVFormatContext *avf, AVPacket *pkt)
         if (pkt->data[i] != 0xfc || (pkt->data[i + 1] == 0x80 && pkt->data[i + 2] == 0x80))
             continue;
         if (!scc->inside) {
-            avio_printf(avf->pb, "\n%02d:%02d:%02d:%02d\t", h, m, s, f);
+            avio_printf_xij(avf->pb, "\n%02d:%02d:%02d:%02d\t", h, m, s, f);
             scc->inside = 1;
         }
         if (scc->n > 0)
-            avio_printf(avf->pb, " ");
-        avio_printf(avf->pb, "%02x%02x", pkt->data[i + 1], pkt->data[i + 2]);
+            avio_printf_xij(avf->pb, " ");
+        avio_printf_xij(avf->pb, "%02x%02x", pkt->data[i + 1], pkt->data[i + 2]);
         scc->n++;
     }
     if (scc->inside && (scc->prev_h != h || scc->prev_m != m || scc->prev_s != s || scc->prev_f != f)) {
-        avio_printf(avf->pb, "\n");
+        avio_printf_xij(avf->pb, "\n");
         scc->n = 0;
         scc->inside = 0;
     }

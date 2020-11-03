@@ -612,7 +612,7 @@ static av_cold int pulse_write_header(AVFormatContext *h)
     }
     pa_threaded_mainloop_unlock(s->mainloop);
 
-    avpriv_set_pts_info(st, 64, 1, 1000000);  /* 64 bits pts in us */
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000000);  /* 64 bits pts in us */
 
     return 0;
   fail:

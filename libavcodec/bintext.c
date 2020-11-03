@@ -97,7 +97,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
         return AVERROR_INVALIDDATA;
 
 
-    s->frame = av_frame_alloc();
+    s->frame = av_frame_alloc_ijk();
     if (!s->frame)
         return AVERROR(ENOMEM);
 
@@ -147,7 +147,7 @@ static int decode_frame(AVCodecContext *avctx,
     int ret;
 
     s->x = s->y = 0;
-    if ((ret = ff_reget_buffer(avctx, s->frame)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, s->frame)) < 0)
         return ret;
     s->frame->pict_type           = AV_PICTURE_TYPE_I;
     s->frame->palette_has_changed = 1;
@@ -205,7 +205,7 @@ static int decode_frame(AVCodecContext *avctx,
         }
     }
 
-    if ((ret = av_frame_ref(data, s->frame)) < 0)
+    if ((ret = av_frame_ref_xij(data, s->frame)) < 0)
         return ret;
     *got_frame      = 1;
     return buf_size;
@@ -215,7 +215,7 @@ static av_cold int decode_end(AVCodecContext *avctx)
 {
     XbinContext *s = avctx->priv_data;
 
-    av_frame_free(&s->frame);
+    av_frame_free_xij(&s->frame);
 
     return 0;
 }

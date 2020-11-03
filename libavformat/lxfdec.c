@@ -88,15 +88,15 @@ static int lxf_sync(AVFormatContext *s, uint8_t *header)
     uint8_t buf[LXF_IDENT_LENGTH];
     int ret;
 
-    if ((ret = avio_read(s->pb, buf, LXF_IDENT_LENGTH)) != LXF_IDENT_LENGTH)
+    if ((ret = avio_read_xij(s->pb, buf, LXF_IDENT_LENGTH)) != LXF_IDENT_LENGTH)
         return ret < 0 ? ret : AVERROR_EOF;
 
     while (memcmp(buf, LXF_IDENT, LXF_IDENT_LENGTH)) {
-        if (avio_feof(s->pb))
+        if (avio_feof_xij(s->pb))
             return AVERROR_EOF;
 
         memmove(buf, &buf[1], LXF_IDENT_LENGTH-1);
-        buf[LXF_IDENT_LENGTH-1] = avio_r8(s->pb);
+        buf[LXF_IDENT_LENGTH-1] = avio_r8_xij(s->pb);
     }
 
     memcpy(header, LXF_IDENT, LXF_IDENT_LENGTH);
@@ -123,7 +123,7 @@ static int get_packet_header(AVFormatContext *s)
     if ((ret = lxf_sync(s, header)) < 0)
         return ret;
 
-    ret = avio_read(pb, header + LXF_IDENT_LENGTH, 8);
+    ret = avio_read_xij(pb, header + LXF_IDENT_LENGTH, 8);
     if (ret != 8)
         return ret < 0 ? ret : AVERROR_EOF;
 
@@ -140,7 +140,7 @@ static int get_packet_header(AVFormatContext *s)
     }
 
     //read the rest of the packet header
-    if ((ret = avio_read(pb, header + (p - header),
+    if ((ret = avio_read_xij(pb, header + (p - header),
                           header_size - (p - header))) !=
                           header_size - (p - header))
         return ret < 0 ? ret : AVERROR_EOF;
@@ -158,7 +158,7 @@ static int get_packet_header(AVFormatContext *s)
         lxf->video_format = bytestream_get_le32(&p);
         ret               = bytestream_get_le32(&p);
         //skip VBI data and metadata
-        avio_skip(pb, (int64_t)(uint32_t)AV_RL32(p + 4) +
+        avio_skip_xij(pb, (int64_t)(uint32_t)AV_RL32(p + 4) +
                       (int64_t)(uint32_t)AV_RL32(p + 12));
         break;
     case 1:
@@ -200,14 +200,14 @@ static int get_packet_header(AVFormatContext *s)
         //use audio packet size to determine video standard
         //for NTSC we have one 8008-sample audio frame per five video frames
         if (samples == LXF_SAMPLERATE * 5005 / 30000) {
-            avpriv_set_pts_info(s->streams[0], 64, 1001, 30000);
+            avpriv_set_pts_info_ijk(s->streams[0], 64, 1001, 30000);
         } else {
             //assume PAL, but warn if we don't have 1920 samples
             if (samples != LXF_SAMPLERATE / 25)
                 av_log(s, AV_LOG_WARNING,
                        "video doesn't seem to be PAL or NTSC. guessing PAL\n");
 
-            avpriv_set_pts_info(s->streams[0], 64, 1, 25);
+            avpriv_set_pts_info_ijk(s->streams[0], 64, 1, 25);
         }
 
         //TODO: warning if track mask != (1 << channels) - 1?
@@ -244,10 +244,10 @@ static int lxf_read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
     }
 
-    if ((ret = avio_read(pb, header_data, LXF_HEADER_DATA_SIZE)) != LXF_HEADER_DATA_SIZE)
+    if ((ret = avio_read_xij(pb, header_data, LXF_HEADER_DATA_SIZE)) != LXF_HEADER_DATA_SIZE)
         return ret < 0 ? ret : AVERROR_EOF;
 
-    if (!(st = avformat_new_stream(s, NULL)))
+    if (!(st = avformat_new_stream_ijk(s, NULL)))
         return AVERROR(ENOMEM);
 
     st->duration          = AV_RL32(&header_data[32]);
@@ -259,7 +259,7 @@ static int lxf_read_header(AVFormatContext *s)
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->bit_rate   = 1000000 * ((video_params >> 14) & 0xFF);
     st->codecpar->codec_tag  = video_params & 0xF;
-    st->codecpar->codec_id   = ff_codec_get_id(lxf_tags, st->codecpar->codec_tag);
+    st->codecpar->codec_id   = ff_codec_get_id_xij(lxf_tags, st->codecpar->codec_tag);
     st->need_parsing         = AVSTREAM_PARSE_HEADERS;
 
     av_log(s, AV_LOG_DEBUG, "record: %x = %i-%02i-%02i\n",
@@ -274,17 +274,17 @@ static int lxf_read_header(AVFormatContext *s)
         av_log(s, AV_LOG_WARNING, "VBI data not yet supported\n");
 
     if ((lxf->channels = 1 << (disk_params >> 4 & 3) + 1)) {
-        if (!(st = avformat_new_stream(s, NULL)))
+        if (!(st = avformat_new_stream_ijk(s, NULL)))
             return AVERROR(ENOMEM);
 
         st->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
         st->codecpar->sample_rate = LXF_SAMPLERATE;
         st->codecpar->channels    = lxf->channels;
 
-        avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+        avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
     }
 
-    avio_skip(s->pb, lxf->extended_size);
+    avio_skip_xij(s->pb, lxf->extended_size);
 
     return 0;
 }
@@ -312,11 +312,11 @@ static int lxf_read_packet(AVFormatContext *s, AVPacket *pkt)
         return AVERROR_INVALIDDATA;
     }
 
-    if ((ret2 = av_new_packet(pkt, ret)) < 0)
+    if ((ret2 = av_new_packet_ijk(pkt, ret)) < 0)
         return ret2;
 
-    if ((ret2 = avio_read(pb, pkt->data, ret)) != ret) {
-        av_packet_unref(pkt);
+    if ((ret2 = avio_read_xij(pb, pkt->data, ret)) != ret) {
+        av_packet_unref_ijk(pkt);
         return ret2 < 0 ? ret2 : AVERROR_EOF;
     }
 

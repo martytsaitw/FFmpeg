@@ -487,7 +487,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         s->nb_refs += ret;
 
     if (s->stats_mode == STATS_MODE_DIFF_FRAMES) {
-        av_frame_free(&s->prev_frame);
+        av_frame_free_xij(&s->prev_frame);
         s->prev_frame = in;
     } else if (s->stats_mode == STATS_MODE_SINGLE_FRAMES) {
         AVFrame *out;
@@ -495,7 +495,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
         out = get_palette_frame(ctx);
         out->pts = in->pts;
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         ret = ff_filter_frame(ctx->outputs[0], out);
         for (i = 0; i < HIST_SIZE; i++)
             av_freep(&s->histogram[i].entries);
@@ -505,7 +505,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         memset(s->boxes, 0, sizeof(s->boxes));
         memset(s->histogram, 0, sizeof(s->histogram));
     } else {
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
     }
 
     return ret;
@@ -548,7 +548,7 @@ static av_cold void uninit(AVFilterContext *ctx)
     for (i = 0; i < HIST_SIZE; i++)
         av_freep(&s->histogram[i].entries);
     av_freep(&s->refs);
-    av_frame_free(&s->prev_frame);
+    av_frame_free_xij(&s->prev_frame);
 }
 
 static const AVFilterPad palettegen_inputs[] = {

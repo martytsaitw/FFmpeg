@@ -247,10 +247,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
 
     if (!s->outpicref || s->outpicref->width  != outlink->w ||
                          s->outpicref->height != outlink->h) {
-        av_frame_free(&s->outpicref);
+        av_frame_free_xij(&s->outpicref);
         s->outpicref = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!s->outpicref) {
-            av_frame_free(&insamples);
+            av_frame_free_xij(&insamples);
             return AVERROR(ENOMEM);
         }
 
@@ -360,16 +360,16 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
     }
 
     s->prev_x = x, s->prev_y = y;
-    av_frame_free(&insamples);
+    av_frame_free_xij(&insamples);
 
-    return ff_filter_frame(outlink, av_frame_clone(s->outpicref));
+    return ff_filter_frame(outlink, av_frame_clone_xij(s->outpicref));
 }
 
 static av_cold void uninit(AVFilterContext *ctx)
 {
     AudioVectorScopeContext *s = ctx->priv;
 
-    av_frame_free(&s->outpicref);
+    av_frame_free_xij(&s->outpicref);
 }
 
 static const AVFilterPad audiovectorscope_inputs[] = {

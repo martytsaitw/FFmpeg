@@ -44,7 +44,7 @@ static int bmv_read_header(AVFormatContext *s)
     AVStream *st, *ast;
     BMVContext *c = s->priv_data;
 
-    st = avformat_new_stream(s, 0);
+    st = avformat_new_stream_ijk(s, 0);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
@@ -52,8 +52,8 @@ static int bmv_read_header(AVFormatContext *s)
     st->codecpar->width      = 640;
     st->codecpar->height     = 429;
     st->codecpar->format     = AV_PIX_FMT_PAL8;
-    avpriv_set_pts_info(st, 16, 1, 12);
-    ast = avformat_new_stream(s, 0);
+    avpriv_set_pts_info_ijk(st, 16, 1, 12);
+    ast = avformat_new_stream_ijk(s, 0);
     if (!ast)
         return AVERROR(ENOMEM);
     ast->codecpar->codec_type      = AVMEDIA_TYPE_AUDIO;
@@ -61,7 +61,7 @@ static int bmv_read_header(AVFormatContext *s)
     ast->codecpar->channels        = 2;
     ast->codecpar->channel_layout  = AV_CH_LAYOUT_STEREO;
     ast->codecpar->sample_rate     = 22050;
-    avpriv_set_pts_info(ast, 16, 1, 22050);
+    avpriv_set_pts_info_ijk(ast, 16, 1, 22050);
 
     c->get_next  = 1;
     c->audio_pos = 0;
@@ -76,18 +76,18 @@ static int bmv_read_packet(AVFormatContext *s, AVPacket *pkt)
     while (c->get_next) {
         if (s->pb->eof_reached)
             return AVERROR_EOF;
-        type = avio_r8(s->pb);
+        type = avio_r8_xij(s->pb);
         if (type == BMV_NOP)
             continue;
         if (type == BMV_END)
             return AVERROR_EOF;
-        c->size = avio_rl24(s->pb);
+        c->size = avio_rl24_xij(s->pb);
         if (!c->size)
             return AVERROR_INVALIDDATA;
         if ((err = av_reallocp(&c->packet, c->size + 1)) < 0)
             return err;
         c->packet[0] = type;
-        if (avio_read(s->pb, c->packet + 1, c->size) != c->size)
+        if (avio_read_xij(s->pb, c->packet + 1, c->size) != c->size)
             return AVERROR(EIO);
         if (type & BMV_AUDIO) {
             int audio_size = c->packet[1] * 65 + 1;
@@ -96,7 +96,7 @@ static int bmv_read_packet(AVFormatContext *s, AVPacket *pkt)
                        audio_size, c->size);
                 return AVERROR_INVALIDDATA;
             }
-            if (av_new_packet(pkt, audio_size) < 0)
+            if (av_new_packet_ijk(pkt, audio_size) < 0)
                 return AVERROR(ENOMEM);
             memcpy(pkt->data, c->packet + 1, pkt->size);
             pkt->stream_index = 1;
@@ -108,7 +108,7 @@ static int bmv_read_packet(AVFormatContext *s, AVPacket *pkt)
         } else
             break;
     }
-    if (av_new_packet(pkt, c->size + 1) < 0)
+    if (av_new_packet_ijk(pkt, c->size + 1) < 0)
         return AVERROR(ENOMEM);
     pkt->stream_index = 0;
     c->get_next = 1;

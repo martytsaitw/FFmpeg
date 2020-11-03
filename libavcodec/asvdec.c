@@ -213,12 +213,12 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     if (buf_size * 8LL < a->mb_height * a->mb_width * 13LL)
         return AVERROR_INVALIDDATA;
 
-    if ((ret = ff_get_buffer(avctx, p, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, p, 0)) < 0)
         return ret;
     p->pict_type = AV_PICTURE_TYPE_I;
     p->key_frame = 1;
 
-    av_fast_padded_malloc(&a->bitstream_buffer, &a->bitstream_buffer_size,
+    av_fast_padded_malloc_xij(&a->bitstream_buffer, &a->bitstream_buffer_size,
                           buf_size);
     if (!a->bitstream_buffer)
         return AVERROR(ENOMEM);

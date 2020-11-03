@@ -113,7 +113,7 @@ int ff_pnm_decode_header(AVCodecContext *avctx, PNMContext * const s)
             av_image_check_size(w, h, 0, avctx) || s->bytestream >= s->bytestream_end)
             return AVERROR_INVALIDDATA;
 
-        ret = ff_set_dimensions(avctx, w, h);
+        ret = ff_set_dimensions_xij(avctx, w, h);
         if (ret < 0)
             return ret;
         s->maxval     = maxval;
@@ -157,7 +157,7 @@ int ff_pnm_decode_header(AVCodecContext *avctx, PNMContext * const s)
     if(w <= 0 || h <= 0 || av_image_check_size(w, h, 0, avctx) || s->bytestream >= s->bytestream_end)
         return AVERROR_INVALIDDATA;
 
-    ret = ff_set_dimensions(avctx, w, h);
+    ret = ff_set_dimensions_xij(avctx, w, h);
     if (ret < 0)
         return ret;
 

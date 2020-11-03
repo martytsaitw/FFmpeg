@@ -54,7 +54,7 @@ static int wv_write_packet(AVFormatContext *ctx, AVPacket *pkt)
     }
     s->samples += header.samples;
 
-    avio_write(ctx->pb, pkt->data, pkt->size);
+    avio_write_xij(ctx->pb, pkt->data, pkt->size);
 
     return 0;
 }
@@ -67,9 +67,9 @@ static av_cold int wv_write_trailer(AVFormatContext *ctx)
     if ((ctx->pb->seekable & AVIO_SEEKABLE_NORMAL) && s->samples &&
         s->samples < UINT32_MAX) {
         int64_t pos = avio_tell(ctx->pb);
-        avio_seek(ctx->pb, 12, SEEK_SET);
-        avio_wl32(ctx->pb, s->samples);
-        avio_seek(ctx->pb, pos, SEEK_SET);
+        avio_seek_xij(ctx->pb, 12, SEEK_SET);
+        avio_wl32_xij(ctx->pb, s->samples);
+        avio_seek_xij(ctx->pb, pos, SEEK_SET);
     }
 
     ff_ape_write_tag(ctx);

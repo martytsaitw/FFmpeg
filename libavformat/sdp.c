@@ -125,7 +125,7 @@ static int sdp_get_address(char *dest_addr, int size, int *ttl, const char *url)
     const char *p;
     char proto[32];
 
-    av_url_split(proto, sizeof(proto), NULL, 0, dest_addr, size, &port, NULL, 0, url);
+    av_url_split_xij(proto, sizeof(proto), NULL, 0, dest_addr, size, &port, NULL, 0, url);
 
     *ttl = 0;
 
@@ -215,7 +215,7 @@ static char *extradata2psets(AVFormatContext *s, AVCodecParameters *par)
     if (sps && sps_end - sps >= 4) {
         memcpy(p, profile_string, strlen(profile_string));
         p += strlen(p);
-        ff_data_to_hex(p, sps + 1, 3, 0);
+        ff_data_to_hex_xij(p, sps + 1, 3, 0);
         p[6] = '\0';
     }
     av_free(tmpbuf);
@@ -240,13 +240,13 @@ static char *extradata2psets_hevc(AVCodecParameters *par)
     // format.
     if (par->extradata[0] != 1) {
         AVIOContext *pb;
-        if (avio_open_dyn_buf(&pb) < 0)
+        if (avio_open_dyn_buf_xij(&pb) < 0)
             return NULL;
         if (ff_isom_write_hvcc(pb, par->extradata, par->extradata_size, 0) < 0) {
-            avio_close_dyn_buf(pb, &tmpbuf);
+            avio_close_dyn_buf_xij(pb, &tmpbuf);
             goto err;
         }
-        extradata_size = avio_close_dyn_buf(pb, &extradata);
+        extradata_size = avio_close_dyn_buf_xij(pb, &extradata);
         tmpbuf = extradata;
     }
 
@@ -339,7 +339,7 @@ static char *extradata2config(AVFormatContext *s, AVCodecParameters *par)
         return NULL;
     }
     memcpy(config, "; config=", 9);
-    ff_data_to_hex(config + 9, par->extradata, par->extradata_size, 0);
+    ff_data_to_hex_xij(config + 9, par->extradata, par->extradata_size, 0);
     config[9 + par->extradata_size * 2] = 0;
 
     return config;
@@ -454,7 +454,7 @@ static char *latm_context2config(AVFormatContext *s, AVCodecParameters *par)
     char *config;
 
     for (rate_index = 0; rate_index < 16; rate_index++)
-        if (avpriv_mpeg4audio_sample_rates[rate_index] == par->sample_rate)
+        if (avpriv_mpeg4audio_sample_rates_xij[rate_index] == par->sample_rate)
             break;
     if (rate_index == 16) {
         av_log(s, AV_LOG_ERROR, "Unsupported sample rate\n");
@@ -473,7 +473,7 @@ static char *latm_context2config(AVFormatContext *s, AVCodecParameters *par)
         av_log(s, AV_LOG_ERROR, "Cannot allocate memory for the config info.\n");
         return NULL;
     }
-    ff_data_to_hex(config, config_byte, 6, 1);
+    ff_data_to_hex_xij(config, config_byte, 6, 1);
     config[12] = 0;
 
     return config;

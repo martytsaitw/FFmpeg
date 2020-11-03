@@ -57,7 +57,7 @@ static int tak_read_header(AVFormatContext *s)
     uint8_t *buffer = NULL;
     int ret;
 
-    st = avformat_new_stream(s, 0);
+    st = avformat_new_stream_ijk(s, 0);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -66,17 +66,17 @@ static int tak_read_header(AVFormatContext *s)
     st->need_parsing         = AVSTREAM_PARSE_FULL_RAW;
 
     tc->mlast_frame = 0;
-    if (avio_rl32(pb) != MKTAG('t', 'B', 'a', 'K')) {
-        avio_seek(pb, -4, SEEK_CUR);
+    if (avio_rl32_xij(pb) != MKTAG('t', 'B', 'a', 'K')) {
+        avio_seek_xij(pb, -4, SEEK_CUR);
         return 0;
     }
 
-    while (!avio_feof(pb)) {
+    while (!avio_feof_xij(pb)) {
         enum TAKMetaDataType type;
         int size;
 
-        type = avio_r8(pb) & 0x7f;
-        size = avio_rl24(pb);
+        type = avio_r8_xij(pb) & 0x7f;
+        size = avio_rl24_xij(pb);
 
         switch (type) {
         case TAK_METADATA_STREAMINFO:
@@ -90,12 +90,12 @@ static int tak_read_header(AVFormatContext *s)
                 return AVERROR(ENOMEM);
             memset(buffer + size - 3, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 
-            ffio_init_checksum(pb, tak_check_crc, 0xCE04B7U);
-            if (avio_read(pb, buffer, size - 3) != size - 3) {
+            ffio_init_checksum_xij(pb, tak_check_crc, 0xCE04B7U);
+            if (avio_read_xij(pb, buffer, size - 3) != size - 3) {
                 av_freep(&buffer);
                 return AVERROR(EIO);
             }
-            if (ffio_get_checksum(s->pb) != avio_rb24(pb)) {
+            if (ffio_get_checksum_xij(s->pb) != avio_rb24_xij(pb)) {
                 av_log(s, AV_LOG_ERROR, "%d metadata block CRC error.\n", type);
                 if (s->error_recognition & AV_EF_EXPLODE) {
                     av_freep(&buffer);
@@ -110,9 +110,9 @@ static int tak_read_header(AVFormatContext *s)
 
             if (size != 19)
                 return AVERROR_INVALIDDATA;
-            ffio_init_checksum(pb, tak_check_crc, 0xCE04B7U);
-            avio_read(pb, md5, 16);
-            if (ffio_get_checksum(s->pb) != avio_rb24(pb)) {
+            ffio_init_checksum_xij(pb, tak_check_crc, 0xCE04B7U);
+            avio_read_xij(pb, md5, 16);
+            if (ffio_get_checksum_xij(s->pb) != avio_rb24_xij(pb)) {
                 av_log(s, AV_LOG_ERROR, "MD5 metadata block CRC error.\n");
                 if (s->error_recognition & AV_EF_EXPLODE)
                     return AVERROR_INVALIDDATA;
@@ -129,14 +129,14 @@ static int tak_read_header(AVFormatContext *s)
 
             if (pb->seekable & AVIO_SEEKABLE_NORMAL) {
                 ff_ape_parse_tag(s);
-                avio_seek(pb, curpos, SEEK_SET);
+                avio_seek_xij(pb, curpos, SEEK_SET);
             }
 
             tc->data_end += curpos;
             return 0;
         }
         default:
-            ret = avio_skip(pb, size);
+            ret = avio_skip_xij(pb, size);
             if (ret < 0)
                 return ret;
         }
@@ -155,7 +155,7 @@ static int tak_read_header(AVFormatContext *s)
             st->codecpar->sample_rate           = ti.sample_rate;
             st->codecpar->channels              = ti.channels;
             st->start_time                   = 0;
-            avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+            avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
             st->codecpar->extradata             = buffer;
             st->codecpar->extradata_size        = size - 3;
             buffer                           = NULL;
@@ -192,13 +192,13 @@ static int raw_read_packet(AVFormatContext *s, AVPacket *pkt)
         if (size <= 0)
             return AVERROR_EOF;
 
-        ret = av_get_packet(pb, pkt, size);
+        ret = av_get_packet_xij(pb, pkt, size);
         if (ret < 0)
             return ret;
 
         pkt->stream_index = 0;
     } else {
-        ret = ff_raw_read_partial_packet(s, pkt);
+        ret = ff_raw_read_partial_packet_xij(s, pkt);
     }
 
     return ret;

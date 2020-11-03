@@ -62,7 +62,7 @@ static enum AVPixelFormat h263_get_format(AVCodecContext *avctx)
         return AV_PIX_FMT_GRAY8;
     }
 
-    return avctx->pix_fmt = ff_get_format(avctx, avctx->codec->pix_fmts);
+    return avctx->pix_fmt = ff_get_format_xij(avctx, avctx->codec->pix_fmts);
 }
 
 av_cold int ff_h263_decode_init(AVCodecContext *avctx)
@@ -146,7 +146,7 @@ av_cold int ff_h263_decode_init(AVCodecContext *avctx)
     }
 
     ff_h263dsp_init(&s->h263dsp);
-    ff_qpeldsp_init(&s->qdsp);
+    ff_qpeldsp_init_xij(&s->qdsp);
     ff_h263_decode_init_vlc();
 
     return 0;
@@ -431,7 +431,7 @@ int ff_h263_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     if (buf_size == 0) {
         /* special case for last picture */
         if (s->low_delay == 0 && s->next_picture_ptr) {
-            if ((ret = av_frame_ref(pict, s->next_picture_ptr->f)) < 0)
+            if ((ret = av_frame_ref_xij(pict, s->next_picture_ptr->f)) < 0)
                 return ret;
             s->next_picture_ptr = NULL;
 
@@ -456,7 +456,7 @@ int ff_h263_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
             return AVERROR(ENOSYS);
         }
 
-        if (ff_combine_frame(&s->parse_context, next, (const uint8_t **)&buf,
+        if (ff_combine_frame_xij(&s->parse_context, next, (const uint8_t **)&buf,
                              &buf_size) < 0)
             return buf_size;
     }
@@ -557,11 +557,11 @@ retry:
         /* H.263 could change picture size any time */
         s->context_reinit = 0;
 
-        ret = ff_set_dimensions(avctx, s->width, s->height);
+        ret = ff_set_dimensions_xij(avctx, s->width, s->height);
         if (ret < 0)
             return ret;
 
-        ff_set_sar(avctx, avctx->sample_aspect_ratio);
+        ff_set_sar_xij(avctx, avctx->sample_aspect_ratio);
 
         if ((ret = ff_mpv_common_frame_size_change(s)))
             return ret;
@@ -686,12 +686,12 @@ frame_end:
     av_assert1(s->current_picture.f->pict_type == s->current_picture_ptr->f->pict_type);
     av_assert1(s->current_picture.f->pict_type == s->pict_type);
     if (s->pict_type == AV_PICTURE_TYPE_B || s->low_delay) {
-        if ((ret = av_frame_ref(pict, s->current_picture_ptr->f)) < 0)
+        if ((ret = av_frame_ref_xij(pict, s->current_picture_ptr->f)) < 0)
             return ret;
         ff_print_debug_info(s, s->current_picture_ptr, pict);
         ff_mpv_export_qp_table(s, pict, s->current_picture_ptr, FF_QSCALE_TYPE_MPEG1);
     } else if (s->last_picture_ptr) {
-        if ((ret = av_frame_ref(pict, s->last_picture_ptr->f)) < 0)
+        if ((ret = av_frame_ref_xij(pict, s->last_picture_ptr->f)) < 0)
             return ret;
         ff_print_debug_info(s, s->last_picture_ptr, pict);
         ff_mpv_export_qp_table(s, pict, s->last_picture_ptr, FF_QSCALE_TYPE_MPEG1);
@@ -701,7 +701,7 @@ frame_end:
         if (   pict->format == AV_PIX_FMT_YUV420P
             && (s->codec_tag == AV_RL32("GEOV") || s->codec_tag == AV_RL32("GEOX"))) {
             int x, y, p;
-            av_frame_make_writable(pict);
+            av_frame_make_writable_xij(pict);
             for (p=0; p<3; p++) {
                 int w = AV_CEIL_RSHIFT(pict-> width, !!p);
                 int h = AV_CEIL_RSHIFT(pict->height, !!p);

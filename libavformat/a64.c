@@ -54,7 +54,7 @@ static int a64_write_header(AVFormatContext *s)
     default:
         return AVERROR_INVALIDDATA;
     }
-    avio_write(s->pb, header, 2);
+    avio_write_xij(s->pb, header, 2);
     return 0;
 }
 

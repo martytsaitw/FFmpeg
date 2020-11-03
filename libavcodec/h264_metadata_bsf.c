@@ -223,11 +223,11 @@ static int h264_metadata_filter(AVBSFContext *bsf, AVPacket *out)
     uint8_t *displaymatrix_side_data = NULL;
     size_t displaymatrix_side_data_size = 0;
 
-    err = ff_bsf_get_packet(bsf, &in);
+    err = ff_bsf_get_packet_xij(bsf, &in);
     if (err < 0)
         return err;
 
-    err = ff_cbs_read_packet(ctx->cbc, au, in);
+    err = ff_cbs_read_packet_xij(ctx->cbc, au, in);
     if (err < 0) {
         av_log(bsf, AV_LOG_ERROR, "Failed to read packet.\n");
         goto fail;
@@ -242,7 +242,7 @@ static int h264_metadata_filter(AVBSFContext *bsf, AVPacket *out)
     // If an AUD is present, it must be the first NAL unit.
     if (au->units[0].type == H264_NAL_AUD) {
         if (ctx->aud == REMOVE)
-            ff_cbs_delete_unit(ctx->cbc, au, 0);
+            ff_cbs_delete_unit_xij(ctx->cbc, au, 0);
     } else {
         if (ctx->aud == INSERT) {
             static const int primary_pic_type_table[] = {
@@ -283,7 +283,7 @@ static int h264_metadata_filter(AVBSFContext *bsf, AVPacket *out)
 
             aud.primary_pic_type = j;
 
-            err = ff_cbs_insert_unit_content(ctx->cbc, au,
+            err = ff_cbs_insert_unit_content_xij(ctx->cbc, au,
                                              0, H264_NAL_AUD, &aud, NULL);
             if (err < 0) {
                 av_log(bsf, AV_LOG_ERROR, "Failed to insert AUD.\n");
@@ -331,7 +331,7 @@ static int h264_metadata_filter(AVBSFContext *bsf, AVPacket *out)
         if (j == 32 && ctx->sei_user_data[i] == '+') {
             size_t len = strlen(ctx->sei_user_data + i + 1);
 
-            udu->data_ref = av_buffer_alloc(len + 1);
+            udu->data_ref = av_buffer_alloc_ijk(len + 1);
             if (!udu->data_ref) {
                 err = AVERROR(ENOMEM);
                 goto fail;
@@ -363,7 +363,7 @@ static int h264_metadata_filter(AVBSFContext *bsf, AVPacket *out)
         for (i = 0; i < au->nb_units; i++) {
             if (au->units[i].type == H264_NAL_FILLER_DATA) {
                 // Filler NAL units.
-                err = ff_cbs_delete_unit(ctx->cbc, au, i);
+                err = ff_cbs_delete_unit_xij(ctx->cbc, au, i);
                 if (err < 0) {
                     av_log(bsf, AV_LOG_ERROR, "Failed to delete "
                            "filler NAL.\n");
@@ -456,7 +456,7 @@ static int h264_metadata_filter(AVBSFContext *bsf, AVPacket *out)
         int size;
         int write = 0;
 
-        data = av_packet_get_side_data(in, AV_PKT_DATA_DISPLAYMATRIX, &size);
+        data = av_packet_get_side_data_xij(in, AV_PKT_DATA_DISPLAYMATRIX, &size);
         if (data && size >= 9 * sizeof(int32_t)) {
             int32_t matrix[9];
             int hflip, vflip;
@@ -516,18 +516,18 @@ static int h264_metadata_filter(AVBSFContext *bsf, AVPacket *out)
         }
     }
 
-    err = ff_cbs_write_packet(ctx->cbc, out, au);
+    err = ff_cbs_write_packet_xij(ctx->cbc, out, au);
     if (err < 0) {
         av_log(bsf, AV_LOG_ERROR, "Failed to write packet.\n");
         goto fail;
     }
 
-    err = av_packet_copy_props(out, in);
+    err = av_packet_copy_props_ijk(out, in);
     if (err < 0)
         goto fail;
 
     if (displaymatrix_side_data) {
-        err = av_packet_add_side_data(out, AV_PKT_DATA_DISPLAYMATRIX,
+        err = av_packet_add_side_data_ijk(out, AV_PKT_DATA_DISPLAYMATRIX,
                                       displaymatrix_side_data,
                                       displaymatrix_side_data_size);
         if (err) {
@@ -546,8 +546,8 @@ fail:
     av_freep(&displaymatrix_side_data);
 
     if (err < 0)
-        av_packet_unref(out);
-    av_packet_free(&in);
+        av_packet_unref_ijk(out);
+    av_packet_free_xij(&in);
 
     return err;
 }
@@ -558,12 +558,12 @@ static int h264_metadata_init(AVBSFContext *bsf)
     CodedBitstreamFragment *au = &ctx->access_unit;
     int err, i;
 
-    err = ff_cbs_init(&ctx->cbc, AV_CODEC_ID_H264, bsf);
+    err = ff_cbs_init_xij(&ctx->cbc, AV_CODEC_ID_H264, bsf);
     if (err < 0)
         return err;
 
     if (bsf->par_in->extradata) {
-        err = ff_cbs_read_extradata(ctx->cbc, au, bsf->par_in);
+        err = ff_cbs_read_extradata_xij(ctx->cbc, au, bsf->par_in);
         if (err < 0) {
             av_log(bsf, AV_LOG_ERROR, "Failed to read extradata.\n");
             goto fail;
@@ -577,7 +577,7 @@ static int h264_metadata_init(AVBSFContext *bsf)
             }
         }
 
-        err = ff_cbs_write_extradata(ctx->cbc, bsf->par_out, au);
+        err = ff_cbs_write_extradata_xij(ctx->cbc, bsf->par_out, au);
         if (err < 0) {
             av_log(bsf, AV_LOG_ERROR, "Failed to write extradata.\n");
             goto fail;
@@ -593,7 +593,7 @@ fail:
 static void h264_metadata_close(AVBSFContext *bsf)
 {
     H264MetadataContext *ctx = bsf->priv_data;
-    ff_cbs_close(&ctx->cbc);
+    ff_cbs_close_xij(&ctx->cbc);
 }
 
 #define OFFSET(x) offsetof(H264MetadataContext, x)

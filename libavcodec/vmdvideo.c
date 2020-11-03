@@ -371,7 +371,7 @@ static av_cold int vmdvideo_decode_end(AVCodecContext *avctx)
 {
     VmdVideoContext *s = avctx->priv_data;
 
-    av_frame_free(&s->prev_frame);
+    av_frame_free_xij(&s->prev_frame);
     av_freep(&s->unpack_buffer);
     s->unpack_buffer_size = 0;
 
@@ -417,7 +417,7 @@ static av_cold int vmdvideo_decode_init(AVCodecContext *avctx)
         palette32[i] |= palette32[i] >> 6 & 0x30303;
     }
 
-    s->prev_frame = av_frame_alloc();
+    s->prev_frame = av_frame_alloc_ijk();
     if (!s->prev_frame) {
         vmdvideo_decode_end(avctx);
         return AVERROR(ENOMEM);
@@ -442,7 +442,7 @@ static int vmdvideo_decode_frame(AVCodecContext *avctx,
     if (buf_size < 16)
         return AVERROR_INVALIDDATA;
 
-    if ((ret = ff_get_buffer(avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
         return ret;
 
     if ((ret = vmd_decode(s, frame)) < 0)
@@ -452,8 +452,8 @@ static int vmdvideo_decode_frame(AVCodecContext *avctx,
     memcpy(frame->data[1], s->palette, PALETTE_COUNT * 4);
 
     /* shuffle frames */
-    av_frame_unref(s->prev_frame);
-    if ((ret = av_frame_ref(s->prev_frame, frame)) < 0)
+    av_frame_unref_xij(s->prev_frame);
+    if ((ret = av_frame_ref_xij(s->prev_frame, frame)) < 0)
         return ret;
 
     *got_frame      = 1;

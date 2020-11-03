@@ -462,11 +462,11 @@ static void destroy_buffers(SANMVideoContext *ctx)
 
 static av_cold int init_buffers(SANMVideoContext *ctx)
 {
-    av_fast_padded_mallocz(&ctx->frm0, &ctx->frm0_size, ctx->buf_size);
-    av_fast_padded_mallocz(&ctx->frm1, &ctx->frm1_size, ctx->buf_size);
-    av_fast_padded_mallocz(&ctx->frm2, &ctx->frm2_size, ctx->buf_size);
+    av_fast_padded_mallocz_xij(&ctx->frm0, &ctx->frm0_size, ctx->buf_size);
+    av_fast_padded_mallocz_xij(&ctx->frm1, &ctx->frm1_size, ctx->buf_size);
+    av_fast_padded_mallocz_xij(&ctx->frm2, &ctx->frm2_size, ctx->buf_size);
     if (!ctx->version)
-        av_fast_padded_mallocz(&ctx->stored_frame,
+        av_fast_padded_mallocz_xij(&ctx->stored_frame,
                               &ctx->stored_frame_size, ctx->buf_size);
 
     if (!ctx->frm0 || !ctx->frm1 || !ctx->frm2 ||
@@ -961,7 +961,7 @@ static int process_frame_obj(SANMVideoContext *ctx)
     }
 
     if (ctx->width < left + w || ctx->height < top + h) {
-        int ret = ff_set_dimensions(ctx->avctx, FFMAX(left + w, ctx->width),
+        int ret = ff_set_dimensions_xij(ctx->avctx, FFMAX(left + w, ctx->width),
                                     FFMAX(top + h, ctx->height));
         if (ret < 0)
             return ret;
@@ -1369,7 +1369,7 @@ static int copy_output(SANMVideoContext *ctx, SANMFrameHeader *hdr)
     int ret, height = ctx->height;
     ptrdiff_t dstpitch, srcpitch = ctx->pitch * (hdr ? sizeof(ctx->frm0[0]) : 1);
 
-    if ((ret = ff_get_buffer(ctx->avctx, ctx->frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(ctx->avctx, ctx->frame, 0)) < 0)
         return ret;
 
     dst      = ctx->frame->data[0];

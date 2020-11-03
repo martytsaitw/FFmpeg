@@ -54,19 +54,19 @@ static int amr_write_header(AVFormatContext *s)
     s->priv_data = NULL;
 
     if (par->codec_id == AV_CODEC_ID_AMR_NB) {
-        avio_write(pb, AMR_header,   sizeof(AMR_header)   - 1); /* magic number */
+        avio_write_xij(pb, AMR_header,   sizeof(AMR_header)   - 1); /* magic number */
     } else if (par->codec_id == AV_CODEC_ID_AMR_WB) {
-        avio_write(pb, AMRWB_header, sizeof(AMRWB_header) - 1); /* magic number */
+        avio_write_xij(pb, AMRWB_header, sizeof(AMRWB_header) - 1); /* magic number */
     } else {
         return -1;
     }
-    avio_flush(pb);
+    avio_flush_xij(pb);
     return 0;
 }
 
 static int amr_write_packet(AVFormatContext *s, AVPacket *pkt)
 {
-    avio_write(s->pb, pkt->data, pkt->size);
+    avio_write_xij(s->pb, pkt->data, pkt->size);
     return 0;
 }
 #endif /* CONFIG_AMR_MUXER */
@@ -90,13 +90,13 @@ static int amr_read_header(AVFormatContext *s)
     AVStream *st;
     uint8_t header[9];
 
-    avio_read(pb, header, 6);
+    avio_read_xij(pb, header, 6);
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     if (memcmp(header, AMR_header, 6)) {
-        avio_read(pb, header + 6, 3);
+        avio_read_xij(pb, header + 6, 3);
         if (memcmp(header, AMRWB_header, 9)) {
             return -1;
         }
@@ -112,7 +112,7 @@ static int amr_read_header(AVFormatContext *s)
     st->codecpar->channels   = 1;
     st->codecpar->channel_layout = AV_CH_LAYOUT_MONO;
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }
@@ -124,12 +124,12 @@ static int amr_read_packet(AVFormatContext *s, AVPacket *pkt)
     int64_t pos = avio_tell(s->pb);
     AMRContext *amr = s->priv_data;
 
-    if (avio_feof(s->pb)) {
+    if (avio_feof_xij(s->pb)) {
         return AVERROR_EOF;
     }
 
     // FIXME this is wrong, this should rather be in an AVParser
-    toc  = avio_r8(s->pb);
+    toc  = avio_r8_xij(s->pb);
     mode = (toc >> 3) & 0x0F;
 
     if (par->codec_id == AV_CODEC_ID_AMR_NB) {
@@ -138,7 +138,7 @@ static int amr_read_packet(AVFormatContext *s, AVPacket *pkt)
         size = amrwb_packed_size[mode];
     }
 
-    if (!size || av_new_packet(pkt, size))
+    if (!size || av_new_packet_ijk(pkt, size))
         return AVERROR(EIO);
 
     if (amr->cumulated_size < UINT64_MAX - size) {
@@ -151,10 +151,10 @@ static int amr_read_packet(AVFormatContext *s, AVPacket *pkt)
     pkt->pos          = pos;
     pkt->data[0]      = toc;
     pkt->duration     = par->codec_id == AV_CODEC_ID_AMR_NB ? 160 : 320;
-    read              = avio_read(s->pb, pkt->data + 1, size - 1);
+    read              = avio_read_xij(s->pb, pkt->data + 1, size - 1);
 
     if (read != size - 1) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         if (read < 0)
             return read;
         return AVERROR(EIO);
@@ -208,7 +208,7 @@ static int amrnb_probe(AVProbeData *p)
 
 static int amrnb_read_header(AVFormatContext *s)
 {
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_id       = AV_CODEC_ID_AMR_NB;
@@ -216,7 +216,7 @@ static int amrnb_read_header(AVFormatContext *s)
     st->codecpar->channels       = 1;
     st->codecpar->channel_layout = AV_CH_LAYOUT_MONO;
     st->codecpar->codec_type     = AVMEDIA_TYPE_AUDIO;
-    avpriv_set_pts_info(st, 64, 1, 8000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 8000);
 
     return 0;
 }
@@ -265,7 +265,7 @@ static int amrwb_probe(AVProbeData *p)
 
 static int amrwb_read_header(AVFormatContext *s)
 {
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_id       = AV_CODEC_ID_AMR_WB;
@@ -273,7 +273,7 @@ static int amrwb_read_header(AVFormatContext *s)
     st->codecpar->channels       = 1;
     st->codecpar->channel_layout = AV_CH_LAYOUT_MONO;
     st->codecpar->codec_type     = AVMEDIA_TYPE_AUDIO;
-    avpriv_set_pts_info(st, 64, 1, 16000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 16000);
 
     return 0;
 }

@@ -37,7 +37,7 @@ int ff_mov_init_hinting(AVFormatContext *s, int index, int src_index)
     track->tag = MKTAG('r','t','p',' ');
     track->src_track = src_index;
 
-    track->par = avcodec_parameters_alloc();
+    track->par = avcodec_parameters_alloc_ijk();
     if (!track->par)
         goto fail;
     track->par->codec_type = AVMEDIA_TYPE_DATA;
@@ -58,8 +58,8 @@ int ff_mov_init_hinting(AVFormatContext *s, int index, int src_index)
 fail:
     av_log(s, AV_LOG_WARNING,
            "Unable to initialize hinting of stream %d\n", src_index);
-    avcodec_parameters_free(&track->par);
-    /* Set a default timescale, to avoid crashes in av_dump_format */
+    avcodec_parameters_free_ijk(&track->par);
+    /* Set a default timescale, to avoid crashes in av_dump_format_ijk */
     track->timescale = 90000;
     return ret;
 }
@@ -254,14 +254,14 @@ static void output_immediate(const uint8_t *data, int size,
         int len = size;
         if (len > 14)
             len = 14;
-        avio_w8(out, 1); /* immediate constructor */
-        avio_w8(out, len); /* amount of valid data */
-        avio_write(out, data, len);
+        avio_w8_xij(out, 1); /* immediate constructor */
+        avio_w8_xij(out, len); /* amount of valid data */
+        avio_write_xij(out, data, len);
         data += len;
         size -= len;
 
         for (; len < 14; len++)
-            avio_w8(out, 0);
+            avio_w8_xij(out, 0);
 
         (*entries)++;
     }
@@ -270,13 +270,13 @@ static void output_immediate(const uint8_t *data, int size,
 static void output_match(AVIOContext *out, int match_sample,
                          int match_offset, int match_len, int *entries)
 {
-    avio_w8(out, 2); /* sample constructor */
-    avio_w8(out, 0); /* track reference */
-    avio_wb16(out, match_len);
-    avio_wb32(out, match_sample);
-    avio_wb32(out, match_offset);
-    avio_wb16(out, 1); /* bytes per block */
-    avio_wb16(out, 1); /* samples per block */
+    avio_w8_xij(out, 2); /* sample constructor */
+    avio_w8_xij(out, 0); /* track reference */
+    avio_wb16_xij(out, match_len);
+    avio_wb32_xij(out, match_sample);
+    avio_wb32_xij(out, match_offset);
+    avio_wb16_xij(out, 1); /* bytes per block */
+    avio_wb16_xij(out, 1); /* samples per block */
     (*entries)++;
 }
 
@@ -321,8 +321,8 @@ static int write_hint_packets(AVIOContext *out, const uint8_t *data,
 
     count_pos = avio_tell(out);
     /* RTPsample header */
-    avio_wb16(out, 0); /* packet count */
-    avio_wb16(out, 0); /* reserved */
+    avio_wb16_xij(out, 0); /* packet count */
+    avio_wb16_xij(out, 0); /* reserved */
 
     while (size > 4) {
         uint32_t packet_len = AV_RB32(data);
@@ -362,17 +362,17 @@ static int write_hint_packets(AVIOContext *out, const uint8_t *data,
 
         count++;
         /* RTPpacket header */
-        avio_wb32(out, 0); /* relative_time */
-        avio_write(out, data, 2); /* RTP header */
-        avio_wb16(out, seq); /* RTPsequenceseed */
-        avio_wb16(out, ts_diff ? 4 : 0); /* reserved + flags (extra_flag) */
+        avio_wb32_xij(out, 0); /* relative_time */
+        avio_write_xij(out, data, 2); /* RTP header */
+        avio_wb16_xij(out, seq); /* RTPsequenceseed */
+        avio_wb16_xij(out, ts_diff ? 4 : 0); /* reserved + flags (extra_flag) */
         entries_pos = avio_tell(out);
-        avio_wb16(out, 0); /* entry count */
+        avio_wb16_xij(out, 0); /* entry count */
         if (ts_diff) { /* if extra_flag is set */
-            avio_wb32(out, 16); /* extra_information_length */
-            avio_wb32(out, 12); /* rtpoffsetTLV box */
-            avio_write(out, "rtpo", 4);
-            avio_wb32(out, ts_diff);
+            avio_wb32_xij(out, 16); /* extra_information_length */
+            avio_wb32_xij(out, 12); /* rtpoffsetTLV box */
+            avio_write_xij(out, "rtpo", 4);
+            avio_wb32_xij(out, ts_diff);
         }
 
         data += 12;
@@ -386,15 +386,15 @@ static int write_hint_packets(AVIOContext *out, const uint8_t *data,
         size -= packet_len;
 
         curpos = avio_tell(out);
-        avio_seek(out, entries_pos, SEEK_SET);
-        avio_wb16(out, entries);
-        avio_seek(out, curpos, SEEK_SET);
+        avio_seek_xij(out, entries_pos, SEEK_SET);
+        avio_wb16_xij(out, entries);
+        avio_seek_xij(out, curpos, SEEK_SET);
     }
 
     curpos = avio_tell(out);
-    avio_seek(out, count_pos, SEEK_SET);
-    avio_wb16(out, count);
-    avio_seek(out, curpos, SEEK_SET);
+    avio_seek_xij(out, count_pos, SEEK_SET);
+    avio_wb16_xij(out, count);
+    avio_seek_xij(out, curpos, SEEK_SET);
     return count;
 }
 
@@ -422,12 +422,12 @@ int ff_mov_add_hinted_packet(AVFormatContext *s, AVPacket *pkt,
         sample_queue_push(&trk->sample_queue, pkt->data, pkt->size, sample);
 
     /* Feed the packet to the RTP muxer */
-    ff_write_chained(rtp_ctx, 0, pkt, s, 0);
+    ff_write_chained_xij(rtp_ctx, 0, pkt, s, 0);
 
     /* Fetch the output from the RTP muxer, open a new output buffer
      * for next time. */
-    size = avio_close_dyn_buf(rtp_ctx->pb, &buf);
-    if ((ret = ffio_open_dyn_packet_buf(&rtp_ctx->pb,
+    size = avio_close_dyn_buf_xij(rtp_ctx->pb, &buf);
+    if ((ret = ffio_open_dyn_packet_buf_xij(&rtp_ctx->pb,
                                         RTP_MAX_PACKET_SIZE)) < 0)
         goto done;
 
@@ -435,14 +435,14 @@ int ff_mov_add_hinted_packet(AVFormatContext *s, AVPacket *pkt,
         goto done;
 
     /* Open a buffer for writing the hint */
-    if ((ret = avio_open_dyn_buf(&hintbuf)) < 0)
+    if ((ret = avio_open_dyn_buf_xij(&hintbuf)) < 0)
         goto done;
-    av_init_packet(&hint_pkt);
+    av_init_packet_ijk(&hint_pkt);
     count = write_hint_packets(hintbuf, buf, size, trk, &hint_pkt.dts);
     av_freep(&buf);
 
     /* Write the hint data into the hint track */
-    hint_pkt.size = size = avio_close_dyn_buf(hintbuf, &buf);
+    hint_pkt.size = size = avio_close_dyn_buf_xij(hintbuf, &buf);
     hint_pkt.data = buf;
     hint_pkt.pts  = hint_pkt.dts;
     hint_pkt.stream_index = track_index;
@@ -460,13 +460,13 @@ void ff_mov_close_hinting(MOVTrack *track)
 {
     AVFormatContext *rtp_ctx = track->rtp_ctx;
 
-    avcodec_parameters_free(&track->par);
+    avcodec_parameters_free_ijk(&track->par);
     sample_queue_free(&track->sample_queue);
     if (!rtp_ctx)
         return;
     if (rtp_ctx->pb) {
-        av_write_trailer(rtp_ctx);
-        ffio_free_dyn_buf(&rtp_ctx->pb);
+        av_write_trailer_xij(rtp_ctx);
+        ffio_free_dyn_buf_xij(&rtp_ctx->pb);
     }
-    avformat_free_context(rtp_ctx);
+    avformat_free_context_ijk(rtp_ctx);
 }

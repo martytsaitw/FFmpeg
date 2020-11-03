@@ -242,7 +242,7 @@ static int decode_frame(AVCodecContext *avctx, void *data,
         return AVERROR_INVALIDDATA;
 
     frame->nb_samples = samples_per_frame / 8;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
     dsd = frame->data[0];
     pcm = (float *)frame->data[0];

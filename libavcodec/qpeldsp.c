@@ -700,34 +700,34 @@ QPEL_MC(0, avg_, _, op_avg)
 #undef op_put
 #undef op_put_no_rnd
 
-void ff_put_pixels8x8_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)
+void ff_put_pixels8x8_c_xij(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)
 {
     put_pixels8_8_c(dst, src, stride, 8);
 }
 
-void ff_avg_pixels8x8_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)
+void ff_avg_pixels8x8_c_xij(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)
 {
     avg_pixels8_8_c(dst, src, stride, 8);
 }
 
-void ff_put_pixels16x16_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)
+void ff_put_pixels16x16_c_xij(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)
 {
     put_pixels16_8_c(dst, src, stride, 16);
 }
 
-void ff_avg_pixels16x16_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)
+void ff_avg_pixels16x16_c_xij(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)
 {
     avg_pixels16_8_c(dst, src, stride, 16);
 }
 
-#define put_qpel8_mc00_c         ff_put_pixels8x8_c
-#define avg_qpel8_mc00_c         ff_avg_pixels8x8_c
-#define put_qpel16_mc00_c        ff_put_pixels16x16_c
-#define avg_qpel16_mc00_c        ff_avg_pixels16x16_c
-#define put_no_rnd_qpel8_mc00_c  ff_put_pixels8x8_c
-#define put_no_rnd_qpel16_mc00_c ff_put_pixels16x16_c
+#define put_qpel8_mc00_c         ff_put_pixels8x8_c_xij
+#define avg_qpel8_mc00_c         ff_avg_pixels8x8_c_xij
+#define put_qpel16_mc00_c        ff_put_pixels16x16_c_xij
+#define avg_qpel16_mc00_c        ff_avg_pixels16x16_c_xij
+#define put_no_rnd_qpel8_mc00_c  ff_put_pixels8x8_c_xij
+#define put_no_rnd_qpel16_mc00_c ff_put_pixels16x16_c_xij
 
-void ff_put_pixels8_l2_8(uint8_t *dst, const uint8_t *src1, const uint8_t *src2,
+void ff_put_pixels8_l2_8_xij(uint8_t *dst, const uint8_t *src1, const uint8_t *src2,
                          int dst_stride, int src_stride1, int src_stride2,
                          int h)
 {
@@ -780,7 +780,7 @@ DIRAC_MC(put)
 DIRAC_MC(avg)
 #endif
 
-av_cold void ff_qpeldsp_init(QpelDSPContext *c)
+av_cold void ff_qpeldsp_init_xij(QpelDSPContext *c)
 {
 #define dspfunc(PFX, IDX, NUM)                              \
     c->PFX ## _pixels_tab[IDX][0]  = PFX ## NUM ## _mc00_c; \

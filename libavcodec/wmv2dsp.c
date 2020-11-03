@@ -195,7 +195,7 @@ static void put_mspel8_mc10_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride
     uint8_t half[64];
 
     wmv2_mspel8_h_lowpass(half, src, 8, stride, 8);
-    ff_put_pixels8_l2_8(dst, src, half, stride, stride, 8, 8);
+    ff_put_pixels8_l2_8_xij(dst, src, half, stride, stride, 8, 8);
 }
 
 static void put_mspel8_mc20_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)
@@ -208,7 +208,7 @@ static void put_mspel8_mc30_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride
     uint8_t half[64];
 
     wmv2_mspel8_h_lowpass(half, src, 8, stride, 8);
-    ff_put_pixels8_l2_8(dst, src + 1, half, stride, stride, 8, 8);
+    ff_put_pixels8_l2_8_xij(dst, src + 1, half, stride, stride, 8, 8);
 }
 
 static void put_mspel8_mc02_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)
@@ -225,7 +225,7 @@ static void put_mspel8_mc12_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride
     wmv2_mspel8_h_lowpass(halfH, src - stride, 8, stride, 11);
     wmv2_mspel8_v_lowpass(halfV, src, 8, stride, 8);
     wmv2_mspel8_v_lowpass(halfHV, halfH + 8, 8, 8, 8);
-    ff_put_pixels8_l2_8(dst, halfV, halfHV, stride, 8, 8, 8);
+    ff_put_pixels8_l2_8_xij(dst, halfV, halfHV, stride, 8, 8, 8);
 }
 
 static void put_mspel8_mc32_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)
@@ -237,7 +237,7 @@ static void put_mspel8_mc32_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride
     wmv2_mspel8_h_lowpass(halfH, src - stride, 8, stride, 11);
     wmv2_mspel8_v_lowpass(halfV, src + 1, 8, stride, 8);
     wmv2_mspel8_v_lowpass(halfHV, halfH + 8, 8, 8, 8);
-    ff_put_pixels8_l2_8(dst, halfV, halfHV, stride, 8, 8, 8);
+    ff_put_pixels8_l2_8_xij(dst, halfV, halfHV, stride, 8, 8, 8);
 }
 
 static void put_mspel8_mc22_c(uint8_t *dst, const uint8_t *src, ptrdiff_t stride)
@@ -254,7 +254,7 @@ av_cold void ff_wmv2dsp_init(WMV2DSPContext *c)
     c->idct_put  = wmv2_idct_put_c;
     c->idct_perm = FF_IDCT_PERM_NONE;
 
-    c->put_mspel_pixels_tab[0] = ff_put_pixels8x8_c;
+    c->put_mspel_pixels_tab[0] = ff_put_pixels8x8_c_xij;
     c->put_mspel_pixels_tab[1] = put_mspel8_mc10_c;
     c->put_mspel_pixels_tab[2] = put_mspel8_mc20_c;
     c->put_mspel_pixels_tab[3] = put_mspel8_mc30_c;

@@ -62,18 +62,18 @@ typedef struct FrameDecodeData {
  *         AVERROR_EOF if and end of stream has been reached, so no more data
  *                     will be available
  */
-int ff_decode_get_packet(AVCodecContext *avctx, AVPacket *pkt);
+int ff_decode_get_packet_xij(AVCodecContext *avctx, AVPacket *pkt);
 
-void ff_decode_bsfs_uninit(AVCodecContext *avctx);
+void ff_decode_bsfs_uninit_xij(AVCodecContext *avctx);
 
 /**
  * Make sure avctx.hw_frames_ctx is set. If it's not set, the function will
  * try to allocate it from hw_device_ctx. If that is not possible, an error
  * message is printed, and an error code is returned.
  */
-int ff_decode_get_hw_frames_ctx(AVCodecContext *avctx,
+int ff_decode_get_hw_frames_ctx_xij(AVCodecContext *avctx,
                                 enum AVHWDeviceType dev_type);
 
-int ff_attach_decode_data(AVFrame *frame);
+int ff_attach_decode_data_xij(AVFrame *frame);
 
 #endif /* AVCODEC_DECODE_H */

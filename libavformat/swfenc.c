@@ -34,10 +34,10 @@ static void put_swf_tag(AVFormatContext *s, int tag)
     swf->tag = tag;
     /* reserve some room for the tag */
     if (tag & TAG_LONG) {
-        avio_wl16(pb, 0);
-        avio_wl32(pb, 0);
+        avio_wl16_xij(pb, 0);
+        avio_wl32_xij(pb, 0);
     } else {
-        avio_wl16(pb, 0);
+        avio_wl16_xij(pb, 0);
     }
 }
 
@@ -51,16 +51,16 @@ static void put_swf_end_tag(AVFormatContext *s)
     pos = avio_tell(pb);
     tag_len = pos - swf->tag_pos - 2;
     tag = swf->tag;
-    avio_seek(pb, swf->tag_pos, SEEK_SET);
+    avio_seek_xij(pb, swf->tag_pos, SEEK_SET);
     if (tag & TAG_LONG) {
         tag &= ~TAG_LONG;
-        avio_wl16(pb, (tag << 6) | 0x3f);
-        avio_wl32(pb, tag_len - 4);
+        avio_wl16_xij(pb, (tag << 6) | 0x3f);
+        avio_wl32_xij(pb, tag_len - 4);
     } else {
         av_assert0(tag_len < 0x3f);
-        avio_wl16(pb, (tag << 6) | tag_len);
+        avio_wl16_xij(pb, (tag << 6) | tag_len);
     }
-    avio_seek(pb, pos, SEEK_SET);
+    avio_seek_xij(pb, pos, SEEK_SET);
 }
 
 static inline void max_nbits(int *nbits_ptr, int val)
@@ -103,7 +103,7 @@ static void put_swf_rect(AVIOContext *pb,
     put_bits(&p, nbits, ymax & mask);
 
     flush_put_bits(&p);
-    avio_write(pb, buf, put_bits_ptr(&p) - p.buf);
+    avio_write_xij(pb, buf, put_bits_ptr(&p) - p.buf);
 }
 
 static void put_swf_line_edge(PutBitContext *pb, int dx, int dy)
@@ -168,7 +168,7 @@ static void put_swf_matrix(AVIOContext *pb,
     put_bits(&p, nbits, ty);
 
     flush_put_bits(&p);
-    avio_write(pb, buf, put_bits_ptr(&p) - p.buf);
+    avio_write_xij(pb, buf, put_bits_ptr(&p) - p.buf);
 }
 
 static int swf_write_header(AVFormatContext *s)
@@ -236,7 +236,7 @@ static int swf_write_header(AVFormatContext *s)
     else
         swf->samples_per_frame = (swf->audio_par->sample_rate * rate_base) / rate;
 
-    avio_write(pb, "FWS", 3);
+    avio_write_xij(pb, "FWS", 3);
 
     if (!strcmp("avm2", s->oformat->name))
         version = 9;
@@ -246,9 +246,9 @@ static int swf_write_header(AVFormatContext *s)
         version = 6; /* version 6 and above support FLV1 codec */
     else
         version = 4; /* version 4 for mpeg audio support */
-    avio_w8(pb, version);
+    avio_w8_xij(pb, version);
 
-    avio_wl32(pb, DUMMY_FILE_SIZE); /* dummy size
+    avio_wl32_xij(pb, DUMMY_FILE_SIZE); /* dummy size
                                       (will be patched if not streamed) */
 
     put_swf_rect(pb, 0, width * 20, 0, height * 20);
@@ -256,14 +256,14 @@ static int swf_write_header(AVFormatContext *s)
         av_log(s, AV_LOG_ERROR, "Invalid (too large) frame rate %d/%d\n", rate, rate_base);
         return AVERROR(EINVAL);
     }
-    avio_wl16(pb, (rate * 256) / rate_base); /* frame rate */
+    avio_wl16_xij(pb, (rate * 256) / rate_base); /* frame rate */
     swf->duration_pos = avio_tell(pb);
-    avio_wl16(pb, (uint16_t)(DUMMY_DURATION * (int64_t)rate / rate_base)); /* frame count */
+    avio_wl16_xij(pb, (uint16_t)(DUMMY_DURATION * (int64_t)rate / rate_base)); /* frame count */
 
     /* avm2/swf v9 (also v8?) files require a file attribute tag */
     if (version == 9) {
         put_swf_tag(s, TAG_FILEATTRIBUTES);
-        avio_wl32(pb, 1<<3); /* set ActionScript v3/AVM2 flag */
+        avio_wl32_xij(pb, 1<<3); /* set ActionScript v3/AVM2 flag */
         put_swf_end_tag(s);
     }
 
@@ -271,17 +271,17 @@ static int swf_write_header(AVFormatContext *s)
     if (swf->video_par && swf->video_par->codec_id == AV_CODEC_ID_MJPEG) {
         put_swf_tag(s, TAG_DEFINESHAPE);
 
-        avio_wl16(pb, SHAPE_ID); /* ID of shape */
+        avio_wl16_xij(pb, SHAPE_ID); /* ID of shape */
         /* bounding rectangle */
         put_swf_rect(pb, 0, width, 0, height);
         /* style info */
-        avio_w8(pb, 1); /* one fill style */
-        avio_w8(pb, 0x41); /* clipped bitmap fill */
-        avio_wl16(pb, BITMAP_ID); /* bitmap ID */
+        avio_w8_xij(pb, 1); /* one fill style */
+        avio_w8_xij(pb, 0x41); /* clipped bitmap fill */
+        avio_wl16_xij(pb, BITMAP_ID); /* bitmap ID */
         /* position of the bitmap */
         put_swf_matrix(pb, 1 << FRAC_BITS, 0,
                        0,  1 << FRAC_BITS, 0, 0);
-        avio_w8(pb, 0); /* no line style */
+        avio_w8_xij(pb, 0); /* no line style */
 
         /* shape drawing */
         init_put_bits(&p, buf1, sizeof(buf1));
@@ -306,7 +306,7 @@ static int swf_write_header(AVFormatContext *s)
         put_bits(&p, 5, 0);
 
         flush_put_bits(&p);
-        avio_write(pb, buf1, put_bits_ptr(&p) - p.buf);
+        avio_write_xij(pb, buf1, put_bits_ptr(&p) - p.buf);
 
         put_swf_end_tag(s);
     }
@@ -328,16 +328,16 @@ static int swf_write_header(AVFormatContext *s)
         v |= 0x02; /* 16 bit playback */
         if (swf->audio_par->channels == 2)
             v |= 0x01; /* stereo playback */
-        avio_w8(s->pb, v);
+        avio_w8_xij(s->pb, v);
         v |= 0x20; /* mp3 compressed */
-        avio_w8(s->pb, v);
-        avio_wl16(s->pb, swf->samples_per_frame);  /* avg samples per frame */
-        avio_wl16(s->pb, 0);
+        avio_w8_xij(s->pb, v);
+        avio_wl16_xij(s->pb, swf->samples_per_frame);  /* avg samples per frame */
+        avio_wl16_xij(s->pb, 0);
 
         put_swf_end_tag(s);
     }
 
-    avio_flush(s->pb);
+    avio_flush_xij(s->pb);
     return 0;
 }
 
@@ -356,70 +356,70 @@ static int swf_write_video(AVFormatContext *s,
         if (swf->video_frame_number == 0) {
             /* create a new video object */
             put_swf_tag(s, TAG_VIDEOSTREAM);
-            avio_wl16(pb, VIDEO_ID);
+            avio_wl16_xij(pb, VIDEO_ID);
             swf->vframes_pos = avio_tell(pb);
-            avio_wl16(pb, 15000); /* hard flash player limit */
-            avio_wl16(pb, par->width);
-            avio_wl16(pb, par->height);
-            avio_w8(pb, 0);
-            avio_w8(pb,ff_codec_get_tag(ff_swf_codec_tags, par->codec_id));
+            avio_wl16_xij(pb, 15000); /* hard flash player limit */
+            avio_wl16_xij(pb, par->width);
+            avio_wl16_xij(pb, par->height);
+            avio_w8_xij(pb, 0);
+            avio_w8_xij(pb,ff_codec_get_tag_xij(ff_swf_codec_tags, par->codec_id));
             put_swf_end_tag(s);
 
             /* place the video object for the first time */
             put_swf_tag(s, TAG_PLACEOBJECT2);
-            avio_w8(pb, 0x36);
-            avio_wl16(pb, 1);
-            avio_wl16(pb, VIDEO_ID);
+            avio_w8_xij(pb, 0x36);
+            avio_wl16_xij(pb, 1);
+            avio_wl16_xij(pb, VIDEO_ID);
             put_swf_matrix(pb, 1 << FRAC_BITS, 0, 0, 1 << FRAC_BITS, 0, 0);
-            avio_wl16(pb, swf->video_frame_number);
-            avio_write(pb, "video", 5);
-            avio_w8(pb, 0x00);
+            avio_wl16_xij(pb, swf->video_frame_number);
+            avio_write_xij(pb, "video", 5);
+            avio_w8_xij(pb, 0x00);
             put_swf_end_tag(s);
         } else {
             /* mark the character for update */
             put_swf_tag(s, TAG_PLACEOBJECT2);
-            avio_w8(pb, 0x11);
-            avio_wl16(pb, 1);
-            avio_wl16(pb, swf->video_frame_number);
+            avio_w8_xij(pb, 0x11);
+            avio_wl16_xij(pb, 1);
+            avio_wl16_xij(pb, swf->video_frame_number);
             put_swf_end_tag(s);
         }
 
         /* set video frame data */
         put_swf_tag(s, TAG_VIDEOFRAME | TAG_LONG);
-        avio_wl16(pb, VIDEO_ID);
-        avio_wl16(pb, swf->video_frame_number++);
-        avio_write(pb, buf, size);
+        avio_wl16_xij(pb, VIDEO_ID);
+        avio_wl16_xij(pb, swf->video_frame_number++);
+        avio_write_xij(pb, buf, size);
         put_swf_end_tag(s);
     } else if (par->codec_id == AV_CODEC_ID_MJPEG) {
         if (swf->swf_frame_number > 0) {
             /* remove the shape */
             put_swf_tag(s, TAG_REMOVEOBJECT);
-            avio_wl16(pb, SHAPE_ID); /* shape ID */
-            avio_wl16(pb, 1); /* depth */
+            avio_wl16_xij(pb, SHAPE_ID); /* shape ID */
+            avio_wl16_xij(pb, 1); /* depth */
             put_swf_end_tag(s);
 
             /* free the bitmap */
             put_swf_tag(s, TAG_FREECHARACTER);
-            avio_wl16(pb, BITMAP_ID);
+            avio_wl16_xij(pb, BITMAP_ID);
             put_swf_end_tag(s);
         }
 
         put_swf_tag(s, TAG_JPEG2 | TAG_LONG);
 
-        avio_wl16(pb, BITMAP_ID); /* ID of the image */
+        avio_wl16_xij(pb, BITMAP_ID); /* ID of the image */
 
         /* a dummy jpeg header seems to be required */
-        avio_wb32(pb, 0xffd8ffd9);
+        avio_wb32_xij(pb, 0xffd8ffd9);
         /* write the jpeg image */
-        avio_write(pb, buf, size);
+        avio_write_xij(pb, buf, size);
 
         put_swf_end_tag(s);
 
         /* draw the shape */
 
         put_swf_tag(s, TAG_PLACEOBJECT);
-        avio_wl16(pb, SHAPE_ID); /* shape ID */
-        avio_wl16(pb, 1); /* depth */
+        avio_wl16_xij(pb, SHAPE_ID); /* shape ID */
+        avio_wl16_xij(pb, 1); /* depth */
         put_swf_matrix(pb, 20 << FRAC_BITS, 0, 0, 20 << FRAC_BITS, 0, 0);
         put_swf_end_tag(s);
     }
@@ -430,9 +430,9 @@ static int swf_write_video(AVFormatContext *s,
     if (swf->audio_par && av_fifo_size(swf->audio_fifo)) {
         int frame_size = av_fifo_size(swf->audio_fifo);
         put_swf_tag(s, TAG_STREAMBLOCK | TAG_LONG);
-        avio_wl16(pb, swf->sound_samples);
-        avio_wl16(pb, 0); // seek samples
-        av_fifo_generic_read(swf->audio_fifo, pb, frame_size, (void*)avio_write);
+        avio_wl16_xij(pb, swf->sound_samples);
+        avio_wl16_xij(pb, 0); // seek samples
+        av_fifo_generic_read(swf->audio_fifo, pb, frame_size, (void*)avio_write_xij);
         put_swf_end_tag(s);
 
         /* update FIFO */
@@ -461,7 +461,7 @@ static int swf_write_audio(AVFormatContext *s,
     }
 
     av_fifo_generic_write(swf->audio_fifo, buf, size, NULL);
-    swf->sound_samples += av_get_audio_frame_duration2(par, size);
+    swf->sound_samples += av_get_audio_frame_duration2_ijk(par, size);
 
     /* if audio only stream make sure we add swf frames */
     if (!swf->video_par)
@@ -502,15 +502,15 @@ static int swf_write_trailer(AVFormatContext *s)
     /* patch file size and number of frames if not streamed */
     if ((s->pb->seekable & AVIO_SEEKABLE_NORMAL) && video_par) {
         file_size = avio_tell(pb);
-        avio_seek(pb, 4, SEEK_SET);
-        avio_wl32(pb, file_size);
-        avio_seek(pb, swf->duration_pos, SEEK_SET);
-        avio_wl16(pb, swf->video_frame_number);
+        avio_seek_xij(pb, 4, SEEK_SET);
+        avio_wl32_xij(pb, file_size);
+        avio_seek_xij(pb, swf->duration_pos, SEEK_SET);
+        avio_wl16_xij(pb, swf->video_frame_number);
         if (swf->vframes_pos) {
-        avio_seek(pb, swf->vframes_pos, SEEK_SET);
-        avio_wl16(pb, swf->video_frame_number);
+        avio_seek_xij(pb, swf->vframes_pos, SEEK_SET);
+        avio_wl16_xij(pb, swf->video_frame_number);
         }
-        avio_seek(pb, file_size, SEEK_SET);
+        avio_seek_xij(pb, file_size, SEEK_SET);
     }
     return 0;
 }

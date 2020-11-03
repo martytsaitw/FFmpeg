@@ -35,7 +35,7 @@
  * @param dest URL context whose authentication state gets updated
  * @param src URL context whose authentication state gets copied
  */
-void ff_http_init_auth_state(URLContext *dest, const URLContext *src);
+void ff_http_init_auth_state_xij(URLContext *dest, const URLContext *src);
 
 /**
  * Send a new HTTP request, reusing the old connection.
@@ -45,8 +45,8 @@ void ff_http_init_auth_state(URLContext *dest, const URLContext *src);
  * @return a negative value if an error condition occurred, 0
  * otherwise
  */
-int ff_http_do_new_request(URLContext *h, const char *uri);
+int ff_http_do_new_request_xij(URLContext *h, const char *uri);
 
-int ff_http_averror(int status_code, int default_averror);
+int ff_http_averror_xij(int status_code, int default_averror);
 
 #endif /* AVFORMAT_HTTP_H */

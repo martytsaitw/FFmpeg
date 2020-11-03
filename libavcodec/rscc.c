@@ -79,7 +79,7 @@ static av_cold int rscc_init(AVCodecContext *avctx)
     }
 
     /* Allocate reference frame */
-    ctx->reference = av_frame_alloc();
+    ctx->reference = av_frame_alloc_ijk();
     if (!ctx->reference)
         return AVERROR(ENOMEM);
 
@@ -130,7 +130,7 @@ static av_cold int rscc_close(AVCodecContext *avctx)
 
     av_freep(&ctx->tiles);
     av_freep(&ctx->inflated_buf);
-    av_frame_free(&ctx->reference);
+    av_frame_free_xij(&ctx->reference);
 
     return 0;
 }
@@ -293,7 +293,7 @@ static int rscc_decode_frame(AVCodecContext *avctx, void *data,
     }
 
     /* Allocate when needed */
-    ret = ff_reget_buffer(avctx, ctx->reference);
+    ret = ff_reget_buffer_xij(avctx, ctx->reference);
     if (ret < 0)
         goto end;
 
@@ -311,7 +311,7 @@ static int rscc_decode_frame(AVCodecContext *avctx, void *data,
     }
 
     /* Frame is ready to be output */
-    ret = av_frame_ref(frame, ctx->reference);
+    ret = av_frame_ref_xij(frame, ctx->reference);
     if (ret < 0)
         goto end;
 
@@ -326,7 +326,7 @@ static int rscc_decode_frame(AVCodecContext *avctx, void *data,
     /* Palette handling */
     if (avctx->pix_fmt == AV_PIX_FMT_PAL8) {
         int size;
-        const uint8_t *palette = av_packet_get_side_data(avpkt,
+        const uint8_t *palette = av_packet_get_side_data_xij(avpkt,
                                                          AV_PKT_DATA_PALETTE,
                                                          &size);
         if (palette && size == AVPALETTE_SIZE) {

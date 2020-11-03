@@ -156,7 +156,7 @@ static int decode_frame(AVCodecContext *avctx, void *data,
     }
 
     frame->nb_samples = samples;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     for (chan = 0; chan < channels; chan++) {

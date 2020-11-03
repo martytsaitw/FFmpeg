@@ -37,13 +37,13 @@ static void wrapped_avframe_release_buffer(void *unused, uint8_t *data)
 {
     AVFrame *frame = (AVFrame *)data;
 
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
 }
 
 static int wrapped_avframe_encode(AVCodecContext *avctx, AVPacket *pkt,
                      const AVFrame *frame, int *got_packet)
 {
-    AVFrame *wrapped = av_frame_clone(frame);
+    AVFrame *wrapped = av_frame_clone_xij(frame);
     uint8_t *data;
     int size = sizeof(*wrapped) + AV_INPUT_BUFFER_PADDING_SIZE;
 
@@ -52,21 +52,21 @@ static int wrapped_avframe_encode(AVCodecContext *avctx, AVPacket *pkt,
 
     data = av_mallocz(size);
     if (!data) {
-        av_frame_free(&wrapped);
+        av_frame_free_xij(&wrapped);
         return AVERROR(ENOMEM);
     }
 
-    pkt->buf = av_buffer_create(data, size,
+    pkt->buf = av_buffer_create_ijk(data, size,
                                 wrapped_avframe_release_buffer, NULL,
                                 AV_BUFFER_FLAG_READONLY);
     if (!pkt->buf) {
-        av_frame_free(&wrapped);
+        av_frame_free_xij(&wrapped);
         av_freep(&data);
         return AVERROR(ENOMEM);
     }
 
-    av_frame_move_ref((AVFrame*)data, wrapped);
-    av_frame_free(&wrapped);
+    av_frame_move_ref_xij((AVFrame*)data, wrapped);
+    av_frame_free_xij(&wrapped);
 
     pkt->data = data;
     pkt->size = sizeof(*wrapped);
@@ -93,15 +93,15 @@ static int wrapped_avframe_decode(AVCodecContext *avctx, void *data,
     in  = (AVFrame*)pkt->data;
     out = data;
 
-    err = ff_decode_frame_props(avctx, out);
+    err = ff_decode_frame_props_xij(avctx, out);
     if (err < 0)
         return err;
 
-    av_frame_move_ref(out, in);
+    av_frame_move_ref_xij(out, in);
 
-    err = ff_attach_decode_data(out);
+    err = ff_attach_decode_data_xij(out);
     if (err < 0) {
-        av_frame_unref(out);
+        av_frame_unref_xij(out);
         return err;
     }
 

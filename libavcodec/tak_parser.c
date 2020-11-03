@@ -64,7 +64,7 @@ static int tak_parse(AVCodecParserContext *s, AVCodecContext *avctx,
                                            buf_size);
             const uint8_t *tmp_buf = buf;
 
-            if (ff_combine_frame(pc, END_NOT_FOUND, &tmp_buf, &tmp_buf_size) != -1)
+            if (ff_combine_frame_xij(pc, END_NOT_FOUND, &tmp_buf, &tmp_buf_size) != -1)
                 return AVERROR(ENOMEM);
             consumed += tmp_buf_size;
             buf      += tmp_buf_size;
@@ -102,7 +102,7 @@ static int tak_parse(AVCodecParserContext *s, AVCodecContext *avctx,
 found:
 
     if (consumed && !buf_size && next == END_NOT_FOUND ||
-        ff_combine_frame(pc, next, &buf, &buf_size) < 0) {
+        ff_combine_frame_xij(pc, next, &buf, &buf_size) < 0) {
         *poutbuf      = NULL;
         *poutbuf_size = 0;
         return buf_size + consumed;
@@ -122,5 +122,5 @@ AVCodecParser ff_tak_parser = {
     .codec_ids      = { AV_CODEC_ID_TAK },
     .priv_data_size = sizeof(TAKParseContext),
     .parser_parse   = tak_parse,
-    .parser_close   = ff_parse_close,
+    .parser_close   = ff_parse_close_xij,
 };

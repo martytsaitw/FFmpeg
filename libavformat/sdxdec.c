@@ -37,25 +37,25 @@ static int sdx_read_header(AVFormatContext *s)
     AVStream *st;
     int depth, length;
 
-    avio_skip(s->pb, 4);
-    while (!avio_feof(s->pb)) {
-        if (avio_r8(s->pb) == 0x1a)
+    avio_skip_xij(s->pb, 4);
+    while (!avio_feof_xij(s->pb)) {
+        if (avio_r8_xij(s->pb) == 0x1a)
             break;
     }
-    if (avio_r8(s->pb) != 1)
+    if (avio_r8_xij(s->pb) != 1)
         return AVERROR_INVALIDDATA;
-    length = avio_r8(s->pb);
-    avio_skip(s->pb, length);
-    avio_skip(s->pb, 4);
-    depth = avio_r8(s->pb);
+    length = avio_r8_xij(s->pb);
+    avio_skip_xij(s->pb, length);
+    avio_skip_xij(s->pb, 4);
+    depth = avio_r8_xij(s->pb);
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codecpar->channels = 1;
-    st->codecpar->sample_rate = avio_rl32(s->pb);
+    st->codecpar->sample_rate = avio_rl32_xij(s->pb);
     switch (depth) {
     case 8:
         st->codecpar->codec_id = AV_CODEC_ID_PCM_U8;
@@ -72,7 +72,7 @@ static int sdx_read_header(AVFormatContext *s)
     default:
         return AVERROR_INVALIDDATA;
     }
-    avio_skip(s->pb, 16);
+    avio_skip_xij(s->pb, 16);
     st->codecpar->block_align = depth / 8;
 
     return 0;

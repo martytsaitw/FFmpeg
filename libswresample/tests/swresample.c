@@ -301,10 +301,10 @@ int main(int argc, char **argv){
                 in_layout_string, out_layout_string,
                 in_sample_rate, out_sample_rate,
                 av_get_sample_fmt_name(in_sample_fmt), av_get_sample_fmt_name(out_sample_fmt));
-        forw_ctx  = swr_alloc_set_opts(forw_ctx, out_ch_layout, out_sample_fmt,  out_sample_rate,
+        forw_ctx  = swr_alloc_set_opts_xij(forw_ctx, out_ch_layout, out_sample_fmt,  out_sample_rate,
                                                     in_ch_layout,  in_sample_fmt,  in_sample_rate,
                                         0, 0);
-        backw_ctx = swr_alloc_set_opts(backw_ctx, in_ch_layout,  in_sample_fmt,             in_sample_rate,
+        backw_ctx = swr_alloc_set_opts_xij(backw_ctx, in_ch_layout,  in_sample_fmt,             in_sample_rate,
                                                     out_ch_layout, out_sample_fmt, out_sample_rate,
                                         0, 0);
         if(!forw_ctx) {
@@ -320,10 +320,10 @@ int main(int argc, char **argv){
         if (uint_rand(rand_seed) % 3 == 0)
             av_opt_set_int(forw_ctx, "och", 0, 0);
 
-        if(swr_init( forw_ctx) < 0)
-            fprintf(stderr, "swr_init(->) failed\n");
-        if(swr_init(backw_ctx) < 0)
-            fprintf(stderr, "swr_init(<-) failed\n");
+        if(swr_init_xij( forw_ctx) < 0)
+            fprintf(stderr, "swr_init_xij(->) failed\n");
+        if(swr_init_xij(backw_ctx) < 0)
+            fprintf(stderr, "swr_init_xij(<-) failed\n");
                 //FIXME test planar
         setup_array(ain , array_in ,  in_sample_fmt,   SAMPLES);
         setup_array(amid, array_mid, out_sample_fmt, 3*SAMPLES);
@@ -338,27 +338,27 @@ int main(int argc, char **argv){
 #endif
         mode = uint_rand(rand_seed) % 3;
         if(mode==0 /*|| out_sample_rate == in_sample_rate*/) {
-            mid_count= swr_convert(forw_ctx, amid, 3*SAMPLES, (const uint8_t **)ain, SAMPLES);
+            mid_count= swr_convert_xij(forw_ctx, amid, 3*SAMPLES, (const uint8_t **)ain, SAMPLES);
         } else if(mode==1){
-            mid_count= swr_convert(forw_ctx, amid,         0, (const uint8_t **)ain, SAMPLES);
-            mid_count+=swr_convert(forw_ctx, amid, 3*SAMPLES, (const uint8_t **)ain,       0);
+            mid_count= swr_convert_xij(forw_ctx, amid,         0, (const uint8_t **)ain, SAMPLES);
+            mid_count+=swr_convert_xij(forw_ctx, amid, 3*SAMPLES, (const uint8_t **)ain,       0);
         } else {
             int tmp_count;
-            mid_count= swr_convert(forw_ctx, amid,         0, (const uint8_t **)ain,       1);
+            mid_count= swr_convert_xij(forw_ctx, amid,         0, (const uint8_t **)ain,       1);
             av_assert0(mid_count==0);
             shift(ain,  1, in_ch_count, in_sample_fmt);
-            mid_count+=swr_convert(forw_ctx, amid, 3*SAMPLES, (const uint8_t **)ain,       0);
+            mid_count+=swr_convert_xij(forw_ctx, amid, 3*SAMPLES, (const uint8_t **)ain,       0);
             shift(amid,  mid_count, out_ch_count, out_sample_fmt); tmp_count = mid_count;
-            mid_count+=swr_convert(forw_ctx, amid,         2, (const uint8_t **)ain,       2);
+            mid_count+=swr_convert_xij(forw_ctx, amid,         2, (const uint8_t **)ain,       2);
             shift(amid,  mid_count-tmp_count, out_ch_count, out_sample_fmt); tmp_count = mid_count;
             shift(ain,  2, in_ch_count, in_sample_fmt);
-            mid_count+=swr_convert(forw_ctx, amid,         1, (const uint8_t **)ain, SAMPLES-3);
+            mid_count+=swr_convert_xij(forw_ctx, amid,         1, (const uint8_t **)ain, SAMPLES-3);
             shift(amid,  mid_count-tmp_count, out_ch_count, out_sample_fmt); tmp_count = mid_count;
             shift(ain, -3, in_ch_count, in_sample_fmt);
-            mid_count+=swr_convert(forw_ctx, amid, 3*SAMPLES, (const uint8_t **)ain,       0);
+            mid_count+=swr_convert_xij(forw_ctx, amid, 3*SAMPLES, (const uint8_t **)ain,       0);
             shift(amid,  -tmp_count, out_ch_count, out_sample_fmt);
         }
-        out_count= swr_convert(backw_ctx,aout, SAMPLES, (const uint8_t **)amid, mid_count);
+        out_count= swr_convert_xij(backw_ctx,aout, SAMPLES, (const uint8_t **)amid, mid_count);
 
         for(ch=0; ch<in_ch_count; ch++){
             double sse, maxdiff=0;
@@ -385,9 +385,9 @@ int main(int argc, char **argv){
 
         flush_i++;
         flush_i%=21;
-        flush_count = swr_convert(backw_ctx,aout, flush_i, 0, 0);
+        flush_count = swr_convert_xij(backw_ctx,aout, flush_i, 0, 0);
         shift(aout,  flush_i, in_ch_count, in_sample_fmt);
-        flush_count+= swr_convert(backw_ctx,aout, SAMPLES-flush_i, 0, 0);
+        flush_count+= swr_convert_xij(backw_ctx,aout, SAMPLES-flush_i, 0, 0);
         shift(aout, -flush_i, in_ch_count, in_sample_fmt);
         if(flush_count){
             for(ch=0; ch<in_ch_count; ch++){

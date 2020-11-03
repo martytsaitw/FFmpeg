@@ -182,7 +182,7 @@ static int vmdaudio_decode_frame(AVCodecContext *avctx, void *data,
     /* get output buffer */
     frame->nb_samples = ((silent_chunks + audio_chunks) * avctx->block_align) /
                         avctx->channels;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
     output_samples_u8  =            frame->data[0];
     output_samples_s16 = (int16_t *)frame->data[0];

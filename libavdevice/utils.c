@@ -28,11 +28,11 @@ int ff_alloc_input_device_context(AVFormatContext **avctx, AVInputFormat *iforma
     *avctx = NULL;
     if (!iformat && !format)
         return AVERROR(EINVAL);
-    if (!(s = avformat_alloc_context()))
+    if (!(s = avformat_alloc_context_ijk()))
         return AVERROR(ENOMEM);
 
     if (!iformat)
-        iformat = av_find_input_format(format);
+        iformat = av_find_input_format_xij(format);
     if (!iformat || !iformat->priv_class || !AV_IS_INPUT_DEVICE(iformat->priv_class->category)) {
         ret = AVERROR(EINVAL);
         goto error;
@@ -54,6 +54,6 @@ int ff_alloc_input_device_context(AVFormatContext **avctx, AVInputFormat *iforma
     *avctx = s;
     return 0;
   error:
-    avformat_free_context(s);
+    avformat_free_context_ijk(s);
     return ret;
 }

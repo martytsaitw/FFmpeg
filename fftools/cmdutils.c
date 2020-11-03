@@ -307,7 +307,7 @@ static int write_option(void *optctx, const OptionDef *po, const char *opt,
         char *str;
 
         dstcount = (int *)(so + 1);
-        *so = grow_array(*so, sizeof(**so), dstcount, *dstcount + 1);
+        *so = grow_array_xij(*so, sizeof(**so), dstcount, *dstcount + 1);
         str = av_strdup(p ? p + 1 : "");
         if (!str)
             return AVERROR(ENOMEM);
@@ -548,7 +548,7 @@ int opt_default(void *optctx, const char *opt, const char *arg)
     int consumed = 0;
     char opt_stripped[128];
     const char *p;
-    const AVClass *cc = avcodec_get_class(), *fc = avformat_get_class();
+    const AVClass *cc = avcodec_get_class_ijk(), *fc = avformat_get_class_ijk();
 #if CONFIG_AVRESAMPLE
     const AVClass *rc = avresample_get_class();
 #endif
@@ -583,9 +583,9 @@ int opt_default(void *optctx, const char *opt, const char *arg)
 #if CONFIG_SWSCALE
     if (!consumed && (o = opt_find(&sc, opt, NULL, 0,
                          AV_OPT_SEARCH_CHILDREN | AV_OPT_SEARCH_FAKE_OBJ))) {
-        struct SwsContext *sws = sws_alloc_context();
+        struct SwsContext *sws = sws_alloc_context_xij();
         int ret = av_opt_set(sws, opt, arg, 0);
-        sws_freeContext(sws);
+        sws_freeContext_xij(sws);
         if (!strcmp(opt, "srcw") || !strcmp(opt, "srch") ||
             !strcmp(opt, "dstw") || !strcmp(opt, "dsth") ||
             !strcmp(opt, "src_format") || !strcmp(opt, "dst_format")) {
@@ -612,7 +612,7 @@ int opt_default(void *optctx, const char *opt, const char *arg)
                                     AV_OPT_SEARCH_CHILDREN | AV_OPT_SEARCH_FAKE_OBJ))) {
         struct SwrContext *swr = swr_alloc();
         int ret = av_opt_set(swr, opt, arg, 0);
-        swr_free(&swr);
+        swr_free_xij(&swr);
         if (ret < 0) {
             av_log(NULL, AV_LOG_ERROR, "Error setting option %s.\n", opt);
             return ret;
@@ -1078,7 +1078,7 @@ int opt_timelimit(void *optctx, const char *opt, const char *arg)
     return 0;
 }
 
-void print_error(const char *filename, int err)
+void print_error_xij(const char *filename, int err)
 {
     char errbuf[128];
     const char *errbuf_ptr = errbuf;
@@ -1308,7 +1308,7 @@ static int show_formats_devices(void *optctx, const char *opt, const char *arg, 
 
         if (muxdemuxers !=SHOW_DEMUXERS) {
             ofmt_opaque = NULL;
-            while ((ofmt = av_muxer_iterate(&ofmt_opaque))) {
+            while ((ofmt = av_muxer_iterate_ijk(&ofmt_opaque))) {
                 is_dev = is_device(ofmt->priv_class);
                 if (!is_dev && device_only)
                     continue;
@@ -1322,7 +1322,7 @@ static int show_formats_devices(void *optctx, const char *opt, const char *arg, 
         }
         if (muxdemuxers != SHOW_MUXERS) {
             ifmt_opaque = NULL;
-            while ((ifmt = av_demuxer_iterate(&ifmt_opaque))) {
+            while ((ifmt = av_demuxer_iterate_ijk(&ifmt_opaque))) {
                 is_dev = is_device(ifmt->priv_class);
                 if (!is_dev && device_only)
                     continue;
@@ -1384,7 +1384,7 @@ int show_devices(void *optctx, const char *opt, const char *arg)
 
 static void print_codec(const AVCodec *c)
 {
-    int encoder = av_codec_is_encoder(c);
+    int encoder = av_codec_is_encoder_xij(c);
 
     printf("%s %s [%s]:\n", encoder ? "Encoder" : "Decoder", c->name,
            c->long_name ? c->long_name : "");
@@ -1475,9 +1475,9 @@ static char get_media_type_char(enum AVMediaType type)
 static const AVCodec *next_codec_for_id(enum AVCodecID id, const AVCodec *prev,
                                         int encoder)
 {
-    while ((prev = av_codec_next(prev))) {
+    while ((prev = av_codec_next_xij(prev))) {
         if (prev->id == id &&
-            (encoder ? av_codec_is_encoder(prev) : av_codec_is_decoder(prev)))
+            (encoder ? av_codec_is_encoder_xij(prev) : av_codec_is_decoder_xij(prev)))
             return prev;
     }
     return NULL;
@@ -1548,8 +1548,8 @@ int show_codecs(void *optctx, const char *opt, const char *arg)
             continue;
 
         printf(" ");
-        printf(avcodec_find_decoder(desc->id) ? "D" : ".");
-        printf(avcodec_find_encoder(desc->id) ? "E" : ".");
+        printf(avcodec_find_decoder_ijk(desc->id) ? "D" : ".");
+        printf(avcodec_find_encoder_ijk(desc->id) ? "E" : ".");
 
         printf("%c", get_media_type_char(desc->type));
         printf((desc->props & AV_CODEC_PROP_INTRA_ONLY) ? "I" : ".");
@@ -1636,7 +1636,7 @@ int show_bsfs(void *optctx, const char *opt, const char *arg)
     void *opaque = NULL;
 
     printf("Bitstream filters:\n");
-    while ((bsf = av_bsf_iterate(&opaque)))
+    while ((bsf = av_bsf_iterate_xij(&opaque)))
         printf("%s\n", bsf->name);
     printf("\n");
     return 0;
@@ -1732,15 +1732,15 @@ int show_pix_fmts(void *optctx, const char *opt, const char *arg)
            "-----\n");
 
 #if !CONFIG_SWSCALE
-#   define sws_isSupportedInput(x)  0
-#   define sws_isSupportedOutput(x) 0
+#   define sws_isSupportedInput_xij(x)  0
+#   define sws_isSupportedOutput_xij(x) 0
 #endif
 
     while ((pix_desc = av_pix_fmt_desc_next(pix_desc))) {
         enum AVPixelFormat av_unused pix_fmt = av_pix_fmt_desc_get_id(pix_desc);
         printf("%c%c%c%c%c %-16s       %d            %2d\n",
-               sws_isSupportedInput (pix_fmt)              ? 'I' : '.',
-               sws_isSupportedOutput(pix_fmt)              ? 'O' : '.',
+               sws_isSupportedInput_xij (pix_fmt)              ? 'I' : '.',
+               sws_isSupportedOutput_xij(pix_fmt)              ? 'O' : '.',
                pix_desc->flags & AV_PIX_FMT_FLAG_HWACCEL   ? 'H' : '.',
                pix_desc->flags & AV_PIX_FMT_FLAG_PAL       ? 'P' : '.',
                pix_desc->flags & AV_PIX_FMT_FLAG_BITSTREAM ? 'B' : '.',
@@ -1799,8 +1799,8 @@ static void show_help_codec(const char *name, int encoder)
         return;
     }
 
-    codec = encoder ? avcodec_find_encoder_by_name(name) :
-                      avcodec_find_decoder_by_name(name);
+    codec = encoder ? avcodec_find_encoder_by_name_xij(name) :
+                      avcodec_find_decoder_by_name_xij(name);
 
     if (codec)
         print_codec(codec);
@@ -1826,7 +1826,7 @@ static void show_help_codec(const char *name, int encoder)
 
 static void show_help_demuxer(const char *name)
 {
-    const AVInputFormat *fmt = av_find_input_format(name);
+    const AVInputFormat *fmt = av_find_input_format_xij(name);
 
     if (!fmt) {
         av_log(NULL, AV_LOG_ERROR, "Unknown format '%s'.\n", name);
@@ -1845,7 +1845,7 @@ static void show_help_demuxer(const char *name)
 static void show_help_muxer(const char *name)
 {
     const AVCodecDescriptor *desc;
-    const AVOutputFormat *fmt = av_guess_format(name, NULL, NULL);
+    const AVOutputFormat *fmt = av_guess_format_xij(name, NULL, NULL);
 
     if (!fmt) {
         av_log(NULL, AV_LOG_ERROR, "Unknown format '%s'.\n", name);
@@ -1933,7 +1933,7 @@ static void show_help_filter(const char *name)
 
 static void show_help_bsf(const char *name)
 {
-    const AVBitStreamFilter *bsf = av_bsf_get_by_name(name);
+    const AVBitStreamFilter *bsf = av_bsf_get_by_name_ijk(name);
 
     if (!bsf) {
         av_log(NULL, AV_LOG_ERROR, "Unknown bit stream filter '%s'.\n", name);
@@ -2046,7 +2046,7 @@ FILE *get_preset_file(char *filename, size_t filename_size,
 
 int check_stream_specifier(AVFormatContext *s, AVStream *st, const char *spec)
 {
-    int ret = avformat_match_stream_specifier(s, st, spec);
+    int ret = avformat_match_stream_specifier_xij(s, st, spec);
     if (ret < 0)
         av_log(s, AV_LOG_ERROR, "Invalid stream specifier: %s.\n", spec);
     return ret;
@@ -2060,11 +2060,11 @@ AVDictionary *filter_codec_opts(AVDictionary *opts, enum AVCodecID codec_id,
     int            flags = s->oformat ? AV_OPT_FLAG_ENCODING_PARAM
                                       : AV_OPT_FLAG_DECODING_PARAM;
     char          prefix = 0;
-    const AVClass    *cc = avcodec_get_class();
+    const AVClass    *cc = avcodec_get_class_ijk();
 
     if (!codec)
-        codec            = s->oformat ? avcodec_find_encoder(codec_id)
-                                      : avcodec_find_decoder(codec_id);
+        codec            = s->oformat ? avcodec_find_encoder_ijk(codec_id)
+                                      : avcodec_find_decoder_ijk(codec_id);
 
     switch (st->codecpar->codec_type) {
     case AVMEDIA_TYPE_VIDEO:
@@ -2129,7 +2129,7 @@ AVDictionary **setup_find_stream_info_opts(AVFormatContext *s,
     return opts;
 }
 
-void *grow_array(void *array, int elem_size, int *size, int new_size)
+void *grow_array_xij(void *array, int elem_size, int *size, int new_size)
 {
     if (new_size >= INT_MAX / elem_size) {
         av_log(NULL, AV_LOG_ERROR, "Array too big.\n");
@@ -2148,9 +2148,9 @@ void *grow_array(void *array, int elem_size, int *size, int new_size)
     return array;
 }
 
-double get_rotation(AVStream *st)
+double get_rotation_xij(AVStream *st)
 {
-    uint8_t* displaymatrix = av_stream_get_side_data(st,
+    uint8_t* displaymatrix = av_stream_get_side_data_xij(st,
                                                      AV_PKT_DATA_DISPLAYMATRIX, NULL);
     double theta = 0;
     if (displaymatrix)

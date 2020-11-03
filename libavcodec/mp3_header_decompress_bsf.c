@@ -36,7 +36,7 @@ static int mp3_header_decompress(AVBSFContext *ctx, AVPacket *out)
     uint8_t *buf;
     int buf_size;
 
-    ret = ff_bsf_get_packet(ctx, &in);
+    ret = ff_bsf_get_packet_xij(ctx, &in);
     if (ret < 0)
         return ret;
 
@@ -45,8 +45,8 @@ static int mp3_header_decompress(AVBSFContext *ctx, AVPacket *out)
 
     header = AV_RB32(buf);
     if(ff_mpa_check_header(header) >= 0){
-        av_packet_move_ref(out, in);
-        av_packet_free(&in);
+        av_packet_move_ref_xij(out, in);
+        av_packet_free_xij(&in);
 
         return 0;
     }
@@ -82,12 +82,12 @@ static int mp3_header_decompress(AVBSFContext *ctx, AVPacket *out)
     header |= (bitrate_index>>1)<<12;
     header |= (frame_size == buf_size + 4)<<16; //FIXME actually set a correct crc instead of 0
 
-    ret = av_new_packet(out, frame_size);
+    ret = av_new_packet_ijk(out, frame_size);
     if (ret < 0)
         goto fail;
-    ret = av_packet_copy_props(out, in);
+    ret = av_packet_copy_props_ijk(out, in);
     if (ret < 0) {
-        av_packet_unref(out);
+        av_packet_unref_ijk(out);
         goto fail;
     }
     memcpy(out->data + frame_size - buf_size, buf, buf_size + AV_INPUT_BUFFER_PADDING_SIZE);
@@ -109,7 +109,7 @@ static int mp3_header_decompress(AVBSFContext *ctx, AVPacket *out)
     ret = 0;
 
 fail:
-    av_packet_free(&in);
+    av_packet_free_xij(&in);
     return ret;
 }
 

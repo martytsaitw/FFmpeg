@@ -100,11 +100,11 @@ static void close_context(PayloadContext *data)
 static int parse_fmtp_config(AVCodecParameters *par, const char *value)
 {
     /* decode the hexa encoded parameter */
-    int len = ff_hex_to_data(NULL, value);
+    int len = ff_hex_to_data_xij(NULL, value);
     av_freep(&par->extradata);
-    if (ff_alloc_extradata(par, len))
+    if (ff_alloc_extradata_xij(par, len))
         return AVERROR(ENOMEM);
-    ff_hex_to_data(par->extradata, value);
+    ff_hex_to_data_xij(par->extradata, value);
     return 0;
 }
 
@@ -175,7 +175,7 @@ static int aac_parse_packet(AVFormatContext *ctx, PayloadContext *data,
             av_log(ctx, AV_LOG_ERROR, "Invalid AU size\n");
             return AVERROR_INVALIDDATA;
         }
-        if ((ret = av_new_packet(pkt, data->au_headers[data->cur_au_index].size)) < 0) {
+        if ((ret = av_new_packet_ijk(pkt, data->au_headers[data->cur_au_index].size)) < 0) {
             av_log(ctx, AV_LOG_ERROR, "Out of memory\n");
             return ret;
         }
@@ -234,7 +234,7 @@ static int aac_parse_packet(AVFormatContext *ctx, PayloadContext *data,
         }
 
         data->buf_pos = 0;
-        ret = av_new_packet(pkt, data->buf_size);
+        ret = av_new_packet_ijk(pkt, data->buf_size);
         if (ret < 0) {
             av_log(ctx, AV_LOG_ERROR, "Out of memory\n");
             return ret;
@@ -250,7 +250,7 @@ static int aac_parse_packet(AVFormatContext *ctx, PayloadContext *data,
         av_log(ctx, AV_LOG_ERROR, "First AU larger than packet size\n");
         return AVERROR_INVALIDDATA;
     }
-    if ((ret = av_new_packet(pkt, data->au_headers[0].size)) < 0) {
+    if ((ret = av_new_packet_ijk(pkt, data->au_headers[0].size)) < 0) {
         av_log(ctx, AV_LOG_ERROR, "Out of memory\n");
         return ret;
     }

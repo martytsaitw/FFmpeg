@@ -91,7 +91,7 @@ restart:
     }
 
 flush:
-    if (ff_combine_frame(&bpc->pc, next, &buf, &buf_size) < 0)
+    if (ff_combine_frame_xij(&bpc->pc, next, &buf, &buf_size) < 0)
         return buf_size;
 
     if (next != END_NOT_FOUND && next < 0)
@@ -108,5 +108,5 @@ AVCodecParser ff_bmp_parser = {
     .codec_ids      = { AV_CODEC_ID_BMP },
     .priv_data_size = sizeof(BMPParseContext),
     .parser_parse   = bmp_parse,
-    .parser_close   = ff_parse_close,
+    .parser_close   = ff_parse_close_xij,
 };

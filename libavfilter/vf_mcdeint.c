@@ -107,12 +107,12 @@ static int config_props(AVFilterLink *inlink)
     AVDictionary *opts = NULL;
     int ret;
 
-    if (!(enc = avcodec_find_encoder(AV_CODEC_ID_SNOW))) {
+    if (!(enc = avcodec_find_encoder_ijk(AV_CODEC_ID_SNOW))) {
         av_log(ctx, AV_LOG_ERROR, "Snow encoder is not enabled in libavcodec\n");
         return AVERROR(EINVAL);
     }
 
-    mcdeint->enc_ctx = avcodec_alloc_context3(enc);
+    mcdeint->enc_ctx = avcodec_alloc_context3_ijk(enc);
     if (!mcdeint->enc_ctx)
         return AVERROR(ENOMEM);
     enc_ctx = mcdeint->enc_ctx;
@@ -142,7 +142,7 @@ static int config_props(AVFilterLink *inlink)
         enc_ctx->flags |= AV_CODEC_FLAG_QPEL;
     }
 
-    ret = avcodec_open2(enc_ctx, enc, &opts);
+    ret = avcodec_open2_xij(enc_ctx, enc, &opts);
     av_dict_free(&opts);
     if (ret < 0)
         return ret;
@@ -154,7 +154,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 {
     MCDeintContext *mcdeint = ctx->priv;
 
-    avcodec_free_context(&mcdeint->enc_ctx);
+    avcodec_free_context_ijk(&mcdeint->enc_ctx);
 }
 
 static int query_formats(AVFilterContext *ctx)
@@ -178,13 +178,13 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
 
     outpic = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!outpic) {
-        av_frame_free(&inpic);
+        av_frame_free_xij(&inpic);
         return AVERROR(ENOMEM);
     }
-    av_frame_copy_props(outpic, inpic);
+    av_frame_copy_props_xij(outpic, inpic);
     inpic->quality = mcdeint->qp * FF_QP2LAMBDA;
 
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
 
     ret = avcodec_encode_video2(mcdeint->enc_ctx, &pkt, inpic, &got_frame);
     if (ret < 0)
@@ -274,10 +274,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
     mcdeint->parity ^= 1;
 
 end:
-    av_packet_unref(&pkt);
-    av_frame_free(&inpic);
+    av_packet_unref_ijk(&pkt);
+    av_frame_free_xij(&inpic);
     if (ret < 0) {
-        av_frame_free(&outpic);
+        av_frame_free_xij(&outpic);
         return ret;
     }
     return ff_filter_frame(outlink, outpic);

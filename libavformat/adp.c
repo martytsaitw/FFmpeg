@@ -49,7 +49,7 @@ static int adp_read_header(AVFormatContext *s)
 {
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -60,9 +60,9 @@ static int adp_read_header(AVFormatContext *s)
     st->codecpar->sample_rate    = 48000;
     st->start_time            = 0;
     if (s->pb->seekable & AVIO_SEEKABLE_NORMAL)
-        st->duration          = av_get_audio_frame_duration2(st->codecpar, avio_size(s->pb));
+        st->duration          = av_get_audio_frame_duration2_ijk(st->codecpar, avio_size_xij(s->pb));
 
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }
@@ -71,17 +71,17 @@ static int adp_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     int ret, size = 1024;
 
-    if (avio_feof(s->pb))
+    if (avio_feof_xij(s->pb))
         return AVERROR_EOF;
 
-    ret = av_get_packet(s->pb, pkt, size);
+    ret = av_get_packet_xij(s->pb, pkt, size);
 
     if (ret != size) {
         if (ret < 0) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return ret;
         }
-        av_shrink_packet(pkt, ret);
+        av_shrink_packet_xij(pkt, ret);
     }
     pkt->stream_index = 0;
 

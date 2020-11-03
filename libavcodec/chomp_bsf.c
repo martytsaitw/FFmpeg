@@ -27,7 +27,7 @@ static int chomp_filter(AVBSFContext *ctx, AVPacket *pkt)
 {
     int ret;
 
-    ret = ff_bsf_get_packet_ref(ctx, pkt);
+    ret = ff_bsf_get_packet_ref_xij(ctx, pkt);
     if (ret < 0)
         return ret;
 

@@ -202,7 +202,7 @@ static void yae_clear(ATempoContext *atempo)
     atempo->frag[0].position[0] = -(int64_t)(atempo->window / 2);
     atempo->frag[0].position[1] = -(int64_t)(atempo->window / 2);
 
-    av_frame_free(&atempo->dst_buffer);
+    av_frame_free_xij(&atempo->dst_buffer);
     atempo->dst     = NULL;
     atempo->dst_end = NULL;
 
@@ -1096,10 +1096,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *src_buffer)
         if (!atempo->dst_buffer) {
             atempo->dst_buffer = ff_get_audio_buffer(outlink, n_out);
             if (!atempo->dst_buffer) {
-                av_frame_free(&src_buffer);
+                av_frame_free_xij(&src_buffer);
                 return AVERROR(ENOMEM);
             }
-            av_frame_copy_props(atempo->dst_buffer, src_buffer);
+            av_frame_copy_props_xij(atempo->dst_buffer, src_buffer);
 
             atempo->dst = atempo->dst_buffer->data[0];
             atempo->dst_end = atempo->dst + n_out * atempo->stride;
@@ -1118,7 +1118,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *src_buffer)
 
     atempo->nsamples_in += n_in;
 end:
-    av_frame_free(&src_buffer);
+    av_frame_free_xij(&src_buffer);
     return ret;
 }
 
@@ -1158,7 +1158,7 @@ static int request_frame(AVFilterLink *outlink)
             }
         }
 
-        av_frame_free(&atempo->dst_buffer);
+        av_frame_free_xij(&atempo->dst_buffer);
         atempo->dst     = NULL;
         atempo->dst_end = NULL;
 

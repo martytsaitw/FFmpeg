@@ -47,12 +47,12 @@ static int lrc_write_header(AVFormatContext *s)
     if(s->streams[0]->codecpar->codec_id != AV_CODEC_ID_SUBRIP &&
        s->streams[0]->codecpar->codec_id != AV_CODEC_ID_TEXT) {
         av_log(s, AV_LOG_ERROR, "Unsupported subtitle codec: %s\n",
-               avcodec_get_name(s->streams[0]->codecpar->codec_id));
+               avcodec_get_name_xij(s->streams[0]->codecpar->codec_id));
         return AVERROR(EINVAL);
     }
-    avpriv_set_pts_info(s->streams[0], 64, 1, 100);
+    avpriv_set_pts_info_ijk(s->streams[0], 64, 1, 100);
 
-    ff_standardize_creation_time(s);
+    ff_standardize_creation_time_xij(s);
     ff_metadata_conv_ctx(s, ff_lrc_metadata_conv, NULL);
     if(!(s->flags & AVFMT_FLAG_BITEXACT)) { // avoid breaking regression tests
         /* LRC provides a metadata slot for specifying encoder version
@@ -76,10 +76,10 @@ static int lrc_write_header(AVFormatContext *s)
         while((delim = strchr(metadata_item->value, '\r'))) {
             *delim = ' ';
         }
-        avio_printf(s->pb, "[%s:%s]\n",
+        avio_printf_xij(s->pb, "[%s:%s]\n",
                     metadata_item->key, metadata_item->value);
     }
-    avio_printf(s->pb, "\n");
+    avio_printf_xij(s->pb, "\n");
     return 0;
 }
 
@@ -120,19 +120,19 @@ static int lrc_write_packet(AVFormatContext *s, AVPacket *pkt)
             }
 
             if(pkt->pts >= 0) {
-                avio_printf(s->pb, "[%02"PRId64":%02"PRId64".%02"PRId64"]",
+                avio_printf_xij(s->pb, "[%02"PRId64":%02"PRId64".%02"PRId64"]",
                             (pkt->pts / 6000),
                             ((pkt->pts / 100) % 60),
                             (pkt->pts % 100));
             } else {
                 /* Offset feature of LRC can easily make pts negative,
                  * we just output it directly and let the player drop it. */
-                avio_printf(s->pb, "[-%02"PRId64":%02"PRId64".%02"PRId64"]",
+                avio_printf_xij(s->pb, "[-%02"PRId64":%02"PRId64".%02"PRId64"]",
                             (-pkt->pts) / 6000,
                             ((-pkt->pts) / 100) % 60,
                             (-pkt->pts) % 100);
             }
-            avio_printf(s->pb, "%s\n", line);
+            avio_printf_xij(s->pb, "%s\n", line);
             line = delim;
         }
         av_free(data);

@@ -1077,7 +1077,7 @@ int ff_ivi_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
 
     if (ctx->is_indeo4 && ctx->frame_type == IVI4_FRAMETYPE_NULL_LAST) {
         if (ctx->got_p_frame) {
-            av_frame_move_ref(data, ctx->p_frame);
+            av_frame_move_ref_xij(data, ctx->p_frame);
             *got_frame = 1;
             ctx->got_p_frame = 0;
         } else {
@@ -1130,11 +1130,11 @@ int ff_ivi_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     if (!ctx->is_nonnull_frame(ctx))
         return buf_size;
 
-    result = ff_set_dimensions(avctx, ctx->planes[0].width, ctx->planes[0].height);
+    result = ff_set_dimensions_xij(avctx, ctx->planes[0].width, ctx->planes[0].height);
     if (result < 0)
         return result;
 
-    if ((result = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((result = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return result;
 
     if (ctx->is_scalable) {
@@ -1209,7 +1209,7 @@ av_cold int ff_ivi_decode_close(AVCodecContext *avctx)
     if (ctx->blk_vlc.cust_tab.table)
         ff_free_vlc(&ctx->blk_vlc.cust_tab);
 
-    av_frame_free(&ctx->p_frame);
+    av_frame_free_xij(&ctx->p_frame);
 
     return 0;
 }

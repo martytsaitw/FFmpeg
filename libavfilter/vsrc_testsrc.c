@@ -121,7 +121,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 {
     TestSourceContext *test = ctx->priv;
 
-    av_frame_free(&test->picref);
+    av_frame_free_xij(&test->picref);
 }
 
 static int config_props(AVFilterLink *outlink)
@@ -148,7 +148,7 @@ static int request_frame(AVFilterLink *outlink)
 
     if (test->draw_once) {
         if (test->draw_once_reset) {
-            av_frame_free(&test->picref);
+            av_frame_free_xij(&test->picref);
             test->draw_once_reset = 0;
         }
         if (!test->picref) {
@@ -158,7 +158,7 @@ static int request_frame(AVFilterLink *outlink)
                 return AVERROR(ENOMEM);
             test->fill_picture_fn(outlink->src, test->picref);
         }
-        frame = av_frame_clone(test->picref);
+        frame = av_frame_clone_xij(test->picref);
     } else
         frame = ff_get_video_buffer(outlink, test->w, test->h);
 

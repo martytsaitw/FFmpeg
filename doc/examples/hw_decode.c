@@ -53,7 +53,7 @@ static int hw_decoder_init(AVCodecContext *ctx, const enum AVHWDeviceType type)
         fprintf(stderr, "Failed to create specified HW device.\n");
         return err;
     }
-    ctx->hw_device_ctx = av_buffer_ref(hw_device_ctx);
+    ctx->hw_device_ctx = av_buffer_ref_ijk(hw_device_ctx);
 
     return err;
 }
@@ -80,23 +80,23 @@ static int decode_write(AVCodecContext *avctx, AVPacket *packet)
     int size;
     int ret = 0;
 
-    ret = avcodec_send_packet(avctx, packet);
+    ret = avcodec_send_packet_xij(avctx, packet);
     if (ret < 0) {
         fprintf(stderr, "Error during decoding\n");
         return ret;
     }
 
     while (1) {
-        if (!(frame = av_frame_alloc()) || !(sw_frame = av_frame_alloc())) {
+        if (!(frame = av_frame_alloc_ijk()) || !(sw_frame = av_frame_alloc_ijk())) {
             fprintf(stderr, "Can not alloc frame\n");
             ret = AVERROR(ENOMEM);
             goto fail;
         }
 
-        ret = avcodec_receive_frame(avctx, frame);
+        ret = avcodec_receive_frame_xij(avctx, frame);
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-            av_frame_free(&frame);
-            av_frame_free(&sw_frame);
+            av_frame_free_xij(&frame);
+            av_frame_free_xij(&sw_frame);
             return 0;
         } else if (ret < 0) {
             fprintf(stderr, "Error while decoding\n");
@@ -136,8 +136,8 @@ static int decode_write(AVCodecContext *avctx, AVPacket *packet)
         }
 
     fail:
-        av_frame_free(&frame);
-        av_frame_free(&sw_frame);
+        av_frame_free_xij(&frame);
+        av_frame_free_xij(&sw_frame);
         av_freep(&buffer);
         if (ret < 0)
             return ret;
@@ -171,18 +171,18 @@ int main(int argc, char *argv[])
     }
 
     /* open the input file */
-    if (avformat_open_input(&input_ctx, argv[2], NULL, NULL) != 0) {
+    if (avformat_open_input_ijk(&input_ctx, argv[2], NULL, NULL) != 0) {
         fprintf(stderr, "Cannot open input file '%s'\n", argv[2]);
         return -1;
     }
 
-    if (avformat_find_stream_info(input_ctx, NULL) < 0) {
+    if (avformat_find_stream_info_ijk(input_ctx, NULL) < 0) {
         fprintf(stderr, "Cannot find input stream information.\n");
         return -1;
     }
 
     /* find the video stream information */
-    ret = av_find_best_stream(input_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, &decoder, 0);
+    ret = av_find_best_stream_ijk(input_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, &decoder, 0);
     if (ret < 0) {
         fprintf(stderr, "Cannot find a video stream in the input file\n");
         return -1;
@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
     video_stream = ret;
 
     for (i = 0;; i++) {
-        const AVCodecHWConfig *config = avcodec_get_hw_config(decoder, i);
+        const AVCodecHWConfig *config = avcodec_get_hw_config_xij(decoder, i);
         if (!config) {
             fprintf(stderr, "Decoder %s does not support device type %s.\n",
                     decoder->name, av_hwdevice_get_type_name(type));
@@ -203,11 +203,11 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (!(decoder_ctx = avcodec_alloc_context3(decoder)))
+    if (!(decoder_ctx = avcodec_alloc_context3_ijk(decoder)))
         return AVERROR(ENOMEM);
 
     video = input_ctx->streams[video_stream];
-    if (avcodec_parameters_to_context(decoder_ctx, video->codecpar) < 0)
+    if (avcodec_parameters_to_context_ijk(decoder_ctx, video->codecpar) < 0)
         return -1;
 
     decoder_ctx->get_format  = get_hw_format;
@@ -216,7 +216,7 @@ int main(int argc, char *argv[])
     if (hw_decoder_init(decoder_ctx, type) < 0)
         return -1;
 
-    if ((ret = avcodec_open2(decoder_ctx, decoder, NULL)) < 0) {
+    if ((ret = avcodec_open2_xij(decoder_ctx, decoder, NULL)) < 0) {
         fprintf(stderr, "Failed to open codec for stream #%u\n", video_stream);
         return -1;
     }
@@ -226,26 +226,26 @@ int main(int argc, char *argv[])
 
     /* actual decoding and dump the raw data */
     while (ret >= 0) {
-        if ((ret = av_read_frame(input_ctx, &packet)) < 0)
+        if ((ret = av_read_frame_ijk(input_ctx, &packet)) < 0)
             break;
 
         if (video_stream == packet.stream_index)
             ret = decode_write(decoder_ctx, &packet);
 
-        av_packet_unref(&packet);
+        av_packet_unref_ijk(&packet);
     }
 
     /* flush the decoder */
     packet.data = NULL;
     packet.size = 0;
     ret = decode_write(decoder_ctx, &packet);
-    av_packet_unref(&packet);
+    av_packet_unref_ijk(&packet);
 
     if (output_file)
         fclose(output_file);
-    avcodec_free_context(&decoder_ctx);
-    avformat_close_input(&input_ctx);
-    av_buffer_unref(&hw_device_ctx);
+    avcodec_free_context_ijk(&decoder_ctx);
+    avformat_close_input_xij(&input_ctx);
+    av_buffer_unref_xij(&hw_device_ctx);
 
     return 0;
 }

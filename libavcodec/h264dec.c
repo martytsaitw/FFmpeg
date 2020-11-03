@@ -152,10 +152,10 @@ void ff_h264_free_tables(H264Context *h)
     av_freep(&h->mb2b_xy);
     av_freep(&h->mb2br_xy);
 
-    av_buffer_pool_uninit(&h->qscale_table_pool);
-    av_buffer_pool_uninit(&h->mb_type_pool);
-    av_buffer_pool_uninit(&h->motion_val_pool);
-    av_buffer_pool_uninit(&h->ref_index_pool);
+    av_buffer_pool_uninit_xij(&h->qscale_table_pool);
+    av_buffer_pool_uninit_xij(&h->mb_type_pool);
+    av_buffer_pool_uninit_xij(&h->motion_val_pool);
+    av_buffer_pool_uninit_xij(&h->ref_index_pool);
 
     for (i = 0; i < h->nb_slice_ctx; i++) {
         H264SliceContext *sl = &h->slice_ctx[i];
@@ -336,16 +336,16 @@ static int h264_init_context(AVCodecContext *avctx, H264Context *h)
     }
 
     for (i = 0; i < H264_MAX_PICTURE_COUNT; i++) {
-        h->DPB[i].f = av_frame_alloc();
+        h->DPB[i].f = av_frame_alloc_ijk();
         if (!h->DPB[i].f)
             return AVERROR(ENOMEM);
     }
 
-    h->cur_pic.f = av_frame_alloc();
+    h->cur_pic.f = av_frame_alloc_ijk();
     if (!h->cur_pic.f)
         return AVERROR(ENOMEM);
 
-    h->last_pic_for_ec.f = av_frame_alloc();
+    h->last_pic_for_ec.f = av_frame_alloc_ijk();
     if (!h->last_pic_for_ec.f)
         return AVERROR(ENOMEM);
 
@@ -365,7 +365,7 @@ static av_cold int h264_decode_end(AVCodecContext *avctx)
 
     for (i = 0; i < H264_MAX_PICTURE_COUNT; i++) {
         ff_h264_unref_picture(h, &h->DPB[i]);
-        av_frame_free(&h->DPB[i].f);
+        av_frame_free_xij(&h->DPB[i].f);
     }
     memset(h->delayed_pic, 0, sizeof(h->delayed_pic));
 
@@ -380,9 +380,9 @@ static av_cold int h264_decode_end(AVCodecContext *avctx)
     ff_h2645_packet_uninit(&h->pkt);
 
     ff_h264_unref_picture(h, &h->cur_pic);
-    av_frame_free(&h->cur_pic.f);
+    av_frame_free_xij(&h->cur_pic.f);
     ff_h264_unref_picture(h, &h->last_pic_for_ec);
-    av_frame_free(&h->last_pic_for_ec.f);
+    av_frame_free_xij(&h->last_pic_for_ec.f);
 
     return 0;
 }
@@ -838,7 +838,7 @@ static int output_frame(H264Context *h, AVFrame *dst, H264Picture *srcp)
     AVFrame *src = srcp->f;
     int ret;
 
-    ret = av_frame_ref(dst, src);
+    ret = av_frame_ref_xij(dst, src);
     if (ret < 0)
         return ret;
 
@@ -975,9 +975,9 @@ static int h264_decode_frame(AVCodecContext *avctx, void *data,
     if (buf_size == 0)
         return send_next_delayed_frame(h, pict, got_frame, 0);
 
-    if (h->is_avc && av_packet_get_side_data(avpkt, AV_PKT_DATA_NEW_EXTRADATA, NULL)) {
+    if (h->is_avc && av_packet_get_side_data_xij(avpkt, AV_PKT_DATA_NEW_EXTRADATA, NULL)) {
         int side_size;
-        uint8_t *side = av_packet_get_side_data(avpkt, AV_PKT_DATA_NEW_EXTRADATA, &side_size);
+        uint8_t *side = av_packet_get_side_data_xij(avpkt, AV_PKT_DATA_NEW_EXTRADATA, &side_size);
         if (is_extra(side, side_size))
             ff_h264_decode_extradata(side, side_size,
                                      &h->ps, &h->is_avc, &h->nal_length_size,

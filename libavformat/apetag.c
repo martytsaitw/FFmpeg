@@ -41,10 +41,10 @@ static int ape_tag_read_field(AVFormatContext *s)
     int64_t size, flags;
     int i, c;
 
-    size = avio_rl32(pb);  /* field size */
-    flags = avio_rl32(pb); /* field flags */
+    size = avio_rl32_xij(pb);  /* field size */
+    flags = avio_rl32_xij(pb); /* field flags */
     for (i = 0; i < sizeof(key) - 1; i++) {
-        c = avio_r8(pb);
+        c = avio_r8_xij(pb);
         if (c < 0x20 || c > 0x7E)
             break;
         else
@@ -63,11 +63,11 @@ static int ape_tag_read_field(AVFormatContext *s)
         uint8_t filename[1024];
         enum AVCodecID id;
         int ret;
-        AVStream *st = avformat_new_stream(s, NULL);
+        AVStream *st = avformat_new_stream_ijk(s, NULL);
         if (!st)
             return AVERROR(ENOMEM);
 
-        ret = avio_get_str(pb, size, filename, sizeof(filename));
+        ret = avio_get_str_xij(pb, size, filename, sizeof(filename));
         if (ret < 0)
             return ret;
         if (size <= ret) {
@@ -82,7 +82,7 @@ static int ape_tag_read_field(AVFormatContext *s)
             AVPacket pkt;
             int ret;
 
-            ret = av_get_packet(s->pb, &pkt, size);
+            ret = av_get_packet_xij(s->pb, &pkt, size);
             if (ret < 0) {
                 av_log(s, AV_LOG_ERROR, "Error reading cover art.\n");
                 return ret;
@@ -96,7 +96,7 @@ static int ape_tag_read_field(AVFormatContext *s)
             st->attached_pic.stream_index = st->index;
             st->attached_pic.flags       |= AV_PKT_FLAG_KEY;
         } else {
-            if (ff_get_extradata(s, st->codecpar, s->pb, size) < 0)
+            if (ff_get_extradata_xij(s, st->codecpar, s->pb, size) < 0)
                 return AVERROR(ENOMEM);
             st->codecpar->codec_type = AVMEDIA_TYPE_ATTACHMENT;
         }
@@ -104,7 +104,7 @@ static int ape_tag_read_field(AVFormatContext *s)
         value = av_malloc(size+1);
         if (!value)
             return AVERROR(ENOMEM);
-        c = avio_read(pb, value, size);
+        c = avio_read_xij(pb, value, size);
         if (c < 0) {
             av_free(value);
             return c;
@@ -118,7 +118,7 @@ static int ape_tag_read_field(AVFormatContext *s)
 int64_t ff_ape_parse_tag(AVFormatContext *s)
 {
     AVIOContext *pb = s->pb;
-    int64_t file_size = avio_size(pb);
+    int64_t file_size = avio_size_xij(pb);
     uint32_t val, fields, tag_bytes;
     uint8_t buf[8];
     int64_t tag_start;
@@ -127,20 +127,20 @@ int64_t ff_ape_parse_tag(AVFormatContext *s)
     if (file_size < APE_TAG_FOOTER_BYTES)
         return 0;
 
-    avio_seek(pb, file_size - APE_TAG_FOOTER_BYTES, SEEK_SET);
+    avio_seek_xij(pb, file_size - APE_TAG_FOOTER_BYTES, SEEK_SET);
 
-    avio_read(pb, buf, 8);     /* APETAGEX */
+    avio_read_xij(pb, buf, 8);     /* APETAGEX */
     if (strncmp(buf, APE_TAG_PREAMBLE, 8)) {
         return 0;
     }
 
-    val = avio_rl32(pb);       /* APE tag version */
+    val = avio_rl32_xij(pb);       /* APE tag version */
     if (val > APE_TAG_VERSION) {
         av_log(s, AV_LOG_ERROR, "Unsupported tag version. (>=%d)\n", APE_TAG_VERSION);
         return 0;
     }
 
-    tag_bytes = avio_rl32(pb); /* tag size */
+    tag_bytes = avio_rl32_xij(pb); /* tag size */
     if (tag_bytes - APE_TAG_FOOTER_BYTES > (1024 * 1024 * 16)) {
         av_log(s, AV_LOG_ERROR, "Tag size is way too big\n");
         return 0;
@@ -151,19 +151,19 @@ int64_t ff_ape_parse_tag(AVFormatContext *s)
         return 0;
     }
 
-    fields = avio_rl32(pb);    /* number of fields */
+    fields = avio_rl32_xij(pb);    /* number of fields */
     if (fields > 65536) {
         av_log(s, AV_LOG_ERROR, "Too many tag fields (%"PRIu32")\n", fields);
         return 0;
     }
 
-    val = avio_rl32(pb);       /* flags */
+    val = avio_rl32_xij(pb);       /* flags */
     if (val & APE_TAG_FLAG_IS_HEADER) {
         av_log(s, AV_LOG_ERROR, "APE Tag is a header\n");
         return 0;
     }
 
-    avio_seek(pb, file_size - tag_bytes, SEEK_SET);
+    avio_seek_xij(pb, file_size - tag_bytes, SEEK_SET);
 
     if (val & APE_TAG_FLAG_CONTAINS_HEADER)
         tag_bytes += APE_TAG_HEADER_BYTES;
@@ -189,10 +189,10 @@ int ff_ape_write_tag(AVFormatContext *s)
     AVIOContext *dyn_bc = NULL;
     uint8_t *dyn_buf = NULL;
 
-    if ((ret = avio_open_dyn_buf(&dyn_bc)) < 0)
+    if ((ret = avio_open_dyn_buf_xij(&dyn_bc)) < 0)
         goto end;
 
-    ff_standardize_creation_time(s);
+    ff_standardize_creation_time_xij(s);
     while ((e = av_dict_get(s->metadata, "", e, AV_DICT_IGNORE_SUFFIX))) {
         int val_len;
 
@@ -202,45 +202,45 @@ int ff_ape_write_tag(AVFormatContext *s)
         }
 
         val_len = strlen(e->value);
-        avio_wl32(dyn_bc, val_len);            // value length
-        avio_wl32(dyn_bc, 0);                  // item flags
-        avio_put_str(dyn_bc, e->key);          // key
-        avio_write(dyn_bc, e->value, val_len); // value
+        avio_wl32_xij(dyn_bc, val_len);            // value length
+        avio_wl32_xij(dyn_bc, 0);                  // item flags
+        avio_put_str_xij(dyn_bc, e->key);          // key
+        avio_write_xij(dyn_bc, e->value, val_len); // value
         count++;
     }
     if (!count)
         goto end;
 
-    size = avio_close_dyn_buf(dyn_bc, &dyn_buf);
+    size = avio_close_dyn_buf_xij(dyn_bc, &dyn_buf);
     if (size <= 0)
         goto end;
     size += APE_TAG_FOOTER_BYTES;
 
     // header
-    avio_write(s->pb, "APETAGEX", 8);   // id
-    avio_wl32(s->pb, APE_TAG_VERSION);  // version
-    avio_wl32(s->pb, size);
-    avio_wl32(s->pb, count);
+    avio_write_xij(s->pb, "APETAGEX", 8);   // id
+    avio_wl32_xij(s->pb, APE_TAG_VERSION);  // version
+    avio_wl32_xij(s->pb, size);
+    avio_wl32_xij(s->pb, count);
 
     // flags
-    avio_wl32(s->pb, APE_TAG_FLAG_CONTAINS_HEADER | APE_TAG_FLAG_IS_HEADER);
-    ffio_fill(s->pb, 0, 8);             // reserved
+    avio_wl32_xij(s->pb, APE_TAG_FLAG_CONTAINS_HEADER | APE_TAG_FLAG_IS_HEADER);
+    ffio_fill_xij(s->pb, 0, 8);             // reserved
 
-    avio_write(s->pb, dyn_buf, size - APE_TAG_FOOTER_BYTES);
+    avio_write_xij(s->pb, dyn_buf, size - APE_TAG_FOOTER_BYTES);
 
     // footer
-    avio_write(s->pb, "APETAGEX", 8);   // id
-    avio_wl32(s->pb, APE_TAG_VERSION);  // version
-    avio_wl32(s->pb, size);             // size
-    avio_wl32(s->pb, count);            // tag count
+    avio_write_xij(s->pb, "APETAGEX", 8);   // id
+    avio_wl32_xij(s->pb, APE_TAG_VERSION);  // version
+    avio_wl32_xij(s->pb, size);             // size
+    avio_wl32_xij(s->pb, count);            // tag count
 
     // flags
-    avio_wl32(s->pb, APE_TAG_FLAG_CONTAINS_HEADER);
-    ffio_fill(s->pb, 0, 8);             // reserved
+    avio_wl32_xij(s->pb, APE_TAG_FLAG_CONTAINS_HEADER);
+    ffio_fill_xij(s->pb, 0, 8);             // reserved
 
 end:
     if (dyn_bc && !dyn_buf)
-        avio_close_dyn_buf(dyn_bc, &dyn_buf);
+        avio_close_dyn_buf_xij(dyn_bc, &dyn_buf);
     av_freep(&dyn_buf);
 
     return ret;

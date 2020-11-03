@@ -35,26 +35,26 @@ static int rso_read_header(AVFormatContext *s)
     enum AVCodecID codec;
     AVStream *st;
 
-    id   = avio_rb16(pb);
-    size = avio_rb16(pb);
-    rate = avio_rb16(pb);
-    avio_rb16(pb);   /* play mode ? (0x0000 = don't loop) */
+    id   = avio_rb16_xij(pb);
+    size = avio_rb16_xij(pb);
+    rate = avio_rb16_xij(pb);
+    avio_rb16_xij(pb);   /* play mode ? (0x0000 = don't loop) */
 
-    codec = ff_codec_get_id(ff_codec_rso_tags, id);
+    codec = ff_codec_get_id_xij(ff_codec_rso_tags, id);
 
     if (codec == AV_CODEC_ID_ADPCM_IMA_WAV) {
         avpriv_report_missing_feature(s, "ADPCM in RSO");
         return AVERROR_PATCHWELCOME;
     }
 
-    bps = av_get_bits_per_sample(codec);
+    bps = av_get_bits_per_sample_xij(codec);
     if (!bps) {
         avpriv_request_sample(s, "Unknown bits per sample");
         return AVERROR_PATCHWELCOME;
     }
 
     /* now we are ready: build format streams */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -67,7 +67,7 @@ static int rso_read_header(AVFormatContext *s)
     st->codecpar->sample_rate  = rate;
     st->codecpar->block_align  = 1;
 
-    avpriv_set_pts_info(st, 64, 1, rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, rate);
 
     return 0;
 }

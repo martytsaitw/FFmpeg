@@ -80,7 +80,7 @@ static const uint8_t aac_chan_maps[AAC_MAX_CHANNELS][AAC_MAX_CHANNELS] = {
     { 2, 0, 1, 6, 7, 4, 5, 3 },
 };
 
-/* duplicated from avpriv_mpeg4audio_sample_rates to avoid shared build
+/* duplicated from avpriv_mpeg4audio_sample_rates_xij to avoid shared build
  * failures */
 static const int mpeg4audio_sample_rates[16] = {
     96000, 88200, 64000, 48000, 44100, 32000,

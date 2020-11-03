@@ -656,7 +656,7 @@ int ff_vaapi_decode_init(AVCodecContext *avctx)
     } else {
 #endif
 
-    err = ff_decode_get_hw_frames_ctx(avctx, AV_HWDEVICE_TYPE_VAAPI);
+    err = ff_decode_get_hw_frames_ctx_xij(avctx, AV_HWDEVICE_TYPE_VAAPI);
     if (err < 0)
         goto fail;
 
@@ -703,7 +703,7 @@ int ff_vaapi_decode_uninit(AVCodecContext *avctx)
 
 #if FF_API_STRUCT_VAAPI_CONTEXT
     if (ctx->have_old_context) {
-        av_buffer_unref(&ctx->device_ref);
+        av_buffer_unref_xij(&ctx->device_ref);
     } else {
 #endif
 

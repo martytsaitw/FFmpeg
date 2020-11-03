@@ -66,7 +66,7 @@ static int rtmp_http_send_cmd(URLContext *h, const char *cmd)
                    rt->out_size, 0);
 
     /* send a new request to the server */
-    if ((ret = ff_http_do_new_request(rt->stream, uri)) < 0)
+    if ((ret = ff_http_do_new_request_xij(rt->stream, uri)) < 0)
         return ret;
 
     /* re-init output buffer */
@@ -187,7 +187,7 @@ static int rtmp_http_open(URLContext *h, const char *uri, int flags)
     char headers[1024], url[1024];
     int ret, off = 0;
 
-    av_url_split(NULL, 0, NULL, 0, rt->host, sizeof(rt->host), &rt->port,
+    av_url_split_xij(NULL, 0, NULL, 0, rt->host, sizeof(rt->host), &rt->port,
                  NULL, 0, uri);
 
     /* This is the first request that is sent to the server in order to

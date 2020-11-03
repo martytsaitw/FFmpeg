@@ -39,7 +39,7 @@ static void process_client(AVIOContext *client, const char *in_uri)
     uint8_t buf[1024];
     int ret, n, reply_code;
     uint8_t *resource = NULL;
-    while ((ret = avio_handshake(client)) > 0) {
+    while ((ret = avio_handshake_xij(client)) > 0) {
         av_opt_get(client, "resource", AV_OPT_SEARCH_CHILDREN, &resource);
         // check for strlen(resource) is necessary, because av_opt_get()
         // may return empty string.
@@ -61,7 +61,7 @@ static void process_client(AVIOContext *client, const char *in_uri)
     }
     av_log(client, AV_LOG_TRACE, "Set reply code to %d\n", reply_code);
 
-    while ((ret = avio_handshake(client)) > 0);
+    while ((ret = avio_handshake_xij(client)) > 0);
 
     if (ret < 0)
         goto end;
@@ -70,13 +70,13 @@ static void process_client(AVIOContext *client, const char *in_uri)
     if (reply_code != 200)
         goto end;
     fprintf(stderr, "Opening input file.\n");
-    if ((ret = avio_open2(&input, in_uri, AVIO_FLAG_READ, NULL, NULL)) < 0) {
+    if ((ret = avio_open2_xij(&input, in_uri, AVIO_FLAG_READ, NULL, NULL)) < 0) {
         av_log(input, AV_LOG_ERROR, "Failed to open input: %s: %s.\n", in_uri,
                av_err2str(ret));
         goto end;
     }
     for(;;) {
-        n = avio_read(input, buf, sizeof(buf));
+        n = avio_read_xij(input, buf, sizeof(buf));
         if (n < 0) {
             if (n == AVERROR_EOF)
                 break;
@@ -84,16 +84,16 @@ static void process_client(AVIOContext *client, const char *in_uri)
                    av_err2str(n));
             break;
         }
-        avio_write(client, buf, n);
-        avio_flush(client);
+        avio_write_xij(client, buf, n);
+        avio_flush_xij(client);
     }
 end:
     fprintf(stderr, "Flushing client\n");
-    avio_flush(client);
+    avio_flush_xij(client);
     fprintf(stderr, "Closing client\n");
-    avio_close(client);
+    avio_close_xij(client);
     fprintf(stderr, "Closing input\n");
-    avio_close(input);
+    avio_close_xij(input);
     av_freep(&resource);
 }
 
@@ -114,19 +114,19 @@ int main(int argc, char **argv)
     in_uri = argv[1];
     out_uri = argv[2];
 
-    avformat_network_init();
+    avformat_network_init_xij();
 
     if ((ret = av_dict_set(&options, "listen", "2", 0)) < 0) {
         fprintf(stderr, "Failed to set listen mode for server: %s\n", av_err2str(ret));
         return ret;
     }
-    if ((ret = avio_open2(&server, out_uri, AVIO_FLAG_WRITE, NULL, &options)) < 0) {
+    if ((ret = avio_open2_xij(&server, out_uri, AVIO_FLAG_WRITE, NULL, &options)) < 0) {
         fprintf(stderr, "Failed to open server: %s\n", av_err2str(ret));
         return ret;
     }
     fprintf(stderr, "Entering main loop.\n");
     for(;;) {
-        if ((ret = avio_accept(server, &client)) < 0)
+        if ((ret = avio_accept_xij(server, &client)) < 0)
             goto end;
         fprintf(stderr, "Accepted client, forking process.\n");
         // XXX: Since we don't reap our children and don't ignore signals
@@ -140,14 +140,14 @@ int main(int argc, char **argv)
         if (pid == 0) {
             fprintf(stderr, "In child.\n");
             process_client(client, in_uri);
-            avio_close(server);
+            avio_close_xij(server);
             exit(0);
         }
         if (pid > 0)
-            avio_close(client);
+            avio_close_xij(client);
     }
 end:
-    avio_close(server);
+    avio_close_xij(server);
     if (ret < 0 && ret != AVERROR_EOF) {
         fprintf(stderr, "Some errors occurred: %s\n", av_err2str(ret));
         return 1;

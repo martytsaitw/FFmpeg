@@ -181,8 +181,8 @@ static av_cold void uninit(AVFilterContext *ctx)
 {
     InterlaceContext *s = ctx->priv;
 
-    av_frame_free(&s->cur);
-    av_frame_free(&s->next);
+    av_frame_free_xij(&s->cur);
+    av_frame_free_xij(&s->next);
 }
 
 void ff_interlace_init(InterlaceContext *s, int depth)
@@ -294,7 +294,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
     AVFrame *out;
     int tff, ret;
 
-    av_frame_free(&s->cur);
+    av_frame_free_xij(&s->cur);
     s->cur  = s->next;
     s->next = buf;
 
@@ -305,7 +305,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
     if (s->cur->interlaced_frame) {
         av_log(ctx, AV_LOG_WARNING,
                "video is already interlaced, adjusting framerate only\n");
-        out = av_frame_clone(s->cur);
+        out = av_frame_clone_xij(s->cur);
         if (!out)
             return AVERROR(ENOMEM);
         out->pts /= 2;  // adjust pts to new framerate
@@ -318,18 +318,18 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
     if (!out)
         return AVERROR(ENOMEM);
 
-    av_frame_copy_props(out, s->cur);
+    av_frame_copy_props_xij(out, s->cur);
     out->interlaced_frame = 1;
     out->top_field_first  = tff;
     out->pts             /= 2;  // adjust pts to new framerate
 
     /* copy upper/lower field from cur */
     copy_picture_field(s, s->cur, out, inlink, tff ? FIELD_UPPER : FIELD_LOWER, s->lowpass);
-    av_frame_free(&s->cur);
+    av_frame_free_xij(&s->cur);
 
     /* copy lower/upper field from next */
     copy_picture_field(s, s->next, out, inlink, tff ? FIELD_LOWER : FIELD_UPPER, s->lowpass);
-    av_frame_free(&s->next);
+    av_frame_free_xij(&s->next);
 
     ret = ff_filter_frame(outlink, out);
 

@@ -77,7 +77,7 @@ static int srtp_open(URLContext *h, const char *uri, int flags)
         if ((ret = ff_srtp_set_crypto(&s->srtp_in, s->in_suite, s->in_params)) < 0)
             goto fail;
 
-    av_url_split(NULL, 0, NULL, 0, hostname, sizeof(hostname), &rtp_port,
+    av_url_split_xij(NULL, 0, NULL, 0, hostname, sizeof(hostname), &rtp_port,
                  path, sizeof(path), uri);
     ff_url_join(buf, sizeof(buf), "rtp", NULL, hostname, rtp_port, "%s", path);
     if ((ret = ffurl_open_whitelist(&s->rtp_hd, buf, flags, &h->interrupt_callback,

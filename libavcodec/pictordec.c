@@ -143,12 +143,12 @@ static int decode_frame(AVCodecContext *avctx,
     if (av_image_check_size(s->width, s->height, 0, avctx) < 0)
         return -1;
     if (s->width != avctx->width || s->height != avctx->height) {
-        ret = ff_set_dimensions(avctx, s->width, s->height);
+        ret = ff_set_dimensions_xij(avctx, s->width, s->height);
         if (ret < 0)
             return ret;
     }
 
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
     memset(frame->data[0], 0, s->height * frame->linesize[0]);
     frame->pict_type           = AV_PICTURE_TYPE_I;

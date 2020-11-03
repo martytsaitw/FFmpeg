@@ -32,7 +32,7 @@ extern const AVBitStreamFilter ff_eac3_core_bsf;
 extern const AVBitStreamFilter ff_extract_extradata_bsf;
 extern const AVBitStreamFilter ff_filter_units_bsf;
 extern const AVBitStreamFilter ff_h264_metadata_bsf;
-extern const AVBitStreamFilter ff_h264_mp4toannexb_bsf;
+extern const AVBitStreamFilter ff_h264_mp4toannexb_bsf_ijk;
 extern const AVBitStreamFilter ff_h264_redundant_pps_bsf;
 extern const AVBitStreamFilter ff_hapqa_extract_bsf;
 extern const AVBitStreamFilter ff_hevc_metadata_bsf;
@@ -55,7 +55,7 @@ extern const AVBitStreamFilter ff_vp9_superframe_split_bsf;
 
 #include "libavcodec/bsf_list.c"
 
-const AVBitStreamFilter *av_bsf_iterate(void **opaque)
+const AVBitStreamFilter *av_bsf_iterate_xij(void **opaque)
 {
     uintptr_t i = (uintptr_t)*opaque;
     const AVBitStreamFilter *f = bitstream_filters[i];
@@ -67,17 +67,17 @@ const AVBitStreamFilter *av_bsf_iterate(void **opaque)
 }
 
 #if FF_API_NEXT
-const AVBitStreamFilter *av_bsf_next(void **opaque) {
-    return av_bsf_iterate(opaque);
+const AVBitStreamFilter *av_bsf_next_xij(void **opaque) {
+    return av_bsf_iterate_xij(opaque);
 }
 #endif
 
-const AVBitStreamFilter *av_bsf_get_by_name(const char *name)
+const AVBitStreamFilter *av_bsf_get_by_name_ijk(const char *name)
 {
     const AVBitStreamFilter *f = NULL;
     void *i = 0;
 
-    while ((f = av_bsf_iterate(&i))) {
+    while ((f = av_bsf_iterate_xij(&i))) {
         if (!strcmp(f->name, name))
             return f;
     }
@@ -85,20 +85,20 @@ const AVBitStreamFilter *av_bsf_get_by_name(const char *name)
     return NULL;
 }
 
-const AVClass *ff_bsf_child_class_next(const AVClass *prev)
+const AVClass *ff_bsf_child_class_next_xij(const AVClass *prev)
 {
     const AVBitStreamFilter *f = NULL;
     void *i = 0;
 
     /* find the filter that corresponds to prev */
-    while (prev && (f = av_bsf_iterate(&i))) {
+    while (prev && (f = av_bsf_iterate_xij(&i))) {
         if (f->priv_class == prev) {
             break;
         }
     }
 
     /* find next filter with priv options */
-    while ((f = av_bsf_iterate(&i))) {
+    while ((f = av_bsf_iterate_xij(&i))) {
         if (f->priv_class)
             return f->priv_class;
     }

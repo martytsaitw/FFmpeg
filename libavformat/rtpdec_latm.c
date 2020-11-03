@@ -34,7 +34,7 @@ struct PayloadContext {
 
 static void latm_close_context(PayloadContext *data)
 {
-    ffio_free_dyn_buf(&data->dyn_buf);
+    ffio_free_dyn_buf_xij(&data->dyn_buf);
     av_freep(&data->buf);
 }
 
@@ -48,18 +48,18 @@ static int latm_parse_packet(AVFormatContext *ctx, PayloadContext *data,
     if (buf) {
         if (!data->dyn_buf || data->timestamp != *timestamp) {
             av_freep(&data->buf);
-            ffio_free_dyn_buf(&data->dyn_buf);
+            ffio_free_dyn_buf_xij(&data->dyn_buf);
 
             data->timestamp = *timestamp;
-            if ((ret = avio_open_dyn_buf(&data->dyn_buf)) < 0)
+            if ((ret = avio_open_dyn_buf_xij(&data->dyn_buf)) < 0)
                 return ret;
         }
-        avio_write(data->dyn_buf, buf, len);
+        avio_write_xij(data->dyn_buf, buf, len);
 
         if (!(flags & RTP_FLAG_MARKER))
             return AVERROR(EAGAIN);
         av_freep(&data->buf);
-        data->len = avio_close_dyn_buf(data->dyn_buf, &data->buf);
+        data->len = avio_close_dyn_buf_xij(data->dyn_buf, &data->buf);
         data->dyn_buf = NULL;
         data->pos = 0;
     }
@@ -81,7 +81,7 @@ static int latm_parse_packet(AVFormatContext *ctx, PayloadContext *data,
         return AVERROR(EIO);
     }
 
-    if ((ret = av_new_packet(pkt, cur_len)) < 0)
+    if ((ret = av_new_packet_ijk(pkt, cur_len)) < 0)
         return ret;
     memcpy(pkt->data, data->buf + data->pos, cur_len);
     data->pos += cur_len;
@@ -91,7 +91,7 @@ static int latm_parse_packet(AVFormatContext *ctx, PayloadContext *data,
 
 static int parse_fmtp_config(AVStream *st, const char *value)
 {
-    int len = ff_hex_to_data(NULL, value), i, ret = 0;
+    int len = ff_hex_to_data_xij(NULL, value), i, ret = 0;
     GetBitContext gb;
     uint8_t *config;
     int audio_mux_version, same_time_framing, num_programs, num_layers;
@@ -100,7 +100,7 @@ static int parse_fmtp_config(AVStream *st, const char *value)
     config = av_mallocz(len + AV_INPUT_BUFFER_PADDING_SIZE);
     if (!config)
         return AVERROR(ENOMEM);
-    ff_hex_to_data(config, value);
+    ff_hex_to_data_xij(config, value);
     init_get_bits(&gb, config, len*8);
     audio_mux_version = get_bits(&gb, 1);
     same_time_framing = get_bits(&gb, 1);
@@ -116,7 +116,7 @@ static int parse_fmtp_config(AVStream *st, const char *value)
         goto end;
     }
     av_freep(&st->codecpar->extradata);
-    if (ff_alloc_extradata(st->codecpar, (get_bits_left(&gb) + 7)/8)) {
+    if (ff_alloc_extradata_xij(st->codecpar, (get_bits_left(&gb) + 7)/8)) {
         ret = AVERROR(ENOMEM);
         goto end;
     }

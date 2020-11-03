@@ -355,7 +355,7 @@ static void free_sequence_buffers(DiracContext *s)
 
     for (i = 0; i < MAX_FRAMES; i++) {
         if (s->all_frames[i].avframe->data[0]) {
-            av_frame_unref(s->all_frames[i].avframe);
+            av_frame_unref_xij(s->all_frames[i].avframe);
             memset(s->all_frames[i].interpolated, 0, sizeof(s->all_frames[i].interpolated));
         }
 
@@ -401,10 +401,10 @@ static av_cold int dirac_decode_init(AVCodecContext *avctx)
     ff_videodsp_init(&s->vdsp, 8);
 
     for (i = 0; i < MAX_FRAMES; i++) {
-        s->all_frames[i].avframe = av_frame_alloc();
+        s->all_frames[i].avframe = av_frame_alloc_ijk();
         if (!s->all_frames[i].avframe) {
             while (i > 0)
-                av_frame_free(&s->all_frames[--i].avframe);
+                av_frame_free_xij(&s->all_frames[--i].avframe);
             return AVERROR(ENOMEM);
         }
     }
@@ -432,7 +432,7 @@ static av_cold int dirac_decode_end(AVCodecContext *avctx)
 
     dirac_decode_flush(avctx);
     for (i = 0; i < MAX_FRAMES; i++)
-        av_frame_free(&s->all_frames[i].avframe);
+        av_frame_free_xij(&s->all_frames[i].avframe);
 
     av_freep(&s->thread_buf);
     av_freep(&s->slice_params_buf);
@@ -1935,7 +1935,7 @@ static int get_buffer_with_edge(AVCodecContext *avctx, AVFrame *f, int flags)
 
     f->width  = avctx->width  + 2 * EDGE_WIDTH;
     f->height = avctx->height + 2 * EDGE_WIDTH + 2;
-    ret = ff_get_buffer(avctx, f, flags);
+    ret = ff_get_buffer_xij(avctx, f, flags);
     if (ret < 0)
         return ret;
 
@@ -2060,7 +2060,7 @@ static int get_delayed_pic(DiracContext *s, AVFrame *picture, int *got_frame)
 
     if (out) {
         out->reference ^= DELAYED_PIC_REF;
-        if((ret = av_frame_ref(picture, out->avframe)) < 0)
+        if((ret = av_frame_ref_xij(picture, out->avframe)) < 0)
             return ret;
         *got_frame = 1;
     }
@@ -2107,13 +2107,13 @@ static int dirac_decode_data_unit(AVCodecContext *avctx, const uint8_t *buf, int
         if (CALC_PADDING((int64_t)dsh->width, MAX_DWT_LEVELS) * CALC_PADDING((int64_t)dsh->height, MAX_DWT_LEVELS) > avctx->max_pixels)
             ret = AVERROR(ERANGE);
         if (ret >= 0)
-            ret = ff_set_dimensions(avctx, dsh->width, dsh->height);
+            ret = ff_set_dimensions_xij(avctx, dsh->width, dsh->height);
         if (ret < 0) {
             av_freep(&dsh);
             return ret;
         }
 
-        ff_set_sar(avctx, dsh->sample_aspect_ratio);
+        ff_set_sar_xij(avctx, dsh->sample_aspect_ratio);
         avctx->pix_fmt         = dsh->pix_fmt;
         avctx->color_range     = dsh->color_range;
         avctx->color_trc       = dsh->color_trc;
@@ -2168,7 +2168,7 @@ static int dirac_decode_data_unit(AVCodecContext *avctx, const uint8_t *buf, int
             return AVERROR_INVALIDDATA;
         }
 
-        av_frame_unref(pic->avframe);
+        av_frame_unref_xij(pic->avframe);
 
         /* [DIRAC_STD] Defined in 9.6.1 ... */
         tmp            =  parse_code & 0x03;                   /* [DIRAC_STD] num_refs()      */
@@ -2232,7 +2232,7 @@ static int dirac_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     /* release unused frames */
     for (i = 0; i < MAX_FRAMES; i++)
         if (s->all_frames[i].avframe->data[0] && !s->all_frames[i].reference) {
-            av_frame_unref(s->all_frames[i].avframe);
+            av_frame_unref_xij(s->all_frames[i].avframe);
             memset(s->all_frames[i].interpolated, 0, sizeof(s->all_frames[i].interpolated));
         }
 
@@ -2298,13 +2298,13 @@ static int dirac_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
 
         if (delayed_frame) {
             delayed_frame->reference ^= DELAYED_PIC_REF;
-            if((ret=av_frame_ref(data, delayed_frame->avframe)) < 0)
+            if((ret=av_frame_ref_xij(data, delayed_frame->avframe)) < 0)
                 return ret;
             *got_frame = 1;
         }
     } else if (s->current_picture->avframe->display_picture_number == s->frame_number) {
         /* The right frame at the right time :-) */
-        if((ret=av_frame_ref(data, s->current_picture->avframe)) < 0)
+        if((ret=av_frame_ref_xij(data, s->current_picture->avframe)) < 0)
             return ret;
         *got_frame = 1;
     }

@@ -221,7 +221,7 @@ static void image_ctx_free(ImageContext *img)
 
     av_free(img->color_cache);
     if (img->role != IMAGE_ROLE_ARGB && !img->is_alpha_primary)
-        av_frame_free(&img->frame);
+        av_frame_free_xij(&img->frame);
     if (img->huffman_groups) {
         for (i = 0; i < img->nb_huffman_groups; i++) {
             for (j = 0; j < HUFFMAN_CODES_PER_META_CODE; j++)
@@ -595,7 +595,7 @@ static int decode_entropy_coded_image(WebPContext *s, enum ImageRole role,
     img->role = role;
 
     if (!img->frame) {
-        img->frame = av_frame_alloc();
+        img->frame = av_frame_alloc_ijk();
         if (!img->frame)
             return AVERROR(ENOMEM);
     }
@@ -608,7 +608,7 @@ static int decode_entropy_coded_image(WebPContext *s, enum ImageRole role,
         ThreadFrame pt = { .f = img->frame };
         ret = ff_thread_get_buffer(s->avctx, &pt, 0);
     } else
-        ret = av_frame_get_buffer(img->frame, 1);
+        ret = av_frame_get_buffer_xij(img->frame, 1);
     if (ret < 0)
         return ret;
 
@@ -1142,7 +1142,7 @@ static int vp8_lossless_decode_frame(AVCodecContext *avctx, AVFrame *p,
 
         update_canvas_size(avctx, w, h);
 
-        ret = ff_set_dimensions(avctx, s->width, s->height);
+        ret = ff_set_dimensions_xij(avctx, s->width, s->height);
         if (ret < 0)
             return ret;
 
@@ -1289,18 +1289,18 @@ static int vp8_lossy_decode_alpha(AVCodecContext *avctx, AVFrame *p,
         uint8_t *ap, *pp;
         int alpha_got_frame = 0;
 
-        s->alpha_frame = av_frame_alloc();
+        s->alpha_frame = av_frame_alloc_ijk();
         if (!s->alpha_frame)
             return AVERROR(ENOMEM);
 
         ret = vp8_lossless_decode_frame(avctx, s->alpha_frame, &alpha_got_frame,
                                         data_start, data_size, 1);
         if (ret < 0) {
-            av_frame_free(&s->alpha_frame);
+            av_frame_free_xij(&s->alpha_frame);
             return ret;
         }
         if (!alpha_got_frame) {
-            av_frame_free(&s->alpha_frame);
+            av_frame_free_xij(&s->alpha_frame);
             return AVERROR_INVALIDDATA;
         }
 
@@ -1314,7 +1314,7 @@ static int vp8_lossy_decode_alpha(AVCodecContext *avctx, AVFrame *p,
                 ap += 4;
             }
         }
-        av_frame_free(&s->alpha_frame);
+        av_frame_free_xij(&s->alpha_frame);
     }
 
     /* apply alpha filtering */
@@ -1345,7 +1345,7 @@ static int vp8_lossy_decode_frame(AVCodecContext *avctx, AVFrame *p,
         return AVERROR_PATCHWELCOME;
     }
 
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
     pkt.data = data_start;
     pkt.size = data_size;
 
@@ -1531,7 +1531,7 @@ exif_end:
                        "VP8X header\n");
 
             s->has_iccp = 1;
-            sd = av_frame_new_side_data(p, AV_FRAME_DATA_ICC_PROFILE, chunk_size);
+            sd = av_frame_new_side_data_xij(p, AV_FRAME_DATA_ICC_PROFILE, chunk_size);
             if (!sd)
                 return AVERROR(ENOMEM);
 

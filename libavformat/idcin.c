@@ -159,11 +159,11 @@ static int idcin_read_header(AVFormatContext *s)
     int ret;
 
     /* get the 5 header parameters */
-    width = avio_rl32(pb);
-    height = avio_rl32(pb);
-    sample_rate = avio_rl32(pb);
-    bytes_per_sample = avio_rl32(pb);
-    channels = avio_rl32(pb);
+    width = avio_rl32_xij(pb);
+    height = avio_rl32_xij(pb);
+    sample_rate = avio_rl32_xij(pb);
+    bytes_per_sample = avio_rl32_xij(pb);
+    channels = avio_rl32_xij(pb);
 
     if (s->pb->eof_reached) {
         av_log(s, AV_LOG_ERROR, "incomplete header\n");
@@ -192,10 +192,10 @@ static int idcin_read_header(AVFormatContext *s)
         idcin->audio_present = 0;
     }
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
-    avpriv_set_pts_info(st, 33, 1, IDCIN_FPS);
+    avpriv_set_pts_info_ijk(st, 33, 1, IDCIN_FPS);
     st->start_time = 0;
     idcin->video_stream_index = st->index;
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
@@ -205,15 +205,15 @@ static int idcin_read_header(AVFormatContext *s)
     st->codecpar->height = height;
 
     /* load up the Huffman tables into extradata */
-    if ((ret = ff_get_extradata(s, st->codecpar, pb, HUFFMAN_TABLE_SIZE)) < 0)
+    if ((ret = ff_get_extradata_xij(s, st->codecpar, pb, HUFFMAN_TABLE_SIZE)) < 0)
         return ret;
 
     if (idcin->audio_present) {
         idcin->audio_present = 1;
-        st = avformat_new_stream(s, NULL);
+        st = avformat_new_stream_ijk(s, NULL);
         if (!st)
             return AVERROR(ENOMEM);
-        avpriv_set_pts_info(st, 63, 1, sample_rate);
+        avpriv_set_pts_info_ijk(st, 63, 1, sample_rate);
         st->start_time = 0;
         idcin->audio_stream_index = st->index;
         st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -262,16 +262,16 @@ static int idcin_read_packet(AVFormatContext *s,
     unsigned char palette_buffer[768];
     uint32_t palette[256];
 
-    if (avio_feof(s->pb))
+    if (avio_feof_xij(s->pb))
         return s->pb->error ? s->pb->error : AVERROR_EOF;
 
     if (idcin->next_chunk_is_video) {
-        command = avio_rl32(pb);
+        command = avio_rl32_xij(pb);
         if (command == 2) {
             return AVERROR(EIO);
         } else if (command == 1) {
             /* trigger a palette change */
-            ret = avio_read(pb, palette_buffer, 768);
+            ret = avio_read_xij(pb, palette_buffer, 768);
             if (ret < 0) {
                 return ret;
             } else if (ret != 768) {
@@ -300,29 +300,29 @@ static int idcin_read_packet(AVFormatContext *s,
             av_log(s, AV_LOG_ERROR, "incomplete packet\n");
             return s->pb->error ? s->pb->error : AVERROR_EOF;
         }
-        chunk_size = avio_rl32(pb);
+        chunk_size = avio_rl32_xij(pb);
         if (chunk_size < 4 || chunk_size > INT_MAX - 4) {
             av_log(s, AV_LOG_ERROR, "invalid chunk size: %u\n", chunk_size);
             return AVERROR_INVALIDDATA;
         }
         /* skip the number of decoded bytes (always equal to width * height) */
-        avio_skip(pb, 4);
+        avio_skip_xij(pb, 4);
         chunk_size -= 4;
-        ret= av_get_packet(pb, pkt, chunk_size);
+        ret= av_get_packet_xij(pb, pkt, chunk_size);
         if (ret < 0)
             return ret;
         else if (ret != chunk_size) {
             av_log(s, AV_LOG_ERROR, "incomplete packet\n");
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return AVERROR(EIO);
         }
         if (command == 1) {
             uint8_t *pal;
 
-            pal = av_packet_new_side_data(pkt, AV_PKT_DATA_PALETTE,
+            pal = av_packet_new_side_data_xij(pkt, AV_PKT_DATA_PALETTE,
                                           AVPALETTE_SIZE);
             if (!pal) {
-                av_packet_unref(pkt);
+                av_packet_unref_ijk(pkt);
                 return AVERROR(ENOMEM);
             }
             memcpy(pal, palette, AVPALETTE_SIZE);
@@ -336,7 +336,7 @@ static int idcin_read_packet(AVFormatContext *s,
             chunk_size = idcin->audio_chunk_size2;
         else
             chunk_size = idcin->audio_chunk_size1;
-        ret= av_get_packet(pb, pkt, chunk_size);
+        ret= av_get_packet_xij(pb, pkt, chunk_size);
         if (ret < 0)
             return ret;
         pkt->stream_index = idcin->audio_stream_index;
@@ -357,10 +357,10 @@ static int idcin_read_seek(AVFormatContext *s, int stream_index,
     IdcinDemuxContext *idcin = s->priv_data;
 
     if (idcin->first_pkt_pos > 0) {
-        int64_t ret = avio_seek(s->pb, idcin->first_pkt_pos, SEEK_SET);
+        int64_t ret = avio_seek_xij(s->pb, idcin->first_pkt_pos, SEEK_SET);
         if (ret < 0)
             return ret;
-        ff_update_cur_dts(s, s->streams[idcin->video_stream_index], 0);
+        ff_update_cur_dts_xij(s, s->streams[idcin->video_stream_index], 0);
         idcin->next_chunk_is_video = 1;
         idcin->current_audio_chunk = 0;
         return 0;

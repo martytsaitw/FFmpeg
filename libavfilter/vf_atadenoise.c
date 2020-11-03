@@ -319,9 +319,9 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
     if (s->q.available != s->size) {
         if (s->q.available < s->mid) {
             for (i = 0; i < s->mid; i++) {
-                out = av_frame_clone(buf);
+                out = av_frame_clone_xij(buf);
                 if (!out) {
-                    av_frame_free(&buf);
+                    av_frame_free_xij(&buf);
                     return AVERROR(ENOMEM);
                 }
                 ff_bufqueue_add(ctx, &s->q, out);
@@ -341,7 +341,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
 
         out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out) {
-            av_frame_free(&buf);
+            av_frame_free_xij(&buf);
             return AVERROR(ENOMEM);
         }
 
@@ -361,17 +361,17 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
                                FFMIN3(s->planeheight[1],
                                       s->planeheight[2],
                                       ff_filter_get_nb_threads(ctx)));
-        av_frame_copy_props(out, in);
+        av_frame_copy_props_xij(out, in);
     } else {
-        out = av_frame_clone(in);
+        out = av_frame_clone_xij(in);
         if (!out) {
-            av_frame_free(&buf);
+            av_frame_free_xij(&buf);
             return AVERROR(ENOMEM);
         }
     }
 
     in = ff_bufqueue_get(&s->q);
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
     ff_bufqueue_add(ctx, &s->q, buf);
 
     return ff_filter_frame(outlink, out);
@@ -386,7 +386,7 @@ static int request_frame(AVFilterLink *outlink)
     ret = ff_request_frame(ctx->inputs[0]);
 
     if (ret == AVERROR_EOF && !ctx->is_disabled && s->available) {
-        AVFrame *buf = av_frame_clone(ff_bufqueue_peek(&s->q, s->available));
+        AVFrame *buf = av_frame_clone_xij(ff_bufqueue_peek(&s->q, s->available));
         if (!buf)
             return AVERROR(ENOMEM);
 

@@ -920,12 +920,12 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
     struct ThreadData td;
 
     if (!out) {
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         return AVERROR(ENOMEM);
     }
-    res = av_frame_copy_props(out, in);
+    res = av_frame_copy_props_xij(out, in);
     if (res < 0) {
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         return res;
     }
 
@@ -1004,14 +1004,14 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
     td.in_ss_h = av_pix_fmt_desc_get(in->format)->log2_chroma_h;
     td.out_ss_h = av_pix_fmt_desc_get(out->format)->log2_chroma_h;
     if (s->yuv2yuv_passthrough) {
-        res = av_frame_copy(out, in);
+        res = av_frame_copy_xij(out, in);
         if (res < 0)
             return res;
     } else {
         ctx->internal->execute(ctx, convert, &td, NULL,
                                FFMIN((in->height + 1) >> 1, ff_filter_get_nb_threads(ctx)));
     }
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
 
     return ff_filter_frame(outlink, out);
 }

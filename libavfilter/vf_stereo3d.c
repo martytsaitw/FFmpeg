@@ -711,13 +711,13 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
          s->in.format == ABOVE_BELOW_2_RL ||
          s->in.format == INTERLEAVE_ROWS_LR ||
          s->in.format == INTERLEAVE_ROWS_RL)) {
-        oright = av_frame_clone(s->prev);
-        oleft  = av_frame_clone(s->prev);
+        oright = av_frame_clone_xij(s->prev);
+        oleft  = av_frame_clone_xij(s->prev);
         if (!oright || !oleft) {
-            av_frame_free(&oright);
-            av_frame_free(&oleft);
-            av_frame_free(&s->prev);
-            av_frame_free(&inpicref);
+            av_frame_free_xij(&oright);
+            av_frame_free_xij(&oleft);
+            av_frame_free_xij(&s->prev);
+            av_frame_free_xij(&inpicref);
             return AVERROR(ENOMEM);
         }
     } else if ((s->out.format == MONO_L ||
@@ -732,22 +732,22 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
          s->in.format == ABOVE_BELOW_2_RL ||
          s->in.format == INTERLEAVE_ROWS_LR ||
          s->in.format == INTERLEAVE_ROWS_RL)) {
-        out = oleft = oright = av_frame_clone(inpicref);
+        out = oleft = oright = av_frame_clone_xij(inpicref);
         if (!out) {
-            av_frame_free(&s->prev);
-            av_frame_free(&inpicref);
+            av_frame_free_xij(&s->prev);
+            av_frame_free_xij(&inpicref);
             return AVERROR(ENOMEM);
         }
     } else if ((s->out.format == MONO_L && s->in.format == ALTERNATING_LR) ||
                (s->out.format == MONO_R && s->in.format == ALTERNATING_RL)) {
         s->prev->pts /= 2;
         ret = ff_filter_frame(outlink, s->prev);
-        av_frame_free(&inpicref);
+        av_frame_free_xij(&inpicref);
         s->prev = NULL;
         return ret;
     } else if ((s->out.format == MONO_L && s->in.format == ALTERNATING_RL) ||
                (s->out.format == MONO_R && s->in.format == ALTERNATING_LR)) {
-        av_frame_free(&s->prev);
+        av_frame_free_xij(&s->prev);
         inpicref->pts /= 2;
         return ff_filter_frame(outlink, inpicref);
     } else if ((s->out.format == ALTERNATING_LR && s->in.format == ALTERNATING_RL) ||
@@ -760,22 +760,22 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
     } else {
         out = oleft = oright = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out) {
-            av_frame_free(&s->prev);
-            av_frame_free(&inpicref);
+            av_frame_free_xij(&s->prev);
+            av_frame_free_xij(&inpicref);
             return AVERROR(ENOMEM);
         }
-        av_frame_copy_props(out, inpicref);
+        av_frame_copy_props_xij(out, inpicref);
 
         if (s->out.format == ALTERNATING_LR ||
             s->out.format == ALTERNATING_RL) {
             oright = ff_get_video_buffer(outlink, outlink->w, outlink->h);
             if (!oright) {
-                av_frame_free(&oleft);
-                av_frame_free(&s->prev);
-                av_frame_free(&inpicref);
+                av_frame_free_xij(&oleft);
+                av_frame_free_xij(&s->prev);
+                av_frame_free_xij(&inpicref);
                 return AVERROR(ENOMEM);
             }
-            av_frame_copy_props(oright, s->prev);
+            av_frame_copy_props_xij(oright, s->prev);
         }
     }
 
@@ -1065,16 +1065,16 @@ copy:
         ff_filter_frame(outlink, oright);
         out = oleft;
         oleft->pts = s->prev->pts + inpicref->pts;
-        av_frame_free(&s->prev);
+        av_frame_free_xij(&s->prev);
         s->prev = inpicref;
     } else if (s->in.format == ALTERNATING_LR ||
                s->in.format == ALTERNATING_RL) {
         out->pts = s->prev->pts / 2;
-        av_frame_free(&s->prev);
-        av_frame_free(&inpicref);
+        av_frame_free_xij(&s->prev);
+        av_frame_free_xij(&inpicref);
     } else {
-        av_frame_free(&s->prev);
-        av_frame_free(&inpicref);
+        av_frame_free_xij(&s->prev);
+        av_frame_free_xij(&inpicref);
     }
     out->sample_aspect_ratio = s->aspect;
     return ff_filter_frame(outlink, out);
@@ -1084,7 +1084,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 {
     Stereo3DContext *s = ctx->priv;
 
-    av_frame_free(&s->prev);
+    av_frame_free_xij(&s->prev);
 }
 
 static const AVFilterPad stereo3d_inputs[] = {

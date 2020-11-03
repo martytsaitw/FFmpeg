@@ -81,31 +81,31 @@ static int codec2_read_header_common(AVFormatContext *s, AVStream *st)
         return AVERROR_INVALIDDATA;
     }
 
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }
 
 static int codec2_read_header(AVFormatContext *s)
 {
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     int ret, version;
 
     if (!st) {
         return AVERROR(ENOMEM);
     }
 
-    if (avio_rb24(s->pb) != AVPRIV_CODEC2_MAGIC) {
+    if (avio_rb24_xij(s->pb) != AVPRIV_CODEC2_MAGIC) {
         av_log(s, AV_LOG_ERROR, "not a .c2 file\n");
         return AVERROR_INVALIDDATA;
     }
 
-    ret = ff_alloc_extradata(st->codecpar, AVPRIV_CODEC2_EXTRADATA_SIZE);
+    ret = ff_alloc_extradata_xij(st->codecpar, AVPRIV_CODEC2_EXTRADATA_SIZE);
     if (ret) {
         return ret;
     }
 
-    ret = ffio_read_size(s->pb, st->codecpar->extradata, AVPRIV_CODEC2_EXTRADATA_SIZE);
+    ret = ffio_read_size_xij(s->pb, st->codecpar->extradata, AVPRIV_CODEC2_EXTRADATA_SIZE);
     if (ret < 0) {
         return ret;
     }
@@ -136,7 +136,7 @@ static int codec2_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     //try to read desired number of frames, compute n from to actual number of bytes read
     size = c2->frames_per_packet * block_align;
-    ret = av_get_packet(s->pb, pkt, size);
+    ret = av_get_packet_xij(s->pb, pkt, size);
     if (ret < 0) {
         return ret;
     }
@@ -166,8 +166,8 @@ static int codec2_write_header(AVFormatContext *s)
         return AVERROR(EINVAL);
     }
 
-    avio_wb24(s->pb, AVPRIV_CODEC2_MAGIC);
-    avio_write(s->pb, st->codecpar->extradata, AVPRIV_CODEC2_EXTRADATA_SIZE);
+    avio_wb24_xij(s->pb, AVPRIV_CODEC2_MAGIC);
+    avio_write_xij(s->pb, st->codecpar->extradata, AVPRIV_CODEC2_EXTRADATA_SIZE);
 
     return 0;
 }
@@ -184,12 +184,12 @@ static int codec2raw_read_header(AVFormatContext *s)
         return AVERROR(EINVAL);
     }
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st) {
         return AVERROR(ENOMEM);
     }
 
-    ret = ff_alloc_extradata(st->codecpar, AVPRIV_CODEC2_EXTRADATA_SIZE);
+    ret = ff_alloc_extradata_xij(st->codecpar, AVPRIV_CODEC2_EXTRADATA_SIZE);
     if (ret) {
         return ret;
     }

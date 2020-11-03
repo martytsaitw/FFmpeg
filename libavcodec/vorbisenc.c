@@ -733,8 +733,8 @@ static int put_main_header(vorbis_enc_context *venc, uint8_t **out)
         return AVERROR(ENOMEM);
 
     *p++ = 2;
-    p += av_xiphlacing(p, hlens[0]);
-    p += av_xiphlacing(p, hlens[1]);
+    p += av_xiphlacing_xij(p, hlens[0]);
+    p += av_xiphlacing_xij(p, hlens[1]);
     buffer_len = 0;
     for (i = 0; i < 3; i++) {
         memcpy(p, buffer + buffer_len, hlens[i]);
@@ -1025,7 +1025,7 @@ static int apply_window_and_mdct(vorbis_enc_context *venc)
 /* Used for padding the last encoded packet */
 static AVFrame *spawn_empty_frame(AVCodecContext *avctx, int channels)
 {
-    AVFrame *f = av_frame_alloc();
+    AVFrame *f = av_frame_alloc_ijk();
     int ch;
 
     if (!f)
@@ -1035,8 +1035,8 @@ static AVFrame *spawn_empty_frame(AVCodecContext *avctx, int channels)
     f->nb_samples = avctx->frame_size;
     f->channel_layout = avctx->channel_layout;
 
-    if (av_frame_get_buffer(f, 4)) {
-        av_frame_free(&f);
+    if (av_frame_get_buffer_xij(f, 4)) {
+        av_frame_free_xij(&f);
         return NULL;
     }
 
@@ -1076,7 +1076,7 @@ static void move_audio(vorbis_enc_context *venc, int sf_size)
             memcpy(offset + sf*sf_size, input, len);
             memcpy(save + sf*sf_size, input, len);   // Move samples for next frame
         }
-        av_frame_free(&cur);
+        av_frame_free_xij(&cur);
     }
     venc->have_saved = 1;
     memcpy(venc->scratch, venc->samples, 2 * venc->channels * frame_size);
@@ -1096,7 +1096,7 @@ static int vorbis_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
         AVFrame *clone;
         if ((ret = ff_af_queue_add(&venc->afq, frame)) < 0)
             return ret;
-        clone = av_frame_clone(frame);
+        clone = av_frame_clone_xij(frame);
         if (!clone)
             return AVERROR(ENOMEM);
         ff_bufqueue_add(avctx, &venc->bufqueue, clone);
@@ -1190,7 +1190,7 @@ static int vorbis_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     ff_af_queue_remove(&venc->afq, frame_size, &avpkt->pts, &avpkt->duration);
 
     if (frame_size > avpkt->duration) {
-        uint8_t *side = av_packet_new_side_data(avpkt, AV_PKT_DATA_SKIP_SAMPLES, 10);
+        uint8_t *side = av_packet_new_side_data_xij(avpkt, AV_PKT_DATA_SKIP_SAMPLES, 10);
         if (!side)
             return AVERROR(ENOMEM);
         AV_WL32(&side[4], frame_size - avpkt->duration);

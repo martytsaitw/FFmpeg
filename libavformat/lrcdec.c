@@ -104,8 +104,8 @@ static int64_t read_line(AVBPrint *buf, AVIOContext *pb)
     int64_t pos = avio_tell(pb);
 
     av_bprint_clear(buf);
-    while(!avio_feof(pb)) {
-        int c = avio_r8(pb);
+    while(!avio_feof_xij(pb)) {
+        int c = avio_r8_xij(pb);
         if(c != '\r') {
             av_bprint_chars(buf, c, 1);
         }
@@ -159,17 +159,17 @@ static int lrc_read_header(AVFormatContext *s)
     AVBPrint line;
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if(!st) {
         return AVERROR(ENOMEM);
     }
-    avpriv_set_pts_info(st, 64, 1, 1000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000);
     lrc->ts_offset = 0;
     st->codecpar->codec_type = AVMEDIA_TYPE_SUBTITLE;
     st->codecpar->codec_id   = AV_CODEC_ID_TEXT;
     av_bprint_init(&line, 0, AV_BPRINT_SIZE_UNLIMITED);
 
-    while(!avio_feof(s->pb)) {
+    while(!avio_feof_xij(s->pb)) {
         int64_t pos = read_line(&line, s->pb);
         int64_t header_offset = find_header(line.str);
         if(header_offset >= 0) {

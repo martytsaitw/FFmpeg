@@ -106,21 +106,21 @@ static int shuffleplanes_filter_frame(AVFilterLink *inlink, AVFrame *frame)
             goto fail;
         }
 
-        av_frame_copy(copy, frame);
+        av_frame_copy_xij(copy, frame);
 
-        ret = av_frame_copy_props(copy, frame);
+        ret = av_frame_copy_props_xij(copy, frame);
         if (ret < 0) {
-            av_frame_free(&copy);
+            av_frame_free_xij(&copy);
             goto fail;
         }
 
-        av_frame_free(&frame);
+        av_frame_free_xij(&frame);
         frame = copy;
     }
 
     return ff_filter_frame(ctx->outputs[0], frame);
 fail:
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
     return ret;
 }
 

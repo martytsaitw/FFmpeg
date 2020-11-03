@@ -976,7 +976,7 @@ static int decode_pic(AVSContext *h)
         return AVERROR_INVALIDDATA;
     }
 
-    av_frame_unref(h->cur.f);
+    av_frame_unref_xij(h->cur.f);
 
     skip_bits(&h->gb, 16);//bbv_dwlay
     if (h->stc == PIC_PB_START_CODE) {
@@ -1004,7 +1004,7 @@ static int decode_pic(AVSContext *h)
             skip_bits(&h->gb, 1); //marker_bit
     }
 
-    ret = ff_get_buffer(h->avctx, h->cur.f, h->cur.f->pict_type == AV_PICTURE_TYPE_B ?
+    ret = ff_get_buffer_xij(h->avctx, h->cur.f, h->cur.f->pict_type == AV_PICTURE_TYPE_B ?
                         0 : AV_GET_BUFFER_FLAG_REF);
     if (ret < 0)
         return ret;
@@ -1123,7 +1123,7 @@ static int decode_pic(AVSContext *h)
     }
     emms_c();
     if (ret >= 0 && h->cur.f->pict_type != AV_PICTURE_TYPE_B) {
-        av_frame_unref(h->DPB[1].f);
+        av_frame_unref_xij(h->DPB[1].f);
         FFSWAP(AVSFrame, h->cur, h->DPB[1]);
         FFSWAP(AVSFrame, h->DPB[0], h->DPB[1]);
     }
@@ -1172,7 +1172,7 @@ static int decode_seq_header(AVSContext *h)
     skip_bits(&h->gb, 12); //bit_rate_upper
     h->low_delay =  get_bits1(&h->gb);
 
-    ret = ff_set_dimensions(h->avctx, width, height);
+    ret = ff_set_dimensions_xij(h->avctx, width, height);
     if (ret < 0)
         return ret;
 
@@ -1206,7 +1206,7 @@ static int cavs_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     if (buf_size == 0) {
         if (!h->low_delay && h->DPB[0].f->data[0]) {
             *got_frame = 1;
-            av_frame_move_ref(data, h->DPB[0].f);
+            av_frame_move_ref_xij(data, h->DPB[0].f);
         }
         return 0;
     }
@@ -1216,7 +1216,7 @@ static int cavs_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     buf_ptr = buf;
     buf_end = buf + buf_size;
     for(;;) {
-        buf_ptr = avpriv_find_start_code(buf_ptr, buf_end, &stc);
+        buf_ptr = avpriv_find_start_code_xij(buf_ptr, buf_end, &stc);
         if ((stc & 0xFFFFFE00) || buf_ptr == buf_end) {
             if (!h->stc)
                 av_log(h->avctx, AV_LOG_WARNING, "no frame decoded\n");
@@ -1230,13 +1230,13 @@ static int cavs_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
             break;
         case PIC_I_START_CODE:
             if (!h->got_keyframe) {
-                av_frame_unref(h->DPB[0].f);
-                av_frame_unref(h->DPB[1].f);
+                av_frame_unref_xij(h->DPB[0].f);
+                av_frame_unref_xij(h->DPB[1].f);
                 h->got_keyframe = 1;
             }
         case PIC_PB_START_CODE:
             if (*got_frame)
-                av_frame_unref(data);
+                av_frame_unref_xij(data);
             *got_frame = 0;
             if (!h->got_keyframe)
                 break;
@@ -1247,13 +1247,13 @@ static int cavs_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
             *got_frame = 1;
             if (h->cur.f->pict_type != AV_PICTURE_TYPE_B) {
                 if (h->DPB[!h->low_delay].f->data[0]) {
-                    if ((ret = av_frame_ref(data, h->DPB[!h->low_delay].f)) < 0)
+                    if ((ret = av_frame_ref_xij(data, h->DPB[!h->low_delay].f)) < 0)
                         return ret;
                 } else {
                     *got_frame = 0;
                 }
             } else {
-                av_frame_move_ref(data, h->cur.f);
+                av_frame_move_ref_xij(data, h->cur.f);
             }
             break;
         case EXT_START_CODE:

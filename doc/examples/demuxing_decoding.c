@@ -70,7 +70,7 @@ static int decode_packet(int *got_frame, int cached)
 
     if (pkt.stream_index == video_stream_idx) {
         /* decode video frame */
-        ret = avcodec_decode_video2(video_dec_ctx, frame, got_frame, &pkt);
+        ret = avcodec_decode_video2_xij(video_dec_ctx, frame, got_frame, &pkt);
         if (ret < 0) {
             fprintf(stderr, "Error decoding video frame (%s)\n", av_err2str(ret));
             return ret;
@@ -108,7 +108,7 @@ static int decode_packet(int *got_frame, int cached)
         }
     } else if (pkt.stream_index == audio_stream_idx) {
         /* decode audio frame */
-        ret = avcodec_decode_audio4(audio_dec_ctx, frame, got_frame, &pkt);
+        ret = avcodec_decode_audio4_xij(audio_dec_ctx, frame, got_frame, &pkt);
         if (ret < 0) {
             fprintf(stderr, "Error decoding audio frame (%s)\n", av_err2str(ret));
             return ret;
@@ -141,7 +141,7 @@ static int decode_packet(int *got_frame, int cached)
     /* If we use frame reference counting, we own the data and need
      * to de-reference it when we don't use it anymore */
     if (*got_frame && refcount)
-        av_frame_unref(frame);
+        av_frame_unref_xij(frame);
 
     return decoded;
 }
@@ -154,43 +154,43 @@ static int open_codec_context(int *stream_idx,
     AVCodec *dec = NULL;
     AVDictionary *opts = NULL;
 
-    ret = av_find_best_stream(fmt_ctx, type, -1, -1, NULL, 0);
+    ret = av_find_best_stream_ijk(fmt_ctx, type, -1, -1, NULL, 0);
     if (ret < 0) {
         fprintf(stderr, "Could not find %s stream in input file '%s'\n",
-                av_get_media_type_string(type), src_filename);
+                av_get_media_type_string_xij(type), src_filename);
         return ret;
     } else {
         stream_index = ret;
         st = fmt_ctx->streams[stream_index];
 
         /* find decoder for the stream */
-        dec = avcodec_find_decoder(st->codecpar->codec_id);
+        dec = avcodec_find_decoder_ijk(st->codecpar->codec_id);
         if (!dec) {
             fprintf(stderr, "Failed to find %s codec\n",
-                    av_get_media_type_string(type));
+                    av_get_media_type_string_xij(type));
             return AVERROR(EINVAL);
         }
 
         /* Allocate a codec context for the decoder */
-        *dec_ctx = avcodec_alloc_context3(dec);
+        *dec_ctx = avcodec_alloc_context3_ijk(dec);
         if (!*dec_ctx) {
             fprintf(stderr, "Failed to allocate the %s codec context\n",
-                    av_get_media_type_string(type));
+                    av_get_media_type_string_xij(type));
             return AVERROR(ENOMEM);
         }
 
         /* Copy codec parameters from input stream to output codec context */
-        if ((ret = avcodec_parameters_to_context(*dec_ctx, st->codecpar)) < 0) {
+        if ((ret = avcodec_parameters_to_context_ijk(*dec_ctx, st->codecpar)) < 0) {
             fprintf(stderr, "Failed to copy %s codec parameters to decoder context\n",
-                    av_get_media_type_string(type));
+                    av_get_media_type_string_xij(type));
             return ret;
         }
 
         /* Init the decoders, with or without reference counting */
         av_dict_set(&opts, "refcounted_frames", refcount ? "1" : "0", 0);
-        if ((ret = avcodec_open2(*dec_ctx, dec, &opts)) < 0) {
+        if ((ret = avcodec_open2_xij(*dec_ctx, dec, &opts)) < 0) {
             fprintf(stderr, "Failed to open %s codec\n",
-                    av_get_media_type_string(type));
+                    av_get_media_type_string_xij(type));
             return ret;
         }
         *stream_idx = stream_index;
@@ -253,13 +253,13 @@ int main (int argc, char **argv)
     audio_dst_filename = argv[3];
 
     /* open input file, and allocate format context */
-    if (avformat_open_input(&fmt_ctx, src_filename, NULL, NULL) < 0) {
+    if (avformat_open_input_ijk(&fmt_ctx, src_filename, NULL, NULL) < 0) {
         fprintf(stderr, "Could not open source file %s\n", src_filename);
         exit(1);
     }
 
     /* retrieve stream information */
-    if (avformat_find_stream_info(fmt_ctx, NULL) < 0) {
+    if (avformat_find_stream_info_ijk(fmt_ctx, NULL) < 0) {
         fprintf(stderr, "Could not find stream information\n");
         exit(1);
     }
@@ -298,7 +298,7 @@ int main (int argc, char **argv)
     }
 
     /* dump input information to stderr */
-    av_dump_format(fmt_ctx, 0, src_filename, 0);
+    av_dump_format_ijk(fmt_ctx, 0, src_filename, 0);
 
     if (!audio_stream && !video_stream) {
         fprintf(stderr, "Could not find audio or video stream in the input, aborting\n");
@@ -306,7 +306,7 @@ int main (int argc, char **argv)
         goto end;
     }
 
-    frame = av_frame_alloc();
+    frame = av_frame_alloc_ijk();
     if (!frame) {
         fprintf(stderr, "Could not allocate frame\n");
         ret = AVERROR(ENOMEM);
@@ -314,7 +314,7 @@ int main (int argc, char **argv)
     }
 
     /* initialize packet, set data to NULL, let the demuxer fill it */
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
     pkt.data = NULL;
     pkt.size = 0;
 
@@ -324,7 +324,7 @@ int main (int argc, char **argv)
         printf("Demuxing audio from file '%s' into '%s'\n", src_filename, audio_dst_filename);
 
     /* read frames from the file */
-    while (av_read_frame(fmt_ctx, &pkt) >= 0) {
+    while (av_read_frame_ijk(fmt_ctx, &pkt) >= 0) {
         AVPacket orig_pkt = pkt;
         do {
             ret = decode_packet(&got_frame, 0);
@@ -333,7 +333,7 @@ int main (int argc, char **argv)
             pkt.data += ret;
             pkt.size -= ret;
         } while (pkt.size > 0);
-        av_packet_unref(&orig_pkt);
+        av_packet_unref_ijk(&orig_pkt);
     }
 
     /* flush cached frames */
@@ -376,14 +376,14 @@ int main (int argc, char **argv)
     }
 
 end:
-    avcodec_free_context(&video_dec_ctx);
-    avcodec_free_context(&audio_dec_ctx);
-    avformat_close_input(&fmt_ctx);
+    avcodec_free_context_ijk(&video_dec_ctx);
+    avcodec_free_context_ijk(&audio_dec_ctx);
+    avformat_close_input_xij(&fmt_ctx);
     if (video_dst_file)
         fclose(video_dst_file);
     if (audio_dst_file)
         fclose(audio_dst_file);
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
     av_free(video_dst_data[0]);
 
     return ret < 0;

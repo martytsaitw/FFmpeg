@@ -210,7 +210,7 @@ static av_cold void join_uninit(AVFilterContext *ctx)
 
     for (i = 0; i < ctx->nb_inputs; i++) {
         av_freep(&ctx->input_pads[i].name);
-        av_frame_free(&s->input_frames[i]);
+        av_frame_free_xij(&s->input_frames[i]);
     }
 
     av_freep(&s->channels);
@@ -379,7 +379,7 @@ static int try_push_frame(AVFilterContext *ctx)
         return 0;
 
     /* setup the output frame */
-    frame = av_frame_alloc();
+    frame = av_frame_alloc_ijk();
     if (!frame)
         return AVERROR(ENOMEM);
     if (s->nb_channels > FF_ARRAY_ELEMS(frame->data)) {
@@ -402,7 +402,7 @@ static int try_push_frame(AVFilterContext *ctx)
 
         /* add the buffer where this plan is stored to the list if it's
          * not already there */
-        buf = av_frame_get_plane_buffer(cur, ch->in_channel_idx);
+        buf = av_frame_get_plane_buffer_xij(cur, ch->in_channel_idx);
         if (!buf) {
             ret = AVERROR(EINVAL);
             goto fail;
@@ -426,14 +426,14 @@ static int try_push_frame(AVFilterContext *ctx)
         }
     }
     for (i = 0; i < FFMIN(FF_ARRAY_ELEMS(frame->buf), nb_buffers); i++) {
-        frame->buf[i] = av_buffer_ref(s->buffers[i]);
+        frame->buf[i] = av_buffer_ref_ijk(s->buffers[i]);
         if (!frame->buf[i]) {
             ret = AVERROR(ENOMEM);
             goto fail;
         }
     }
     for (i = 0; i < frame->nb_extended_buf; i++) {
-        frame->extended_buf[i] = av_buffer_ref(s->buffers[i +
+        frame->extended_buf[i] = av_buffer_ref_ijk(s->buffers[i +
                                                FF_ARRAY_ELEMS(frame->buf)]);
         if (!frame->extended_buf[i]) {
             ret = AVERROR(ENOMEM);
@@ -456,12 +456,12 @@ static int try_push_frame(AVFilterContext *ctx)
     ret = ff_filter_frame(outlink, frame);
 
     for (i = 0; i < ctx->nb_inputs; i++)
-        av_frame_free(&s->input_frames[i]);
+        av_frame_free_xij(&s->input_frames[i]);
 
     return ret;
 
 fail:
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
     return ret;
 }
 

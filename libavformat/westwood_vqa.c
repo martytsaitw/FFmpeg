@@ -88,7 +88,7 @@ static int wsvqa_read_header(AVFormatContext *s)
     int fps;
 
     /* initialize the video decoder stream */
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->start_time = 0;
@@ -98,10 +98,10 @@ static int wsvqa_read_header(AVFormatContext *s)
     st->codecpar->codec_tag = 0;  /* no fourcc */
 
     /* skip to the start of the VQA header */
-    avio_seek(pb, 20, SEEK_SET);
+    avio_seek_xij(pb, 20, SEEK_SET);
 
     /* the VQA header needs to go to the decoder */
-    if (ff_get_extradata(s, st->codecpar, pb, VQA_HEADER_SIZE) < 0)
+    if (ff_get_extradata_xij(s, st->codecpar, pb, VQA_HEADER_SIZE) < 0)
         return AVERROR(ENOMEM);
     header = st->codecpar->extradata;
     st->codecpar->width = AV_RL16(&header[6]);
@@ -113,7 +113,7 @@ static int wsvqa_read_header(AVFormatContext *s)
         av_log(s, AV_LOG_ERROR, "invalid fps: %d\n", fps);
         return AVERROR_INVALIDDATA;
     }
-    avpriv_set_pts_info(st, 64, 1, fps);
+    avpriv_set_pts_info_ijk(st, 64, 1, fps);
 
     wsvqa->version      = AV_RL16(&header[ 0]);
     wsvqa->sample_rate  = AV_RL16(&header[24]);
@@ -126,7 +126,7 @@ static int wsvqa_read_header(AVFormatContext *s)
     /* there are 0 or more chunks before the FINF chunk; iterate until
      * FINF has been skipped and the file will be ready to be demuxed */
     do {
-        if (avio_read(pb, scratch, VQA_PREAMBLE_SIZE) != VQA_PREAMBLE_SIZE)
+        if (avio_read_xij(pb, scratch, VQA_PREAMBLE_SIZE) != VQA_PREAMBLE_SIZE)
             return AVERROR(EIO);
         chunk_tag = AV_RB32(&scratch[0]);
         chunk_size = AV_RB32(&scratch[4]);
@@ -149,7 +149,7 @@ static int wsvqa_read_header(AVFormatContext *s)
             break;
         }
 
-        avio_skip(pb, chunk_size);
+        avio_skip_xij(pb, chunk_size);
     } while (chunk_tag != FINF_TAG);
 
     return 0;
@@ -166,7 +166,7 @@ static int wsvqa_read_packet(AVFormatContext *s,
     uint32_t chunk_size;
     int skip_byte;
 
-    while (avio_read(pb, preamble, VQA_PREAMBLE_SIZE) == VQA_PREAMBLE_SIZE) {
+    while (avio_read_xij(pb, preamble, VQA_PREAMBLE_SIZE) == VQA_PREAMBLE_SIZE) {
         chunk_type = AV_RB32(&preamble[0]);
         chunk_size = AV_RB32(&preamble[4]);
 
@@ -175,7 +175,7 @@ static int wsvqa_read_packet(AVFormatContext *s,
         if ((chunk_type == SND0_TAG) || (chunk_type == SND1_TAG) ||
             (chunk_type == SND2_TAG) || (chunk_type == VQFR_TAG)) {
 
-            ret= av_get_packet(pb, pkt, chunk_size);
+            ret= av_get_packet_xij(pb, pkt, chunk_size);
             if (ret<0)
                 return AVERROR(EIO);
 
@@ -184,7 +184,7 @@ static int wsvqa_read_packet(AVFormatContext *s,
             case SND1_TAG:
             case SND2_TAG:
                 if (wsvqa->audio_stream_index == -1) {
-                    AVStream *st = avformat_new_stream(s, NULL);
+                    AVStream *st = avformat_new_stream_ijk(s, NULL);
                     if (!st)
                         return AVERROR(ENOMEM);
 
@@ -200,7 +200,7 @@ static int wsvqa_read_packet(AVFormatContext *s,
                     st->codecpar->channels = wsvqa->channels;
                     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
 
-                    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+                    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
                     switch (chunk_type) {
                     case SND0_TAG:
@@ -214,7 +214,7 @@ static int wsvqa_read_packet(AVFormatContext *s,
                         break;
                     case SND2_TAG:
                         st->codecpar->codec_id = AV_CODEC_ID_ADPCM_IMA_WS;
-                        if (ff_alloc_extradata(st->codecpar, 2))
+                        if (ff_alloc_extradata_xij(st->codecpar, 2))
                             return AVERROR(ENOMEM);
                         AV_WL16(st->codecpar->extradata, wsvqa->version);
                         break;
@@ -242,7 +242,7 @@ static int wsvqa_read_packet(AVFormatContext *s,
 
             /* stay on 16-bit alignment */
             if (skip_byte)
-                avio_skip(pb, 1);
+                avio_skip_xij(pb, 1);
 
             return ret;
         } else {
@@ -253,7 +253,7 @@ static int wsvqa_read_packet(AVFormatContext *s,
                 av_log(s, AV_LOG_INFO, "Skipping unknown chunk %s\n",
                        av_fourcc2str(av_bswap32(chunk_type)));
             }
-            avio_skip(pb, chunk_size + skip_byte);
+            avio_skip_xij(pb, chunk_size + skip_byte);
         }
     }
 

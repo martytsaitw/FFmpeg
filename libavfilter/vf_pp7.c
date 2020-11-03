@@ -325,7 +325,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     uint8_t *qp_table = NULL;
 
     if (!pp7->qp)
-        qp_table = av_frame_get_qp_table(in, &qp_stride, &pp7->qscale_type);
+        qp_table = av_frame_get_qp_table_xij(in, &qp_stride, &pp7->qscale_type);
 
     if (!ctx->is_disabled) {
         const int cw = AV_CEIL_RSHIFT(inlink->w, pp7->hsub);
@@ -333,16 +333,16 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
         /* get a new frame if in-place is not possible or if the dimensions
         * are not multiple of 8 */
-        if (!av_frame_is_writable(in) || (inlink->w & 7) || (inlink->h & 7)) {
+        if (!av_frame_is_writable_xij(in) || (inlink->w & 7) || (inlink->h & 7)) {
             const int aligned_w = FFALIGN(inlink->w, 8);
             const int aligned_h = FFALIGN(inlink->h, 8);
 
             out = ff_get_video_buffer(outlink, aligned_w, aligned_h);
             if (!out) {
-                av_frame_free(&in);
+                av_frame_free_xij(&in);
                 return AVERROR(ENOMEM);
             }
-            av_frame_copy_props(out, in);
+            av_frame_copy_props_xij(out, in);
             out->width = in->width;
             out->height = in->height;
         }
@@ -364,7 +364,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
             av_image_copy_plane(out->data[3], out->linesize[3],
                                 in ->data[3], in ->linesize[3],
                                 inlink->w, inlink->h);
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
     }
     return ff_filter_frame(outlink, out);
 }

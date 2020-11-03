@@ -249,7 +249,7 @@ static int filter_frame(AVFilterLink *link, AVFrame *picref)
         return ff_filter_frame(ctx->outputs[0], picref);
     }
 
-    av_frame_free(&idet->prev);
+    av_frame_free_xij(&idet->prev);
 
     if(   picref->width  != link->w
        || picref->height != link->h
@@ -258,8 +258,8 @@ static int filter_frame(AVFilterLink *link, AVFrame *picref)
         link->dst->inputs[0]->w      = picref->width;
         link->dst->inputs[0]->h      = picref->height;
 
-        av_frame_free(&idet->cur );
-        av_frame_free(&idet->next);
+        av_frame_free_xij(&idet->cur );
+        av_frame_free_xij(&idet->next);
     }
 
     idet->prev = idet->cur;
@@ -267,7 +267,7 @@ static int filter_frame(AVFilterLink *link, AVFrame *picref)
     idet->next = picref;
 
     if (!idet->cur &&
-        !(idet->cur = av_frame_clone(idet->next)))
+        !(idet->cur = av_frame_clone_xij(idet->next)))
         return AVERROR(ENOMEM);
 
     if (!idet->prev)
@@ -293,20 +293,20 @@ static int filter_frame(AVFilterLink *link, AVFrame *picref)
                 idet->analyze_interlaced_flag --;
             }
             if (idet->analyze_interlaced_flag == 1) {
-                ff_filter_frame(ctx->outputs[0], av_frame_clone(idet->cur));
+                ff_filter_frame(ctx->outputs[0], av_frame_clone_xij(idet->cur));
 
                 if (idet->next->interlaced_frame && idet->interlaced_flag_accuracy < 0)
                     idet->next->interlaced_frame = 0;
                 idet->analyze_interlaced_flag_done = 1;
                 av_log(ctx, AV_LOG_INFO, "Final flag accuracy %d\n", idet->interlaced_flag_accuracy);
-                return ff_filter_frame(ctx->outputs[0], av_frame_clone(idet->next));
+                return ff_filter_frame(ctx->outputs[0], av_frame_clone_xij(idet->next));
             }
         }
     } else {
         filter(ctx);
     }
 
-    return ff_filter_frame(ctx->outputs[0], av_frame_clone(idet->cur));
+    return ff_filter_frame(ctx->outputs[0], av_frame_clone_xij(idet->cur));
 }
 
 static int request_frame(AVFilterLink *link)
@@ -321,7 +321,7 @@ static int request_frame(AVFilterLink *link)
     ret = ff_request_frame(link->src->inputs[0]);
 
     if (ret == AVERROR_EOF && idet->cur && !idet->analyze_interlaced_flag_done) {
-        AVFrame *next = av_frame_clone(idet->next);
+        AVFrame *next = av_frame_clone_xij(idet->next);
 
         if (!next)
             return AVERROR(ENOMEM);
@@ -356,9 +356,9 @@ static av_cold void uninit(AVFilterContext *ctx)
            idet->total_poststat[UNDETERMINED]
         );
 
-    av_frame_free(&idet->prev);
-    av_frame_free(&idet->cur );
-    av_frame_free(&idet->next);
+    av_frame_free_xij(&idet->prev);
+    av_frame_free_xij(&idet->cur );
+    av_frame_free_xij(&idet->next);
 }
 
 static int query_formats(AVFilterContext *ctx)

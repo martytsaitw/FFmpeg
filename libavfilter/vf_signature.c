@@ -574,7 +574,7 @@ static int export(AVFilterContext *ctx, StreamContext *sc, int input)
 
     if (sic->nb_inputs > 1) {
         /* error already handled */
-        av_assert0(av_get_frame_filename(filename, sizeof(filename), sic->filename, input) == 0);
+        av_assert0(av_get_frame_filename_xij(filename, sizeof(filename), sic->filename, input) == 0);
     } else {
         if (av_strlcpy(filename, sic->filename, sizeof(filename)) >= sizeof(filename))
             return AVERROR(EINVAL);
@@ -688,7 +688,7 @@ static av_cold int init(AVFilterContext *ctx)
     }
 
     /* check filename */
-    if (sic->nb_inputs > 1 && strlen(sic->filename) > 0 && av_get_frame_filename(tmp, sizeof(tmp), sic->filename, 0) == -1) {
+    if (sic->nb_inputs > 1 && strlen(sic->filename) > 0 && av_get_frame_filename_xij(tmp, sizeof(tmp), sic->filename, 0) == -1) {
         av_log(ctx, AV_LOG_ERROR, "The filename must contain %%d or %%0nd, if you have more than one input.\n");
         return AVERROR(EINVAL);
     }

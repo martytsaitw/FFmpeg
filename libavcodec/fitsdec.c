@@ -221,10 +221,10 @@ static int fits_decode_frame(AVCodecContext *avctx, void *data, int *got_frame, 
         }
     }
 
-    if ((ret = ff_set_dimensions(avctx, header.naxisn[0], header.naxisn[1])) < 0)
+    if ((ret = ff_set_dimensions_xij(avctx, header.naxisn[0], header.naxisn[1])) < 0)
         return ret;
 
-    if ((ret = ff_get_buffer(avctx, p, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, p, 0)) < 0)
         return ret;
 
     /*

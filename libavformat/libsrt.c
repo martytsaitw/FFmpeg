@@ -301,7 +301,7 @@ static int libsrt_setup(URLContext *h, const char *uri, int flags)
         return libsrt_neterrno(h);
     s->eid = eid;
 
-    av_url_split(proto, sizeof(proto), NULL, 0, hostname, sizeof(hostname),
+    av_url_split_xij(proto, sizeof(proto), NULL, 0, hostname, sizeof(hostname),
         &port, path, sizeof(path), uri);
     if (strcmp(proto, "srt"))
         return AVERROR(EINVAL);

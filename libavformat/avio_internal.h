@@ -24,9 +24,9 @@
 
 #include "libavutil/log.h"
 
-extern const AVClass ff_avio_class;
+extern const AVClass ff_avio_class_xij;
 
-int ffio_init_context(AVIOContext *s,
+int ffio_init_context_xij(AVIOContext *s,
                   unsigned char *buffer,
                   int buffer_size,
                   int write_flag,
@@ -51,13 +51,13 @@ int ffio_init_context(AVIOContext *s,
  *    will be a copy of buf
  * @return number of bytes read or AVERROR
  */
-int ffio_read_indirect(AVIOContext *s, unsigned char *buf, int size, const unsigned char **data);
+int ffio_read_indirect_xij(AVIOContext *s, unsigned char *buf, int size, const unsigned char **data);
 
-void ffio_fill(AVIOContext *s, int b, int count);
+void ffio_fill_xij(AVIOContext *s, int b, int count);
 
 static av_always_inline void ffio_wfourcc(AVIOContext *pb, const uint8_t *s)
 {
-    avio_wl32(pb, MKTAG(s[0], s[1], s[2], s[3]));
+    avio_wl32_xij(pb, MKTAG(s[0], s[1], s[2], s[3]));
 }
 
 /**
@@ -72,19 +72,19 @@ static av_always_inline void ffio_wfourcc(AVIOContext *pb, const uint8_t *s)
  * @return >= 0 in case of success, a negative value corresponding to an
  * AVERROR code in case of failure
  */
-int ffio_rewind_with_probe_data(AVIOContext *s, unsigned char **buf, int buf_size);
+int ffio_rewind_with_probe_data_xij(AVIOContext *s, unsigned char **buf, int buf_size);
 
-uint64_t ffio_read_varlen(AVIOContext *bc);
+uint64_t ffio_read_varlen_xij(AVIOContext *bc);
 
 /**
  * Read size bytes from AVIOContext into buf.
  * Check that exactly size bytes have been read.
  * @return number of bytes read or AVERROR
  */
-int ffio_read_size(AVIOContext *s, unsigned char *buf, int size);
+int ffio_read_size_xij(AVIOContext *s, unsigned char *buf, int size);
 
 /** @warning must be called before any I/O */
-int ffio_set_buf_size(AVIOContext *s, int buf_size);
+int ffio_set_buf_size_xij(AVIOContext *s, int buf_size);
 
 /**
  * Ensures that the requested seekback buffer size will be available
@@ -93,19 +93,19 @@ int ffio_set_buf_size(AVIOContext *s, int buf_size);
  * within the current pos and pos+buf_size is possible.
  * Once the stream position moves outside this window this guarantee is lost.
  */
-int ffio_ensure_seekback(AVIOContext *s, int64_t buf_size);
+int ffio_ensure_seekback_xij(AVIOContext *s, int64_t buf_size);
 
-int ffio_limit(AVIOContext *s, int size);
+int ffio_limit_xij(AVIOContext *s, int size);
 
-void ffio_init_checksum(AVIOContext *s,
+void ffio_init_checksum_xij(AVIOContext *s,
                         unsigned long (*update_checksum)(unsigned long c, const uint8_t *p, unsigned int len),
                         unsigned long checksum);
-unsigned long ffio_get_checksum(AVIOContext *s);
-unsigned long ff_crc04C11DB7_update(unsigned long checksum, const uint8_t *buf,
+unsigned long ffio_get_checksum_xij(AVIOContext *s);
+unsigned long ff_crc04C11DB7_update_xij(unsigned long checksum, const uint8_t *buf,
                                     unsigned int len);
-unsigned long ff_crcEDB88320_update(unsigned long checksum, const uint8_t *buf,
+unsigned long ff_crcEDB88320_update_xij(unsigned long checksum, const uint8_t *buf,
                                     unsigned int len);
-unsigned long ff_crcA001_update(unsigned long checksum, const uint8_t *buf,
+unsigned long ff_crcA001_update_xij(unsigned long checksum, const uint8_t *buf,
                                 unsigned int len);
 
 /**
@@ -117,7 +117,7 @@ unsigned long ff_crcA001_update(unsigned long checksum, const uint8_t *buf,
  * @param max_packet_size maximum packet size (must be > 0)
  * @return zero if no error.
  */
-int ffio_open_dyn_packet_buf(AVIOContext **s, int max_packet_size);
+int ffio_open_dyn_packet_buf_xij(AVIOContext **s, int max_packet_size);
 
 /**
  * Create and initialize a AVIOContext for accessing the
@@ -130,7 +130,7 @@ int ffio_open_dyn_packet_buf(AVIOContext **s, int max_packet_size);
  * @return >= 0 in case of success, a negative value corresponding to an
  * AVERROR code in case of failure
  */
-int ffio_fdopen(AVIOContext **s, URLContext *h);
+int ffio_fdopen_xij(AVIOContext **s, URLContext *h);
 
 /**
  * Return the URLContext associated with the AVIOContext
@@ -138,7 +138,7 @@ int ffio_fdopen(AVIOContext **s, URLContext *h);
  * @param s IO context
  * @return pointer to URLContext or NULL.
  */
-URLContext *ffio_geturlcontext(AVIOContext *s);
+URLContext *ffio_geturlcontext_xij(AVIOContext *s);
 
 /**
  * Open a write-only fake memory stream. The written data is not stored
@@ -148,25 +148,25 @@ URLContext *ffio_geturlcontext(AVIOContext *s);
  * @param s new IO context
  * @return zero if no error.
  */
-int ffio_open_null_buf(AVIOContext **s);
+int ffio_open_null_buf_xij(AVIOContext **s);
 
-int ffio_open_whitelist(AVIOContext **s, const char *url, int flags,
+int ffio_open_whitelist_xij(AVIOContext **s, const char *url, int flags,
                          const AVIOInterruptCB *int_cb, AVDictionary **options,
                          const char *whitelist, const char *blacklist);
 
 /**
  * Close a null buffer.
  *
- * @param s an IO context opened by ffio_open_null_buf
+ * @param s an IO context opened by ffio_open_null_buf_xij
  * @return the number of bytes written to the null buffer
  */
-int ffio_close_null_buf(AVIOContext *s);
+int ffio_close_null_buf_xij(AVIOContext *s);
 
 /**
  * Free a dynamic buffer.
  *
- * @param s a pointer to an IO context opened by avio_open_dyn_buf()
+ * @param s a pointer to an IO context opened by avio_open_dyn_buf_xij()
  */
-void ffio_free_dyn_buf(AVIOContext **s);
+void ffio_free_dyn_buf_xij(AVIOContext **s);
 
 #endif /* AVFORMAT_AVIO_INTERNAL_H */

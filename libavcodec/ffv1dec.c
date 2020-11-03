@@ -968,7 +968,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame, AVPac
     if (f->last_picture.f)
         ff_thread_release_buffer(avctx, &f->last_picture);
     f->cur = NULL;
-    if ((ret = av_frame_ref(data, f->picture.f)) < 0)
+    if ((ret = av_frame_ref_xij(data, f->picture.f)) < 0)
         return ret;
 
     *got_frame = 1;
@@ -994,8 +994,8 @@ static int init_thread_copy(AVCodecContext *avctx)
                                          f->context_count[i] * sizeof(*f->initial_states[i]));
     }
 
-    f->picture.f      = av_frame_alloc();
-    f->last_picture.f = av_frame_alloc();
+    f->picture.f      = av_frame_alloc_ijk();
+    f->last_picture.f = av_frame_alloc_ijk();
 
     if ((ret = ff_ffv1_init_slice_contexts(f)) < 0)
         return ret;
@@ -1068,7 +1068,7 @@ static int update_thread_context(AVCodecContext *dst, const AVCodecContext *src)
 
     ff_thread_release_buffer(dst, &fdst->picture);
     if (fsrc->picture.f->data[0]) {
-        if ((ret = ff_thread_ref_frame(&fdst->picture, &fsrc->picture)) < 0)
+        if ((ret = ff_thread_ref_frame_xij(&fdst->picture, &fsrc->picture)) < 0)
             return ret;
     }
 

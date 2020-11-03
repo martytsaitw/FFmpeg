@@ -1617,7 +1617,7 @@ static int mp_decode_frame(MPADecodeContext *s, OUT_INT **samples,
     if (!samples) {
         av_assert0(s->frame);
         s->frame->nb_samples = s->avctx->frame_size;
-        if ((ret = ff_get_buffer(s->avctx, s->frame, 0)) < 0)
+        if ((ret = ff_get_buffer_xij(s->avctx, s->frame, 0)) < 0)
             return ret;
         samples = (OUT_INT **)s->frame->extended_data;
     }
@@ -1851,7 +1851,7 @@ static av_cold int decode_init_mp3on4(AVCodecContext * avctx)
         return AVERROR_INVALIDDATA;
     }
 
-    avpriv_mpeg4audio_get_config(&cfg, avctx->extradata,
+    avpriv_mpeg4audio_get_config_xij(&cfg, avctx->extradata,
                                  avctx->extradata_size * 8, 1);
     if (!cfg.chan_config || cfg.chan_config > 7) {
         av_log(avctx, AV_LOG_ERROR, "Invalid channel config number.\n");
@@ -1859,7 +1859,7 @@ static av_cold int decode_init_mp3on4(AVCodecContext * avctx)
     }
     s->frames             = mp3Frames[cfg.chan_config];
     s->coff               = chan_offset[cfg.chan_config];
-    avctx->channels       = ff_mpeg4audio_channels[cfg.chan_config];
+    avctx->channels       = ff_mpeg4audio_channels_xij[cfg.chan_config];
     avctx->channel_layout = chan_layout[cfg.chan_config];
 
     if (cfg.sample_rate < 16000)
@@ -1929,7 +1929,7 @@ static int decode_frame_mp3on4(AVCodecContext *avctx, void *data,
 
     /* get output buffer */
     frame->nb_samples = MPA_FRAME_SIZE;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
     out_samples = (OUT_INT **)frame->extended_data;
 

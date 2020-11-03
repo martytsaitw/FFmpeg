@@ -36,7 +36,7 @@ static int g729_read_header(AVFormatContext *s)
     AVStream* st;
     G729DemuxerContext *s1 = s->priv_data;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -61,7 +61,7 @@ static int g729_read_header(AVFormatContext *s)
         return AVERROR(EINVAL);
     }
 
-    avpriv_set_pts_info(st, st->codecpar->block_align << 3, 1,
+    avpriv_set_pts_info_ijk(st, st->codecpar->block_align << 3, 1,
                         st->codecpar->sample_rate);
 
     return 0;
@@ -70,7 +70,7 @@ static int g729_read_header(AVFormatContext *s)
 static int g729_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     AVStream *st = s->streams[0];
-    int ret = av_get_packet(s->pb, pkt, st->codecpar->block_align);
+    int ret = av_get_packet_xij(s->pb, pkt, st->codecpar->block_align);
     if (ret < 0)
         return ret;
 

@@ -351,7 +351,7 @@ static int sbc_decode_frame(AVCodecContext *avctx,
     frame->channels = sbc->frame.channels;
     frame->format = AV_SAMPLE_FMT_S16P;
     frame->nb_samples = sbc->frame.blocks * sbc->frame.subbands;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     sbc_synthesize_audio(&sbc->dsp, &sbc->frame, frame);

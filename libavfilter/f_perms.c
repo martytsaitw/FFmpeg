@@ -80,7 +80,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
     AVFilterContext *ctx = inlink->dst;
     PermsContext *s = ctx->priv;
     AVFrame *out = frame;
-    enum perm in_perm = av_frame_is_writable(frame) ? RW : RO;
+    enum perm in_perm = av_frame_is_writable_xij(frame) ? RW : RO;
     enum perm out_perm;
 
     switch (s->mode) {
@@ -96,10 +96,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
            in_perm == out_perm ? " (no-op)" : "");
 
     if (in_perm == RO && out_perm == RW) {
-        if ((ret = av_frame_make_writable(frame)) < 0)
+        if ((ret = av_frame_make_writable_xij(frame)) < 0)
             return ret;
     } else if (in_perm == RW && out_perm == RO) {
-        out = av_frame_clone(frame);
+        out = av_frame_clone_xij(frame);
         if (!out)
             return AVERROR(ENOMEM);
     }
@@ -107,7 +107,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
     ret = ff_filter_frame(ctx->outputs[0], out);
 
     if (in_perm == RW && out_perm == RO)
-        av_frame_free(&frame);
+        av_frame_free_xij(&frame);
     return ret;
 }
 

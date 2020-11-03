@@ -51,7 +51,7 @@ static enum AVPixelFormat dshow_pixfmt(DWORD biCompression, WORD biBitCount)
                 return AV_PIX_FMT_0RGB32;
         }
     }
-    return avpriv_find_pix_fmt(avpriv_get_raw_pix_fmt_tags(), biCompression); // all others
+    return avpriv_find_pix_fmt_xij(avpriv_get_raw_pix_fmt_tags(), biCompression); // all others
 }
 
 static int
@@ -119,7 +119,7 @@ dshow_read_close(AVFormatContext *s)
     pktl = ctx->pktl;
     while (pktl) {
         AVPacketList *next = pktl->next;
-        av_packet_unref(&pktl->pkt);
+        av_packet_unref_ijk(&pktl->pkt);
         av_free(pktl);
         pktl = next;
     }
@@ -175,7 +175,7 @@ callback(void *priv_data, int index, uint8_t *buf, int buf_size, int64_t time, e
     if(!pktl_next)
         goto fail;
 
-    if(av_new_packet(&pktl_next->pkt, buf_size) < 0) {
+    if(av_new_packet_ijk(&pktl_next->pkt, buf_size) < 0) {
         av_free(pktl_next);
         goto fail;
     }
@@ -367,8 +367,8 @@ dshow_cycle_formats(AVFormatContext *avctx, enum dshowDeviceType devtype,
             if (!pformat_set) {
                 enum AVPixelFormat pix_fmt = dshow_pixfmt(bih->biCompression, bih->biBitCount);
                 if (pix_fmt == AV_PIX_FMT_NONE) {
-                    enum AVCodecID codec_id = av_codec_get_id(tags, bih->biCompression);
-                    AVCodec *codec = avcodec_find_decoder(codec_id);
+                    enum AVCodecID codec_id = av_codec_get_id_xij(tags, bih->biCompression);
+                    AVCodec *codec = avcodec_find_decoder_ijk(codec_id);
                     if (codec_id == AV_CODEC_ID_NONE || !codec) {
                         av_log(avctx, AV_LOG_INFO, "  unknown compression type 0x%X", (int) bih->biCompression);
                     } else {
@@ -385,7 +385,7 @@ dshow_cycle_formats(AVFormatContext *avctx, enum dshowDeviceType devtype,
                 continue;
             }
             if (ctx->video_codec_id != AV_CODEC_ID_RAWVIDEO) {
-                if (ctx->video_codec_id != av_codec_get_id(tags, bih->biCompression))
+                if (ctx->video_codec_id != av_codec_get_id_xij(tags, bih->biCompression))
                     goto next;
             }
             if (ctx->pixel_format != AV_PIX_FMT_NONE &&
@@ -941,7 +941,7 @@ dshow_add_device(AVFormatContext *avctx,
     AVStream *st;
     int ret = AVERROR(EIO);
 
-    st = avformat_new_stream(avctx, NULL);
+    st = avformat_new_stream_ijk(avctx, NULL);
     if (!st) {
         ret = AVERROR(ENOMEM);
         goto error;
@@ -985,7 +985,7 @@ dshow_add_device(AVFormatContext *avctx,
         }
         if (par->format == AV_PIX_FMT_NONE) {
             const AVCodecTag *const tags[] = { avformat_get_riff_video_tags(), NULL };
-            par->codec_id = av_codec_get_id(tags, bih->biCompression);
+            par->codec_id = av_codec_get_id_xij(tags, bih->biCompression);
             if (par->codec_id == AV_CODEC_ID_NONE) {
                 av_log(avctx, AV_LOG_ERROR, "Unknown compression type. "
                                  "Please report type 0x%X.\n", (int) bih->biCompression);
@@ -1021,7 +1021,7 @@ dshow_add_device(AVFormatContext *avctx,
         par->channels    = fx->nChannels;
     }
 
-    avpriv_set_pts_info(st, 64, 1, 10000000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 10000000);
 
     ret = 0;
 

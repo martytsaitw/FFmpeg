@@ -42,28 +42,28 @@ static int epaf_read_header(AVFormatContext *s)
     int le, sample_rate, codec, channels;
     AVStream *st;
 
-    avio_skip(s->pb, 4);
-    if (avio_rl32(s->pb))
+    avio_skip_xij(s->pb, 4);
+    if (avio_rl32_xij(s->pb))
         return AVERROR_INVALIDDATA;
 
-    le = avio_rl32(s->pb);
+    le = avio_rl32_xij(s->pb);
     if (le && le != 1)
         return AVERROR_INVALIDDATA;
 
     if (le) {
-        sample_rate = avio_rl32(s->pb);
-        codec       = avio_rl32(s->pb);
-        channels    = avio_rl32(s->pb);
+        sample_rate = avio_rl32_xij(s->pb);
+        codec       = avio_rl32_xij(s->pb);
+        channels    = avio_rl32_xij(s->pb);
     } else {
-        sample_rate = avio_rb32(s->pb);
-        codec       = avio_rb32(s->pb);
-        channels    = avio_rb32(s->pb);
+        sample_rate = avio_rb32_xij(s->pb);
+        codec       = avio_rb32_xij(s->pb);
+        channels    = avio_rb32_xij(s->pb);
     }
 
     if (channels <= 0 || channels > FF_SANE_NB_CHANNELS || sample_rate <= 0)
         return AVERROR_INVALIDDATA;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -83,12 +83,12 @@ static int epaf_read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
     }
 
-    st->codecpar->bits_per_coded_sample = av_get_bits_per_sample(st->codecpar->codec_id);
+    st->codecpar->bits_per_coded_sample = av_get_bits_per_sample_xij(st->codecpar->codec_id);
     st->codecpar->block_align = st->codecpar->bits_per_coded_sample * st->codecpar->channels / 8;
 
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
-    if (avio_skip(s->pb, 2024) < 0)
+    if (avio_skip_xij(s->pb, 2024) < 0)
         return AVERROR_INVALIDDATA;
     return 0;
 }

@@ -69,7 +69,7 @@ static int loas_read_header(AVFormatContext *s)
 {
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -78,7 +78,7 @@ static int loas_read_header(AVFormatContext *s)
     st->need_parsing = AVSTREAM_PARSE_FULL_RAW;
 
     //LCM of all possible AAC sample rates
-    avpriv_set_pts_info(st, 64, 1, 28224000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 28224000);
 
     return 0;
 }
@@ -88,7 +88,7 @@ AVInputFormat ff_loas_demuxer = {
     .long_name      = NULL_IF_CONFIG_SMALL("LOAS AudioSyncStream"),
     .read_probe     = loas_probe,
     .read_header    = loas_read_header,
-    .read_packet    = ff_raw_read_partial_packet,
+    .read_packet    = ff_raw_read_partial_packet_xij,
     .flags= AVFMT_GENERIC_INDEX,
     .raw_codec_id = AV_CODEC_ID_AAC_LATM,
 };

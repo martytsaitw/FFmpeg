@@ -220,7 +220,7 @@ const RTPDynamicProtocolHandler *ff_rtp_handler_find_by_id(int id,
                                                 enum AVMediaType codec_type);
 
 /* from rtsp.c, but used by rtp dynamic protocol handlers. */
-int ff_rtsp_next_attr_and_value(const char **p, char *attr, int attr_size,
+int ff_rtsp_next_attr_and_value_xij(const char **p, char *attr, int attr_size,
                                 char *value, int value_size);
 
 int ff_parse_fmtp(AVFormatContext *s,

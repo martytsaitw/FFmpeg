@@ -92,11 +92,11 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out) {
-        av_frame_free(&in);
-        av_frame_free(&s->prev);
+        av_frame_free_xij(&in);
+        av_frame_free_xij(&s->prev);
         return AVERROR(ENOMEM);
     }
-    av_frame_copy_props(out, in);
+    av_frame_copy_props_xij(out, in);
 
     for (i = 0; i < s->nb_planes; i++) {
         if (s->double_weave && !(inlink->frame_count_out & 1)) {
@@ -125,8 +125,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     out->top_field_first = !s->first_field;
 
     if (!s->double_weave)
-        av_frame_free(&in);
-    av_frame_free(&s->prev);
+        av_frame_free_xij(&in);
+    av_frame_free_xij(&s->prev);
     if (s->double_weave)
         s->prev = in;
     return ff_filter_frame(outlink, out);
@@ -136,7 +136,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 {
     WeaveContext *s = ctx->priv;
 
-    av_frame_free(&s->prev);
+    av_frame_free_xij(&s->prev);
 }
 
 static const AVFilterPad weave_inputs[] = {

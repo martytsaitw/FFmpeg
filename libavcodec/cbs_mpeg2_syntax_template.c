@@ -71,7 +71,7 @@ static int FUNC(user_data)(CodedBitstreamContext *ctx, RWContext *rw,
     av_assert0(k % 8 == 0);
     current->user_data_length = k /= 8;
     if (k > 0) {
-        current->user_data_ref = av_buffer_alloc(k);
+        current->user_data_ref = av_buffer_alloc_ijk(k);
         if (!current->user_data_ref)
             return AVERROR(ENOMEM);
         current->user_data = current->user_data_ref->data;

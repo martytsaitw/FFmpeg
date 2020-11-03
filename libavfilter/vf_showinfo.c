@@ -143,7 +143,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
            !frame->interlaced_frame ? 'P' :         /* Progressive  */
            frame->top_field_first   ? 'T' : 'B',    /* Top / Bottom */
            frame->key_frame,
-           av_get_picture_type_char(frame->pict_type),
+           av_get_picture_type_char_xij(frame->pict_type),
            checksum, plane_checksum[0]);
 
     for (plane = 1; plane < 4 && frame->data[plane] && frame->linesize[plane]; plane++)

@@ -673,7 +673,7 @@ void ff_mpv_decode_init(MpegEncContext *s, AVCodecContext *avctx)
     s->workaround_bugs = avctx->workaround_bugs;
 
     /* convert fourcc to upper case */
-    s->codec_tag          = avpriv_toupper4(avctx->codec_tag);
+    s->codec_tag          = avpriv_toupper4_xij(avctx->codec_tag);
 }
 
 /**
@@ -930,20 +930,20 @@ av_cold int ff_mpv_common_init(MpegEncContext *s)
     FF_ALLOCZ_OR_GOTO(s->avctx, s->picture,
                       MAX_PICTURE_COUNT * sizeof(Picture), fail);
     for (i = 0; i < MAX_PICTURE_COUNT; i++) {
-        s->picture[i].f = av_frame_alloc();
+        s->picture[i].f = av_frame_alloc_ijk();
         if (!s->picture[i].f)
             goto fail;
     }
-    s->next_picture.f = av_frame_alloc();
+    s->next_picture.f = av_frame_alloc_ijk();
     if (!s->next_picture.f)
         goto fail;
-    s->last_picture.f = av_frame_alloc();
+    s->last_picture.f = av_frame_alloc_ijk();
     if (!s->last_picture.f)
         goto fail;
-    s->current_picture.f = av_frame_alloc();
+    s->current_picture.f = av_frame_alloc_ijk();
     if (!s->current_picture.f)
         goto fail;
-    s->new_picture.f = av_frame_alloc();
+    s->new_picture.f = av_frame_alloc_ijk();
     if (!s->new_picture.f)
         goto fail;
 
@@ -1146,22 +1146,22 @@ void ff_mpv_common_end(MpegEncContext *s)
         for (i = 0; i < MAX_PICTURE_COUNT; i++) {
             ff_free_picture_tables(&s->picture[i]);
             ff_mpeg_unref_picture(s->avctx, &s->picture[i]);
-            av_frame_free(&s->picture[i].f);
+            av_frame_free_xij(&s->picture[i].f);
         }
     }
     av_freep(&s->picture);
     ff_free_picture_tables(&s->last_picture);
     ff_mpeg_unref_picture(s->avctx, &s->last_picture);
-    av_frame_free(&s->last_picture.f);
+    av_frame_free_xij(&s->last_picture.f);
     ff_free_picture_tables(&s->current_picture);
     ff_mpeg_unref_picture(s->avctx, &s->current_picture);
-    av_frame_free(&s->current_picture.f);
+    av_frame_free_xij(&s->current_picture.f);
     ff_free_picture_tables(&s->next_picture);
     ff_mpeg_unref_picture(s->avctx, &s->next_picture);
-    av_frame_free(&s->next_picture.f);
+    av_frame_free_xij(&s->next_picture.f);
     ff_free_picture_tables(&s->new_picture);
     ff_mpeg_unref_picture(s->avctx, &s->new_picture);
-    av_frame_free(&s->new_picture.f);
+    av_frame_free_xij(&s->new_picture.f);
 
     free_context_frame(s);
 
@@ -1434,14 +1434,14 @@ void ff_print_debug_info(MpegEncContext *s, Picture *p, AVFrame *pict)
 
 int ff_mpv_export_qp_table(MpegEncContext *s, AVFrame *f, Picture *p, int qp_type)
 {
-    AVBufferRef *ref = av_buffer_ref(p->qscale_table_buf);
+    AVBufferRef *ref = av_buffer_ref_ijk(p->qscale_table_buf);
     int offset = 2*s->mb_stride + 1;
     if(!ref)
         return AVERROR(ENOMEM);
     av_assert0(ref->size >= offset + s->mb_stride * ((f->height+15)/16));
     ref->size -= offset;
     ref->data += offset;
-    return av_frame_set_qp_table(f, ref, s->mb_stride, qp_type);
+    return av_frame_set_qp_table_xij(f, ref, s->mb_stride, qp_type);
 }
 
 static inline int hpel_motion_lowres(MpegEncContext *s,

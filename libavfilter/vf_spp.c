@@ -366,7 +366,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
      * need to save the qp table from the last non B-frame; this is what the
      * following code block does */
     if (!s->qp) {
-        qp_table = av_frame_get_qp_table(in, &qp_stride, &s->qscale_type);
+        qp_table = av_frame_get_qp_table_xij(in, &qp_stride, &s->qscale_type);
 
         if (qp_table && !s->use_bframe_qp && in->pict_type != AV_PICTURE_TYPE_B) {
             int w, h;
@@ -405,16 +405,16 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
             /* get a new frame if in-place is not possible or if the dimensions
              * are not multiple of 8 */
-            if (!av_frame_is_writable(in) || (inlink->w & 7) || (inlink->h & 7)) {
+            if (!av_frame_is_writable_xij(in) || (inlink->w & 7) || (inlink->h & 7)) {
                 const int aligned_w = FFALIGN(inlink->w, 8);
                 const int aligned_h = FFALIGN(inlink->h, 8);
 
                 out = ff_get_video_buffer(outlink, aligned_w, aligned_h);
                 if (!out) {
-                    av_frame_free(&in);
+                    av_frame_free_xij(&in);
                     return AVERROR(ENOMEM);
                 }
-                av_frame_copy_props(out, in);
+                av_frame_copy_props_xij(out, in);
                 out->width  = in->width;
                 out->height = in->height;
             }
@@ -434,7 +434,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
             av_image_copy_plane(out->data[3], out->linesize[3],
                                 in ->data[3], in ->linesize[3],
                                 inlink->w, inlink->h);
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
     }
     return ff_filter_frame(outlink, out);
 }
@@ -459,7 +459,7 @@ static av_cold int init_dict(AVFilterContext *ctx, AVDictionary **opts)
     SPPContext *s = ctx->priv;
     int ret;
 
-    s->avctx = avcodec_alloc_context3(NULL);
+    s->avctx = avcodec_alloc_context3_ijk(NULL);
     s->dct = avcodec_dct_alloc();
     if (!s->avctx || !s->dct)
         return AVERROR(ENOMEM);
@@ -489,7 +489,7 @@ static av_cold void uninit(AVFilterContext *ctx)
     av_freep(&s->temp);
     av_freep(&s->src);
     if (s->avctx) {
-        avcodec_close(s->avctx);
+        avcodec_close_xij(s->avctx);
         av_freep(&s->avctx);
     }
     av_freep(&s->dct);

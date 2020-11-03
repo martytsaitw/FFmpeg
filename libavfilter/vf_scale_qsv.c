@@ -563,7 +563,7 @@ static int qsvscale_filter_frame(AVFilterLink *link, AVFrame *in)
         goto fail;
     }
 
-    ret = av_frame_copy_props(out, in);
+    ret = av_frame_copy_props_xij(out, in);
     if (ret < 0)
         goto fail;
 
@@ -575,11 +575,11 @@ static int qsvscale_filter_frame(AVFilterLink *link, AVFrame *in)
               (int64_t)in->sample_aspect_ratio.den * outlink->w * link->h,
               INT_MAX);
 
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
     return ff_filter_frame(outlink, out);
 fail:
-    av_frame_free(&in);
-    av_frame_free(&out);
+    av_frame_free_xij(&in);
+    av_frame_free_xij(&out);
     return ret;
 }
 

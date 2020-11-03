@@ -25,7 +25,7 @@
 
 int swr_config_frame(SwrContext *s, const AVFrame *out, const AVFrame *in)
 {
-    swr_close(s);
+    swr_close_xij(s);
 
     if (in) {
         if (av_opt_set_int(s, "icl", in->channel_layout, 0) < 0)
@@ -93,7 +93,7 @@ static inline int convert_frame(SwrContext *s,
         in_nb_samples = in->nb_samples;
     }
 
-    ret = swr_convert(s, out_data, out_nb_samples, in_data, in_nb_samples);
+    ret = swr_convert_xij(s, out_data, out_nb_samples, in_data, in_nb_samples);
 
     if (ret < 0) {
         if (out)
@@ -125,10 +125,10 @@ int swr_convert_frame(SwrContext *s,
 {
     int ret, setup = 0;
 
-    if (!swr_is_initialized(s)) {
+    if (!swr_is_initialized_xij(s)) {
         if ((ret = swr_config_frame(s, out, in)) < 0)
             return ret;
-        if ((ret = swr_init(s)) < 0)
+        if ((ret = swr_init_xij(s)) < 0)
             return ret;
         setup = 1;
     } else {
@@ -139,13 +139,13 @@ int swr_convert_frame(SwrContext *s,
 
     if (out) {
         if (!out->linesize[0]) {
-            out->nb_samples = swr_get_delay(s, s->out_sample_rate) + 3;
+            out->nb_samples = swr_get_delay_xij(s, s->out_sample_rate) + 3;
             if (in) {
                 out->nb_samples += in->nb_samples*(int64_t)s->out_sample_rate / s->in_sample_rate;
             }
-            if ((ret = av_frame_get_buffer(out, 0)) < 0) {
+            if ((ret = av_frame_get_buffer_xij(out, 0)) < 0) {
                 if (setup)
-                    swr_close(s);
+                    swr_close_xij(s);
                 return ret;
             }
         } else {

@@ -328,7 +328,7 @@ static int config_output(AVFilterLink *outlink)
     else {
         av_log(ctx, AV_LOG_VERBOSE, "qsv vpp pass through mode.\n");
         if (inlink->hw_frames_ctx)
-            outlink->hw_frames_ctx = av_buffer_ref(inlink->hw_frames_ctx);
+            outlink->hw_frames_ctx = av_buffer_ref_ijk(inlink->hw_frames_ctx);
     }
 
     return 0;

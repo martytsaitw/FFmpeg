@@ -73,7 +73,7 @@ static av_cold int cinvideo_decode_init(AVCodecContext *avctx)
     cin->avctx = avctx;
     avctx->pix_fmt = AV_PIX_FMT_PAL8;
 
-    cin->frame = av_frame_alloc();
+    cin->frame = av_frame_alloc_ijk();
     if (!cin->frame)
         return AVERROR(ENOMEM);
 
@@ -287,7 +287,7 @@ static int cinvideo_decode_frame(AVCodecContext *avctx,
         break;
     }
 
-    if ((res = ff_reget_buffer(avctx, cin->frame)) < 0)
+    if ((res = ff_reget_buffer_xij(avctx, cin->frame)) < 0)
         return res;
 
     memcpy(cin->frame->data[1], cin->palette, sizeof(cin->palette));
@@ -300,7 +300,7 @@ static int cinvideo_decode_frame(AVCodecContext *avctx,
     FFSWAP(uint8_t *, cin->bitmap_table[CIN_CUR_BMP],
                       cin->bitmap_table[CIN_PRE_BMP]);
 
-    if ((res = av_frame_ref(data, cin->frame)) < 0)
+    if ((res = av_frame_ref_xij(data, cin->frame)) < 0)
         return res;
 
     *got_frame = 1;
@@ -312,7 +312,7 @@ static av_cold int cinvideo_decode_end(AVCodecContext *avctx)
 {
     CinVideoContext *cin = avctx->priv_data;
 
-    av_frame_free(&cin->frame);
+    av_frame_free_xij(&cin->frame);
 
     destroy_buffers(cin);
 

@@ -60,10 +60,10 @@ typedef struct CodedBitstreamType {
 
 // Helper functions for trace output.
 
-void ff_cbs_trace_header(CodedBitstreamContext *ctx,
+void ff_cbs_trace_header_xij(CodedBitstreamContext *ctx,
                          const char *name);
 
-void ff_cbs_trace_syntax_element(CodedBitstreamContext *ctx,
+void ff_cbs_trace_syntax_element_xij(CodedBitstreamContext *ctx,
                                  int position, const char *name,
                                  const char *bitstring, int64_t value);
 
@@ -71,11 +71,11 @@ void ff_cbs_trace_syntax_element(CodedBitstreamContext *ctx,
 // Helper functions for read/write of common bitstream elements, including
 // generation of trace output.
 
-int ff_cbs_read_unsigned(CodedBitstreamContext *ctx, GetBitContext *gbc,
+int ff_cbs_read_unsigned_xij(CodedBitstreamContext *ctx, GetBitContext *gbc,
                          int width, const char *name, uint32_t *write_to,
                          uint32_t range_min, uint32_t range_max);
 
-int ff_cbs_write_unsigned(CodedBitstreamContext *ctx, PutBitContext *pbc,
+int ff_cbs_write_unsigned_xij(CodedBitstreamContext *ctx, PutBitContext *pbc,
                           int width, const char *name, uint32_t value,
                           uint32_t range_min, uint32_t range_max);
 

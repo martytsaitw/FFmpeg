@@ -315,7 +315,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
             ret = AVERROR(ENOMEM);
             break;
         }
-        av_frame_copy_props(out, frame);
+        av_frame_copy_props_xij(out, frame);
 
         if (s->is_packed) {
             extract_from_packed(out->data[0], out->linesize[0],
@@ -335,7 +335,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
         else if (ret < 0)
             break;
     }
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
 
     if (eof == ctx->nb_outputs)
         ret = AVERROR_EOF;

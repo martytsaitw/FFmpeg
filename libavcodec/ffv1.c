@@ -49,8 +49,8 @@ av_cold int ff_ffv1_common_init(AVCodecContext *avctx)
     s->avctx = avctx;
     s->flags = avctx->flags;
 
-    s->picture.f = av_frame_alloc();
-    s->last_picture.f = av_frame_alloc();
+    s->picture.f = av_frame_alloc_ijk();
+    s->last_picture.f = av_frame_alloc_ijk();
     if (!s->picture.f || !s->last_picture.f)
         return AVERROR(ENOMEM);
 
@@ -214,11 +214,11 @@ av_cold int ff_ffv1_close(AVCodecContext *avctx)
 
     if (s->picture.f)
         ff_thread_release_buffer(avctx, &s->picture);
-    av_frame_free(&s->picture.f);
+    av_frame_free_xij(&s->picture.f);
 
     if (s->last_picture.f)
         ff_thread_release_buffer(avctx, &s->last_picture);
-    av_frame_free(&s->last_picture.f);
+    av_frame_free_xij(&s->last_picture.f);
 
     for (j = 0; j < s->max_slice_count; j++) {
         FFV1Context *fs = s->slice_context[j];

@@ -335,7 +335,7 @@ static void mpeg1_encode_sequence_header(MpegEncContext *s)
             put_bits(&s->pb, 2, s->mpeg2_frame_rate_ext.num-1); // frame_rate_ext_n
             put_bits(&s->pb, 5, s->mpeg2_frame_rate_ext.den-1); // frame_rate_ext_d
 
-            side_data = av_frame_get_side_data(s->current_picture_ptr->f, AV_FRAME_DATA_PANSCAN);
+            side_data = av_frame_get_side_data_xij(s->current_picture_ptr->f, AV_FRAME_DATA_PANSCAN);
             if (side_data) {
                 AVPanScan *pan_scan = (AVPanScan *)side_data->data;
                 if (pan_scan->width && pan_scan->height) {
@@ -505,7 +505,7 @@ void ff_mpeg1_encode_picture_header(MpegEncContext *s, int picture_number)
         for (i = 0; i < sizeof(svcd_scan_offset_placeholder); i++)
             put_bits(&s->pb, 8, svcd_scan_offset_placeholder[i]);
     }
-    side_data = av_frame_get_side_data(s->current_picture_ptr->f,
+    side_data = av_frame_get_side_data_xij(s->current_picture_ptr->f,
                                        AV_FRAME_DATA_STEREO3D);
     if (side_data) {
         AVStereo3D *stereo = (AVStereo3D *)side_data->data;

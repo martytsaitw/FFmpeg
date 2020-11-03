@@ -147,13 +147,13 @@ static int read_header(AVFormatContext *ctx)
     if (error = al_get_error(ad->device, &error_msg)) goto fail;
 
     /* Create stream */
-    if (!(st = avformat_new_stream(ctx, NULL))) {
+    if (!(st = avformat_new_stream_ijk(ctx, NULL))) {
         error = AVERROR(ENOMEM);
         goto fail;
     }
 
     /* We work in microseconds */
-    avpriv_set_pts_info(st, 64, 1, 1000000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000000);
 
     /* Set codec parameters */
     par = st->codecpar;
@@ -163,7 +163,7 @@ static int read_header(AVFormatContext *ctx)
     par->codec_id = get_al_format_info(ad->sample_format)->codec_id;
 
     /* This is needed to read the audio data */
-    ad->sample_step = (av_get_bits_per_sample(get_al_format_info(ad->sample_format)->codec_id) *
+    ad->sample_step = (av_get_bits_per_sample_xij(get_al_format_info(ad->sample_format)->codec_id) *
                        get_al_format_info(ad->sample_format)->channels) / 8;
 
     /* Finally, start the capture process */
@@ -199,7 +199,7 @@ static int read_packet(AVFormatContext* ctx, AVPacket *pkt)
     }
 
     /* Create a packet of appropriate size */
-    if ((error = av_new_packet(pkt, nb_samples*ad->sample_step)) < 0)
+    if ((error = av_new_packet_ijk(pkt, nb_samples*ad->sample_step)) < 0)
         goto fail;
     pkt->pts = av_gettime();
 
@@ -211,7 +211,7 @@ static int read_packet(AVFormatContext* ctx, AVPacket *pkt)
 fail:
     /* Handle failure */
     if (pkt->data)
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
     if (error_msg)
         av_log(ctx, AV_LOG_ERROR, "Error: %s\n", error_msg);
     return error;

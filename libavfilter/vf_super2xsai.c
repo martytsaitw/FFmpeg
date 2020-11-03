@@ -310,10 +310,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
     AVFilterLink *outlink = inlink->dst->outputs[0];
     AVFrame *outpicref = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!outpicref) {
-        av_frame_free(&inpicref);
+        av_frame_free_xij(&inpicref);
         return AVERROR(ENOMEM);
     }
-    av_frame_copy_props(outpicref, inpicref);
+    av_frame_copy_props_xij(outpicref, inpicref);
     outpicref->width  = outlink->w;
     outpicref->height = outlink->h;
 
@@ -321,7 +321,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
                outpicref->data[0], outpicref->linesize[0],
                inlink->w, inlink->h);
 
-    av_frame_free(&inpicref);
+    av_frame_free_xij(&inpicref);
     return ff_filter_frame(outlink, outpicref);
 }
 

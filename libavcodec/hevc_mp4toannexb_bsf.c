@@ -124,13 +124,13 @@ static int hevc_mp4toannexb_filter(AVBSFContext *ctx, AVPacket *out)
     int got_irap = 0;
     int i, ret = 0;
 
-    ret = ff_bsf_get_packet(ctx, &in);
+    ret = ff_bsf_get_packet_xij(ctx, &in);
     if (ret < 0)
         return ret;
 
     if (!s->extradata_parsed) {
-        av_packet_move_ref(out, in);
-        av_packet_free(&in);
+        av_packet_move_ref_xij(out, in);
+        av_packet_free_xij(&in);
         return 0;
     }
 
@@ -160,7 +160,7 @@ static int hevc_mp4toannexb_filter(AVBSFContext *ctx, AVPacket *out)
 
         prev_size = out->size;
 
-        ret = av_grow_packet(out, 4 + nalu_size + extra_size);
+        ret = av_grow_packet_ijk(out, 4 + nalu_size + extra_size);
         if (ret < 0)
             goto fail;
 
@@ -170,14 +170,14 @@ static int hevc_mp4toannexb_filter(AVBSFContext *ctx, AVPacket *out)
         bytestream2_get_buffer(&gb, out->data + prev_size + 4 + extra_size, nalu_size);
     }
 
-    ret = av_packet_copy_props(out, in);
+    ret = av_packet_copy_props_ijk(out, in);
     if (ret < 0)
         goto fail;
 
 fail:
     if (ret < 0)
-        av_packet_unref(out);
-    av_packet_free(&in);
+        av_packet_unref_ijk(out);
+    av_packet_free_xij(&in);
 
     return ret;
 }

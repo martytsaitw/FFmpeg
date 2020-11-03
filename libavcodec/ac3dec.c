@@ -1733,7 +1733,7 @@ dependent_frame:
 
     /* get output buffer */
     frame->nb_samples = s->num_blocks * AC3_BLOCK_SIZE;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     for (ch = 0; ch < avctx->channels; ch++) {
@@ -1768,7 +1768,7 @@ dependent_frame:
             break;
         }
     }
-    if ((ret = ff_side_data_update_matrix_encoding(frame, matrix_encoding)) < 0)
+    if ((ret = ff_side_data_update_matrix_encoding_xij(frame, matrix_encoding)) < 0)
         return ret;
 
     /* AVDownmixInfo */

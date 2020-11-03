@@ -1503,7 +1503,7 @@ static int decode_frame(WMAProDecodeCtx *s, AVFrame *frame, int *got_frame_ptr)
     if (s->skip_frame) {
         s->skip_frame = 0;
         *got_frame_ptr = 0;
-        av_frame_unref(frame);
+        av_frame_unref_xij(frame);
     } else {
         *got_frame_ptr = 1;
     }
@@ -1749,7 +1749,7 @@ static int wmapro_decode_packet(AVCodecContext *avctx, void *data,
 
     /* get output buffer */
     frame->nb_samples = s->samples_per_frame;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0) {
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0) {
         s->packet_loss = 1;
         return 0;
     }
@@ -1820,7 +1820,7 @@ static int xma_decode_packet(AVCodecContext *avctx, void *data,
             int bret;
 
             frame->nb_samples = 512 * offset;
-            if ((bret = ff_get_buffer(avctx, frame, 0)) < 0)
+            if ((bret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
                 return bret;
 
             /* copy samples buffer (Nch) to frame samples (Nch), move unconsumed samples */
@@ -1884,11 +1884,11 @@ static av_cold int xma_decode_init(AVCodecContext *avctx)
         ret = decode_init(&s->xma[i], avctx, i);
         if (ret < 0)
             return ret;
-        s->frames[i] = av_frame_alloc();
+        s->frames[i] = av_frame_alloc_ijk();
         if (!s->frames[i])
             return AVERROR(ENOMEM);
         s->frames[i]->nb_samples = 512;
-        if ((ret = ff_get_buffer(avctx, s->frames[i], 0)) < 0) {
+        if ((ret = ff_get_buffer_xij(avctx, s->frames[i], 0)) < 0) {
             return AVERROR(ENOMEM);
         }
 
@@ -1906,7 +1906,7 @@ static av_cold int xma_decode_end(AVCodecContext *avctx)
 
     for (i = 0; i < s->num_streams; i++) {
         decode_end(&s->xma[i]);
-        av_frame_free(&s->frames[i]);
+        av_frame_free_xij(&s->frames[i]);
     }
 
     return 0;

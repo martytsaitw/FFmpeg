@@ -130,17 +130,17 @@ static int close_slave(TeeSlave *tee_slave)
         return 0;
 
     if (tee_slave->header_written)
-        ret = av_write_trailer(avf);
+        ret = av_write_trailer_xij(avf);
 
     if (tee_slave->bsfs) {
         for (i = 0; i < avf->nb_streams; ++i)
-            av_bsf_free(&tee_slave->bsfs[i]);
+            av_bsf_free_xij(&tee_slave->bsfs[i]);
     }
     av_freep(&tee_slave->stream_map);
     av_freep(&tee_slave->bsfs);
 
-    ff_format_io_close(avf, &avf->pb);
-    avformat_free_context(avf);
+    ff_format_io_close_xij(avf, &avf->pb);
+    avformat_free_context_ijk(avf);
     tee_slave->avf = NULL;
     return ret;
 }
@@ -225,7 +225,7 @@ static int open_slave(AVFormatContext *avf, char *slave, TeeSlave *tee_slave)
         av_dict_free(&options);
         options = tee_slave->fifo_options;
     }
-    ret = avformat_alloc_output_context2(&avf2, NULL,
+    ret = avformat_alloc_output_context2_ijk(&avf2, NULL,
                                          tee_slave->use_fifo ? "fifo" :format, filename);
     if (ret < 0)
         goto end;
@@ -258,7 +258,7 @@ static int open_slave(AVFormatContext *avf, char *slave, TeeSlave *tee_slave)
             while (subselect = av_strtok(first_subselect, slave_select_sep, &next_subselect)) {
                 first_subselect = NULL;
 
-                ret = avformat_match_stream_specifier(avf, avf->streams[i], subselect);
+                ret = avformat_match_stream_specifier_xij(avf, avf->streams[i], subselect);
                 if (ret < 0) {
                     av_log(avf, AV_LOG_ERROR,
                            "Invalid stream specifier '%s' for output '%s'\n",
@@ -279,24 +279,24 @@ static int open_slave(AVFormatContext *avf, char *slave, TeeSlave *tee_slave)
         }
         tee_slave->stream_map[i] = stream_count++;
 
-        if (!(st2 = avformat_new_stream(avf2, NULL))) {
+        if (!(st2 = avformat_new_stream_ijk(avf2, NULL))) {
             ret = AVERROR(ENOMEM);
             goto end;
         }
 
-        ret = ff_stream_encode_params_copy(st2, st);
+        ret = ff_stream_encode_params_copy_xij(st2, st);
         if (ret < 0)
             goto end;
     }
 
-    ret = ff_format_output_open(avf2, filename, NULL);
+    ret = ff_format_output_open_xij(avf2, filename, NULL);
     if (ret < 0) {
         av_log(avf, AV_LOG_ERROR, "Slave '%s': error opening: %s\n", slave,
                av_err2str(ret));
         goto end;
     }
 
-    if ((ret = avformat_write_header(avf2, &options)) < 0) {
+    if ((ret = avformat_write_header_xij(avf2, &options)) < 0) {
         av_log(avf, AV_LOG_ERROR, "Slave '%s': error writing header: %s\n",
                slave, av_err2str(ret));
         goto end;
@@ -324,7 +324,7 @@ static int open_slave(AVFormatContext *avf, char *slave, TeeSlave *tee_slave)
         }
 
         for (i = 0; i < avf2->nb_streams; i++) {
-            ret = avformat_match_stream_specifier(avf2, avf2->streams[i], spec);
+            ret = avformat_match_stream_specifier_xij(avf2, avf2->streams[i], spec);
             if (ret < 0) {
                 av_log(avf, AV_LOG_ERROR,
                        "Invalid stream specifier '%s' in bsfs option '%s' for slave "
@@ -341,7 +341,7 @@ static int open_slave(AVFormatContext *avf, char *slave, TeeSlave *tee_slave)
                            "output '%s', filters will be ignored\n", i, filename);
                     continue;
                 }
-                ret = av_bsf_list_parse_str(entry->value, &tee_slave->bsfs[i]);
+                ret = av_bsf_list_parse_str_xij(entry->value, &tee_slave->bsfs[i]);
                 if (ret < 0) {
                     av_log(avf, AV_LOG_ERROR,
                            "Error parsing bitstream filter sequence '%s' associated to "
@@ -361,7 +361,7 @@ static int open_slave(AVFormatContext *avf, char *slave, TeeSlave *tee_slave)
 
         if (!tee_slave->bsfs[target_stream]) {
             /* Add pass-through bitstream filter */
-            ret = av_bsf_get_null_filter(&tee_slave->bsfs[target_stream]);
+            ret = av_bsf_get_null_filter_xij(&tee_slave->bsfs[target_stream]);
             if (ret < 0) {
                 av_log(avf, AV_LOG_ERROR,
                        "Failed to create pass-through bitstream filter: %s\n",
@@ -371,12 +371,12 @@ static int open_slave(AVFormatContext *avf, char *slave, TeeSlave *tee_slave)
         }
 
         tee_slave->bsfs[target_stream]->time_base_in = avf->streams[i]->time_base;
-        ret = avcodec_parameters_copy(tee_slave->bsfs[target_stream]->par_in,
+        ret = avcodec_parameters_copy_ijk(tee_slave->bsfs[target_stream]->par_in,
                                       avf->streams[i]->codecpar);
         if (ret < 0)
             goto end;
 
-        ret = av_bsf_init(tee_slave->bsfs[target_stream]);
+        ret = av_bsf_init_ijk(tee_slave->bsfs[target_stream]);
         if (ret < 0) {
             av_log(avf, AV_LOG_ERROR,
             "Failed to initialize bitstream filter(s): %s\n",
@@ -413,8 +413,8 @@ static void log_slave(TeeSlave *slave, void *log_ctx, int log_level)
         const char *bsf_name;
 
         av_log(log_ctx, log_level, "    stream:%d codec:%s type:%s",
-               i, avcodec_get_name(st->codecpar->codec_id),
-               av_get_media_type_string(st->codecpar->codec_type));
+               i, avcodec_get_name_xij(st->codecpar->codec_id),
+               av_get_media_type_string_xij(st->codecpar->codec_type));
 
         bsf_name = bsf->filter->priv_class ?
                    bsf->filter->priv_class->item_name(bsf) : bsf->filter->name;
@@ -549,7 +549,7 @@ static int tee_write_packet(AVFormatContext *avf, AVPacket *pkt)
 
         /* Flush slave if pkt is NULL*/
         if (!pkt) {
-            ret = av_interleaved_write_frame(avf2, NULL);
+            ret = av_interleaved_write_frame_xij(avf2, NULL);
             if (ret < 0) {
                 ret = tee_process_slave_failure(avf, i, ret);
                 if (!ret_all && ret < 0)
@@ -564,7 +564,7 @@ static int tee_write_packet(AVFormatContext *avf, AVPacket *pkt)
             continue;
 
         memset(&pkt2, 0, sizeof(AVPacket));
-        if ((ret = av_packet_ref(&pkt2, pkt)) < 0)
+        if ((ret = av_packet_ref_ijk(&pkt2, pkt)) < 0)
             if (!ret_all) {
                 ret_all = ret;
                 continue;
@@ -572,7 +572,7 @@ static int tee_write_packet(AVFormatContext *avf, AVPacket *pkt)
         bsfs = tee->slaves[i].bsfs[s2];
         pkt2.stream_index = s2;
 
-        ret = av_bsf_send_packet(bsfs, &pkt2);
+        ret = av_bsf_send_packet_ijk(bsfs, &pkt2);
         if (ret < 0) {
             av_log(avf, AV_LOG_ERROR, "Error while sending packet to bitstream filter: %s\n",
                    av_err2str(ret));
@@ -582,7 +582,7 @@ static int tee_write_packet(AVFormatContext *avf, AVPacket *pkt)
         }
 
         while(1) {
-            ret = av_bsf_receive_packet(bsfs, &pkt2);
+            ret = av_bsf_receive_packet_ijk(bsfs, &pkt2);
             if (ret == AVERROR(EAGAIN)) {
                 ret = 0;
                 break;
@@ -590,9 +590,9 @@ static int tee_write_packet(AVFormatContext *avf, AVPacket *pkt)
                 break;
             }
 
-            av_packet_rescale_ts(&pkt2, bsfs->time_base_out,
+            av_packet_rescale_ts_xij(&pkt2, bsfs->time_base_out,
                                  avf2->streams[s2]->time_base);
-            ret = av_interleaved_write_frame(avf2, &pkt2);
+            ret = av_interleaved_write_frame_xij(avf2, &pkt2);
             if (ret < 0)
                 break;
         };

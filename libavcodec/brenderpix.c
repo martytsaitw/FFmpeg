@@ -205,10 +205,10 @@ static int pix_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         return AVERROR_PATCHWELCOME;
     }
 
-    if ((ret = ff_set_dimensions(avctx, hdr.width, hdr.height)) < 0)
+    if ((ret = ff_set_dimensions_xij(avctx, hdr.width, hdr.height)) < 0)
         return ret;
 
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     chunk_type = bytestream2_get_be32(&gb);

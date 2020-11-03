@@ -46,7 +46,7 @@ static av_cold int pcm_encode_init(AVCodecContext *avctx)
         break;
     }
 
-    avctx->bits_per_coded_sample = av_get_bits_per_sample(avctx->codec->id);
+    avctx->bits_per_coded_sample = av_get_bits_per_sample_xij(avctx->codec->id);
     avctx->block_align           = avctx->channels * avctx->bits_per_coded_sample / 8;
     avctx->bit_rate              = avctx->block_align * 8LL * avctx->sample_rate;
 
@@ -94,7 +94,7 @@ static int pcm_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     const uint16_t *samples_uint16_t;
     const uint32_t *samples_uint32_t;
 
-    sample_size = av_get_bits_per_sample(avctx->codec->id) / 8;
+    sample_size = av_get_bits_per_sample_xij(avctx->codec->id) / 8;
     n           = frame->nb_samples * avctx->channels;
     samples     = (const short *)frame->data[0];
 
@@ -263,7 +263,7 @@ static av_cold int pcm_decode_init(AVCodecContext *avctx)
     avctx->sample_fmt = avctx->codec->sample_fmts[0];
 
     if (avctx->sample_fmt == AV_SAMPLE_FMT_S32)
-        avctx->bits_per_raw_sample = av_get_bits_per_sample(avctx->codec_id);
+        avctx->bits_per_raw_sample = av_get_bits_per_sample_xij(avctx->codec_id);
 
     return 0;
 }
@@ -317,9 +317,9 @@ static int pcm_decode_frame(AVCodecContext *avctx, void *data,
     uint8_t *samples;
     int32_t *dst_int32_t;
 
-    sample_size = av_get_bits_per_sample(avctx->codec_id) / 8;
+    sample_size = av_get_bits_per_sample_xij(avctx->codec_id) / 8;
 
-    /* av_get_bits_per_sample returns 0 for AV_CODEC_ID_PCM_DVD */
+    /* av_get_bits_per_sample_xij returns 0 for AV_CODEC_ID_PCM_DVD */
     samples_per_block = 1;
     if (avctx->codec_id == AV_CODEC_ID_PCM_LXF) {
         /* we process 40-bit blocks per channel for LXF */
@@ -358,7 +358,7 @@ static int pcm_decode_frame(AVCodecContext *avctx, void *data,
 
     /* get output buffer */
     frame->nb_samples = n * samples_per_block / avctx->channels;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
     samples = frame->data[0];
 

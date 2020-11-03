@@ -48,9 +48,9 @@ static int sap_write_close(AVFormatContext *s)
         AVFormatContext *rtpctx = s->streams[i]->priv_data;
         if (!rtpctx)
             continue;
-        av_write_trailer(rtpctx);
-        avio_closep(&rtpctx->pb);
-        avformat_free_context(rtpctx);
+        av_write_trailer_xij(rtpctx);
+        avio_closep_xij(&rtpctx->pb);
+        avformat_free_context_ijk(rtpctx);
         s->streams[i]->priv_data = NULL;
     }
 
@@ -83,7 +83,7 @@ static int sap_write_header(AVFormatContext *s)
         return AVERROR(EIO);
 
     /* extract hostname and port */
-    av_url_split(NULL, 0, NULL, 0, host, sizeof(host), &base_port,
+    av_url_split_xij(NULL, 0, NULL, 0, host, sizeof(host), &base_port,
                  path, sizeof(path), s->url);
     if (base_port < 0)
         base_port = 5004;
@@ -167,7 +167,7 @@ static int sap_write_header(AVFormatContext *s)
             ret = AVERROR(ENOMEM);
             goto fail;
         }
-        ff_format_set_url(contexts[i], new_url);
+        ff_format_set_url_xij(contexts[i], new_url);
     }
 
     if (s->nb_streams > 0 && title)
@@ -265,7 +265,7 @@ static int sap_write_packet(AVFormatContext *s, AVPacket *pkt)
         sap->last_time = now;
     }
     rtpctx = s->streams[pkt->stream_index]->priv_data;
-    return ff_write_chained(rtpctx, 0, pkt, s, 0);
+    return ff_write_chained_xij(rtpctx, 0, pkt, s, 0);
 }
 
 AVOutputFormat ff_sap_muxer = {

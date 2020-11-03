@@ -404,7 +404,7 @@ static uint8_t *get_metadata(AVFormatContext *avctx, uint16_t *buf, size_t width
             clear_parity_bits(buf, len);
             data = vanc_to_cc(avctx, buf, width, data_len);
             if (data) {
-                if (av_packet_add_side_data(pkt, AV_PKT_DATA_A53_CC, data, data_len) < 0)
+                if (av_packet_add_side_data_ijk(pkt, AV_PKT_DATA_A53_CC, data, data_len) < 0)
                     av_free(data);
             }
         } else {
@@ -435,7 +435,7 @@ static void avpacket_queue_flush(AVPacketQueue *q)
     pthread_mutex_lock(&q->mutex);
     for (pkt = q->first_pkt; pkt != NULL; pkt = pkt1) {
         pkt1 = pkt->next;
-        av_packet_unref(&pkt->pkt);
+        av_packet_unref_ijk(&pkt->pkt);
         av_freep(&pkt);
     }
     q->last_pkt   = NULL;
@@ -471,7 +471,7 @@ static int avpacket_queue_put(AVPacketQueue *q, AVPacket *pkt)
         return -1;
     }
     /* ensure the packet is reference counted */
-    if (av_packet_make_refcounted(pkt) < 0) {
+    if (av_packet_make_refcounted_xij(pkt) < 0) {
         return -1;
     }
 
@@ -479,7 +479,7 @@ static int avpacket_queue_put(AVPacketQueue *q, AVPacket *pkt)
     if (!pkt1) {
         return -1;
     }
-    av_packet_move_ref(&pkt1->pkt, pkt);
+    av_packet_move_ref_xij(&pkt1->pkt, pkt);
     pkt1->next = NULL;
 
     pthread_mutex_lock(&q->mutex);
@@ -673,7 +673,7 @@ HRESULT decklink_input_callback::VideoInputFrameArrived(
     // Handle Video Frame
     if (videoFrame) {
         AVPacket pkt;
-        av_init_packet(&pkt);
+        av_init_packet_ijk(&pkt);
         if (ctx->frameCount % 25 == 0) {
             unsigned long long qsize = avpacket_queue_size(&ctx->queue);
             av_log(avctx, AV_LOG_DEBUG,
@@ -784,7 +784,7 @@ HRESULT decklink_input_callback::VideoInputFrameArrived(
                         txt_buf[1] = 0x2c; // data_unit_length
                         txt_buf += 46;
                     }
-                    av_init_packet(&txt_pkt);
+                    av_init_packet_ijk(&txt_pkt);
                     txt_pkt.pts = pkt.pts;
                     txt_pkt.dts = pkt.dts;
                     txt_pkt.stream_index = ctx->teletext_st->index;
@@ -806,7 +806,7 @@ HRESULT decklink_input_callback::VideoInputFrameArrived(
     if (audioFrame) {
         AVPacket pkt;
         BMDTimeValue audio_pts;
-        av_init_packet(&pkt);
+        av_init_packet_ijk(&pkt);
 
         //hack among hacks
         pkt.size = audioFrame->GetSampleFrameCount() * ctx->audio_st->codecpar->channels * (ctx->audio_depth / 8);
@@ -1026,7 +1026,7 @@ av_cold int ff_decklink_read_header(AVFormatContext *avctx)
 #endif
 
     /* Setup streams. */
-    st = avformat_new_stream(avctx, NULL);
+    st = avformat_new_stream_ijk(avctx, NULL);
     if (!st) {
         av_log(avctx, AV_LOG_ERROR, "Cannot add stream\n");
         ret = AVERROR(ENOMEM);
@@ -1036,10 +1036,10 @@ av_cold int ff_decklink_read_header(AVFormatContext *avctx)
     st->codecpar->codec_id    = cctx->audio_depth == 32 ? AV_CODEC_ID_PCM_S32LE : AV_CODEC_ID_PCM_S16LE;
     st->codecpar->sample_rate = bmdAudioSampleRate48kHz;
     st->codecpar->channels    = cctx->audio_channels;
-    avpriv_set_pts_info(st, 64, 1, 1000000);  /* 64 bits pts in us */
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000000);  /* 64 bits pts in us */
     ctx->audio_st=st;
 
-    st = avformat_new_stream(avctx, NULL);
+    st = avformat_new_stream_ijk(avctx, NULL);
     if (!st) {
         av_log(avctx, AV_LOG_ERROR, "Cannot add stream\n");
         ret = AVERROR(ENOMEM);
@@ -1104,12 +1104,12 @@ av_cold int ff_decklink_read_header(AVFormatContext *avctx)
         break;
     }
 
-    avpriv_set_pts_info(st, 64, 1, 1000000);  /* 64 bits pts in us */
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000000);  /* 64 bits pts in us */
 
     ctx->video_st=st;
 
     if (ctx->teletext_lines) {
-        st = avformat_new_stream(avctx, NULL);
+        st = avformat_new_stream_ijk(avctx, NULL);
         if (!st) {
             av_log(avctx, AV_LOG_ERROR, "Cannot add stream\n");
             ret = AVERROR(ENOMEM);
@@ -1119,7 +1119,7 @@ av_cold int ff_decklink_read_header(AVFormatContext *avctx)
         st->time_base.den         = ctx->bmd_tb_den;
         st->time_base.num         = ctx->bmd_tb_num;
         st->codecpar->codec_id    = AV_CODEC_ID_DVB_TELETEXT;
-        avpriv_set_pts_info(st, 64, 1, 1000000);  /* 64 bits pts in us */
+        avpriv_set_pts_info_ijk(st, 64, 1, 1000000);  /* 64 bits pts in us */
         ctx->teletext_st = st;
     }
 

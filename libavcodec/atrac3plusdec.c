@@ -336,7 +336,7 @@ static int atrac3p_decode_frame(AVCodecContext *avctx, void *data,
     float **samples_p = (float **)frame->extended_data;
 
     frame->nb_samples = ATRAC3P_FRAME_SAMPLES;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     if ((ret = init_get_bits8(&ctx->gb, avpkt->data, avpkt->size)) < 0)

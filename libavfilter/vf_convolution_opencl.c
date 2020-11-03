@@ -269,11 +269,11 @@ static int convolution_opencl_filter_frame(AVFilterLink *inlink, AVFrame *input)
         goto fail;
     }
 
-    err = av_frame_copy_props(output, input);
+    err = av_frame_copy_props_xij(output, input);
     if (err < 0)
         goto fail;
 
-    av_frame_free(&input);
+    av_frame_free_xij(&input);
 
     av_log(ctx, AV_LOG_DEBUG, "Filter output: %s, %ux%u (%"PRId64").\n",
            av_get_pix_fmt_name(output->format),
@@ -283,8 +283,8 @@ static int convolution_opencl_filter_frame(AVFilterLink *inlink, AVFrame *input)
 
 fail:
     clFinish(ctx->command_queue);
-    av_frame_free(&input);
-    av_frame_free(&output);
+    av_frame_free_xij(&input);
+    av_frame_free_xij(&output);
     return err;
 }
 

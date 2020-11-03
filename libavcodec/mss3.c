@@ -733,12 +733,12 @@ static int mss3_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         return buf_size;
     c->got_error = 0;
 
-    if ((ret = ff_reget_buffer(avctx, c->pic)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, c->pic)) < 0)
         return ret;
     c->pic->key_frame = keyframe;
     c->pic->pict_type = keyframe ? AV_PICTURE_TYPE_I : AV_PICTURE_TYPE_P;
     if (!bytestream2_get_bytes_left(&gb)) {
-        if ((ret = av_frame_ref(data, c->pic)) < 0)
+        if ((ret = av_frame_ref_xij(data, c->pic)) < 0)
             return ret;
         *got_frame      = 1;
 
@@ -797,7 +797,7 @@ static int mss3_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         dst[2] += c->pic->linesize[2] * 8;
     }
 
-    if ((ret = av_frame_ref(data, c->pic)) < 0)
+    if ((ret = av_frame_ref_xij(data, c->pic)) < 0)
         return ret;
 
     *got_frame      = 1;
@@ -810,7 +810,7 @@ static av_cold int mss3_decode_end(AVCodecContext *avctx)
     MSS3Context * const c = avctx->priv_data;
     int i;
 
-    av_frame_free(&c->pic);
+    av_frame_free_xij(&c->pic);
     for (i = 0; i < 3; i++)
         av_freep(&c->dct_coder[i].prev_dc);
 
@@ -840,7 +840,7 @@ static av_cold int mss3_decode_init(AVCodecContext *avctx)
                                             b_width * b_height);
         if (!c->dct_coder[i].prev_dc) {
             av_log(avctx, AV_LOG_ERROR, "Cannot allocate buffer\n");
-            av_frame_free(&c->pic);
+            av_frame_free_xij(&c->pic);
             while (i >= 0) {
                 av_freep(&c->dct_coder[i].prev_dc);
                 i--;
@@ -849,7 +849,7 @@ static av_cold int mss3_decode_init(AVCodecContext *avctx)
         }
     }
 
-    c->pic = av_frame_alloc();
+    c->pic = av_frame_alloc_ijk();
     if (!c->pic) {
         mss3_decode_end(avctx);
         return AVERROR(ENOMEM);

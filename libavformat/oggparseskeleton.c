@@ -66,7 +66,7 @@ static int skeleton_header(AVFormatContext *s, int idx)
         if (start_den > 0 && start_num > 0) {
             int base_den;
             av_reduce(&start_time, &base_den, start_num, start_den, INT_MAX);
-            avpriv_set_pts_info(st, 64, 1, base_den);
+            avpriv_set_pts_info_ijk(st, 64, 1, base_den);
             os->lastpts =
             st->start_time = start_time;
         }

@@ -306,7 +306,7 @@ static int hevc_parse(AVCodecParserContext *s, AVCodecContext *avctx,
         next = buf_size;
     } else {
         next = hevc_find_frame_end(s, buf, buf_size);
-        if (ff_combine_frame(pc, next, &buf, &buf_size) < 0) {
+        if (ff_combine_frame_xij(pc, next, &buf, &buf_size) < 0) {
             *poutbuf      = NULL;
             *poutbuf_size = 0;
             return buf_size;
@@ -331,7 +331,7 @@ static int hevc_split(AVCodecContext *avctx, const uint8_t *buf, int buf_size)
     int nut;
 
     while (ptr < end) {
-        ptr = avpriv_find_start_code(ptr, end, &state);
+        ptr = avpriv_find_start_code_xij(ptr, end, &state);
         if ((state >> 8) != START_CODE)
             break;
         nut = (state >> 1) & 0x3F;

@@ -116,7 +116,7 @@ static av_cold int init(AVFilterContext *ctx)
 
 static double determine_signal_peak(AVFrame *in)
 {
-    AVFrameSideData *sd = av_frame_get_side_data(in, AV_FRAME_DATA_CONTENT_LIGHT_LEVEL);
+    AVFrameSideData *sd = av_frame_get_side_data_xij(in, AV_FRAME_DATA_CONTENT_LIGHT_LEVEL);
     double peak = 0;
 
     if (sd) {
@@ -124,7 +124,7 @@ static double determine_signal_peak(AVFrame *in)
         peak = clm->MaxCLL / REFERENCE_WHITE;
     }
 
-    sd = av_frame_get_side_data(in, AV_FRAME_DATA_MASTERING_DISPLAY_METADATA);
+    sd = av_frame_get_side_data_xij(in, AV_FRAME_DATA_MASTERING_DISPLAY_METADATA);
     if (!peak && sd) {
         AVMasteringDisplayMetadata *metadata = (AVMasteringDisplayMetadata *)sd->data;
         if (metadata->has_luminance)
@@ -234,20 +234,20 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
     double peak = s->peak;
 
     if (!desc || !odesc) {
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         return AVERROR_BUG;
     }
 
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out) {
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         return AVERROR(ENOMEM);
     }
 
-    ret = av_frame_copy_props(out, in);
+    ret = av_frame_copy_props_xij(out, in);
     if (ret < 0) {
-        av_frame_free(&in);
-        av_frame_free(&out);
+        av_frame_free_xij(&in);
+        av_frame_free_xij(&out);
         return ret;
     }
 
@@ -295,7 +295,7 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
         }
     }
 
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
 
     return ff_filter_frame(outlink, out);
 }

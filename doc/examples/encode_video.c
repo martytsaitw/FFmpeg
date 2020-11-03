@@ -62,7 +62,7 @@ static void encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt,
 
         printf("Write packet %3"PRId64" (size=%5d)\n", pkt->pts, pkt->size);
         fwrite(pkt->data, 1, pkt->size, outfile);
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
     }
 }
 
@@ -85,19 +85,19 @@ int main(int argc, char **argv)
     codec_name = argv[2];
 
     /* find the mpeg1video encoder */
-    codec = avcodec_find_encoder_by_name(codec_name);
+    codec = avcodec_find_encoder_by_name_xij(codec_name);
     if (!codec) {
         fprintf(stderr, "Codec '%s' not found\n", codec_name);
         exit(1);
     }
 
-    c = avcodec_alloc_context3(codec);
+    c = avcodec_alloc_context3_ijk(codec);
     if (!c) {
         fprintf(stderr, "Could not allocate video codec context\n");
         exit(1);
     }
 
-    pkt = av_packet_alloc();
+    pkt = av_packet_alloc_ijk();
     if (!pkt)
         exit(1);
 
@@ -124,7 +124,7 @@ int main(int argc, char **argv)
         av_opt_set(c->priv_data, "preset", "slow", 0);
 
     /* open it */
-    ret = avcodec_open2(c, codec, NULL);
+    ret = avcodec_open2_xij(c, codec, NULL);
     if (ret < 0) {
         fprintf(stderr, "Could not open codec: %s\n", av_err2str(ret));
         exit(1);
@@ -136,7 +136,7 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    frame = av_frame_alloc();
+    frame = av_frame_alloc_ijk();
     if (!frame) {
         fprintf(stderr, "Could not allocate video frame\n");
         exit(1);
@@ -145,7 +145,7 @@ int main(int argc, char **argv)
     frame->width  = c->width;
     frame->height = c->height;
 
-    ret = av_frame_get_buffer(frame, 32);
+    ret = av_frame_get_buffer_xij(frame, 32);
     if (ret < 0) {
         fprintf(stderr, "Could not allocate the video frame data\n");
         exit(1);
@@ -156,7 +156,7 @@ int main(int argc, char **argv)
         fflush(stdout);
 
         /* make sure the frame data is writable */
-        ret = av_frame_make_writable(frame);
+        ret = av_frame_make_writable_xij(frame);
         if (ret < 0)
             exit(1);
 
@@ -189,9 +189,9 @@ int main(int argc, char **argv)
     fwrite(endcode, 1, sizeof(endcode), f);
     fclose(f);
 
-    avcodec_free_context(&c);
-    av_frame_free(&frame);
-    av_packet_free(&pkt);
+    avcodec_free_context_ijk(&c);
+    av_frame_free_xij(&frame);
+    av_packet_free_xij(&pkt);
 
     return 0;
 }

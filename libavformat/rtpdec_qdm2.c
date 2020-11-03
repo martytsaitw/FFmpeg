@@ -105,7 +105,7 @@ static int qdm2_parse_config(PayloadContext *qdm, AVStream *st,
                 if (item_len < 30)
                     return AVERROR_INVALIDDATA;
                 av_freep(&st->codecpar->extradata);
-                if (ff_alloc_extradata(st->codecpar, 26 + item_len)) {
+                if (ff_alloc_extradata_xij(st->codecpar, 26 + item_len)) {
                     return AVERROR(ENOMEM);
                 }
                 AV_WB32(st->codecpar->extradata, 12);
@@ -195,7 +195,7 @@ static int qdm2_restore_block(PayloadContext *qdm, AVStream *st, AVPacket *pkt)
             break;
     av_assert0(n < 0x80);
 
-    if ((res = av_new_packet(pkt, qdm->block_size)) < 0)
+    if ((res = av_new_packet_ijk(pkt, qdm->block_size)) < 0)
         return res;
     memset(pkt->data, 0, pkt->size);
     pkt->stream_index  = st->index;

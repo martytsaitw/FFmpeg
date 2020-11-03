@@ -61,7 +61,7 @@ static void add_metadata(AVFormatContext *s, uint32_t tag,
     buf = av_malloc(len+1);
     if (!buf)
         return;
-    avio_read(s->pb, buf, len);
+    avio_read_xij(s->pb, buf, len);
     buf[len] = 0;
     AV_WL32(key, tag);
     av_dict_set(&s->metadata, key, buf, AV_DICT_DONT_STRDUP_VAL);
@@ -92,7 +92,7 @@ static const AVMetadataConv vqf_metadata_conv[] = {
 static int vqf_read_header(AVFormatContext *s)
 {
     VqfContext *c = s->priv_data;
-    AVStream *st  = avformat_new_stream(s, NULL);
+    AVStream *st  = avformat_new_stream_ijk(s, NULL);
     int chunk_tag;
     int rate_flag = -1;
     int header_size;
@@ -103,9 +103,9 @@ static int vqf_read_header(AVFormatContext *s)
     if (!st)
         return AVERROR(ENOMEM);
 
-    avio_skip(s->pb, 12);
+    avio_skip_xij(s->pb, 12);
 
-    header_size = avio_rb32(s->pb);
+    header_size = avio_rb32_xij(s->pb);
 
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id   = AV_CODEC_ID_TWINVQ;
@@ -113,12 +113,12 @@ static int vqf_read_header(AVFormatContext *s)
 
     do {
         int len;
-        chunk_tag = avio_rl32(s->pb);
+        chunk_tag = avio_rl32_xij(s->pb);
 
         if (chunk_tag == MKTAG('D','A','T','A'))
             break;
 
-        len = avio_rb32(s->pb);
+        len = avio_rb32_xij(s->pb);
 
         if ((unsigned) len > INT_MAX/2) {
             av_log(s, AV_LOG_ERROR, "Malformed header\n");
@@ -129,11 +129,11 @@ static int vqf_read_header(AVFormatContext *s)
 
         switch(chunk_tag){
         case MKTAG('C','O','M','M'):
-            avio_read(s->pb, comm_chunk, 12);
+            avio_read_xij(s->pb, comm_chunk, 12);
             st->codecpar->channels = AV_RB32(comm_chunk    ) + 1;
             read_bitrate        = AV_RB32(comm_chunk + 4);
             rate_flag           = AV_RB32(comm_chunk + 8);
-            avio_skip(s->pb, len-12);
+            avio_skip_xij(s->pb, len-12);
 
             if (st->codecpar->channels <= 0) {
                 av_log(s, AV_LOG_ERROR, "Invalid number of channels\n");
@@ -144,7 +144,7 @@ static int vqf_read_header(AVFormatContext *s)
             break;
         case MKTAG('D','S','I','Z'): // size of compressed data
         {
-            av_dict_set_int(&s->metadata, "size", avio_rb32(s->pb), 0);
+            av_dict_set_int(&s->metadata, "size", avio_rb32_xij(s->pb), 0);
         }
             break;
         case MKTAG('Y','E','A','R'): // recording date
@@ -153,7 +153,7 @@ static int vqf_read_header(AVFormatContext *s)
         case MKTAG('_','Y','M','H'): // reserved
         case MKTAG('_','N','T','T'): // reserved
         case MKTAG('_','I','D','3'): // reserved for ID3 tags
-            avio_skip(s->pb, FFMIN(len, header_size));
+            avio_skip_xij(s->pb, FFMIN(len, header_size));
             break;
         default:
             add_metadata(s, chunk_tag, len, header_size);
@@ -162,7 +162,7 @@ static int vqf_read_header(AVFormatContext *s)
 
         header_size -= len;
 
-    } while (header_size >= 0 && !avio_feof(s->pb));
+    } while (header_size >= 0 && !avio_feof_xij(s->pb));
 
     switch (rate_flag) {
     case -1:
@@ -216,10 +216,10 @@ static int vqf_read_header(AVFormatContext *s)
         return -1;
     }
     c->frame_bit_len = st->codecpar->bit_rate*size/st->codecpar->sample_rate;
-    avpriv_set_pts_info(st, 64, size, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, size, st->codecpar->sample_rate);
 
     /* put first 12 bytes of COMM chunk in extradata */
-    if (ff_alloc_extradata(st->codecpar, 12))
+    if (ff_alloc_extradata_xij(st->codecpar, 12))
         return AVERROR(ENOMEM);
     memcpy(st->codecpar->extradata, comm_chunk, 12);
 
@@ -234,7 +234,7 @@ static int vqf_read_packet(AVFormatContext *s, AVPacket *pkt)
     int ret;
     int size = (c->frame_bit_len - c->remaining_bits + 7)>>3;
 
-    if (av_new_packet(pkt, size+2) < 0)
+    if (av_new_packet_ijk(pkt, size+2) < 0)
         return AVERROR(EIO);
 
     pkt->pos          = avio_tell(s->pb);
@@ -243,10 +243,10 @@ static int vqf_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     pkt->data[0] = 8 - c->remaining_bits; // Number of bits to skip
     pkt->data[1] = c->last_frame_bits;
-    ret = avio_read(s->pb, pkt->data+2, size);
+    ret = avio_read_xij(s->pb, pkt->data+2, size);
 
     if (ret != size) {
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return AVERROR(EIO);
     }
 
@@ -275,7 +275,7 @@ static int vqf_read_seek(AVFormatContext *s,
     st->cur_dts = av_rescale(pos, st->time_base.den,
                              st->codecpar->bit_rate * (int64_t)st->time_base.num);
 
-    if ((ret = avio_seek(s->pb, ((pos-7) >> 3) + s->internal->data_offset, SEEK_SET)) < 0)
+    if ((ret = avio_seek_xij(s->pb, ((pos-7) >> 3) + s->internal->data_offset, SEEK_SET)) < 0)
         return ret;
 
     c->remaining_bits = -7 - ((pos-7)&7);

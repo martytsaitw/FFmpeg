@@ -68,7 +68,7 @@ static unsigned long openssl_thread_id(void)
 
 int ff_openssl_init(void)
 {
-    ff_lock_avformat();
+    ff_lock_avformat_xij();
     if (!openssl_init) {
         SSL_library_init();
         SSL_load_error_strings();
@@ -77,7 +77,7 @@ int ff_openssl_init(void)
             int i;
             openssl_mutexes = av_malloc_array(sizeof(pthread_mutex_t), CRYPTO_num_locks());
             if (!openssl_mutexes) {
-                ff_unlock_avformat();
+                ff_unlock_avformat_xij();
                 return AVERROR(ENOMEM);
             }
 
@@ -91,14 +91,14 @@ int ff_openssl_init(void)
 #endif
     }
     openssl_init++;
-    ff_unlock_avformat();
+    ff_unlock_avformat_xij();
 
     return 0;
 }
 
 void ff_openssl_deinit(void)
 {
-    ff_lock_avformat();
+    ff_lock_avformat_xij();
     openssl_init--;
     if (!openssl_init) {
 #if HAVE_THREADS
@@ -111,7 +111,7 @@ void ff_openssl_deinit(void)
         }
 #endif
     }
-    ff_unlock_avformat();
+    ff_unlock_avformat_xij();
 }
 
 static int print_tls_error(URLContext *h, int ret)

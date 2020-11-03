@@ -623,7 +623,7 @@ static int decode_idat_chunk(AVCodecContext *avctx, PNGDecContext *s,
     }
     if (!(s->pic_state & PNG_IDAT)) {
         /* init image info */
-        ret = ff_set_dimensions(avctx, s->width, s->height);
+        ret = ff_set_dimensions_xij(avctx, s->width, s->height);
         if (ret < 0)
             return ret;
 
@@ -727,17 +727,17 @@ static int decode_idat_chunk(AVCodecContext *avctx, PNGDecContext *s,
         if (avctx->pix_fmt == AV_PIX_FMT_PAL8)
             memcpy(p->data[1], s->palette, 256 * sizeof(uint32_t));
         /* empty row is used if differencing to the first row */
-        av_fast_padded_mallocz(&s->last_row, &s->last_row_size, s->row_size);
+        av_fast_padded_mallocz_xij(&s->last_row, &s->last_row_size, s->row_size);
         if (!s->last_row)
             return AVERROR_INVALIDDATA;
         if (s->interlace_type ||
                 s->color_type == PNG_COLOR_TYPE_RGB_ALPHA) {
-            av_fast_padded_malloc(&s->tmp_row, &s->tmp_row_size, s->row_size);
+            av_fast_padded_malloc_xij(&s->tmp_row, &s->tmp_row_size, s->row_size);
             if (!s->tmp_row)
                 return AVERROR_INVALIDDATA;
         }
         /* compressed row */
-        av_fast_padded_malloc(&s->buffer, &s->buffer_size, s->row_size + 16);
+        av_fast_padded_malloc_xij(&s->buffer, &s->buffer_size, s->row_size + 16);
         if (!s->buffer)
             return AVERROR(ENOMEM);
 
@@ -866,7 +866,7 @@ static int decode_iccp_chunk(PNGDecContext *s, int length, AVFrame *f)
     if (ret < 0)
         return ret;
 
-    sd = av_frame_new_side_data(f, AV_FRAME_DATA_ICC_PROFILE, bp.len);
+    sd = av_frame_new_side_data_xij(f, AV_FRAME_DATA_ICC_PROFILE, bp.len);
     if (!sd) {
         av_free(data);
         return AVERROR(ENOMEM);
@@ -1452,7 +1452,7 @@ static int decode_frame_png(AVCodecContext *avctx,
         goto the_end;
     }
 
-    if ((ret = av_frame_ref(data, s->picture.f)) < 0)
+    if ((ret = av_frame_ref_xij(data, s->picture.f)) < 0)
         goto the_end;
 
     *got_frame = 1;
@@ -1509,7 +1509,7 @@ static int decode_frame_apng(AVCodecContext *avctx,
         ret = AVERROR_INVALIDDATA;
         goto end;
     }
-    if ((ret = av_frame_ref(data, s->picture.f)) < 0)
+    if ((ret = av_frame_ref_xij(data, s->picture.f)) < 0)
         goto end;
 
     *got_frame = 1;
@@ -1533,7 +1533,7 @@ static int update_thread_context(AVCodecContext *dst, const AVCodecContext *src)
 
     ff_thread_release_buffer(dst, &pdst->picture);
     if (psrc->picture.f->data[0] &&
-        (ret = ff_thread_ref_frame(&pdst->picture, &psrc->picture)) < 0)
+        (ret = ff_thread_ref_frame_xij(&pdst->picture, &psrc->picture)) < 0)
         return ret;
     if (CONFIG_APNG_DECODER && dst->codec_id == AV_CODEC_ID_APNG) {
         pdst->width             = psrc->width;
@@ -1558,12 +1558,12 @@ static int update_thread_context(AVCodecContext *dst, const AVCodecContext *src)
 
         ff_thread_release_buffer(dst, &pdst->last_picture);
         if (psrc->last_picture.f->data[0] &&
-            (ret = ff_thread_ref_frame(&pdst->last_picture, &psrc->last_picture)) < 0)
+            (ret = ff_thread_ref_frame_xij(&pdst->last_picture, &psrc->last_picture)) < 0)
             return ret;
 
         ff_thread_release_buffer(dst, &pdst->previous_picture);
         if (psrc->previous_picture.f->data[0] &&
-            (ret = ff_thread_ref_frame(&pdst->previous_picture, &psrc->previous_picture)) < 0)
+            (ret = ff_thread_ref_frame_xij(&pdst->previous_picture, &psrc->previous_picture)) < 0)
             return ret;
     }
 
@@ -1578,13 +1578,13 @@ static av_cold int png_dec_init(AVCodecContext *avctx)
     avctx->color_range = AVCOL_RANGE_JPEG;
 
     s->avctx = avctx;
-    s->previous_picture.f = av_frame_alloc();
-    s->last_picture.f = av_frame_alloc();
-    s->picture.f = av_frame_alloc();
+    s->previous_picture.f = av_frame_alloc_ijk();
+    s->last_picture.f = av_frame_alloc_ijk();
+    s->picture.f = av_frame_alloc_ijk();
     if (!s->previous_picture.f || !s->last_picture.f || !s->picture.f) {
-        av_frame_free(&s->previous_picture.f);
-        av_frame_free(&s->last_picture.f);
-        av_frame_free(&s->picture.f);
+        av_frame_free_xij(&s->previous_picture.f);
+        av_frame_free_xij(&s->last_picture.f);
+        av_frame_free_xij(&s->picture.f);
         return AVERROR(ENOMEM);
     }
 
@@ -1601,11 +1601,11 @@ static av_cold int png_dec_end(AVCodecContext *avctx)
     PNGDecContext *s = avctx->priv_data;
 
     ff_thread_release_buffer(avctx, &s->previous_picture);
-    av_frame_free(&s->previous_picture.f);
+    av_frame_free_xij(&s->previous_picture.f);
     ff_thread_release_buffer(avctx, &s->last_picture);
-    av_frame_free(&s->last_picture.f);
+    av_frame_free_xij(&s->last_picture.f);
     ff_thread_release_buffer(avctx, &s->picture);
-    av_frame_free(&s->picture.f);
+    av_frame_free_xij(&s->picture.f);
     av_freep(&s->buffer);
     s->buffer_size = 0;
     av_freep(&s->last_row);

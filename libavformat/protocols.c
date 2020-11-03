@@ -35,8 +35,8 @@ extern const URLProtocol ff_file_protocol;
 extern const URLProtocol ff_ftp_protocol;
 extern const URLProtocol ff_gopher_protocol;
 extern const URLProtocol ff_hls_protocol;
-extern const URLProtocol ff_http_protocol;
-extern const URLProtocol ff_httpproxy_protocol;
+extern const URLProtocol ff_http_xij_protocol;
+extern const URLProtocol ff_httpproxy_protocol_xij;
 extern const URLProtocol ff_https_protocol;
 extern const URLProtocol ff_icecast_protocol;
 extern const URLProtocol ff_ijkhttphook_protocol;
@@ -62,9 +62,9 @@ extern const URLProtocol ff_sctp_protocol;
 extern const URLProtocol ff_srtp_protocol;
 extern const URLProtocol ff_subfile_protocol;
 extern const URLProtocol ff_tee_protocol;
-extern const URLProtocol ff_tcp_protocol;
+extern const URLProtocol ff_tcp_ijk_protocol;
 extern const URLProtocol ff_tls_protocol;
-extern const URLProtocol ff_udp_protocol;
+extern const URLProtocol ff_udp_ijk_protocol;
 extern const URLProtocol ff_udplite_protocol;
 extern const URLProtocol ff_unix_protocol;
 extern const URLProtocol ff_librtmp_protocol;
@@ -83,17 +83,17 @@ const AVClass *ff_urlcontext_child_class_next(const AVClass *prev)
     int i;
 
     /* find the protocol that corresponds to prev */
-    for (i = 0; prev && url_protocols[i]; i++) {
-        if (url_protocols[i]->priv_data_class == prev) {
+    for (i = 0; prev && url_protocols_ijk[i]; i++) {
+        if (url_protocols_ijk[i]->priv_data_class == prev) {
             i++;
             break;
         }
     }
 
     /* find next protocol with priv options */
-    for (; url_protocols[i]; i++)
-        if (url_protocols[i]->priv_data_class)
-            return url_protocols[i]->priv_data_class;
+    for (; url_protocols_ijk[i]; i++)
+        if (url_protocols_ijk[i]->priv_data_class)
+            return url_protocols_ijk[i]->priv_data_class;
     return NULL;
 }
 
@@ -102,7 +102,7 @@ const char *avio_enum_protocols(void **opaque, int output)
 {
     const URLProtocol **p = *opaque;
 
-    p = p ? p + 1 : url_protocols;
+    p = p ? p + 1 : url_protocols_ijk;
     *opaque = p;
     if (!*p) {
         *opaque = NULL;
@@ -119,12 +119,12 @@ const URLProtocol **ffurl_get_protocols(const char *whitelist,
     const URLProtocol **ret;
     int i, ret_idx = 0;
 
-    ret = av_mallocz_array(FF_ARRAY_ELEMS(url_protocols), sizeof(*ret));
+    ret = av_mallocz_array(FF_ARRAY_ELEMS(url_protocols_ijk), sizeof(*ret));
     if (!ret)
         return NULL;
 
-    for (i = 0; url_protocols[i]; i++) {
-        const URLProtocol *up = url_protocols[i];
+    for (i = 0; url_protocols_ijk[i]; i++) {
+        const URLProtocol *up = url_protocols_ijk[i];
 
         if (whitelist && *whitelist && !av_match_name(up->name, whitelist))
             continue;

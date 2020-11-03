@@ -44,7 +44,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     avctx->bits_per_coded_sample = av_get_bits_per_pixel(desc);
     if(!avctx->codec_tag)
         avctx->codec_tag = avcodec_pix_fmt_to_codec_tag(avctx->pix_fmt);
-    avctx->bit_rate = ff_guess_coded_bitrate(avctx);
+    avctx->bit_rate = ff_guess_coded_bitrate_xij(avctx);
 
     return 0;
 }

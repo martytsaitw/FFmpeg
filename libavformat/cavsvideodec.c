@@ -37,7 +37,7 @@ static int cavsvideo_probe(AVProbeData *p)
     const uint8_t *ptr = p->buf, *end = p->buf + p->buf_size;
 
     while (ptr < end) {
-        ptr = avpriv_find_start_code(ptr, end, &code);
+        ptr = avpriv_find_start_code_xij(ptr, end, &code);
         if ((code & 0xffffff00) == 0x100) {
             if(code < CAVS_SEQ_START_CODE) {
                 /* slices have to be consecutive */

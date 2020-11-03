@@ -38,11 +38,11 @@ static void get_line(AVIOContext *s, uint8_t *buf, int size)
         uint8_t c;
         int i = 0;
 
-        while ((c = avio_r8(s))) {
+        while ((c = avio_r8_xij(s))) {
             if (c == '\\') {
                 if (i < size - 1)
                     buf[i++] = c;
-                c = avio_r8(s);
+                c = avio_r8_xij(s);
             } else if (c == '\n')
                 break;
 
@@ -50,7 +50,7 @@ static void get_line(AVIOContext *s, uint8_t *buf, int size)
                 buf[i++] = c;
         }
         buf[i] = 0;
-    } while (!avio_feof(s) && (buf[0] == ';' || buf[0] == '#' || buf[0] == 0));
+    } while (!avio_feof_xij(s) && (buf[0] == ';' || buf[0] == '#' || buf[0] == 0));
 }
 
 static AVChapter *read_chapter(AVFormatContext *s)
@@ -75,7 +75,7 @@ static AVChapter *read_chapter(AVFormatContext *s)
         end = AV_NOPTS_VALUE;
     }
 
-    return avpriv_new_chapter(s, s->nb_chapters, tb, start, end, NULL);
+    return avpriv_new_chapter_xij(s, s->nb_chapters, tb, start, end, NULL);
 }
 
 static uint8_t *unescape(const uint8_t *buf, int size)
@@ -130,11 +130,11 @@ static int read_header(AVFormatContext *s)
     AVDictionary **m = &s->metadata;
     uint8_t line[1024];
 
-    while(!avio_feof(s->pb)) {
+    while(!avio_feof_xij(s->pb)) {
         get_line(s->pb, line, sizeof(line));
 
         if (!memcmp(line, ID_STREAM, strlen(ID_STREAM))) {
-            AVStream *st = avformat_new_stream(s, NULL);
+            AVStream *st = avformat_new_stream_ijk(s, NULL);
 
             if (!st)
                 return AVERROR(ENOMEM);

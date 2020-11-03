@@ -82,14 +82,14 @@ static int sds_read_header(AVFormatContext *ctx)
     AVIOContext *pb = ctx->pb;
     AVStream *st;
 
-    st = avformat_new_stream(ctx, NULL);
+    st = avformat_new_stream_ijk(ctx, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
-    avio_skip(pb, 4);
-    avio_skip(pb, 2);
+    avio_skip_xij(pb, 4);
+    avio_skip_xij(pb, 2);
 
-    s->bit_depth = avio_r8(pb);
+    s->bit_depth = avio_r8_xij(pb);
     if (s->bit_depth < 8 || s->bit_depth > 28)
         return AVERROR_INVALIDDATA;
 
@@ -105,16 +105,16 @@ static int sds_read_header(AVFormatContext *ctx)
     }
     st->codecpar->codec_id = AV_CODEC_ID_PCM_U32LE;
 
-    sample_period = avio_rl24(pb);
+    sample_period = avio_rl24_xij(pb);
     sample_period = SDS_3BYTE_TO_INT_DECODE(sample_period);
-    avio_skip(pb, 11);
+    avio_skip_xij(pb, 11);
 
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codecpar->channels = 1;
     st->codecpar->sample_rate = sample_period ? 1000000000 / sample_period : 16000;
-    st->duration = (avio_size(pb) - 21) / (127) * s->size / 4;
+    st->duration = (avio_size_xij(pb) - 21) / (127) * s->size / 4;
 
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }
@@ -126,24 +126,24 @@ static int sds_read_packet(AVFormatContext *ctx, AVPacket *pkt)
     int64_t pos;
     int ret;
 
-    if (avio_feof(pb))
+    if (avio_feof_xij(pb))
         return AVERROR_EOF;
 
     pos = avio_tell(pb);
-    if (avio_rb16(pb) != 0xF07E)
+    if (avio_rb16_xij(pb) != 0xF07E)
         return AVERROR_INVALIDDATA;
-    avio_skip(pb, 3);
+    avio_skip_xij(pb, 3);
 
-    ret = av_new_packet(pkt, s->size);
+    ret = av_new_packet_ijk(pkt, s->size);
     if (ret < 0)
         return ret;
 
-    ret = avio_read(pb, s->data, 120);
+    ret = avio_read_xij(pb, s->data, 120);
 
     s->read_block(s->data, (uint32_t *)pkt->data);
 
-    avio_skip(pb, 1); // checksum
-    if (avio_r8(pb) != 0xF7)
+    avio_skip_xij(pb, 1); // checksum
+    if (avio_r8_xij(pb) != 0xF7)
         return AVERROR_INVALIDDATA;
 
     pkt->flags &= ~AV_PKT_FLAG_CORRUPT;

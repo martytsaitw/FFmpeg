@@ -59,7 +59,7 @@ static int zerocodec_decode_frame(AVCodecContext *avctx, void *data,
         return AVERROR_INVALIDDATA;
     }
 
-    if ((ret = ff_get_buffer(avctx, pic, AV_GET_BUFFER_FLAG_REF)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, pic, AV_GET_BUFFER_FLAG_REF)) < 0)
         return ret;
 
     zstream->next_in  = avpkt->data;
@@ -91,8 +91,8 @@ static int zerocodec_decode_frame(AVCodecContext *avctx, void *data,
         dst  -= pic->linesize[0];
     }
 
-    av_frame_unref(zc->previous_frame);
-    if ((ret = av_frame_ref(zc->previous_frame, pic)) < 0)
+    av_frame_unref_xij(zc->previous_frame);
+    if ((ret = av_frame_ref_xij(zc->previous_frame, pic)) < 0)
         return ret;
 
     *got_frame = 1;
@@ -104,7 +104,7 @@ static av_cold int zerocodec_decode_close(AVCodecContext *avctx)
 {
     ZeroCodecContext *zc = avctx->priv_data;
 
-    av_frame_free(&zc->previous_frame);
+    av_frame_free_xij(&zc->previous_frame);
 
     inflateEnd(&zc->zstream);
 
@@ -130,7 +130,7 @@ static av_cold int zerocodec_decode_init(AVCodecContext *avctx)
         return AVERROR(ENOMEM);
     }
 
-    zc->previous_frame = av_frame_alloc();
+    zc->previous_frame = av_frame_alloc_ijk();
     if (!zc->previous_frame) {
         zerocodec_decode_close(avctx);
         return AVERROR(ENOMEM);

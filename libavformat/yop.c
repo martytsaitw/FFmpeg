@@ -63,13 +63,13 @@ static int yop_read_header(AVFormatContext *s)
 
     int frame_rate, ret;
 
-    audio_stream = avformat_new_stream(s, NULL);
-    video_stream = avformat_new_stream(s, NULL);
+    audio_stream = avformat_new_stream_ijk(s, NULL);
+    video_stream = avformat_new_stream_ijk(s, NULL);
     if (!audio_stream || !video_stream)
         return AVERROR(ENOMEM);
 
     // Extra data that will be passed to the decoder
-    if (ff_alloc_extradata(video_stream->codecpar, 8))
+    if (ff_alloc_extradata_xij(video_stream->codecpar, 8))
         return AVERROR(ENOMEM);
 
     // Audio
@@ -85,16 +85,16 @@ static int yop_read_header(AVFormatContext *s)
     video_par->codec_type   = AVMEDIA_TYPE_VIDEO;
     video_par->codec_id     = AV_CODEC_ID_YOP;
 
-    avio_skip(pb, 6);
+    avio_skip_xij(pb, 6);
 
-    frame_rate              = avio_r8(pb);
-    yop->frame_size         = avio_r8(pb) * 2048;
-    video_par->width        = avio_rl16(pb);
-    video_par->height       = avio_rl16(pb);
+    frame_rate              = avio_r8_xij(pb);
+    yop->frame_size         = avio_r8_xij(pb) * 2048;
+    video_par->width        = avio_rl16_xij(pb);
+    video_par->height       = avio_rl16_xij(pb);
 
     video_stream->sample_aspect_ratio = (AVRational){1, 2};
 
-    ret = avio_read(pb, video_par->extradata, 8);
+    ret = avio_read_xij(pb, video_par->extradata, 8);
     if (ret < 8)
         return ret < 0 ? ret : AVERROR_EOF;
 
@@ -110,9 +110,9 @@ static int yop_read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
     }
 
-    avio_seek(pb, 2048, SEEK_SET);
+    avio_seek_xij(pb, 2048, SEEK_SET);
 
-    avpriv_set_pts_info(video_stream, 32, 1, frame_rate);
+    avpriv_set_pts_info_ijk(video_stream, 32, 1, frame_rate);
 
     return 0;
 }
@@ -138,14 +138,14 @@ static int yop_read_packet(AVFormatContext *s, AVPacket *pkt)
         yop->odd_frame         ^= 1;
         return pkt->size;
     }
-    ret = av_new_packet(&yop->video_packet,
+    ret = av_new_packet_ijk(&yop->video_packet,
                         yop->frame_size - yop->audio_block_length);
     if (ret < 0)
         return ret;
 
     yop->video_packet.pos = avio_tell(pb);
 
-    ret = avio_read(pb, yop->video_packet.data, yop->palette_size);
+    ret = avio_read_xij(pb, yop->video_packet.data, yop->palette_size);
     if (ret < 0) {
         goto err_out;
     }else if (ret < yop->palette_size) {
@@ -153,34 +153,34 @@ static int yop_read_packet(AVFormatContext *s, AVPacket *pkt)
         goto err_out;
     }
 
-    ret = av_get_packet(pb, pkt, 920);
+    ret = av_get_packet_xij(pb, pkt, 920);
     if (ret < 0)
         goto err_out;
 
     // Set position to the start of the frame
     pkt->pos = yop->video_packet.pos;
 
-    avio_skip(pb, yop->audio_block_length - ret);
+    avio_skip_xij(pb, yop->audio_block_length - ret);
 
-    ret = avio_read(pb, yop->video_packet.data + yop->palette_size,
+    ret = avio_read_xij(pb, yop->video_packet.data + yop->palette_size,
                      actual_video_data_size);
     if (ret < 0)
         goto err_out;
     else if (ret < actual_video_data_size)
-        av_shrink_packet(&yop->video_packet, yop->palette_size + ret);
+        av_shrink_packet_xij(&yop->video_packet, yop->palette_size + ret);
 
     // Arbitrarily return the audio data first
     return yop->audio_block_length;
 
 err_out:
-    av_packet_unref(&yop->video_packet);
+    av_packet_unref_ijk(&yop->video_packet);
     return ret;
 }
 
 static int yop_read_close(AVFormatContext *s)
 {
     YopDecContext *yop = s->priv_data;
-    av_packet_unref(&yop->video_packet);
+    av_packet_unref_ijk(&yop->video_packet);
     return 0;
 }
 
@@ -195,17 +195,17 @@ static int yop_read_seek(AVFormatContext *s, int stream_index,
         return -1;
 
     pos_min        = s->internal->data_offset;
-    pos_max        = avio_size(s->pb) - yop->frame_size;
+    pos_max        = avio_size_xij(s->pb) - yop->frame_size;
     frame_count    = (pos_max - pos_min) / yop->frame_size;
 
     timestamp      = FFMAX(0, FFMIN(frame_count, timestamp));
 
     frame_pos      = timestamp * yop->frame_size + pos_min;
 
-    if (avio_seek(s->pb, frame_pos, SEEK_SET) < 0)
+    if (avio_seek_xij(s->pb, frame_pos, SEEK_SET) < 0)
         return -1;
 
-    av_packet_unref(&yop->video_packet);
+    av_packet_unref_ijk(&yop->video_packet);
     yop->odd_frame = timestamp & 1;
 
     return 0;

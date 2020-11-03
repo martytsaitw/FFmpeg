@@ -233,7 +233,7 @@ static void clear_unused_frames(QSVFrame *list)
     while (list) {
         if (list->surface && !list->surface->Data.Locked) {
             list->surface = NULL;
-            av_frame_free(&list->frame);
+            av_frame_free_xij(&list->frame);
         }
         list = list->next;
     }
@@ -246,7 +246,7 @@ static void clear_frame_list(QSVFrame **list)
 
         frame = *list;
         *list = (*list)->next;
-        av_frame_free(&frame->frame);
+        av_frame_free_xij(&frame->frame);
         av_freep(&frame);
     }
 }
@@ -310,13 +310,13 @@ static QSVFrame *submit_frame(QSVVPPContext *s, AVFilterLink *inlink, AVFrame *p
             qsv_frame->frame->width   = picref->width;
             qsv_frame->frame->height  = picref->height;
 
-            if (av_frame_copy(qsv_frame->frame, picref) < 0) {
-                av_frame_free(&qsv_frame->frame);
+            if (av_frame_copy_xij(qsv_frame->frame, picref) < 0) {
+                av_frame_free_xij(&qsv_frame->frame);
                 return NULL;
             }
 
-            av_frame_copy_props(qsv_frame->frame, picref);
-            av_frame_free(&picref);
+            av_frame_copy_props_xij(qsv_frame->frame, picref);
+            av_frame_free_xij(&picref);
         } else
             qsv_frame->frame = picref;
 
@@ -362,7 +362,7 @@ static QSVFrame *query_frame(QSVVPPContext *s, AVFilterLink *outlink)
     /* For video memory, get a hw frame;
      * For system memory, get a sw frame and map it into a mfx_surface. */
     if (!IS_SYSTEM_MEMORY(s->out_mem_mode)) {
-        out_frame->frame = av_frame_alloc();
+        out_frame->frame = av_frame_alloc_ijk();
         if (!out_frame->frame)
             return NULL;
 
@@ -465,7 +465,7 @@ static int init_vpp_session(AVFilterContext *avctx, QSVVPPContext *s)
 
         ret = av_hwframe_ctx_init(out_frames_ref);
         if (ret < 0) {
-            av_buffer_unref(&out_frames_ref);
+            av_buffer_unref_xij(&out_frames_ref);
             av_log(avctx, AV_LOG_ERROR, "Error creating frames_ctx for output pad.\n");
             return ret;
         }
@@ -473,7 +473,7 @@ static int init_vpp_session(AVFilterContext *avctx, QSVVPPContext *s)
         s->surface_ptrs_out = av_mallocz_array(out_frames_hwctx->nb_surfaces,
                                                sizeof(*s->surface_ptrs_out));
         if (!s->surface_ptrs_out) {
-            av_buffer_unref(&out_frames_ref);
+            av_buffer_unref_xij(&out_frames_ref);
             return AVERROR(ENOMEM);
         }
 
@@ -481,7 +481,7 @@ static int init_vpp_session(AVFilterContext *avctx, QSVVPPContext *s)
             s->surface_ptrs_out[i] = out_frames_hwctx->surfaces + i;
         s->nb_surface_ptrs_out = out_frames_hwctx->nb_surfaces;
 
-        av_buffer_unref(&outlink->hw_frames_ctx);
+        av_buffer_unref_xij(&outlink->hw_frames_ctx);
         outlink->hw_frames_ctx = out_frames_ref;
     } else
         s->out_mem_mode = MFX_MEMTYPE_SYSTEM_MEMORY;
@@ -722,7 +722,7 @@ int ff_qsvvpp_filter_frame(QSVVPPContext *s, AVFilterLink *inlink, AVFrame *picr
 
         filter_ret = s->filter_frame(outlink, out_frame->frame);
         if (filter_ret < 0) {
-            av_frame_free(&out_frame->frame);
+            av_frame_free_xij(&out_frame->frame);
             ret = filter_ret;
             break;
         }

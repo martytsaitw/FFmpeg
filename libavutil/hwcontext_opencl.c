@@ -1660,7 +1660,7 @@ static AVBufferRef *opencl_pool_alloc(void *opaque, int size)
 
     desc->nb_planes = p;
 
-    ref = av_buffer_create((uint8_t*)desc, sizeof(*desc),
+    ref = av_buffer_create_ijk((uint8_t*)desc, sizeof(*desc),
                            &opencl_pool_free, hwfc, 0);
     if (!ref)
         goto fail;
@@ -1697,7 +1697,7 @@ static int opencl_frames_init(AVHWFramesContext *hwfc)
 {
     if (!hwfc->pool) {
         hwfc->internal->pool_internal =
-            av_buffer_pool_init2(sizeof(cl_mem), hwfc,
+            av_buffer_pool_init2_xij(sizeof(cl_mem), hwfc,
                                  &opencl_pool_alloc, NULL);
         if (!hwfc->internal->pool_internal)
             return AVERROR(ENOMEM);
@@ -1739,7 +1739,7 @@ static int opencl_get_buffer(AVHWFramesContext *hwfc, AVFrame *frame)
     AVOpenCLFrameDescriptor *desc;
     int p;
 
-    frame->buf[0] = av_buffer_pool_get(hwfc->pool);
+    frame->buf[0] = av_buffer_pool_get_xij(hwfc->pool);
     if (!frame->buf[0])
         return AVERROR(ENOMEM);
 
@@ -2157,7 +2157,7 @@ static int opencl_map_from_vaapi(AVHWFramesContext *dst_fc,
     AVFrame *tmp;
     int err;
 
-    tmp = av_frame_alloc();
+    tmp = av_frame_alloc_ijk();
     if (!tmp)
         return AVERROR(ENOMEM);
 
@@ -2173,11 +2173,11 @@ static int opencl_map_from_vaapi(AVHWFramesContext *dst_fc,
 
     // Adjust the map descriptor so that unmap works correctly.
     hwmap = (HWMapDescriptor*)dst->buf[0]->data;
-    av_frame_unref(hwmap->source);
-    err = av_frame_ref(hwmap->source, src);
+    av_frame_unref_xij(hwmap->source);
+    err = av_frame_ref_xij(hwmap->source, src);
 
 fail:
-    av_frame_free(&tmp);
+    av_frame_free_xij(&tmp);
     return err;
 }
 

@@ -60,7 +60,7 @@ static int dtshd_read_header(AVFormatContext *s)
     int ret;
     char *value;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -68,10 +68,10 @@ static int dtshd_read_header(AVFormatContext *s)
     st->need_parsing         = AVSTREAM_PARSE_FULL_RAW;
 
     for (;;) {
-        chunk_type = avio_rb64(pb);
-        chunk_size = avio_rb64(pb);
+        chunk_type = avio_rb64_xij(pb);
+        chunk_size = avio_rb64_xij(pb);
 
-        if (avio_feof(pb))
+        if (avio_feof_xij(pb))
             break;
 
         if (chunk_size < 4) {
@@ -96,17 +96,17 @@ static int dtshd_read_header(AVFormatContext *s)
         case AUPR_HDR:
             if (chunk_size < 21)
                 return AVERROR_INVALIDDATA;
-            avio_skip(pb, 3);
-            st->codecpar->sample_rate = avio_rb24(pb);
+            avio_skip_xij(pb, 3);
+            st->codecpar->sample_rate = avio_rb24_xij(pb);
             if (!st->codecpar->sample_rate)
                 return AVERROR_INVALIDDATA;
-            duration  = avio_rb32(pb); // num_frames
-            duration *= avio_rb16(pb); // samples_per_frames
+            duration  = avio_rb32_xij(pb); // num_frames
+            duration *= avio_rb16_xij(pb); // samples_per_frames
             st->duration = duration;
-            avio_skip(pb, 5);
-            st->codecpar->channels = ff_dca_count_chs_for_mask(avio_rb16(pb));
-            st->codecpar->initial_padding = avio_rb16(pb);
-            avio_skip(pb, chunk_size - 21);
+            avio_skip_xij(pb, 5);
+            st->codecpar->channels = ff_dca_count_chs_for_mask(avio_rb16_xij(pb));
+            st->codecpar->initial_padding = avio_rb16_xij(pb);
+            avio_skip_xij(pb, chunk_size - 21);
             break;
         case FILEINFO:
             if (chunk_size > INT_MAX)
@@ -114,14 +114,14 @@ static int dtshd_read_header(AVFormatContext *s)
             value = av_malloc(chunk_size);
             if (!value)
                 goto skip;
-            avio_read(pb, value, chunk_size);
+            avio_read_xij(pb, value, chunk_size);
             value[chunk_size - 1] = 0;
             av_dict_set(&s->metadata, "fileinfo", value,
                         AV_DICT_DONT_STRDUP_VAL);
             break;
         default:
 skip:
-            ret = avio_skip(pb, chunk_size);
+            ret = avio_skip_xij(pb, chunk_size);
             if (ret < 0)
                 return ret;
         };
@@ -130,11 +130,11 @@ skip:
     if (!dtshd->data_end)
         return AVERROR_EOF;
 
-    avio_seek(pb, data_start, SEEK_SET);
+    avio_seek_xij(pb, data_start, SEEK_SET);
 
 break_loop:
     if (st->codecpar->sample_rate)
-        avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+        avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }
@@ -150,7 +150,7 @@ static int raw_read_packet(AVFormatContext *s, AVPacket *pkt)
     if (size <= 0)
         return AVERROR_EOF;
 
-    ret = av_get_packet(s->pb, pkt, size);
+    ret = av_get_packet_xij(s->pb, pkt, size);
     if (ret < 0)
         return ret;
 

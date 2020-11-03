@@ -82,7 +82,7 @@ static int read_header_gme(AVFormatContext *s)
     AVStream *st;
     AVIOContext *pb = s->pb;
     GMEContext *gme = s->priv_data;
-    int64_t sz = avio_size(pb);
+    int64_t sz = avio_size_xij(pb);
     char *buf;
     char dummy;
 
@@ -96,10 +96,10 @@ static int read_header_gme(AVFormatContext *s)
     buf = av_malloc(sz);
     if (!buf)
         return AVERROR(ENOMEM);
-    sz = avio_read(pb, buf, sz);
+    sz = avio_read_xij(pb, buf, sz);
 
     // Data left means our buffer (the max_size option) is too small
-    if (avio_read(pb, &dummy, 1) == 1) {
+    if (avio_read_xij(pb, &dummy, 1) == 1) {
         av_log(s, AV_LOG_ERROR, "File size is larger than max_size option "
                "value %"PRIi64", consider increasing the max_size option\n",
                gme->max_size);
@@ -120,10 +120,10 @@ static int read_header_gme(AVFormatContext *s)
 
     load_metadata(s);
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
-    avpriv_set_pts_info(st, 64, 1, 1000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000);
     if (st->duration > 0)
         st->duration = gme->info->length;
     st->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
@@ -143,7 +143,7 @@ static int read_packet_gme(AVFormatContext *s, AVPacket *pkt)
     if (gme_track_ended(gme->music_emu))
         return AVERROR_EOF;
 
-    if ((ret = av_new_packet(pkt, AUDIO_PKT_SIZE)) < 0)
+    if ((ret = av_new_packet_ijk(pkt, AUDIO_PKT_SIZE)) < 0)
         return ret;
 
     if (gme_play(gme->music_emu, n_samples, (short *)pkt->data))

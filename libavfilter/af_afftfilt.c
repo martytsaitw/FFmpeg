@@ -198,7 +198,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
     int start = s->start, end = s->end;
 
     ret = av_audio_fifo_write(s->fifo, (void **)frame->extended_data, frame->nb_samples);
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
     if (ret < 0)
         return ret;
 
@@ -317,7 +317,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
         av_audio_fifo_drain(s->fifo, s->hop_size);
     }
 
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
     return ret < 0 ? ret : 0;
 }
 
@@ -372,7 +372,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 
     av_freep(&s->real);
     av_freep(&s->imag);
-    av_frame_free(&s->buffer);
+    av_frame_free_xij(&s->buffer);
     av_freep(&s->window_func_lut);
 
     av_audio_fifo_free(s->fifo);

@@ -28,7 +28,7 @@ static int text2movsub(AVBSFContext *ctx, AVPacket *out)
     AVPacket *in;
     int ret = 0;
 
-    ret = ff_bsf_get_packet(ctx, &in);
+    ret = ff_bsf_get_packet_xij(ctx, &in);
     if (ret < 0)
         return ret;
 
@@ -37,13 +37,13 @@ static int text2movsub(AVBSFContext *ctx, AVPacket *out)
         goto fail;
     }
 
-    ret = av_new_packet(out, in->size + 2);
+    ret = av_new_packet_ijk(out, in->size + 2);
     if (ret < 0) {
         ret = AVERROR(ENOMEM);
         goto fail;
     }
 
-    ret = av_packet_copy_props(out, in);
+    ret = av_packet_copy_props_ijk(out, in);
     if (ret < 0)
         goto fail;
 
@@ -52,8 +52,8 @@ static int text2movsub(AVBSFContext *ctx, AVPacket *out)
 
 fail:
     if (ret < 0)
-        av_packet_unref(out);
-    av_packet_free(&in);
+        av_packet_unref_ijk(out);
+    av_packet_free_xij(&in);
     return ret;
 }
 
@@ -66,12 +66,12 @@ static int mov2textsub(AVBSFContext *ctx, AVPacket *pkt)
 {
     int ret = 0;
 
-    ret = ff_bsf_get_packet_ref(ctx, pkt);
+    ret = ff_bsf_get_packet_ref_xij(ctx, pkt);
     if (ret < 0)
         return ret;
 
     if (pkt->size < 2) {
-       av_packet_unref(pkt);
+       av_packet_unref_ijk(pkt);
        return AVERROR_INVALIDDATA;
     }
 

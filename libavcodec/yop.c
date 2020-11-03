@@ -85,7 +85,7 @@ static av_cold int yop_decode_close(AVCodecContext *avctx)
 {
     YopDecContext *s = avctx->priv_data;
 
-    av_frame_free(&s->frame);
+    av_frame_free_xij(&s->frame);
 
     return 0;
 }
@@ -119,7 +119,7 @@ static av_cold int yop_decode_init(AVCodecContext *avctx)
         return AVERROR_INVALIDDATA;
     }
 
-    s->frame = av_frame_alloc();
+    s->frame = av_frame_alloc_ijk();
     if (!s->frame)
         return AVERROR(ENOMEM);
 
@@ -204,7 +204,7 @@ static int yop_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         return AVERROR_INVALIDDATA;
     }
 
-    if ((ret = ff_reget_buffer(avctx, frame)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, frame)) < 0)
         return ret;
 
     if (!avctx->frame_number)
@@ -258,7 +258,7 @@ static int yop_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         s->dstptr += 2*frame->linesize[0] - x;
     }
 
-    if ((ret = av_frame_ref(data, s->frame)) < 0)
+    if ((ret = av_frame_ref_xij(data, s->frame)) < 0)
         return ret;
 
     *got_frame = 1;

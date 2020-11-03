@@ -220,7 +220,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
 
     if (s->qp) {
         int qstride, qp_type;
-        int8_t *qp_table = av_frame_get_qp_table(frame, &qstride, &qp_type);
+        int8_t *qp_table = av_frame_get_qp_table_xij(frame, &qstride, &qp_type);
 
         if (qp_table) {
             int x, y;
@@ -243,7 +243,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
     }
 
     if (s->mv || s->mv_type) {
-        AVFrameSideData *sd = av_frame_get_side_data(frame, AV_FRAME_DATA_MOTION_VECTORS);
+        AVFrameSideData *sd = av_frame_get_side_data_xij(frame, AV_FRAME_DATA_MOTION_VECTORS);
         if (sd) {
             int i;
             const AVMotionVector *mvs = (const AVMotionVector *)sd->data;

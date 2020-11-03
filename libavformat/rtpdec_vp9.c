@@ -55,7 +55,7 @@ static int vp9_handle_packet(AVFormatContext *ctx, PayloadContext *rtp_vp9_ctx,
 
     /* drop data of previous packets in case of non-continuous (lossy) packet stream */
     if (rtp_vp9_ctx->buf && rtp_vp9_ctx->timestamp != *timestamp)
-        ffio_free_dyn_buf(&rtp_vp9_ctx->buf);
+        ffio_free_dyn_buf_xij(&rtp_vp9_ctx->buf);
 
     /* sanity check for size of input packet: 1 byte payload at least */
     if (len < RTP_VP9_DESC_REQUIRED_SIZE + 1) {
@@ -299,7 +299,7 @@ static int vp9_handle_packet(AVFormatContext *ctx, PayloadContext *rtp_vp9_ctx,
     if (!rtp_vp9_ctx->buf) {
         /* sanity check: a new frame should have started */
         if (first_fragment) {
-            res = avio_open_dyn_buf(&rtp_vp9_ctx->buf);
+            res = avio_open_dyn_buf_xij(&rtp_vp9_ctx->buf);
             if (res < 0)
                 return res;
             /* update the timestamp in the frame packet with the one from the RTP packet */
@@ -311,7 +311,7 @@ static int vp9_handle_packet(AVFormatContext *ctx, PayloadContext *rtp_vp9_ctx,
     }
 
     /* write the fragment to the dyn. buffer */
-    avio_write(rtp_vp9_ctx->buf, buf, len);
+    avio_write_xij(rtp_vp9_ctx->buf, buf, len);
 
     /* do we need more fragments? */
     if (!last_fragment)
@@ -327,7 +327,7 @@ static int vp9_handle_packet(AVFormatContext *ctx, PayloadContext *rtp_vp9_ctx,
 
 static void vp9_close_context(PayloadContext *vp9)
 {
-    ffio_free_dyn_buf(&vp9->buf);
+    ffio_free_dyn_buf_xij(&vp9->buf);
 }
 
 const RTPDynamicProtocolHandler ff_vp9_dynamic_handler = {

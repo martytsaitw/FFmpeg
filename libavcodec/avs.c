@@ -59,7 +59,7 @@ avs_decode_frame(AVCodecContext * avctx,
     AvsBlockType type;
     GetBitContext change_map = {0}; //init to silence warning
 
-    if ((ret = ff_reget_buffer(avctx, p)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, p)) < 0)
         return ret;
     p->pict_type = AV_PICTURE_TYPE_P;
     p->key_frame = 0;
@@ -148,7 +148,7 @@ avs_decode_frame(AVCodecContext * avctx,
             align_get_bits(&change_map);
     }
 
-    if ((ret = av_frame_ref(picture, p)) < 0)
+    if ((ret = av_frame_ref_xij(picture, p)) < 0)
         return ret;
     *got_frame = 1;
 
@@ -159,19 +159,19 @@ static av_cold int avs_decode_init(AVCodecContext * avctx)
 {
     AvsContext *s = avctx->priv_data;
 
-    s->frame = av_frame_alloc();
+    s->frame = av_frame_alloc_ijk();
     if (!s->frame)
         return AVERROR(ENOMEM);
 
     avctx->pix_fmt = AV_PIX_FMT_PAL8;
 
-    return ff_set_dimensions(avctx, 318, 198);
+    return ff_set_dimensions_xij(avctx, 318, 198);
 }
 
 static av_cold int avs_decode_end(AVCodecContext *avctx)
 {
     AvsContext *s = avctx->priv_data;
-    av_frame_free(&s->frame);
+    av_frame_free_xij(&s->frame);
     return 0;
 }
 

@@ -194,7 +194,7 @@ static av_cold int dvvideo_decode_init(AVCodecContext *avctx)
         memcpy(s->dv_zigzag[1], ff_dv_zigzag248_direct, sizeof(s->dv_zigzag[1]));
 
     s->idct_put[0] = idsp.idct_put;
-    s->idct_put[1] = ff_simple_idct248_put;
+    s->idct_put[1] = ff_simple_idct248_put_xij;
 
     return ff_dvvideo_init(avctx);
 }
@@ -504,7 +504,7 @@ static int dvvideo_decode_frame(AVCodecContext *avctx, void *data,
     int apt, is16_9, ret;
     const AVDVProfile *sys;
 
-    sys = ff_dv_frame_profile(avctx, s->sys, buf, buf_size);
+    sys = ff_dv_frame_profile_xij(avctx, s->sys, buf, buf_size);
     if (!sys || buf_size < sys->frame_size) {
         av_log(avctx, AV_LOG_ERROR, "could not find dv frame profile\n");
         return -1; /* NOTE: we only accept several full frames */
@@ -526,7 +526,7 @@ static int dvvideo_decode_frame(AVCodecContext *avctx, void *data,
     avctx->pix_fmt      = s->sys->pix_fmt;
     avctx->framerate    = av_inv_q(s->sys->time_base);
 
-    ret = ff_set_dimensions(avctx, s->sys->width, s->sys->height);
+    ret = ff_set_dimensions_xij(avctx, s->sys->width, s->sys->height);
     if (ret < 0)
         return ret;
 
@@ -536,10 +536,10 @@ static int dvvideo_decode_frame(AVCodecContext *avctx, void *data,
         apt    = buf[4] & 0x07;
         is16_9 = (vsc_pack[2] & 0x07) == 0x02 ||
                  (!apt && (vsc_pack[2] & 0x07) == 0x07);
-        ff_set_sar(avctx, s->sys->sar[is16_9]);
+        ff_set_sar_xij(avctx, s->sys->sar[is16_9]);
     }
 
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
     frame->interlaced_frame = 1;
     frame->top_field_first  = 0;

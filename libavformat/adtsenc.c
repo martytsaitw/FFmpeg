@@ -53,7 +53,7 @@ static int adts_decode_extradata(AVFormatContext *s, ADTSContext *adts, const ui
     int off;
 
     init_get_bits(&gb, buf, size * 8);
-    off = avpriv_mpeg4audio_get_config(&m4ac, buf, size * 8, 1);
+    off = avpriv_mpeg4audio_get_config_xij(&m4ac, buf, size * 8, 1);
     if (off < 0)
         return off;
     skip_bits_long(&gb, off);
@@ -171,13 +171,13 @@ static int adts_write_packet(AVFormatContext *s, AVPacket *pkt)
         uint8_t *side_data;
         int side_data_size = 0, ret;
 
-        side_data = av_packet_get_side_data(pkt, AV_PKT_DATA_NEW_EXTRADATA,
+        side_data = av_packet_get_side_data_xij(pkt, AV_PKT_DATA_NEW_EXTRADATA,
                                             &side_data_size);
         if (side_data_size) {
             ret = adts_decode_extradata(s, adts, side_data, side_data_size);
             if (ret < 0)
                 return ret;
-            ret = ff_alloc_extradata(par, side_data_size);
+            ret = ff_alloc_extradata_xij(par, side_data_size);
             if (ret < 0)
                 return ret;
             memcpy(par->extradata, side_data, side_data_size);
@@ -188,13 +188,13 @@ static int adts_write_packet(AVFormatContext *s, AVPacket *pkt)
                                              adts->pce_size);
         if (err < 0)
             return err;
-        avio_write(pb, buf, ADTS_HEADER_SIZE);
+        avio_write_xij(pb, buf, ADTS_HEADER_SIZE);
         if (adts->pce_size) {
-            avio_write(pb, adts->pce_data, adts->pce_size);
+            avio_write_xij(pb, adts->pce_data, adts->pce_size);
             adts->pce_size = 0;
         }
     }
-    avio_write(pb, pkt->data, pkt->size);
+    avio_write_xij(pb, pkt->data, pkt->size);
 
     return 0;
 }

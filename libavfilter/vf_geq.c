@@ -304,10 +304,10 @@ static int geq_filter_frame(AVFilterLink *inlink, AVFrame *in)
     geq->picref = in;
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out) {
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         return AVERROR(ENOMEM);
     }
-    av_frame_copy_props(out, in);
+    av_frame_copy_props_xij(out, in);
 
     for (plane = 0; plane < geq->planes && out->data[plane]; plane++) {
         const int width = (plane == 1 || plane == 2) ? AV_CEIL_RSHIFT(inlink->w, geq->hsub) : inlink->w;
@@ -331,7 +331,7 @@ static int geq_filter_frame(AVFilterLink *inlink, AVFrame *in)
         ctx->internal->execute(ctx, slice_geq_filter, &td, NULL, FFMIN(height, nb_threads));
     }
 
-    av_frame_free(&geq->picref);
+    av_frame_free_xij(&geq->picref);
     return ff_filter_frame(outlink, out);
 }
 

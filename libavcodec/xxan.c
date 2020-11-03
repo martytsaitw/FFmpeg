@@ -41,7 +41,7 @@ static av_cold int xan_decode_end(AVCodecContext *avctx)
 {
     XanContext *s = avctx->priv_data;
 
-    av_frame_free(&s->pic);
+    av_frame_free_xij(&s->pic);
 
     av_freep(&s->y_buffer);
     av_freep(&s->scratch_buffer);
@@ -76,7 +76,7 @@ static av_cold int xan_decode_init(AVCodecContext *avctx)
         return AVERROR(ENOMEM);
     }
 
-    s->pic = av_frame_alloc();
+    s->pic = av_frame_alloc_ijk();
     if (!s->pic) {
         xan_decode_end(avctx);
         return AVERROR(ENOMEM);
@@ -410,7 +410,7 @@ static int xan_decode_frame(AVCodecContext *avctx,
     int ftype;
     int ret;
 
-    if ((ret = ff_reget_buffer(avctx, s->pic)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, s->pic)) < 0)
         return ret;
 
     bytestream2_init(&s->gb, avpkt->data, avpkt->size);
@@ -429,7 +429,7 @@ static int xan_decode_frame(AVCodecContext *avctx,
     if (ret)
         return ret;
 
-    if ((ret = av_frame_ref(data, s->pic)) < 0)
+    if ((ret = av_frame_ref_xij(data, s->pic)) < 0)
         return ret;
 
     *got_frame = 1;

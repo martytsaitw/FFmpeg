@@ -417,7 +417,7 @@ AVDictionary *filter_codec_opts(AVDictionary *opts, enum AVCodecID codec_id,
                                 AVFormatContext *s, AVStream *st, AVCodec *codec);
 
 /**
- * Setup AVCodecContext options for avformat_find_stream_info().
+ * Setup AVCodecContext options for avformat_find_stream_info_ijk().
  *
  * Create an array of dictionaries, one dictionary for each stream
  * contained in s.
@@ -439,7 +439,7 @@ AVDictionary **setup_find_stream_info_opts(AVFormatContext *s,
  *
  * @see av_strerror()
  */
-void print_error(const char *filename, int err);
+void print_error_xij(const char *filename, int err);
 
 /**
  * Print the program banner to stderr. The banner contents depend on the
@@ -615,12 +615,12 @@ FILE *get_preset_file(char *filename, size_t filename_size,
  * @param new_size number of elements to place in reallocated array
  * @return reallocated array
  */
-void *grow_array(void *array, int elem_size, int *size, int new_size);
+void *grow_array_xij(void *array, int elem_size, int *size, int new_size);
 
-#define media_type_string av_get_media_type_string
+#define media_type_string av_get_media_type_string_xij
 
 #define GROW_ARRAY(array, nb_elems)\
-    array = grow_array(array, sizeof(*array), &nb_elems, nb_elems + 1)
+    array = grow_array_xij(array, sizeof(*array), &nb_elems, nb_elems + 1)
 
 #define GET_PIX_FMT_NAME(pix_fmt)\
     const char *name = av_get_pix_fmt_name(pix_fmt);
@@ -643,6 +643,6 @@ void *grow_array(void *array, int elem_size, int *size, int new_size);
     char name[128];\
     av_get_channel_layout_string(name, sizeof(name), 0, ch_layout);
 
-double get_rotation(AVStream *st);
+double get_rotation_xij(AVStream *st);
 
 #endif /* FFTOOLS_CMDUTILS_H */

@@ -44,17 +44,17 @@ static int noise(AVBSFContext *ctx, AVPacket *pkt)
     if (amount <= 0)
         return AVERROR(EINVAL);
 
-    ret = ff_bsf_get_packet_ref(ctx, pkt);
+    ret = ff_bsf_get_packet_ref_xij(ctx, pkt);
     if (ret < 0)
         return ret;
 
     if (s->dropamount > 0 && s->state % s->dropamount == 0) {
         s->state++;
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
         return AVERROR(EAGAIN);
     }
 
-    ret = av_packet_make_writable(pkt);
+    ret = av_packet_make_writable_xij(pkt);
     if (ret < 0)
         goto fail;
 
@@ -65,7 +65,7 @@ static int noise(AVBSFContext *ctx, AVPacket *pkt)
     }
 fail:
     if (ret < 0)
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
 
     return ret;
 }

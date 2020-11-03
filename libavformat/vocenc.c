@@ -43,10 +43,10 @@ static int voc_write_header(AVFormatContext *s)
         return AVERROR(EINVAL);
     }
 
-    avio_write(pb, ff_voc_magic, sizeof(ff_voc_magic) - 1);
-    avio_wl16(pb, header_size);
-    avio_wl16(pb, version);
-    avio_wl16(pb, ~version + 0x1234);
+    avio_write_xij(pb, ff_voc_magic, sizeof(ff_voc_magic) - 1);
+    avio_wl16_xij(pb, header_size);
+    avio_wl16_xij(pb, version);
+    avio_wl16_xij(pb, ~version + 0x1234);
 
     return 0;
 }
@@ -59,39 +59,39 @@ static int voc_write_packet(AVFormatContext *s, AVPacket *pkt)
 
     if (!voc->param_written) {
         if (par->codec_tag > 3) {
-            avio_w8(pb, VOC_TYPE_NEW_VOICE_DATA);
-            avio_wl24(pb, pkt->size + 12);
-            avio_wl32(pb, par->sample_rate);
-            avio_w8(pb, par->bits_per_coded_sample);
-            avio_w8(pb, par->channels);
-            avio_wl16(pb, par->codec_tag);
-            avio_wl32(pb, 0);
+            avio_w8_xij(pb, VOC_TYPE_NEW_VOICE_DATA);
+            avio_wl24_xij(pb, pkt->size + 12);
+            avio_wl32_xij(pb, par->sample_rate);
+            avio_w8_xij(pb, par->bits_per_coded_sample);
+            avio_w8_xij(pb, par->channels);
+            avio_wl16_xij(pb, par->codec_tag);
+            avio_wl32_xij(pb, 0);
         } else {
             if (s->streams[0]->codecpar->channels > 1) {
-                avio_w8(pb, VOC_TYPE_EXTENDED);
-                avio_wl24(pb, 4);
-                avio_wl16(pb, 65536-(256000000 + par->sample_rate*par->channels/2)/(par->sample_rate*par->channels));
-                avio_w8(pb, par->codec_tag);
-                avio_w8(pb, par->channels - 1);
+                avio_w8_xij(pb, VOC_TYPE_EXTENDED);
+                avio_wl24_xij(pb, 4);
+                avio_wl16_xij(pb, 65536-(256000000 + par->sample_rate*par->channels/2)/(par->sample_rate*par->channels));
+                avio_w8_xij(pb, par->codec_tag);
+                avio_w8_xij(pb, par->channels - 1);
             }
-            avio_w8(pb, VOC_TYPE_VOICE_DATA);
-            avio_wl24(pb, pkt->size + 2);
-            avio_w8(pb, 256 - (1000000 + par->sample_rate/2) / par->sample_rate);
-            avio_w8(pb, par->codec_tag);
+            avio_w8_xij(pb, VOC_TYPE_VOICE_DATA);
+            avio_wl24_xij(pb, pkt->size + 2);
+            avio_w8_xij(pb, 256 - (1000000 + par->sample_rate/2) / par->sample_rate);
+            avio_w8_xij(pb, par->codec_tag);
         }
         voc->param_written = 1;
     } else {
-        avio_w8(pb, VOC_TYPE_VOICE_DATA_CONT);
-        avio_wl24(pb, pkt->size);
+        avio_w8_xij(pb, VOC_TYPE_VOICE_DATA_CONT);
+        avio_wl24_xij(pb, pkt->size);
     }
 
-    avio_write(pb, pkt->data, pkt->size);
+    avio_write_xij(pb, pkt->data, pkt->size);
     return 0;
 }
 
 static int voc_write_trailer(AVFormatContext *s)
 {
-    avio_w8(s->pb, 0);
+    avio_w8_xij(s->pb, 0);
     return 0;
 }
 

@@ -31,7 +31,7 @@ void ff_text_init_avio(void *s, FFTextReader *r, AVIOContext *pb)
     r->buf_pos = r->buf_len = 0;
     r->type = FF_UTF_8;
     for (i = 0; i < 2; i++)
-        r->buf[r->buf_len++] = avio_r8(r->pb);
+        r->buf[r->buf_len++] = avio_r8_xij(r->pb);
     if (strncmp("\xFF\xFE", r->buf, 2) == 0) {
         r->type = FF_UTF16LE;
         r->buf_pos += 2;
@@ -39,7 +39,7 @@ void ff_text_init_avio(void *s, FFTextReader *r, AVIOContext *pb)
         r->type = FF_UTF16BE;
         r->buf_pos += 2;
     } else {
-        r->buf[r->buf_len++] = avio_r8(r->pb);
+        r->buf[r->buf_len++] = avio_r8_xij(r->pb);
         if (strncmp("\xEF\xBB\xBF", r->buf, 3) == 0) {
             // UTF8
             r->buf_pos += 3;
@@ -53,7 +53,7 @@ void ff_text_init_avio(void *s, FFTextReader *r, AVIOContext *pb)
 void ff_text_init_buf(FFTextReader *r, void *buf, size_t size)
 {
     memset(&r->buf_pb, 0, sizeof(r->buf_pb));
-    ffio_init_context(&r->buf_pb, buf, size, 0, NULL, NULL, NULL, NULL);
+    ffio_init_context_xij(&r->buf_pb, buf, size, 0, NULL, NULL, NULL, NULL);
     ff_text_init_avio(NULL, r, &r->buf_pb);
 }
 
@@ -69,11 +69,11 @@ int ff_text_r8(FFTextReader *r)
     if (r->buf_pos < r->buf_len)
         return r->buf[r->buf_pos++];
     if (r->type == FF_UTF16LE) {
-        GET_UTF16(val, avio_rl16(r->pb), return 0;)
+        GET_UTF16(val, avio_rl16_xij(r->pb), return 0;)
     } else if (r->type == FF_UTF16BE) {
-        GET_UTF16(val, avio_rb16(r->pb), return 0;)
+        GET_UTF16(val, avio_rb16_xij(r->pb), return 0;)
     } else {
-        return avio_r8(r->pb);
+        return avio_r8_xij(r->pb);
     }
     if (!val)
         return 0;
@@ -91,7 +91,7 @@ void ff_text_read(FFTextReader *r, char *buf, size_t size)
 
 int ff_text_eof(FFTextReader *r)
 {
-    return r->buf_pos >= r->buf_len && avio_feof(r->pb);
+    return r->buf_pos >= r->buf_len && avio_feof_xij(r->pb);
 }
 
 int ff_text_peek_r8(FFTextReader *r)
@@ -100,7 +100,7 @@ int ff_text_peek_r8(FFTextReader *r)
     if (r->buf_pos < r->buf_len)
         return r->buf[r->buf_pos];
     c = ff_text_r8(r);
-    if (!avio_feof(r->pb)) {
+    if (!avio_feof_xij(r->pb)) {
         r->buf_pos = 0;
         r->buf_len = 1;
         r->buf[0] = c;
@@ -119,7 +119,7 @@ AVPacket *ff_subtitles_queue_insert(FFDemuxSubtitlesQueue *q,
         int old_len;
         sub = &q->subs[q->nb_subs - 1];
         old_len = sub->size;
-        if (av_grow_packet(sub, len) < 0)
+        if (av_grow_packet_ijk(sub, len) < 0)
             return NULL;
         memcpy(sub->data + old_len, event, len);
     } else {
@@ -133,7 +133,7 @@ AVPacket *ff_subtitles_queue_insert(FFDemuxSubtitlesQueue *q,
             return NULL;
         q->subs = subs;
         sub = &subs[q->nb_subs++];
-        if (av_new_packet(sub, len) < 0)
+        if (av_new_packet_ijk(sub, len) < 0)
             return NULL;
         sub->flags |= AV_PKT_FLAG_KEY;
         sub->pts = sub->dts = 0;
@@ -176,7 +176,7 @@ static void drop_dups(void *log_ctx, FFDemuxSubtitlesQueue *q)
             q->subs[i].stream_index == last->stream_index &&
             !strcmp(q->subs[i].data, last->data)) {
 
-            av_packet_unref(&q->subs[i]);
+            av_packet_unref_ijk(&q->subs[i]);
             drop++;
         } else if (drop) {
             q->subs[last_id + 1] = q->subs[i];
@@ -211,7 +211,7 @@ int ff_subtitles_queue_read_packet(FFDemuxSubtitlesQueue *q, AVPacket *pkt)
 
     if (q->current_sub_idx == q->nb_subs)
         return AVERROR_EOF;
-    if (av_packet_ref(pkt, sub) < 0) {
+    if (av_packet_ref_ijk(pkt, sub) < 0) {
         return AVERROR(ENOMEM);
     }
 
@@ -299,7 +299,7 @@ void ff_subtitles_queue_clean(FFDemuxSubtitlesQueue *q)
     int i;
 
     for (i = 0; i < q->nb_subs; i++)
-        av_packet_unref(&q->subs[i]);
+        av_packet_unref_ijk(&q->subs[i]);
     av_freep(&q->subs);
     q->nb_subs = q->allocated_size = q->current_sub_idx = 0;
 }

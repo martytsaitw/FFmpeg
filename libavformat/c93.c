@@ -66,9 +66,9 @@ static int read_header(AVFormatContext *s)
     int framecount = 0;
 
     for (i = 0; i < 512; i++) {
-        c93->block_records[i].index = avio_rl16(pb);
-        c93->block_records[i].length = avio_r8(pb);
-        c93->block_records[i].frames = avio_r8(pb);
+        c93->block_records[i].index = avio_rl16_xij(pb);
+        c93->block_records[i].length = avio_r8_xij(pb);
+        c93->block_records[i].frames = avio_r8_xij(pb);
         if (c93->block_records[i].frames > 32) {
             av_log(s, AV_LOG_ERROR, "too many frames in block\n");
             return AVERROR_INVALIDDATA;
@@ -79,7 +79,7 @@ static int read_header(AVFormatContext *s)
     /* Audio streams are added if audio packets are found */
     s->ctx_flags |= AVFMTCTX_NOHEADER;
 
-    video = avformat_new_stream(s, NULL);
+    video = avformat_new_stream_ijk(s, NULL);
     if (!video)
         return AVERROR(ENOMEM);
 
@@ -89,7 +89,7 @@ static int read_header(AVFormatContext *s)
     video->codecpar->height = 192;
     /* 4:3 320x200 with 8 empty lines */
     video->sample_aspect_ratio = (AVRational) { 5, 6 };
-    avpriv_set_pts_info(video, 64, 2, 25);
+    avpriv_set_pts_info_ijk(video, 64, 2, 25);
     video->nb_frames = framecount;
     video->duration = framecount;
     video->start_time = 0;
@@ -114,15 +114,15 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
     if (c93->next_pkt_is_audio) {
         c93->current_frame++;
         c93->next_pkt_is_audio = 0;
-        datasize = avio_rl16(pb);
+        datasize = avio_rl16_xij(pb);
         if (datasize > 42) {
             if (!c93->audio) {
-                c93->audio = avformat_new_stream(s, NULL);
+                c93->audio = avformat_new_stream_ijk(s, NULL);
                 if (!c93->audio)
                     return AVERROR(ENOMEM);
                 c93->audio->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
             }
-            avio_skip(pb, 26); /* VOC header */
+            avio_skip_xij(pb, 26); /* VOC header */
             ret = ff_voc_get_packet(s, pkt, c93->audio, datasize - 26);
             if (ret > 0) {
                 pkt->stream_index = 1;
@@ -140,29 +140,29 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
     }
 
     if (c93->current_frame == 0) {
-        avio_seek(pb, br->index * 2048, SEEK_SET);
+        avio_seek_xij(pb, br->index * 2048, SEEK_SET);
         for (i = 0; i < 32; i++) {
-            c93->frame_offsets[i] = avio_rl32(pb);
+            c93->frame_offsets[i] = avio_rl32_xij(pb);
         }
     }
 
-    avio_seek(pb,br->index * 2048 +
+    avio_seek_xij(pb,br->index * 2048 +
             c93->frame_offsets[c93->current_frame], SEEK_SET);
-    datasize = avio_rl16(pb); /* video frame size */
+    datasize = avio_rl16_xij(pb); /* video frame size */
 
-    ret = av_new_packet(pkt, datasize + 768 + 1);
+    ret = av_new_packet_ijk(pkt, datasize + 768 + 1);
     if (ret < 0)
         return ret;
     pkt->data[0] = 0;
     pkt->size = datasize + 1;
 
-    ret = avio_read(pb, pkt->data + 1, datasize);
+    ret = avio_read_xij(pb, pkt->data + 1, datasize);
     if (ret < datasize) {
         ret = AVERROR(EIO);
         goto fail;
     }
 
-    datasize = avio_rl16(pb); /* palette size */
+    datasize = avio_rl16_xij(pb); /* palette size */
     if (datasize) {
         if (datasize != 768) {
             av_log(s, AV_LOG_ERROR, "invalid palette size %u\n", datasize);
@@ -170,7 +170,7 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
             goto fail;
         }
         pkt->data[0] |= C93_HAS_PALETTE;
-        ret = avio_read(pb, pkt->data + pkt->size, datasize);
+        ret = avio_read_xij(pb, pkt->data + pkt->size, datasize);
         if (ret < datasize) {
             ret = AVERROR(EIO);
             goto fail;
@@ -188,7 +188,7 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
     return 0;
 
     fail:
-    av_packet_unref(pkt);
+    av_packet_unref_ijk(pkt);
     return ret;
 }
 

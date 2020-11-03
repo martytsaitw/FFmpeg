@@ -141,36 +141,36 @@ static void test_copy(const AVCodec *c1, const AVCodec *c2)
 {
     AVCodecContext *ctx1, *ctx2;
     printf("%s -> %s\nclosed:\n", c1 ? c1->name : "NULL", c2 ? c2->name : "NULL");
-    ctx1 = avcodec_alloc_context3(c1);
-    ctx2 = avcodec_alloc_context3(c2);
+    ctx1 = avcodec_alloc_context3_ijk(c1);
+    ctx2 = avcodec_alloc_context3_ijk(c2);
     ctx1->width = ctx1->height = 128;
     ctx1->time_base = (AVRational){12,34};
     if (ctx2->codec && ctx2->codec->priv_class && ctx2->codec->priv_data_size) {
         av_opt_set(ctx2->priv_data, "num", "667", 0);
         av_opt_set(ctx2->priv_data, "str", "i'm dest value before copy", 0);
     }
-    avcodec_copy_context(ctx2, ctx1);
+    avcodec_copy_context_xij(ctx2, ctx1);
     test_copy_print_codec(ctx1);
     test_copy_print_codec(ctx2);
     if (ctx1->codec) {
         int ret;
         printf("opened:\n");
-        ret = avcodec_open2(ctx1, ctx1->codec, NULL);
+        ret = avcodec_open2_xij(ctx1, ctx1->codec, NULL);
         if (ret < 0) {
-            fprintf(stderr, "avcodec_open2 failed\n");
+            fprintf(stderr, "avcodec_open2_xij failed\n");
             exit(1);
         }
         if (ctx2->codec && ctx2->codec->priv_class && ctx2->codec->priv_data_size) {
             av_opt_set(ctx2->priv_data, "num", "667", 0);
             av_opt_set(ctx2->priv_data, "str", "i'm dest value before copy", 0);
         }
-        avcodec_copy_context(ctx2, ctx1);
+        avcodec_copy_context_xij(ctx2, ctx1);
         test_copy_print_codec(ctx1);
         test_copy_print_codec(ctx2);
-        avcodec_close(ctx1);
+        avcodec_close_xij(ctx1);
     }
-    avcodec_free_context(&ctx1);
-    avcodec_free_context(&ctx2);
+    avcodec_free_context_ijk(&ctx1);
+    avcodec_free_context_ijk(&ctx2);
 }
 
 int main(void)
@@ -185,9 +185,9 @@ int main(void)
     int i, j;
 
     for (i = 0; dummy_codec[i]; i++)
-        avcodec_register(dummy_codec[i]);
+        avcodec_register_xij(dummy_codec[i]);
 
-    printf("testing avcodec_copy_context()\n");
+    printf("testing avcodec_copy_context_xij()\n");
     for (i = 0; i < FF_ARRAY_ELEMS(dummy_codec); i++)
         for (j = 0; j < FF_ARRAY_ELEMS(dummy_codec); j++)
             test_copy(dummy_codec[i], dummy_codec[j]);

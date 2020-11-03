@@ -66,9 +66,9 @@ static int qsv_init_session(AVCodecContext *avctx, QSVContext *q, mfxSession ses
             MFXClose(q->internal_session);
             q->internal_session = NULL;
         }
-        av_buffer_unref(&q->frames_ctx.hw_frames_ctx);
+        av_buffer_unref_xij(&q->frames_ctx.hw_frames_ctx);
 
-        q->frames_ctx.hw_frames_ctx = av_buffer_ref(hw_frames_ref);
+        q->frames_ctx.hw_frames_ctx = av_buffer_ref_ijk(hw_frames_ref);
         if (!q->frames_ctx.hw_frames_ctx)
             return AVERROR(ENOMEM);
 
@@ -76,7 +76,7 @@ static int qsv_init_session(AVCodecContext *avctx, QSVContext *q, mfxSession ses
                                          &q->frames_ctx, q->load_plugins,
                                          q->iopattern == MFX_IOPATTERN_OUT_OPAQUE_MEMORY);
         if (ret < 0) {
-            av_buffer_unref(&q->frames_ctx.hw_frames_ctx);
+            av_buffer_unref_xij(&q->frames_ctx.hw_frames_ctx);
             return ret;
         }
 
@@ -211,7 +211,7 @@ static int alloc_frame(AVCodecContext *avctx, QSVContext *q, QSVFrame *frame)
 {
     int ret;
 
-    ret = ff_get_buffer(avctx, frame->frame, AV_GET_BUFFER_FLAG_REF);
+    ret = ff_get_buffer_xij(avctx, frame->frame, AV_GET_BUFFER_FLAG_REF);
     if (ret < 0)
         return ret;
 
@@ -249,7 +249,7 @@ static void qsv_clear_unused_frames(QSVContext *q)
     while (cur) {
         if (cur->used && !cur->surface.Data.Locked && !cur->queued) {
             cur->used = 0;
-            av_frame_unref(cur->frame);
+            av_frame_unref_xij(cur->frame);
         }
         cur = cur->next;
     }
@@ -280,7 +280,7 @@ static int get_surface(AVCodecContext *avctx, QSVContext *q, mfxFrameSurface1 **
     frame = av_mallocz(sizeof(*frame));
     if (!frame)
         return AVERROR(ENOMEM);
-    frame->frame = av_frame_alloc();
+    frame->frame = av_frame_alloc_ijk();
     if (!frame->frame) {
         av_freep(&frame);
         return AVERROR(ENOMEM);
@@ -402,7 +402,7 @@ static int qsv_decode(AVCodecContext *avctx, QSVContext *q,
 
         src_frame = out_frame->frame;
 
-        ret = av_frame_ref(frame, src_frame);
+        ret = av_frame_ref_xij(frame, src_frame);
         if (ret < 0)
             return ret;
 
@@ -457,7 +457,7 @@ int ff_qsv_decode_close(QSVContext *q)
 
     while (cur) {
         q->work_frames = cur->next;
-        av_frame_free(&cur->frame);
+        av_frame_free_xij(&cur->frame);
         av_freep(&cur);
         cur = q->work_frames;
     }
@@ -465,14 +465,14 @@ int ff_qsv_decode_close(QSVContext *q)
     av_fifo_free(q->async_fifo);
     q->async_fifo = NULL;
 
-    av_parser_close(q->parser);
-    avcodec_free_context(&q->avctx_internal);
+    av_parser_close_ijk(q->parser);
+    avcodec_free_context_ijk(&q->avctx_internal);
 
     if (q->internal_session)
         MFXClose(q->internal_session);
 
-    av_buffer_unref(&q->frames_ctx.hw_frames_ctx);
-    av_buffer_unref(&q->frames_ctx.mids_buf);
+    av_buffer_unref_xij(&q->frames_ctx.hw_frames_ctx);
+    av_buffer_unref_xij(&q->frames_ctx.mids_buf);
 
     return 0;
 }
@@ -486,11 +486,11 @@ int ff_qsv_process_data(AVCodecContext *avctx, QSVContext *q,
     const AVPixFmtDescriptor *desc;
 
     if (!q->avctx_internal) {
-        q->avctx_internal = avcodec_alloc_context3(NULL);
+        q->avctx_internal = avcodec_alloc_context3_ijk(NULL);
         if (!q->avctx_internal)
             return AVERROR(ENOMEM);
 
-        q->parser = av_parser_init(avctx->codec_id);
+        q->parser = av_parser_init_xij(avctx->codec_id);
         if (!q->parser)
             return AVERROR(ENOMEM);
 
@@ -503,7 +503,7 @@ int ff_qsv_process_data(AVCodecContext *avctx, QSVContext *q,
 
     /* we assume the packets are already split properly and want
      * just the codec parameters here */
-    av_parser_parse2(q->parser, q->avctx_internal,
+    av_parser_parse2_xij(q->parser, q->avctx_internal,
                      &dummy_data, &dummy_size,
                      pkt->data, pkt->size, pkt->pts, pkt->dts,
                      pkt->pos);
@@ -536,7 +536,7 @@ int ff_qsv_process_data(AVCodecContext *avctx, QSVContext *q,
         avctx->level        = q->avctx_internal->level;
         avctx->profile      = q->avctx_internal->profile;
 
-        ret = ff_get_format(avctx, pix_fmts);
+        ret = ff_get_format_xij(avctx, pix_fmts);
         if (ret < 0)
             goto reinit_fail;
 

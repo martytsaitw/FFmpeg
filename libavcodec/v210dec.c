@@ -100,7 +100,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
             ff_v210_x86_init(s);
     }
 
-    if ((ret = ff_get_buffer(avctx, pic, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, pic, 0)) < 0)
         return ret;
 
     y = (uint16_t*)pic->data[0];

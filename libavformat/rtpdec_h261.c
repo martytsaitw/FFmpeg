@@ -40,7 +40,7 @@ static av_cold void h261_close_context(PayloadContext *pl_ctx)
         return;
 
     /* free buffer if it is valid */
-    ffio_free_dyn_buf(&pl_ctx->buf);
+    ffio_free_dyn_buf_xij(&pl_ctx->buf);
 }
 
 static int h261_handle_packet(AVFormatContext *ctx, PayloadContext *rtp_h261_ctx,
@@ -53,7 +53,7 @@ static int h261_handle_packet(AVFormatContext *ctx, PayloadContext *rtp_h261_ctx
 
     /* drop data of previous packets in case of non-continuous (lossy) packet stream */
     if (rtp_h261_ctx->buf && rtp_h261_ctx->timestamp != *timestamp) {
-        ffio_free_dyn_buf(&rtp_h261_ctx->buf);
+        ffio_free_dyn_buf_xij(&rtp_h261_ctx->buf);
         rtp_h261_ctx->endbyte_bits = 0;
     }
 
@@ -97,7 +97,7 @@ static int h261_handle_packet(AVFormatContext *ctx, PayloadContext *rtp_h261_ctx
     if (!rtp_h261_ctx->buf) {
         /* sanity check: a new frame starts with gobn=0, sbit=0, mbap=0, quant=0 */
         if (!gobn && !sbit && !mbap && !quant) {
-            res = avio_open_dyn_buf(&rtp_h261_ctx->buf);
+            res = avio_open_dyn_buf_xij(&rtp_h261_ctx->buf);
             if (res < 0)
                 return res;
             /* update the timestamp in the frame packet with the one from the RTP packet */
@@ -115,7 +115,7 @@ static int h261_handle_packet(AVFormatContext *ctx, PayloadContext *rtp_h261_ctx
             rtp_h261_ctx->endbyte_bits = 0;
             buf++;
             len--;
-            avio_w8(rtp_h261_ctx->buf, rtp_h261_ctx->endbyte);
+            avio_w8_xij(rtp_h261_ctx->buf, rtp_h261_ctx->endbyte);
         } else {
             /* ebit/sbit values inconsistent, assuming packet loss */
             GetBitContext gb;
@@ -123,10 +123,10 @@ static int h261_handle_packet(AVFormatContext *ctx, PayloadContext *rtp_h261_ctx
             skip_bits(&gb, sbit);
             if (rtp_h261_ctx->endbyte_bits) {
                 rtp_h261_ctx->endbyte |= get_bits(&gb, 8 - rtp_h261_ctx->endbyte_bits);
-                avio_w8(rtp_h261_ctx->buf, rtp_h261_ctx->endbyte);
+                avio_w8_xij(rtp_h261_ctx->buf, rtp_h261_ctx->endbyte);
             }
             while (get_bits_left(&gb) >= 8)
-                avio_w8(rtp_h261_ctx->buf, get_bits(&gb, 8));
+                avio_w8_xij(rtp_h261_ctx->buf, get_bits(&gb, 8));
             rtp_h261_ctx->endbyte_bits = get_bits_left(&gb);
             if (rtp_h261_ctx->endbyte_bits)
                 rtp_h261_ctx->endbyte = get_bits(&gb, rtp_h261_ctx->endbyte_bits) <<
@@ -137,11 +137,11 @@ static int h261_handle_packet(AVFormatContext *ctx, PayloadContext *rtp_h261_ctx
     }
     if (ebit) {
         if (len > 0)
-            avio_write(rtp_h261_ctx->buf, buf, len - 1);
+            avio_write_xij(rtp_h261_ctx->buf, buf, len - 1);
         rtp_h261_ctx->endbyte_bits = 8 - ebit;
         rtp_h261_ctx->endbyte      = buf[len - 1] & (0xff << ebit);
     } else {
-        avio_write(rtp_h261_ctx->buf, buf, len);
+        avio_write_xij(rtp_h261_ctx->buf, buf, len);
     }
 
     /* RTP marker bit means: last fragment of current frame was received;
@@ -151,7 +151,7 @@ static int h261_handle_packet(AVFormatContext *ctx, PayloadContext *rtp_h261_ctx
 
     /* write the completed last byte from the "byte merging" */
     if (rtp_h261_ctx->endbyte_bits)
-        avio_w8(rtp_h261_ctx->buf, rtp_h261_ctx->endbyte);
+        avio_w8_xij(rtp_h261_ctx->buf, rtp_h261_ctx->endbyte);
     rtp_h261_ctx->endbyte_bits = 0;
 
     /* close frame buffering and create resulting A/V packet */

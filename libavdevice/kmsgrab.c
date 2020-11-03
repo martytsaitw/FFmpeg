@@ -78,7 +78,7 @@ static void kmsgrab_free_frame(void *opaque, uint8_t *data)
 {
     AVFrame *frame = (AVFrame*)data;
 
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
 }
 
 static int kmsgrab_read_packet(AVFormatContext *avctx, AVPacket *pkt)
@@ -164,15 +164,15 @@ static int kmsgrab_read_packet(AVFormatContext *avctx, AVPacket *pkt)
         },
     };
 
-    frame = av_frame_alloc();
+    frame = av_frame_alloc_ijk();
     if (!frame)
         return AVERROR(ENOMEM);
 
-    frame->hw_frames_ctx = av_buffer_ref(ctx->frames_ref);
+    frame->hw_frames_ctx = av_buffer_ref_ijk(ctx->frames_ref);
     if (!frame->hw_frames_ctx)
         return AVERROR(ENOMEM);
 
-    frame->buf[0] = av_buffer_create((uint8_t*)desc, sizeof(*desc),
+    frame->buf[0] = av_buffer_create_ijk((uint8_t*)desc, sizeof(*desc),
                                      &kmsgrab_free_desc, avctx, 0);
     if (!frame->buf[0])
         return AVERROR(ENOMEM);
@@ -185,7 +185,7 @@ static int kmsgrab_read_packet(AVFormatContext *avctx, AVPacket *pkt)
     drmModeFreeFB(fb);
     drmModeFreePlane(plane);
 
-    pkt->buf = av_buffer_create((uint8_t*)frame, sizeof(*frame),
+    pkt->buf = av_buffer_create_ijk((uint8_t*)frame, sizeof(*frame),
                                 &kmsgrab_free_frame, avctx, 0);
     if (!pkt->buf)
         return AVERROR(ENOMEM);
@@ -364,7 +364,7 @@ static av_cold int kmsgrab_read_header(AVFormatContext *avctx)
         goto fail;
     }
 
-    stream = avformat_new_stream(avctx, NULL);
+    stream = avformat_new_stream_ijk(avctx, NULL);
     if (!stream) {
         err = AVERROR(ENOMEM);
         goto fail;
@@ -376,7 +376,7 @@ static av_cold int kmsgrab_read_header(AVFormatContext *avctx)
     stream->codecpar->height     = fb->height;
     stream->codecpar->format     = AV_PIX_FMT_DRM_PRIME;
 
-    avpriv_set_pts_info(stream, 64, 1, 1000000);
+    avpriv_set_pts_info_ijk(stream, 64, 1, 1000000);
 
     ctx->frames_ref = av_hwframe_ctx_alloc(ctx->device_ref);
     if (!ctx->frames_ref) {
@@ -416,8 +416,8 @@ static av_cold int kmsgrab_read_close(AVFormatContext *avctx)
 {
     KMSGrabContext *ctx = avctx->priv_data;
 
-    av_buffer_unref(&ctx->frames_ref);
-    av_buffer_unref(&ctx->device_ref);
+    av_buffer_unref_xij(&ctx->frames_ref);
+    av_buffer_unref_xij(&ctx->device_ref);
 
     return 0;
 }

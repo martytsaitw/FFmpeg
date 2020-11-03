@@ -69,7 +69,7 @@ static int drm_device_create(AVHWDeviceContext *hwdev, const char *device,
 
 static int drm_get_buffer(AVHWFramesContext *hwfc, AVFrame *frame)
 {
-    frame->buf[0] = av_buffer_pool_get(hwfc->pool);
+    frame->buf[0] = av_buffer_pool_get_xij(hwfc->pool);
     if (!frame->buf[0])
         return AVERROR(ENOMEM);
 
@@ -194,7 +194,7 @@ static int drm_transfer_data_from(AVHWFramesContext *hwfc,
     if (dst->width > hwfc->width || dst->height > hwfc->height)
         return AVERROR(EINVAL);
 
-    map = av_frame_alloc();
+    map = av_frame_alloc_ijk();
     if (!map)
         return AVERROR(ENOMEM);
     map->format = dst->format;
@@ -206,13 +206,13 @@ static int drm_transfer_data_from(AVHWFramesContext *hwfc,
     map->width  = dst->width;
     map->height = dst->height;
 
-    err = av_frame_copy(dst, map);
+    err = av_frame_copy_xij(dst, map);
     if (err)
         goto fail;
 
     err = 0;
 fail:
-    av_frame_free(&map);
+    av_frame_free_xij(&map);
     return err;
 }
 
@@ -225,7 +225,7 @@ static int drm_transfer_data_to(AVHWFramesContext *hwfc,
     if (src->width > hwfc->width || src->height > hwfc->height)
         return AVERROR(EINVAL);
 
-    map = av_frame_alloc();
+    map = av_frame_alloc_ijk();
     if (!map)
         return AVERROR(ENOMEM);
     map->format = src->format;
@@ -238,13 +238,13 @@ static int drm_transfer_data_to(AVHWFramesContext *hwfc,
     map->width  = src->width;
     map->height = src->height;
 
-    err = av_frame_copy(map, src);
+    err = av_frame_copy_xij(map, src);
     if (err)
         goto fail;
 
     err = 0;
 fail:
-    av_frame_free(&map);
+    av_frame_free_xij(&map);
     return err;
 }
 
@@ -260,7 +260,7 @@ static int drm_map_from(AVHWFramesContext *hwfc, AVFrame *dst,
     if (err)
         return err;
 
-    err = av_frame_copy_props(dst, src);
+    err = av_frame_copy_props_xij(dst, src);
     if (err)
         return err;
 

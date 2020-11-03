@@ -623,7 +623,7 @@ retry:
         if ((ret = ff_mpv_common_init(s)) < 0)
             return ret;
 
-        ret = ff_set_dimensions(avctx, s->width, s->height);
+        ret = ff_set_dimensions_xij(avctx, s->width, s->height);
         if (ret < 0)
             return ret;
 
@@ -658,7 +658,7 @@ retry:
     av_assert0(s->current_picture.f->pict_type == s->current_picture_ptr->f->pict_type);
     av_assert0(s->current_picture.f->pict_type == s->pict_type);
 
-    if ((ret = av_frame_ref(pict, s->current_picture_ptr->f)) < 0)
+    if ((ret = av_frame_ref_xij(pict, s->current_picture_ptr->f)) < 0)
         return ret;
     ff_print_debug_info(s, s->current_picture_ptr, pict);
 

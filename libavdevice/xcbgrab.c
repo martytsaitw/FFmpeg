@@ -177,7 +177,7 @@ static int xcbgrab_frame(AVFormatContext *s, AVPacket *pkt)
     data   = xcb_get_image_data(img);
     length = xcb_get_image_data_length(img);
 
-    ret = av_new_packet(pkt, length);
+    ret = av_new_packet_ijk(pkt, length);
 
     if (!ret)
         memcpy(pkt->data, data, length);
@@ -517,7 +517,7 @@ static int pixfmt_from_pixmap_format(AVFormatContext *s, int depth,
 static int create_stream(AVFormatContext *s)
 {
     XCBGrabContext *c = s->priv_data;
-    AVStream *st      = avformat_new_stream(s, NULL);
+    AVStream *st      = avformat_new_stream_ijk(s, NULL);
     xcb_get_geometry_cookie_t gc;
     xcb_get_geometry_reply_t *geo;
     int ret;
@@ -533,7 +533,7 @@ static int create_stream(AVFormatContext *s)
     if (ret < 0)
         return ret;
 
-    avpriv_set_pts_info(st, 64, 1, 1000000);
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000000);
 
     gc  = xcb_get_geometry(c->conn, c->screen->root);
     geo = xcb_get_geometry_reply(c->conn, gc, NULL);

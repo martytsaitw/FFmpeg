@@ -132,7 +132,7 @@ int main(int argc, char **argv)
             *(dev++) = 0;
             fmt = out_dev_name[i];
         }
-        ret = avformat_alloc_output_context2(&st->mux, NULL, fmt, dev);
+        ret = avformat_alloc_output_context2_ijk(&st->mux, NULL, fmt, dev);
         if (ret < 0) {
             av_log(NULL, AV_LOG_ERROR, "Failed to allocate output: %s\n",
                    av_err2str(ret));
@@ -154,7 +154,7 @@ int main(int argc, char **argv)
     /* Create output device streams */
     for (i = 0; i < nb_streams; i++) {
         st = &streams[i];
-        if (!(st->stream = avformat_new_stream(st->mux, NULL))) {
+        if (!(st->stream = avformat_new_stream_ijk(st->mux, NULL))) {
             ret = AVERROR(ENOMEM);
             av_log(NULL, AV_LOG_ERROR, "Failed to create output stream\n");
             goto fail;
@@ -219,7 +219,7 @@ int main(int argc, char **argv)
         for (i = 0; i < nb_streams; i++) {
             st = &streams[i];
             while (1) {
-                if (!frame && !(frame = av_frame_alloc())) {
+                if (!frame && !(frame = av_frame_alloc_ijk())) {
                     ret = AVERROR(ENOMEM);
                     av_log(NULL, AV_LOG_ERROR, "Could not allocate frame\n");
                     goto fail;
@@ -264,7 +264,7 @@ fail:
             if (st->mux) {
                 if (st->mux->pb)
                     avio_closep(&st->mux->pb);
-                avformat_free_context(st->mux);
+                avformat_free_context_ijk(st->mux);
             }
         }
     }

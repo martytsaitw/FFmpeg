@@ -235,14 +235,14 @@ properties as the input one, and send that new frame to the next filter:
 
     AVFrame *out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out) {
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         return AVERROR(ENOMEM);
     }
-    av_frame_copy_props(out, in);
+    av_frame_copy_props_xij(out, in);
 
     // out->data[...] = foobar(in->data[...])
 
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
     return ff_filter_frame(outlink, out);
 
 In-place processing
@@ -251,7 +251,7 @@ In-place processing
 If you can just alter the input frame, you probably just want to do that
 instead:
 
-    av_frame_make_writable(in);
+    av_frame_make_writable_xij(in);
     // in->data[...] = foobar(in->data[...])
     return ff_filter_frame(outlink, in);
 
@@ -259,12 +259,12 @@ You may wonder why a frame might not be writable. The answer is that for
 example a previous filter might still own the frame data: imagine a filter
 prior to yours in the filtergraph that needs to cache the frame. You must not
 alter that frame, otherwise it will make that previous filter buggy. This is
-where av_frame_make_writable() helps (it won't have any effect if the frame
+where av_frame_make_writable_xij() helps (it won't have any effect if the frame
 already is writable).
 
-The problem with using av_frame_make_writable() is that in the worst case it
+The problem with using av_frame_make_writable_xij() is that in the worst case it
 will copy the whole input frame before you change it all over again with your
-filter: if the frame is not writable, av_frame_make_writable() will allocate
+filter: if the frame is not writable, av_frame_make_writable_xij() will allocate
 new buffers, and copy the input frame data. You don't want that, and you can
 avoid it by just allocating a new buffer if necessary, and process from in to
 out in your filter, saving the memcpy. Generally, this is done following this
@@ -273,22 +273,22 @@ scheme:
     int direct = 0;
     AVFrame *out;
 
-    if (av_frame_is_writable(in)) {
+    if (av_frame_is_writable_xij(in)) {
         direct = 1;
         out = in;
     } else {
         out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out) {
-            av_frame_free(&in);
+            av_frame_free_xij(&in);
             return AVERROR(ENOMEM);
         }
-        av_frame_copy_props(out, in);
+        av_frame_copy_props_xij(out, in);
     }
 
     // out->data[...] = foobar(in->data[...])
 
     if (!direct)
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
     return ff_filter_frame(outlink, out);
 
 Of course, this will only work if you can do in-place processing. To test if

@@ -123,7 +123,7 @@ static int doTest(const uint8_t * const ref[4], int refStride[4], int w, int h,
                 goto end;
             }
         }
-        srcContext = sws_getContext(w, h, AV_PIX_FMT_YUVA420P, srcW, srcH,
+        srcContext = sws_getContext_xij(w, h, AV_PIX_FMT_YUVA420P, srcW, srcH,
                                     srcFormat, SWS_BILINEAR, NULL, NULL, NULL);
         if (!srcContext) {
             fprintf(stderr, "Failed to get %s ---> %s\n",
@@ -134,7 +134,7 @@ static int doTest(const uint8_t * const ref[4], int refStride[4], int w, int h,
         }
         sws_scale(srcContext, ref, refStride, 0, h,
                   (uint8_t * const *) src, srcStride);
-        sws_freeContext(srcContext);
+        sws_freeContext_xij(srcContext);
 
         cur_srcFormat = srcFormat;
         cur_srcW      = srcW;
@@ -165,7 +165,7 @@ static int doTest(const uint8_t * const ref[4], int refStride[4], int w, int h,
         }
     }
 
-    dstContext = sws_getContext(srcW, srcH, srcFormat, dstW, dstH, dstFormat,
+    dstContext = sws_getContext_xij(srcW, srcH, srcFormat, dstW, dstH, dstFormat,
                                 flags, NULL, NULL, NULL);
     if (!dstContext) {
         fprintf(stderr, "Failed to get %s ---> %s\n",
@@ -202,7 +202,7 @@ static int doTest(const uint8_t * const ref[4], int refStride[4], int w, int h,
                 goto end;
             }
         }
-        outContext = sws_getContext(dstW, dstH, dstFormat, w, h,
+        outContext = sws_getContext_xij(dstW, dstH, dstFormat, w, h,
                                     AV_PIX_FMT_YUVA420P, SWS_BILINEAR,
                                     NULL, NULL, NULL);
         if (!outContext) {
@@ -231,7 +231,7 @@ static int doTest(const uint8_t * const ref[4], int refStride[4], int w, int h,
         ssdV /= w * h / 4;
         ssdA /= w * h;
 
-        sws_freeContext(outContext);
+        sws_freeContext_xij(outContext);
 
         for (i = 0; i < 4; i++)
             if (refStride[i])
@@ -242,7 +242,7 @@ static int doTest(const uint8_t * const ref[4], int refStride[4], int w, int h,
            crc, ssdY, ssdU, ssdV, ssdA);
 
 end:
-    sws_freeContext(dstContext);
+    sws_freeContext_xij(dstContext);
 
     for (i = 0; i < 4; i++)
         if (dstStride[i])
@@ -267,8 +267,8 @@ static void selfTest(const uint8_t * const ref[4], int refStride[4],
 
     for (srcFormat = srcFormat_in != AV_PIX_FMT_NONE ? srcFormat_in : 0;
          srcFormat < AV_PIX_FMT_NB; srcFormat++) {
-        if (!sws_isSupportedInput(srcFormat) ||
-            !sws_isSupportedOutput(srcFormat))
+        if (!sws_isSupportedInput_xij(srcFormat) ||
+            !sws_isSupportedOutput_xij(srcFormat))
             continue;
 
         desc_src = av_pix_fmt_desc_get(srcFormat);
@@ -278,8 +278,8 @@ static void selfTest(const uint8_t * const ref[4], int refStride[4],
             int i, j, k;
             int res = 0;
 
-            if (!sws_isSupportedInput(dstFormat) ||
-                !sws_isSupportedOutput(dstFormat))
+            if (!sws_isSupportedInput_xij(dstFormat) ||
+                !sws_isSupportedOutput_xij(dstFormat))
                 continue;
 
             desc_dst = av_pix_fmt_desc_get(dstFormat);
@@ -414,7 +414,7 @@ bad_option:
         }
     }
 
-    sws = sws_getContext(W / 12, H / 12, AV_PIX_FMT_RGB32, W, H,
+    sws = sws_getContext_xij(W / 12, H / 12, AV_PIX_FMT_RGB32, W, H,
                          AV_PIX_FMT_YUVA420P, SWS_BILINEAR, NULL, NULL, NULL);
 
     av_lfg_init(&rand, 1);
@@ -423,7 +423,7 @@ bad_option:
         for (x = 0; x < W * 4; x++)
             rgb_data[ x + y * 4 * W] = av_lfg_get(&rand);
     sws_scale(sws, rgb_src, rgb_stride, 0, H / 12, (uint8_t * const *) src, stride);
-    sws_freeContext(sws);
+    sws_freeContext_xij(sws);
     av_free(rgb_data);
 
     if(fp) {

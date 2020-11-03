@@ -57,21 +57,21 @@ static int pva_probe(AVProbeData * pd) {
 static int pva_read_header(AVFormatContext *s) {
     AVStream *st;
 
-    if (!(st = avformat_new_stream(s, NULL)))
+    if (!(st = avformat_new_stream_ijk(s, NULL)))
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id   = AV_CODEC_ID_MPEG2VIDEO;
     st->need_parsing      = AVSTREAM_PARSE_FULL;
-    avpriv_set_pts_info(st, 32, 1, 90000);
-    av_add_index_entry(st, 0, 0, 0, 0, AVINDEX_KEYFRAME);
+    avpriv_set_pts_info_ijk(st, 32, 1, 90000);
+    av_add_index_entry_xij(st, 0, 0, 0, 0, AVINDEX_KEYFRAME);
 
-    if (!(st = avformat_new_stream(s, NULL)))
+    if (!(st = avformat_new_stream_ijk(s, NULL)))
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id   = AV_CODEC_ID_MP2;
     st->need_parsing      = AVSTREAM_PARSE_FULL;
-    avpriv_set_pts_info(st, 33, 1, 90000);
-    av_add_index_entry(st, 0, 0, 0, 0, AVINDEX_KEYFRAME);
+    avpriv_set_pts_info_ijk(st, 33, 1, 90000);
+    av_add_index_entry_xij(st, 0, 0, 0, 0, AVINDEX_KEYFRAME);
 
     /* the parameters will be extracted from the compressed bitstream */
     return 0;
@@ -90,12 +90,12 @@ static int read_part_of_packet(AVFormatContext *s, int64_t *pts,
 recover:
     startpos = avio_tell(pb);
 
-    syncword = avio_rb16(pb);
-    streamid = avio_r8(pb);
-    avio_r8(pb);               /* counter not used */
-    reserved = avio_r8(pb);
-    flags    = avio_r8(pb);
-    length   = avio_rb16(pb);
+    syncword = avio_rb16_xij(pb);
+    streamid = avio_r8_xij(pb);
+    avio_r8_xij(pb);               /* counter not used */
+    reserved = avio_r8_xij(pb);
+    flags    = avio_r8_xij(pb);
+    length   = avio_rb16_xij(pb);
 
     pts_flag = flags & 0x10;
 
@@ -116,7 +116,7 @@ recover:
     }
 
     if (streamid == PVA_VIDEO_PAYLOAD && pts_flag) {
-        pva_pts = avio_rb32(pb);
+        pva_pts = avio_rb32_xij(pb);
         length -= 4;
     } else if (streamid == PVA_AUDIO_PAYLOAD) {
         /* PVA Audio Packets either start with a signaled PES packet or
@@ -128,22 +128,22 @@ recover:
                 pes_flags;
             unsigned char pes_header_data[256];
 
-            pes_signal             = avio_rb24(pb);
-            avio_r8(pb);
-            pes_packet_length      = avio_rb16(pb);
-            pes_flags              = avio_rb16(pb);
-            pes_header_data_length = avio_r8(pb);
+            pes_signal             = avio_rb24_xij(pb);
+            avio_r8_xij(pb);
+            pes_packet_length      = avio_rb16_xij(pb);
+            pes_flags              = avio_rb16_xij(pb);
+            pes_header_data_length = avio_r8_xij(pb);
 
             if (pes_signal != 1 || pes_header_data_length == 0) {
                 pva_log(s, AV_LOG_WARNING, "expected non empty signaled PES packet, "
                                           "trying to recover\n");
-                avio_skip(pb, length - 9);
+                avio_skip_xij(pb, length - 9);
                 if (!read_packet)
                     return AVERROR(EIO);
                 goto recover;
             }
 
-            ret = avio_read(pb, pes_header_data, pes_header_data_length);
+            ret = avio_read_xij(pb, pes_header_data, pes_header_data_length);
             if (ret != pes_header_data_length)
                 return ret < 0 ? ret : AVERROR_INVALIDDATA;
             length -= 9 + pes_header_data_length;
@@ -155,7 +155,7 @@ recover:
             if (pes_flags & 0x80 && (pes_header_data[0] & 0xf0) == 0x20) {
                 if (pes_header_data_length < 5) {
                     pva_log(s, AV_LOG_ERROR, "header too short\n");
-                    avio_skip(pb, length);
+                    avio_skip_xij(pb, length);
                     return AVERROR_INVALIDDATA;
                 }
                 pva_pts = ff_parse_pes_pts(pes_header_data);
@@ -171,7 +171,7 @@ recover:
     }
 
     if (pva_pts != AV_NOPTS_VALUE)
-        av_add_index_entry(s->streams[streamid-1], startpos, pva_pts, 0, 0, AVINDEX_KEYFRAME);
+        av_add_index_entry_xij(s->streams[streamid-1], startpos, pva_pts, 0, 0, AVINDEX_KEYFRAME);
 
     *pts   = pva_pts;
     *len   = length;
@@ -185,7 +185,7 @@ static int pva_read_packet(AVFormatContext *s, AVPacket *pkt) {
     int ret, length, streamid;
 
     if (read_part_of_packet(s, &pva_pts, &length, &streamid, 1) < 0 ||
-       (ret = av_get_packet(pb, pkt, length)) <= 0)
+       (ret = av_get_packet_xij(pb, pkt, length)) <= 0)
         return AVERROR(EIO);
 
     pkt->stream_index = streamid - 1;
@@ -205,7 +205,7 @@ static int64_t pva_read_timestamp(struct AVFormatContext *s, int stream_index,
 
     while (*pos < pos_limit) {
         res = AV_NOPTS_VALUE;
-        avio_seek(pb, *pos, SEEK_SET);
+        avio_seek_xij(pb, *pos, SEEK_SET);
 
         pvactx->continue_pes = 0;
         if (read_part_of_packet(s, &res, &length, &streamid, 0)) {

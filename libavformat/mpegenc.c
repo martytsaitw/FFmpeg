@@ -346,7 +346,7 @@ static av_cold int mpeg_mux_init(AVFormatContext *ctx)
             goto fail;
         st->priv_data = stream;
 
-        avpriv_set_pts_info(st, 64, 1, 90000);
+        avpriv_set_pts_info_ijk(st, 64, 1, 90000);
 
         switch (st->codecpar->codec_type) {
         case AVMEDIA_TYPE_AUDIO:
@@ -359,7 +359,7 @@ static av_cold int mpeg_mux_init(AVFormatContext *ctx)
                         "%s in MPEG-1 system streams is not widely supported, "
                         "consider using the vob or the dvd muxer "
                         "to force a MPEG-2 program stream.\n",
-                        avcodec_get_name(st->codecpar->codec_id));
+                        avcodec_get_name_xij(st->codecpar->codec_id));
             if (st->codecpar->codec_id == AV_CODEC_ID_AC3) {
                 stream->id = ac3_id++;
             } else if (st->codecpar->codec_id == AV_CODEC_ID_DTS) {
@@ -407,7 +407,7 @@ static av_cold int mpeg_mux_init(AVFormatContext *ctx)
             else
                 stream->id = mpv_id++;
 
-            props = (AVCPBProperties*)av_stream_get_side_data(st, AV_PKT_DATA_CPB_PROPERTIES, NULL);
+            props = (AVCPBProperties*)av_stream_get_side_data_xij(st, AV_PKT_DATA_CPB_PROPERTIES, NULL);
             if (props && props->buffer_size)
                 stream->max_buffer_size = 6 * 1024 + props->buffer_size / 8;
             else {
@@ -430,7 +430,7 @@ static av_cold int mpeg_mux_init(AVFormatContext *ctx)
             break;
         default:
             av_log(ctx, AV_LOG_ERROR, "Invalid media type %s for output stream #%d\n",
-                   av_get_media_type_string(st->codecpar->codec_type), i);
+                   av_get_media_type_string_xij(st->codecpar->codec_type), i);
             return AVERROR(EINVAL);
         }
         stream->fifo = av_fifo_alloc(16);
@@ -446,7 +446,7 @@ static av_cold int mpeg_mux_init(AVFormatContext *ctx)
         st     = ctx->streams[i];
         stream = (StreamInfo *)st->priv_data;
 
-        props = (AVCPBProperties*)av_stream_get_side_data(st, AV_PKT_DATA_CPB_PROPERTIES, NULL);
+        props = (AVCPBProperties*)av_stream_get_side_data_xij(st, AV_PKT_DATA_CPB_PROPERTIES, NULL);
         if (props)
             codec_rate = props->max_bitrate;
         else
@@ -544,9 +544,9 @@ fail:
 
 static inline void put_timestamp(AVIOContext *pb, int id, int64_t timestamp)
 {
-    avio_w8(pb, (id << 4) |  (((timestamp >> 30) & 0x07)   << 1) | 1);
-    avio_wb16(pb, (uint16_t)((((timestamp >> 15) & 0x7fff) << 1) | 1));
-    avio_wb16(pb, (uint16_t)((((timestamp)       & 0x7fff) << 1) | 1));
+    avio_w8_xij(pb, (id << 4) |  (((timestamp >> 30) & 0x07)   << 1) | 1);
+    avio_wb16_xij(pb, (uint16_t)((((timestamp >> 15) & 0x7fff) << 1) | 1));
+    avio_wb16_xij(pb, (uint16_t)((((timestamp)       & 0x7fff) << 1) | 1));
 }
 
 /* return the number of padding bytes that should be inserted into
@@ -580,16 +580,16 @@ static void put_padding_packet(AVFormatContext *ctx, AVIOContext *pb,
     MpegMuxContext *s = ctx->priv_data;
     int i;
 
-    avio_wb32(pb, PADDING_STREAM);
-    avio_wb16(pb, packet_bytes - 6);
+    avio_wb32_xij(pb, PADDING_STREAM);
+    avio_wb16_xij(pb, packet_bytes - 6);
     if (!s->is_mpeg2) {
-        avio_w8(pb, 0x0f);
+        avio_w8_xij(pb, 0x0f);
         packet_bytes -= 7;
     } else
         packet_bytes -= 6;
 
     for (i = 0; i < packet_bytes; i++)
-        avio_w8(pb, 0xff);
+        avio_w8_xij(pb, 0xff);
 }
 
 static int get_nb_frames(AVFormatContext *ctx, StreamInfo *stream, int len)
@@ -660,19 +660,19 @@ static int flush_packet(AVFormatContext *ctx, int stream_index,
                     size     = put_system_header(ctx, buf_ptr, 0);
                     buf_ptr += size;
                     size     = buf_ptr - buffer;
-                    avio_write(ctx->pb, buffer, size);
+                    avio_write_xij(ctx->pb, buffer, size);
 
-                    avio_wb32(ctx->pb, PRIVATE_STREAM_2);
-                    avio_wb16(ctx->pb, 0x03d4);     // length
-                    avio_w8(ctx->pb, 0x00);         // substream ID, 00=PCI
+                    avio_wb32_xij(ctx->pb, PRIVATE_STREAM_2);
+                    avio_wb16_xij(ctx->pb, 0x03d4);     // length
+                    avio_w8_xij(ctx->pb, 0x00);         // substream ID, 00=PCI
                     for (i = 0; i < 979; i++)
-                        avio_w8(ctx->pb, 0x00);
+                        avio_w8_xij(ctx->pb, 0x00);
 
-                    avio_wb32(ctx->pb, PRIVATE_STREAM_2);
-                    avio_wb16(ctx->pb, 0x03fa);     // length
-                    avio_w8(ctx->pb, 0x01);         // substream ID, 01=DSI
+                    avio_wb32_xij(ctx->pb, PRIVATE_STREAM_2);
+                    avio_wb16_xij(ctx->pb, 0x03fa);     // length
+                    avio_w8_xij(ctx->pb, 0x01);         // substream ID, 01=DSI
                     for (i = 0; i < 1017; i++)
-                        avio_w8(ctx->pb, 0x00);
+                        avio_w8_xij(ctx->pb, 0x00);
 
                     memset(buffer, 0, 128);
                     buf_ptr = buffer;
@@ -698,7 +698,7 @@ static int flush_packet(AVFormatContext *ctx, int stream_index,
         }
     }
     size = buf_ptr - buffer;
-    avio_write(ctx->pb, buffer, size);
+    avio_write_xij(ctx->pb, buffer, size);
 
     packet_size = s->packet_size - size;
 
@@ -810,16 +810,16 @@ static int flush_packet(AVFormatContext *ctx, int stream_index,
 
         nb_frames = get_nb_frames(ctx, stream, payload_size - stuffing_size);
 
-        avio_wb32(ctx->pb, startcode);
+        avio_wb32_xij(ctx->pb, startcode);
 
-        avio_wb16(ctx->pb, packet_size);
+        avio_wb16_xij(ctx->pb, packet_size);
 
         if (!s->is_mpeg2)
             for (i = 0; i < stuffing_size; i++)
-                avio_w8(ctx->pb, 0xff);
+                avio_w8_xij(ctx->pb, 0xff);
 
         if (s->is_mpeg2) {
-            avio_w8(ctx->pb, 0x80); /* mpeg2 id */
+            avio_w8_xij(ctx->pb, 0x80); /* mpeg2 id */
 
             pes_flags = 0;
 
@@ -836,8 +836,8 @@ static int flush_packet(AVFormatContext *ctx, int stream_index,
             if (stream->packet_number == 0)
                 pes_flags |= 0x01;
 
-            avio_w8(ctx->pb, pes_flags); /* flags */
-            avio_w8(ctx->pb, header_len - 3 + stuffing_size);
+            avio_w8_xij(ctx->pb, pes_flags); /* flags */
+            avio_w8_xij(ctx->pb, header_len - 3 + stuffing_size);
 
             if (pes_flags & 0x80)  /* write pts */
                 put_timestamp(ctx->pb, (pes_flags & 0x40) ? 0x03 : 0x02, pts);
@@ -845,13 +845,13 @@ static int flush_packet(AVFormatContext *ctx, int stream_index,
                 put_timestamp(ctx->pb, 0x01, dts);
 
             if (pes_flags & 0x01) {  /* write pes extension */
-                avio_w8(ctx->pb, 0x10); /* flags */
+                avio_w8_xij(ctx->pb, 0x10); /* flags */
 
                 /* P-STD buffer info */
                 if ((id & 0xe0) == AUDIO_ID)
-                    avio_wb16(ctx->pb, 0x4000 | stream->max_buffer_size / 128);
+                    avio_wb16_xij(ctx->pb, 0x4000 | stream->max_buffer_size / 128);
                 else
-                    avio_wb16(ctx->pb, 0x6000 | stream->max_buffer_size / 1024);
+                    avio_wb16_xij(ctx->pb, 0x6000 | stream->max_buffer_size / 1024);
             }
         } else {
             if (pts != AV_NOPTS_VALUE) {
@@ -862,32 +862,32 @@ static int flush_packet(AVFormatContext *ctx, int stream_index,
                     put_timestamp(ctx->pb, 0x02, pts);
                 }
             } else {
-                avio_w8(ctx->pb, 0x0f);
+                avio_w8_xij(ctx->pb, 0x0f);
             }
         }
 
         if (s->is_mpeg2) {
             /* special stuffing byte that is always written
              * to prevent accidental generation of start codes. */
-            avio_w8(ctx->pb, 0xff);
+            avio_w8_xij(ctx->pb, 0xff);
 
             for (i = 0; i < stuffing_size; i++)
-                avio_w8(ctx->pb, 0xff);
+                avio_w8_xij(ctx->pb, 0xff);
         }
 
         if (startcode == PRIVATE_STREAM_1) {
-            avio_w8(ctx->pb, id);
+            avio_w8_xij(ctx->pb, id);
             if (id >= 0xa0) {
                 /* LPCM (XXX: check nb_frames) */
-                avio_w8(ctx->pb, 7);
-                avio_wb16(ctx->pb, 4); /* skip 3 header bytes */
-                avio_w8(ctx->pb, stream->lpcm_header[0]);
-                avio_w8(ctx->pb, stream->lpcm_header[1]);
-                avio_w8(ctx->pb, stream->lpcm_header[2]);
+                avio_w8_xij(ctx->pb, 7);
+                avio_wb16_xij(ctx->pb, 4); /* skip 3 header bytes */
+                avio_w8_xij(ctx->pb, stream->lpcm_header[0]);
+                avio_w8_xij(ctx->pb, stream->lpcm_header[1]);
+                avio_w8_xij(ctx->pb, stream->lpcm_header[2]);
             } else if (id >= 0x40) {
                 /* AC-3 */
-                avio_w8(ctx->pb, nb_frames);
-                avio_wb16(ctx->pb, trailer_size + 1);
+                avio_w8_xij(ctx->pb, nb_frames);
+                avio_wb16_xij(ctx->pb, trailer_size + 1);
             }
         }
 
@@ -895,7 +895,7 @@ static int flush_packet(AVFormatContext *ctx, int stream_index,
         av_assert0(payload_size - stuffing_size <= av_fifo_size(stream->fifo));
         av_fifo_generic_read(stream->fifo, ctx->pb,
                              payload_size - stuffing_size,
-                             (void (*)(void*, void*, int))avio_write);
+                             (void (*)(void*, void*, int))avio_write_xij);
         stream->bytes_to_iframe -= payload_size - stuffing_size;
     } else {
         payload_size  =
@@ -906,9 +906,9 @@ static int flush_packet(AVFormatContext *ctx, int stream_index,
         put_padding_packet(ctx, ctx->pb, pad_packet_bytes);
 
     for (i = 0; i < zero_trail_bytes; i++)
-        avio_w8(ctx->pb, 0x00);
+        avio_w8_xij(ctx->pb, 0x00);
 
-    avio_flush(ctx->pb);
+    avio_flush_xij(ctx->pb);
 
     s->packet_number++;
 
@@ -933,11 +933,11 @@ static void put_vcd_padding_sector(AVFormatContext *ctx)
     int i;
 
     for (i = 0; i < s->packet_size; i++)
-        avio_w8(ctx->pb, 0);
+        avio_w8_xij(ctx->pb, 0);
 
     s->vcd_padding_bytes_written += s->packet_size;
 
-    avio_flush(ctx->pb);
+    avio_flush_xij(ctx->pb);
 
     /* increasing the packet number is correct. The SCR of the following packs
      * is calculated from the packet_number and it has to include the padding
@@ -1223,8 +1223,8 @@ static int mpeg_mux_end(AVFormatContext *ctx)
     /* End header according to MPEG-1 systems standard. We do not write
      * it as it is usually not needed by decoders and because it
      * complicates MPEG stream concatenation. */
-    // avio_wb32(ctx->pb, ISO_11172_END_CODE);
-    // avio_flush(ctx->pb);
+    // avio_wb32_xij(ctx->pb, ISO_11172_END_CODE);
+    // avio_flush_xij(ctx->pb);
 
     for (i = 0; i < ctx->nb_streams; i++) {
         stream = ctx->streams[i]->priv_data;

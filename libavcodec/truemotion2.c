@@ -895,13 +895,13 @@ static int decode_frame(AVCodecContext *avctx,
 
     l->error = 0;
 
-    av_fast_padded_malloc(&l->buffer, &l->buffer_size, buf_size);
+    av_fast_padded_malloc_xij(&l->buffer, &l->buffer_size, buf_size);
     if (!l->buffer) {
         av_log(avctx, AV_LOG_ERROR, "Cannot allocate temporary buffer\n");
         return AVERROR(ENOMEM);
     }
 
-    if ((ret = ff_reget_buffer(avctx, p)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, p)) < 0)
         return ret;
 
     l->bdsp.bswap_buf((uint32_t *) l->buffer, (const uint32_t *) buf,
@@ -935,7 +935,7 @@ static int decode_frame(AVCodecContext *avctx,
 
     l->cur = !l->cur;
     *got_frame      = 1;
-    ret = av_frame_ref(data, l->pic);
+    ret = av_frame_ref_xij(data, l->pic);
 
     return (ret < 0) ? ret : buf_size;
 }
@@ -953,7 +953,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
     l->avctx       = avctx;
     avctx->pix_fmt = AV_PIX_FMT_BGR24;
 
-    l->pic = av_frame_alloc();
+    l->pic = av_frame_alloc_ijk();
     if (!l->pic)
         return AVERROR(ENOMEM);
 
@@ -991,7 +991,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
         av_freep(&l->V2_base);
         av_freep(&l->last);
         av_freep(&l->clast);
-        av_frame_free(&l->pic);
+        av_frame_free_xij(&l->pic);
         return AVERROR(ENOMEM);
     }
     l->Y1 = l->Y1_base + l->y_stride  * 4 + 4;
@@ -1024,7 +1024,7 @@ static av_cold int decode_end(AVCodecContext *avctx)
     av_freep(&l->buffer);
     l->buffer_size = 0;
 
-    av_frame_free(&l->pic);
+    av_frame_free_xij(&l->pic);
 
     return 0;
 }

@@ -44,32 +44,32 @@ static int dfa_read_header(AVFormatContext *s)
     int version;
     uint32_t mspf;
 
-    if (avio_rl32(pb) != MKTAG('D', 'F', 'I', 'A')) {
+    if (avio_rl32_xij(pb) != MKTAG('D', 'F', 'I', 'A')) {
         av_log(s, AV_LOG_ERROR, "Invalid magic for DFA\n");
         return AVERROR_INVALIDDATA;
     }
 
-    version = avio_rl16(pb);
-    frames = avio_rl16(pb);
+    version = avio_rl16_xij(pb);
+    frames = avio_rl16_xij(pb);
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id   = AV_CODEC_ID_DFA;
-    st->codecpar->width      = avio_rl16(pb);
-    st->codecpar->height     = avio_rl16(pb);
-    mspf = avio_rl32(pb);
+    st->codecpar->width      = avio_rl16_xij(pb);
+    st->codecpar->height     = avio_rl16_xij(pb);
+    mspf = avio_rl32_xij(pb);
     if (!mspf) {
         av_log(s, AV_LOG_WARNING, "Zero FPS reported, defaulting to 10\n");
         mspf = 100;
     }
-    avpriv_set_pts_info(st, 24, mspf, 1000);
-    avio_skip(pb, 128 - 16); // padding
+    avpriv_set_pts_info_ijk(st, 24, mspf, 1000);
+    avio_skip_xij(pb, 128 - 16); // padding
     st->duration = frames;
 
-    if (ff_alloc_extradata(st->codecpar, 2))
+    if (ff_alloc_extradata_xij(st->codecpar, 2))
         return AVERROR(ENOMEM);
     AV_WL16(st->codecpar->extradata, version);
     if (version == 0x100)
@@ -84,16 +84,16 @@ static int dfa_read_packet(AVFormatContext *s, AVPacket *pkt)
     uint32_t frame_size;
     int ret, first = 1;
 
-    if (avio_feof(pb))
+    if (avio_feof_xij(pb))
         return AVERROR_EOF;
 
-    if (av_get_packet(pb, pkt, 12) != 12)
+    if (av_get_packet_xij(pb, pkt, 12) != 12)
         return AVERROR(EIO);
-    while (!avio_feof(pb)) {
+    while (!avio_feof_xij(pb)) {
         if (!first) {
-            ret = av_append_packet(pb, pkt, 12);
+            ret = av_append_packet_xij(pb, pkt, 12);
             if (ret < 0) {
-                av_packet_unref(pkt);
+                av_packet_unref_ijk(pkt);
                 return ret;
             }
         } else
@@ -101,7 +101,7 @@ static int dfa_read_packet(AVFormatContext *s, AVPacket *pkt)
         frame_size = AV_RL32(pkt->data + pkt->size - 8);
         if (frame_size > INT_MAX - 4) {
             av_log(s, AV_LOG_ERROR, "Too large chunk size: %"PRIu32"\n", frame_size);
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return AVERROR(EIO);
         }
         if (AV_RL32(pkt->data + pkt->size - 12) == MKTAG('E', 'O', 'F', 'R')) {
@@ -109,13 +109,13 @@ static int dfa_read_packet(AVFormatContext *s, AVPacket *pkt)
                 av_log(s, AV_LOG_WARNING,
                        "skipping %"PRIu32" bytes of end-of-frame marker chunk\n",
                        frame_size);
-                avio_skip(pb, frame_size);
+                avio_skip_xij(pb, frame_size);
             }
             return 0;
         }
-        ret = av_append_packet(pb, pkt, frame_size);
+        ret = av_append_packet_xij(pb, pkt, frame_size);
         if (ret < 0) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return ret;
         }
     }

@@ -58,7 +58,7 @@ static av_cold int mp_decode_end(AVCodecContext *avctx)
     av_freep(&mp->vpt);
     av_freep(&mp->hpt);
     av_freep(&mp->bswapbuf);
-    av_frame_free(&mp->frame);
+    av_frame_free_xij(&mp->frame);
 
     return 0;
 }
@@ -89,7 +89,7 @@ static av_cold int mp_decode_init(AVCodecContext *avctx)
     }
     avctx->pix_fmt = AV_PIX_FMT_RGB555;
 
-    mp->frame = av_frame_alloc();
+    mp->frame = av_frame_alloc_ijk();
     if (!mp->frame) {
         mp_decode_end(avctx);
         return AVERROR(ENOMEM);
@@ -290,11 +290,11 @@ static int mp_decode_frame(AVCodecContext *avctx,
     GetBitContext gb;
     int i, count1, count2, sz, ret;
 
-    if ((ret = ff_reget_buffer(avctx, mp->frame)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, mp->frame)) < 0)
         return ret;
 
     /* le32 bitstream msb first */
-    av_fast_padded_malloc(&mp->bswapbuf, &mp->bswapbuf_size, buf_size);
+    av_fast_padded_malloc_xij(&mp->bswapbuf, &mp->bswapbuf_size, buf_size);
     if (!mp->bswapbuf)
         return AVERROR(ENOMEM);
     mp->bdsp.bswap_buf((uint32_t *) mp->bswapbuf, (const uint32_t *) buf,
@@ -336,7 +336,7 @@ static int mp_decode_frame(AVCodecContext *avctx,
     ff_free_vlc(&mp->vlc);
 
 end:
-    if ((ret = av_frame_ref(data, mp->frame)) < 0)
+    if ((ret = av_frame_ref_xij(data, mp->frame)) < 0)
         return ret;
     *got_frame       = 1;
     return buf_size;

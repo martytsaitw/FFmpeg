@@ -80,9 +80,9 @@ static void read_table(AVFormatContext *s, uint32_t *table, uint32_t count)
     int i;
 
     for (i = 0; i < count; i++)
-        table[i] = avio_rl32(s->pb);
+        table[i] = avio_rl32_xij(s->pb);
 
-    avio_skip(s->pb, 4 * (FFALIGN(count, 512) - count));
+    avio_skip_xij(s->pb, 4 * (FFALIGN(count, 512) - count));
 }
 
 static int read_header(AVFormatContext *s)
@@ -92,28 +92,28 @@ static int read_header(AVFormatContext *s)
     AVStream        *ast, *vst;
     int ret = 0;
 
-    avio_skip(pb, 132);
+    avio_skip_xij(pb, 132);
 
-    vst = avformat_new_stream(s, 0);
+    vst = avformat_new_stream_ijk(s, 0);
     if (!vst)
         return AVERROR(ENOMEM);
 
     vst->start_time = 0;
     vst->nb_frames  =
     vst->duration   =
-    p->nb_frames    = avio_rl32(pb);
-    avio_skip(pb, 4);
+    p->nb_frames    = avio_rl32_xij(pb);
+    avio_skip_xij(pb, 4);
 
-    vst->codecpar->width  = avio_rl32(pb);
-    vst->codecpar->height = avio_rl32(pb);
-    avio_skip(pb, 4);
+    vst->codecpar->width  = avio_rl32_xij(pb);
+    vst->codecpar->height = avio_rl32_xij(pb);
+    avio_skip_xij(pb, 4);
 
     vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     vst->codecpar->codec_tag  = 0;
     vst->codecpar->codec_id   = AV_CODEC_ID_PAF_VIDEO;
-    avpriv_set_pts_info(vst, 64, 1, 10);
+    avpriv_set_pts_info_ijk(vst, 64, 1, 10);
 
-    ast = avformat_new_stream(s, 0);
+    ast = avformat_new_stream_ijk(s, 0);
     if (!ast)
         return AVERROR(ENOMEM);
 
@@ -124,14 +124,14 @@ static int read_header(AVFormatContext *s)
     ast->codecpar->channels       = 2;
     ast->codecpar->channel_layout = AV_CH_LAYOUT_STEREO;
     ast->codecpar->sample_rate    = 22050;
-    avpriv_set_pts_info(ast, 64, 1, 22050);
+    avpriv_set_pts_info_ijk(ast, 64, 1, 22050);
 
-    p->buffer_size    = avio_rl32(pb);
-    p->preload_count  = avio_rl32(pb);
-    p->frame_blks     = avio_rl32(pb);
-    p->start_offset   = avio_rl32(pb);
-    p->max_video_blks = avio_rl32(pb);
-    p->max_audio_blks = avio_rl32(pb);
+    p->buffer_size    = avio_rl32_xij(pb);
+    p->preload_count  = avio_rl32_xij(pb);
+    p->frame_blks     = avio_rl32_xij(pb);
+    p->start_offset   = avio_rl32_xij(pb);
+    p->max_video_blks = avio_rl32_xij(pb);
+    p->max_audio_blks = avio_rl32_xij(pb);
     if (p->buffer_size    < 175  ||
         p->max_audio_blks < 2    ||
         p->max_video_blks < 1    ||
@@ -169,7 +169,7 @@ static int read_header(AVFormatContext *s)
         goto fail;
     }
 
-    avio_seek(pb, p->buffer_size, SEEK_SET);
+    avio_seek_xij(pb, p->buffer_size, SEEK_SET);
 
     read_table(s, p->blocks_count_table,  p->nb_frames);
     read_table(s, p->frames_offset_table, p->nb_frames);
@@ -179,7 +179,7 @@ static int read_header(AVFormatContext *s)
     p->current_frame = 0;
     p->current_frame_block = 0;
 
-    avio_seek(pb, p->start_offset, SEEK_SET);
+    avio_seek_xij(pb, p->start_offset, SEEK_SET);
 
     return 0;
 
@@ -199,11 +199,11 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
     if (p->current_frame >= p->nb_frames)
         return AVERROR_EOF;
 
-    if (avio_feof(pb))
+    if (avio_feof_xij(pb))
         return AVERROR_EOF;
 
     if (p->got_audio) {
-        if (av_new_packet(pkt, p->audio_size) < 0)
+        if (av_new_packet_ijk(pkt, p->audio_size) < 0)
             return AVERROR(ENOMEM);
 
         memcpy(pkt->data, p->temp_audio_frame, p->audio_size);
@@ -225,7 +225,7 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
             if (offset > p->audio_size - p->buffer_size)
                 return AVERROR_INVALIDDATA;
 
-            avio_read(pb, p->audio_frame + offset, p->buffer_size);
+            avio_read_xij(pb, p->audio_frame + offset, p->buffer_size);
             if (offset == (p->max_audio_blks - 2) * p->buffer_size) {
                 memcpy(p->temp_audio_frame, p->audio_frame, p->audio_size);
                 p->got_audio = 1;
@@ -234,7 +234,7 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
             if (offset > p->video_size - p->buffer_size)
                 return AVERROR_INVALIDDATA;
 
-            avio_read(pb, p->video_frame + offset, p->buffer_size);
+            avio_read_xij(pb, p->video_frame + offset, p->buffer_size);
         }
         p->current_frame_block++;
     }
@@ -244,7 +244,7 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
 
     size = p->video_size - p->frames_offset_table[p->current_frame];
 
-    if (av_new_packet(pkt, size) < 0)
+    if (av_new_packet_ijk(pkt, size) < 0)
         return AVERROR(ENOMEM);
 
     pkt->stream_index = 0;

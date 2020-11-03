@@ -143,7 +143,7 @@ enum RTSPMethod {
 
 static inline int ff_rtsp_averror(enum RTSPStatusCode status_code, int default_averror)
 {
-    return ff_http_averror(status_code, default_averror);
+    return ff_http_averror_xij(status_code, default_averror);
 }
 
 #endif /* AVFORMAT_RTSPCODES_H */

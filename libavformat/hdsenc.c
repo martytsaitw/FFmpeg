@@ -119,7 +119,7 @@ static int hds_write(void *opaque, uint8_t *buf, int buf_size)
 {
     OutputStream *os = opaque;
     if (os->out) {
-        avio_write(os->out, buf, buf_size);
+        avio_write_xij(os->out, buf, buf_size);
     } else {
         if (!os->metadata_size) {
             int ret;
@@ -141,13 +141,13 @@ static void hds_free(AVFormatContext *s)
     for (i = 0; i < s->nb_streams; i++) {
         OutputStream *os = &c->streams[i];
         if (os->out)
-            ff_format_io_close(s, &os->out);
+            ff_format_io_close_xij(s, &os->out);
         if (os->ctx && os->ctx_inited)
-            av_write_trailer(os->ctx);
+            av_write_trailer_xij(os->ctx);
         if (os->ctx)
-            avio_context_free(&os->ctx->pb);
+            avio_context_free_xij(&os->ctx->pb);
         if (os->ctx)
-            avformat_free_context(os->ctx);
+            avformat_free_context_ijk(os->ctx);
         av_freep(&os->metadata);
         for (j = 0; j < os->nb_extra_packets; j++)
             av_freep(&os->extra_packets[j]);
@@ -176,42 +176,42 @@ static int write_manifest(AVFormatContext *s, int final)
         av_log(s, AV_LOG_ERROR, "Unable to open %s for writing\n", temp_filename);
         return ret;
     }
-    avio_printf(out, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
-    avio_printf(out, "<manifest xmlns=\"http://ns.adobe.com/f4m/1.0\">\n");
-    avio_printf(out, "\t<id>%s</id>\n", av_basename(s->url));
-    avio_printf(out, "\t<streamType>%s</streamType>\n",
+    avio_printf_xij(out, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+    avio_printf_xij(out, "<manifest xmlns=\"http://ns.adobe.com/f4m/1.0\">\n");
+    avio_printf_xij(out, "\t<id>%s</id>\n", av_basename(s->url));
+    avio_printf_xij(out, "\t<streamType>%s</streamType>\n",
                      final ? "recorded" : "live");
-    avio_printf(out, "\t<deliveryType>streaming</deliveryType>\n");
+    avio_printf_xij(out, "\t<deliveryType>streaming</deliveryType>\n");
     if (final)
-        avio_printf(out, "\t<duration>%f</duration>\n", duration);
+        avio_printf_xij(out, "\t<duration>%f</duration>\n", duration);
     for (i = 0; i < c->nb_streams; i++) {
         OutputStream *os = &c->streams[i];
         int b64_size = AV_BASE64_SIZE(os->metadata_size);
         char *base64 = av_malloc(b64_size);
         if (!base64) {
-            ff_format_io_close(s, &out);
+            ff_format_io_close_xij(s, &out);
             return AVERROR(ENOMEM);
         }
         av_base64_encode(base64, b64_size, os->metadata, os->metadata_size);
 
-        avio_printf(out, "\t<bootstrapInfo profile=\"named\" url=\"stream%d.abst\" id=\"bootstrap%d\" />\n", i, i);
-        avio_printf(out, "\t<media bitrate=\"%d\" url=\"stream%d\" bootstrapInfoId=\"bootstrap%d\">\n", os->bitrate/1000, i, i);
-        avio_printf(out, "\t\t<metadata>%s</metadata>\n", base64);
-        avio_printf(out, "\t</media>\n");
+        avio_printf_xij(out, "\t<bootstrapInfo profile=\"named\" url=\"stream%d.abst\" id=\"bootstrap%d\" />\n", i, i);
+        avio_printf_xij(out, "\t<media bitrate=\"%d\" url=\"stream%d\" bootstrapInfoId=\"bootstrap%d\">\n", os->bitrate/1000, i, i);
+        avio_printf_xij(out, "\t\t<metadata>%s</metadata>\n", base64);
+        avio_printf_xij(out, "\t</media>\n");
         av_free(base64);
     }
-    avio_printf(out, "</manifest>\n");
-    avio_flush(out);
-    ff_format_io_close(s, &out);
+    avio_printf_xij(out, "</manifest>\n");
+    avio_flush_xij(out);
+    ff_format_io_close_xij(s, &out);
     return ff_rename(temp_filename, filename, s);
 }
 
 static void update_size(AVIOContext *out, int64_t pos)
 {
     int64_t end = avio_tell(out);
-    avio_seek(out, pos, SEEK_SET);
-    avio_wb32(out, end - pos);
-    avio_seek(out, end, SEEK_SET);
+    avio_seek_xij(out, pos, SEEK_SET);
+    avio_wb32_xij(out, end - pos);
+    avio_seek_xij(out, end, SEEK_SET);
 }
 
 /* Note, the .abst files need to be served with the "binary/octet"
@@ -244,45 +244,45 @@ static int write_abst(AVFormatContext *s, OutputStream *os, int final)
         av_log(s, AV_LOG_ERROR, "Unable to open %s for writing\n", temp_filename);
         return ret;
     }
-    avio_wb32(out, 0); // abst size
-    avio_wl32(out, MKTAG('a','b','s','t'));
-    avio_wb32(out, 0); // version + flags
-    avio_wb32(out, os->fragment_index - 1); // BootstrapinfoVersion
-    avio_w8(out, final ? 0 : 0x20); // profile, live, update
-    avio_wb32(out, 1000); // timescale
-    avio_wb64(out, cur_media_time);
-    avio_wb64(out, 0); // SmpteTimeCodeOffset
-    avio_w8(out, 0); // MovieIdentifer (null string)
-    avio_w8(out, 0); // ServerEntryCount
-    avio_w8(out, 0); // QualityEntryCount
-    avio_w8(out, 0); // DrmData (null string)
-    avio_w8(out, 0); // MetaData (null string)
-    avio_w8(out, 1); // SegmentRunTableCount
+    avio_wb32_xij(out, 0); // abst size
+    avio_wl32_xij(out, MKTAG('a','b','s','t'));
+    avio_wb32_xij(out, 0); // version + flags
+    avio_wb32_xij(out, os->fragment_index - 1); // BootstrapinfoVersion
+    avio_w8_xij(out, final ? 0 : 0x20); // profile, live, update
+    avio_wb32_xij(out, 1000); // timescale
+    avio_wb64_xij(out, cur_media_time);
+    avio_wb64_xij(out, 0); // SmpteTimeCodeOffset
+    avio_w8_xij(out, 0); // MovieIdentifer (null string)
+    avio_w8_xij(out, 0); // ServerEntryCount
+    avio_w8_xij(out, 0); // QualityEntryCount
+    avio_w8_xij(out, 0); // DrmData (null string)
+    avio_w8_xij(out, 0); // MetaData (null string)
+    avio_w8_xij(out, 1); // SegmentRunTableCount
     asrt_pos = avio_tell(out);
-    avio_wb32(out, 0); // asrt size
-    avio_wl32(out, MKTAG('a','s','r','t'));
-    avio_wb32(out, 0); // version + flags
-    avio_w8(out, 0); // QualityEntryCount
-    avio_wb32(out, 1); // SegmentRunEntryCount
-    avio_wb32(out, 1); // FirstSegment
-    avio_wb32(out, final ? (os->fragment_index - 1) : 0xffffffff); // FragmentsPerSegment
+    avio_wb32_xij(out, 0); // asrt size
+    avio_wl32_xij(out, MKTAG('a','s','r','t'));
+    avio_wb32_xij(out, 0); // version + flags
+    avio_w8_xij(out, 0); // QualityEntryCount
+    avio_wb32_xij(out, 1); // SegmentRunEntryCount
+    avio_wb32_xij(out, 1); // FirstSegment
+    avio_wb32_xij(out, final ? (os->fragment_index - 1) : 0xffffffff); // FragmentsPerSegment
     update_size(out, asrt_pos);
-    avio_w8(out, 1); // FragmentRunTableCount
+    avio_w8_xij(out, 1); // FragmentRunTableCount
     afrt_pos = avio_tell(out);
-    avio_wb32(out, 0); // afrt size
-    avio_wl32(out, MKTAG('a','f','r','t'));
-    avio_wb32(out, 0); // version + flags
-    avio_wb32(out, 1000); // timescale
-    avio_w8(out, 0); // QualityEntryCount
-    avio_wb32(out, fragments); // FragmentRunEntryCount
+    avio_wb32_xij(out, 0); // afrt size
+    avio_wl32_xij(out, MKTAG('a','f','r','t'));
+    avio_wb32_xij(out, 0); // version + flags
+    avio_wb32_xij(out, 1000); // timescale
+    avio_w8_xij(out, 0); // QualityEntryCount
+    avio_wb32_xij(out, fragments); // FragmentRunEntryCount
     for (i = start; i < os->nb_fragments; i++) {
-        avio_wb32(out, os->fragments[i]->n);
-        avio_wb64(out, os->fragments[i]->start_time);
-        avio_wb32(out, os->fragments[i]->duration);
+        avio_wb32_xij(out, os->fragments[i]->n);
+        avio_wb64_xij(out, os->fragments[i]->start_time);
+        avio_wb32_xij(out, os->fragments[i]->duration);
     }
     update_size(out, afrt_pos);
     update_size(out, 0);
-    ff_format_io_close(s, &out);
+    ff_format_io_close_xij(s, &out);
     return ff_rename(temp_filename, filename, s);
 }
 
@@ -292,12 +292,12 @@ static int init_file(AVFormatContext *s, OutputStream *os, int64_t start_ts)
     ret = s->io_open(s, &os->out, os->temp_filename, AVIO_FLAG_WRITE, NULL);
     if (ret < 0)
         return ret;
-    avio_wb32(os->out, 0);
-    avio_wl32(os->out, MKTAG('m','d','a','t'));
+    avio_wb32_xij(os->out, 0);
+    avio_wl32_xij(os->out, MKTAG('m','d','a','t'));
     for (i = 0; i < os->nb_extra_packets; i++) {
         AV_WB24(os->extra_packets[i] + 4, start_ts);
         os->extra_packets[i][7] = (start_ts >> 24) & 0x7f;
-        avio_write(os->out, os->extra_packets[i], os->extra_packet_sizes[i]);
+        avio_write_xij(os->out, os->extra_packets[i], os->extra_packet_sizes[i]);
     }
     return 0;
 }
@@ -305,10 +305,10 @@ static int init_file(AVFormatContext *s, OutputStream *os, int64_t start_ts)
 static void close_file(AVFormatContext *s, OutputStream *os)
 {
     int64_t pos = avio_tell(os->out);
-    avio_seek(os->out, 0, SEEK_SET);
-    avio_wb32(os->out, pos);
-    avio_flush(os->out);
-    ff_format_io_close(s, &os->out);
+    avio_seek_xij(os->out, 0, SEEK_SET);
+    avio_wb32_xij(os->out, pos);
+    avio_flush_xij(os->out);
+    ff_format_io_close_xij(s, &os->out);
 }
 
 static int hds_write_header(AVFormatContext *s)
@@ -323,7 +323,7 @@ static int hds_write_header(AVFormatContext *s)
         goto fail;
     }
 
-    oformat = av_guess_format("flv", NULL, NULL);
+    oformat = av_guess_format_xij("flv", NULL, NULL);
     if (!oformat) {
         ret = AVERROR_MUXER_NOT_FOUND;
         goto fail;
@@ -366,7 +366,7 @@ static int hds_write_header(AVFormatContext *s)
 
         if (!os->ctx) {
             os->first_stream = i;
-            ctx = avformat_alloc_context();
+            ctx = avformat_alloc_context_ijk();
             if (!ctx) {
                 ret = AVERROR(ENOMEM);
                 goto fail;
@@ -376,7 +376,7 @@ static int hds_write_header(AVFormatContext *s)
             ctx->interrupt_callback = s->interrupt_callback;
             ctx->flags = s->flags;
 
-            ctx->pb = avio_alloc_context(os->iobuf, sizeof(os->iobuf),
+            ctx->pb = avio_alloc_context_xij(os->iobuf, sizeof(os->iobuf),
                                          AVIO_FLAG_WRITE, os,
                                          NULL, hds_write, NULL);
             if (!ctx->pb) {
@@ -388,11 +388,11 @@ static int hds_write_header(AVFormatContext *s)
         }
         s->streams[i]->id = c->nb_streams;
 
-        if (!(st = avformat_new_stream(ctx, NULL))) {
+        if (!(st = avformat_new_stream_ijk(ctx, NULL))) {
             ret = AVERROR(ENOMEM);
             goto fail;
         }
-        avcodec_parameters_copy(st->codecpar, s->streams[i]->codecpar);
+        avcodec_parameters_copy_ijk(st->codecpar, s->streams[i]->codecpar);
         st->codecpar->codec_tag = 0;
         st->sample_aspect_ratio = s->streams[i]->sample_aspect_ratio;
         st->time_base = s->streams[i]->time_base;
@@ -403,11 +403,11 @@ static int hds_write_header(AVFormatContext *s)
     for (i = 0; i < c->nb_streams; i++) {
         OutputStream *os = &c->streams[i];
         int j;
-        if ((ret = avformat_write_header(os->ctx, NULL)) < 0) {
+        if ((ret = avformat_write_header_xij(os->ctx, NULL)) < 0) {
              goto fail;
         }
         os->ctx_inited = 1;
-        avio_flush(os->ctx->pb);
+        avio_flush_xij(os->ctx->pb);
         for (j = 0; j < os->ctx->nb_streams; j++)
             s->streams[os->first_stream + j]->time_base = os->ctx->streams[j]->time_base;
 
@@ -471,7 +471,7 @@ static int hds_flush(AVFormatContext *s, OutputStream *os, int final,
     if (!os->packets_written)
         return 0;
 
-    avio_flush(os->ctx->pb);
+    avio_flush_xij(os->ctx->pb);
     os->packets_written = 0;
     close_file(s, os);
 
@@ -535,7 +535,7 @@ static int hds_write_packet(AVFormatContext *s, AVPacket *pkt)
     os->last_ts = pkt->dts;
 
     os->packets_written++;
-    return ff_write_chained(os->ctx, pkt->stream_index - os->first_stream, pkt, s, 0);
+    return ff_write_chained_xij(os->ctx, pkt->stream_index - os->first_stream, pkt, s, 0);
 }
 
 static int hds_write_trailer(AVFormatContext *s)

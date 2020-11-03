@@ -128,7 +128,7 @@ static int ffmmal_set_ref(AVFrame *frame, FFPoolRef *pool,
     ref->pool = pool;
     ref->buffer = buffer;
 
-    frame->buf[0] = av_buffer_create((void *)ref, sizeof(*ref),
+    frame->buf[0] = av_buffer_create_ijk((void *)ref, sizeof(*ref),
                                      ffmmal_release_frame, NULL,
                                      AV_BUFFER_FLAG_READONLY);
     if (!frame->buf[0]) {
@@ -169,7 +169,7 @@ static void ffmmal_stop_decoder(AVCodecContext *avctx)
         if (buffer->flags & MMAL_BUFFER_HEADER_FLAG_FRAME_END)
             atomic_fetch_add(&ctx->packets_buffered, -1);
 
-        av_buffer_unref(&buffer->ref);
+        av_buffer_unref_xij(&buffer->ref);
         av_free(buffer);
     }
     ctx->waiting_buffers_tail = NULL;
@@ -204,7 +204,7 @@ static void input_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer)
 
     if (!buffer->cmd) {
         FFBufferEntry *entry = buffer->user_data;
-        av_buffer_unref(&entry->ref);
+        av_buffer_unref_xij(&entry->ref);
         if (entry->flags & MMAL_BUFFER_HEADER_FLAG_FRAME_END)
             atomic_fetch_add(&ctx->packets_buffered, -1);
         av_free(entry);
@@ -314,7 +314,7 @@ static int ffmal_update_format(AVCodecContext *avctx)
         ctx->top_field_first = (interlace_type.eMode == MMAL_InterlaceFieldsInterleavedUpperFirst);
     }
 
-    if ((ret = ff_set_dimensions(avctx, format_out->es->video.crop.x + format_out->es->video.crop.width,
+    if ((ret = ff_set_dimensions_xij(avctx, format_out->es->video.crop.x + format_out->es->video.crop.width,
                                         format_out->es->video.crop.y + format_out->es->video.crop.height)) < 0)
         goto fail;
 
@@ -361,7 +361,7 @@ static av_cold int ffmmal_init_decoder(AVCodecContext *avctx)
         return AVERROR(ENOSYS);
     }
 
-    if ((ret = ff_get_format(avctx, avctx->codec->pix_fmts)) < 0)
+    if ((ret = ff_get_format_xij(avctx, avctx->codec->pix_fmts)) < 0)
         return ret;
 
     avctx->pix_fmt = ret;
@@ -488,11 +488,11 @@ static int ffmmal_add_packet(AVCodecContext *avctx, AVPacket *avpkt,
 
     if (avpkt->size) {
         if (avpkt->buf) {
-            buf = av_buffer_ref(avpkt->buf);
+            buf = av_buffer_ref_ijk(avpkt->buf);
             size = avpkt->size;
             data = avpkt->data;
         } else {
-            buf = av_buffer_alloc(avpkt->size);
+            buf = av_buffer_alloc_ijk(avpkt->size);
             if (buf) {
                 memcpy(buf->data, avpkt->data, avpkt->size);
                 size = buf->size;
@@ -551,7 +551,7 @@ static int ffmmal_add_packet(AVCodecContext *avctx, AVPacket *avpkt,
         }
 
         if (buf) {
-            buffer->ref = av_buffer_ref(buf);
+            buffer->ref = av_buffer_ref_ijk(buf);
             if (!buffer->ref) {
                 av_free(buffer);
                 ret = AVERROR(ENOMEM);
@@ -568,7 +568,7 @@ static int ffmmal_add_packet(AVCodecContext *avctx, AVPacket *avpkt,
     } while (size);
 
 done:
-    av_buffer_unref(&buf);
+    av_buffer_unref_xij(&buf);
     return ret;
 }
 
@@ -605,7 +605,7 @@ static int ffmmal_fill_input_port(AVCodecContext *avctx)
 
         if ((status = mmal_port_send_buffer(ctx->decoder->input[0], mbuffer))) {
             mmal_buffer_header_release(mbuffer);
-            av_buffer_unref(&buffer->ref);
+            av_buffer_unref_xij(&buffer->ref);
             if (buffer->flags & MMAL_BUFFER_HEADER_FLAG_FRAME_END)
                 atomic_fetch_add(&ctx->packets_buffered, -1);
             av_free(buffer);
@@ -633,7 +633,7 @@ static int ffmal_copy_frame(AVCodecContext *avctx,  AVFrame *frame,
         if (!ctx->pool_out)
             return AVERROR_UNKNOWN; // format change code failed with OOM previously
 
-        if ((ret = ff_decode_frame_props(avctx, frame)) < 0)
+        if ((ret = ff_decode_frame_props_xij(avctx, frame)) < 0)
             goto done;
 
         if ((ret = ffmmal_set_ref(frame, ctx->pool_out, buffer)) < 0)
@@ -644,7 +644,7 @@ static int ffmal_copy_frame(AVCodecContext *avctx,  AVFrame *frame,
         uint8_t *src[4];
         int linesize[4];
 
-        if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+        if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
             goto done;
 
         av_image_fill_arrays(src, linesize,
@@ -776,7 +776,7 @@ static int ffmmal_decode(AVCodecContext *avctx, void *data, int *got_frame,
 
     if (avctx->extradata_size && !ctx->extradata_sent) {
         AVPacket pkt = {0};
-        av_init_packet(&pkt);
+        av_init_packet_ijk(&pkt);
         pkt.data = avctx->extradata;
         pkt.size = avctx->extradata_size;
         ctx->extradata_sent = 1;

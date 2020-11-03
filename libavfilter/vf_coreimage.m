@@ -337,7 +337,7 @@ static int request_frame(AVFilterLink *link)
         }
     }
 
-    frame = av_frame_clone(ctx->picref);
+    frame = av_frame_clone_xij(ctx->picref);
     if (!frame) {
         return AVERROR(ENOMEM);
     }
@@ -596,7 +596,7 @@ static av_cold void uninit(AVFilterContext *fctx)
         av_freep(&ctx->filters);
     }
 
-    av_frame_free(&ctx->picref);
+    av_frame_free_xij(&ctx->picref);
 }
 
 static const AVFilterPad vf_coreimage_inputs[] = {

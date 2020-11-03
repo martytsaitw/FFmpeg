@@ -46,22 +46,22 @@ static int msf_read_header(AVFormatContext *s)
     AVStream *st;
     int ret;
 
-    avio_skip(s->pb, 4);
+    avio_skip_xij(s->pb, 4);
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
     st->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
-    codec                  = avio_rb32(s->pb);
-    st->codecpar->channels    = avio_rb32(s->pb);
+    codec                  = avio_rb32_xij(s->pb);
+    st->codecpar->channels    = avio_rb32_xij(s->pb);
     if (st->codecpar->channels <= 0 || st->codecpar->channels >= INT_MAX / 1024)
         return AVERROR_INVALIDDATA;
-    size = avio_rb32(s->pb);
-    st->codecpar->sample_rate = avio_rb32(s->pb);
+    size = avio_rb32_xij(s->pb);
+    st->codecpar->sample_rate = avio_rb32_xij(s->pb);
     if (st->codecpar->sample_rate <= 0)
         return AVERROR_INVALIDDATA;
-    // avio_rb32(s->pb); /* byte flags with encoder info */
+    // avio_rb32_xij(s->pb); /* byte flags with encoder info */
     switch (codec) {
     case 0: st->codecpar->codec_id = AV_CODEC_ID_PCM_S16BE; break;
     case 1: st->codecpar->codec_id = AV_CODEC_ID_PCM_S16LE; break;
@@ -70,7 +70,7 @@ static int msf_read_header(AVFormatContext *s)
     case 4:
     case 5:
     case 6: st->codecpar->block_align = (codec == 4 ? 96 : codec == 5 ? 152 : 192) * st->codecpar->channels;
-            ret = ff_alloc_extradata(st->codecpar, 14);
+            ret = ff_alloc_extradata_xij(st->codecpar, 14);
             if (ret < 0)
                 return ret;
             memset(st->codecpar->extradata, 0, st->codecpar->extradata_size);
@@ -86,9 +86,9 @@ static int msf_read_header(AVFormatContext *s)
             avpriv_request_sample(s, "Codec %d", codec);
             return AVERROR_PATCHWELCOME;
     }
-    st->duration = av_get_audio_frame_duration2(st->codecpar, size);
-    avio_skip(s->pb, 0x40 - avio_tell(s->pb));
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    st->duration = av_get_audio_frame_duration2_ijk(st->codecpar, size);
+    avio_skip_xij(s->pb, 0x40 - avio_tell(s->pb));
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }
@@ -97,7 +97,7 @@ static int msf_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     AVCodecParameters *par = s->streams[0]->codecpar;
 
-    return av_get_packet(s->pb, pkt, par->block_align ? par->block_align : 1024 * par->channels);
+    return av_get_packet_xij(s->pb, pkt, par->block_align ? par->block_align : 1024 * par->channels);
 }
 
 AVInputFormat ff_msf_demuxer = {

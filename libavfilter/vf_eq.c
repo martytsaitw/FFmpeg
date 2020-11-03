@@ -260,11 +260,11 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
     out = ff_get_video_buffer(outlink, inlink->w, inlink->h);
     if (!out) {
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         return AVERROR(ENOMEM);
     }
 
-    av_frame_copy_props(out, in);
+    av_frame_copy_props_xij(out, in);
     desc = av_pix_fmt_desc_get(inlink->format);
 
     eq->var_values[VAR_N]   = inlink->frame_count_out;
@@ -295,7 +295,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                                 in->data[i], in->linesize[i], w, h);
     }
 
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
     return ff_filter_frame(outlink, out);
 }
 

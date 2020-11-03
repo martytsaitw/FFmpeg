@@ -87,7 +87,7 @@ int main(int argc, char **argv)
     }
 
     /* create scaling context */
-    sws_ctx = sws_getContext(src_w, src_h, src_pix_fmt,
+    sws_ctx = sws_getContext_xij(src_w, src_h, src_pix_fmt,
                              dst_w, dst_h, dst_pix_fmt,
                              SWS_BILINEAR, NULL, NULL, NULL);
     if (!sws_ctx) {
@@ -135,6 +135,6 @@ end:
     fclose(dst_file);
     av_freep(&src_data[0]);
     av_freep(&dst_data[0]);
-    sws_freeContext(sws_ctx);
+    sws_freeContext_xij(sws_ctx);
     return ret < 0;
 }

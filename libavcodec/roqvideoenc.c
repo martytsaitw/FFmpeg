@@ -962,8 +962,8 @@ static av_cold int roq_encode_end(AVCodecContext *avctx)
 {
     RoqContext *enc = avctx->priv_data;
 
-    av_frame_free(&enc->current_frame);
-    av_frame_free(&enc->last_frame);
+    av_frame_free_xij(&enc->current_frame);
+    av_frame_free_xij(&enc->last_frame);
 
     av_freep(&enc->tmpData);
     av_freep(&enc->this_motion4);
@@ -1002,8 +1002,8 @@ static av_cold int roq_encode_init(AVCodecContext *avctx)
     enc->framesSinceKeyframe = 0;
     enc->first_frame = 1;
 
-    enc->last_frame    = av_frame_alloc();
-    enc->current_frame = av_frame_alloc();
+    enc->last_frame    = av_frame_alloc_ijk();
+    enc->current_frame = av_frame_alloc_ijk();
     if (!enc->last_frame || !enc->current_frame) {
         roq_encode_end(avctx);
         return AVERROR(ENOMEM);
@@ -1086,8 +1086,8 @@ static int roq_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     if (enc->first_frame) {
         /* Alloc memory for the reconstruction data (we must know the stride
          for that) */
-        if ((ret = ff_get_buffer(avctx, enc->current_frame, 0)) < 0 ||
-            (ret = ff_get_buffer(avctx, enc->last_frame,    0)) < 0)
+        if ((ret = ff_get_buffer_xij(avctx, enc->current_frame, 0)) < 0 ||
+            (ret = ff_get_buffer_xij(avctx, enc->last_frame,    0)) < 0)
             return ret;
 
         /* Before the first video frame, write a "video info" chunk */

@@ -45,20 +45,20 @@ static int vpk_read_header(AVFormatContext *s)
     AVStream *st;
 
     vpk->current_block = 0;
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
-    avio_skip(s->pb, 4);
-    st->duration           = avio_rl32(s->pb) * 28 / 16;
-    offset                 = avio_rl32(s->pb);
+    avio_skip_xij(s->pb, 4);
+    st->duration           = avio_rl32_xij(s->pb) * 28 / 16;
+    offset                 = avio_rl32_xij(s->pb);
     st->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id    = AV_CODEC_ID_ADPCM_PSX;
-    st->codecpar->block_align = avio_rl32(s->pb);
-    st->codecpar->sample_rate = avio_rl32(s->pb);
+    st->codecpar->block_align = avio_rl32_xij(s->pb);
+    st->codecpar->sample_rate = avio_rl32_xij(s->pb);
     if (st->codecpar->sample_rate <= 0)
         return AVERROR_INVALIDDATA;
-    st->codecpar->channels    = avio_rl32(s->pb);
+    st->codecpar->channels    = avio_rl32_xij(s->pb);
     if (st->codecpar->channels <= 0)
         return AVERROR_INVALIDDATA;
     samples_per_block      = ((st->codecpar->block_align / st->codecpar->channels) * 28) / 16;
@@ -66,8 +66,8 @@ static int vpk_read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
     vpk->block_count       = (st->duration + (samples_per_block - 1)) / samples_per_block;
     vpk->last_block_size   = (st->duration % samples_per_block) * 16 * st->codecpar->channels / 28;
-    avio_skip(s->pb, offset - avio_tell(s->pb));
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avio_skip_xij(s->pb, offset - avio_tell(s->pb));
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }
@@ -83,21 +83,21 @@ static int vpk_read_packet(AVFormatContext *s, AVPacket *pkt)
         unsigned size = vpk->last_block_size / par->channels;
         unsigned skip = (par->block_align - vpk->last_block_size) / par->channels;
 
-        ret = av_new_packet(pkt, vpk->last_block_size);
+        ret = av_new_packet_ijk(pkt, vpk->last_block_size);
         if (ret < 0)
             return ret;
         for (i = 0; i < par->channels; i++) {
-            ret = avio_read(s->pb, pkt->data + i * size, size);
-            avio_skip(s->pb, skip);
+            ret = avio_read_xij(s->pb, pkt->data + i * size, size);
+            avio_skip_xij(s->pb, skip);
             if (ret != size) {
-                av_packet_unref(pkt);
+                av_packet_unref_ijk(pkt);
                 ret = AVERROR(EIO);
                 break;
             }
         }
         pkt->stream_index = 0;
     } else if (vpk->current_block < vpk->block_count) {
-        ret = av_get_packet(s->pb, pkt, par->block_align);
+        ret = av_get_packet_xij(s->pb, pkt, par->block_align);
         pkt->stream_index = 0;
     } else {
         return AVERROR_EOF;

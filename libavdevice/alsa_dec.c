@@ -64,7 +64,7 @@ static av_cold int audio_read_header(AVFormatContext *s1)
     int ret;
     enum AVCodecID codec_id;
 
-    st = avformat_new_stream(s1, NULL);
+    st = avformat_new_stream_ijk(s1, NULL);
     if (!st) {
         av_log(s1, AV_LOG_ERROR, "Cannot add stream\n");
 
@@ -84,7 +84,7 @@ static av_cold int audio_read_header(AVFormatContext *s1)
     st->codecpar->sample_rate = s->sample_rate;
     st->codecpar->channels    = s->channels;
     st->codecpar->frame_size = s->frame_size;
-    avpriv_set_pts_info(st, 64, 1, 1000000);  /* 64 bits pts in us */
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000000);  /* 64 bits pts in us */
     /* microseconds instead of seconds, MHz instead of Hz */
     s->timefilter = ff_timefilter_new(1000000.0 / s->sample_rate,
                                       s->period_size, 1.5E-6);
@@ -105,20 +105,20 @@ static int audio_read_packet(AVFormatContext *s1, AVPacket *pkt)
     int64_t dts;
     snd_pcm_sframes_t delay = 0;
 
-    if (av_new_packet(pkt, s->period_size * s->frame_size) < 0) {
+    if (av_new_packet_ijk(pkt, s->period_size * s->frame_size) < 0) {
         return AVERROR(EIO);
     }
 
     while ((res = snd_pcm_readi(s->h, pkt->data, s->period_size)) < 0) {
         if (res == -EAGAIN) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
 
             return AVERROR(EAGAIN);
         }
         if (ff_alsa_xrun_recover(s1, res) < 0) {
             av_log(s1, AV_LOG_ERROR, "ALSA read error: %s\n",
                    snd_strerror(res));
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
 
             return AVERROR(EIO);
         }

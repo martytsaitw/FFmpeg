@@ -72,7 +72,7 @@ static int query_formats(AVFilterContext *ctx)
 static AVFrame *downscale(AVFrame *in)
 {
     int x, y;
-    AVFrame *frame = av_frame_alloc();
+    AVFrame *frame = av_frame_alloc_ijk();
     uint8_t *src, *dst;
     if (!frame)
         return NULL;
@@ -81,8 +81,8 @@ static AVFrame *downscale(AVFrame *in)
     frame->width  = (in->width + 1) / 2;
     frame->height = (in->height+ 1) / 2;
 
-    if (av_frame_get_buffer(frame, 32) < 0) {
-        av_frame_free(&frame);
+    if (av_frame_get_buffer_xij(frame, 32) < 0) {
+        av_frame_free_xij(&frame);
         return NULL;
     }
     src = in   ->data[0];
@@ -188,7 +188,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     int best_x, best_y;
     int i;
 
-    foc->haystack_frame[0] = av_frame_clone(in);
+    foc->haystack_frame[0] = av_frame_clone_xij(in);
     for (i=1; i<foc->mipmaps; i++) {
         foc->haystack_frame[i] = downscale(foc->haystack_frame[i-1]);
     }
@@ -204,7 +204,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                         &best_x, &best_y, best_score);
 
     for (i=0; i<MAX_MIPMAPS; i++) {
-        av_frame_free(&foc->haystack_frame[i]);
+        av_frame_free_xij(&foc->haystack_frame[i]);
     }
 
     if (best_score > foc->threshold) {
@@ -215,7 +215,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     foc->last_x = best_x;
     foc->last_y = best_y;
 
-    av_frame_make_writable(in);
+    av_frame_make_writable_xij(in);
 
     av_dict_set_int(&in->metadata, "lavfi.rect.w", foc->obj_frame->width, 0);
     av_dict_set_int(&in->metadata, "lavfi.rect.h", foc->obj_frame->height, 0);
@@ -231,13 +231,13 @@ static av_cold void uninit(AVFilterContext *ctx)
     int i;
 
     for (i = 0; i < MAX_MIPMAPS; i++) {
-        av_frame_free(&foc->needle_frame[i]);
-        av_frame_free(&foc->haystack_frame[i]);
+        av_frame_free_xij(&foc->needle_frame[i]);
+        av_frame_free_xij(&foc->haystack_frame[i]);
     }
 
     if (foc->obj_frame)
         av_freep(&foc->obj_frame->data[0]);
-    av_frame_free(&foc->obj_frame);
+    av_frame_free_xij(&foc->obj_frame);
 }
 
 static av_cold int init(AVFilterContext *ctx)
@@ -250,7 +250,7 @@ static av_cold int init(AVFilterContext *ctx)
         return AVERROR(EINVAL);
     }
 
-    foc->obj_frame = av_frame_alloc();
+    foc->obj_frame = av_frame_alloc_ijk();
     if (!foc->obj_frame)
         return AVERROR(ENOMEM);
 
@@ -264,7 +264,7 @@ static av_cold int init(AVFilterContext *ctx)
         return AVERROR(EINVAL);
     }
 
-    foc->needle_frame[0] = av_frame_clone(foc->obj_frame);
+    foc->needle_frame[0] = av_frame_clone_xij(foc->obj_frame);
     for (i = 1; i < foc->mipmaps; i++) {
         foc->needle_frame[i] = downscale(foc->needle_frame[i-1]);
         if (!foc->needle_frame[i])

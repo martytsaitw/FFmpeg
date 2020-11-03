@@ -134,7 +134,7 @@ static char *choose_pix_fmts(OutputFilter *ofilter)
         uint8_t *ret;
         int len;
 
-        if (avio_open_dyn_buf(&s) < 0)
+        if (avio_open_dyn_buf_xij(&s) < 0)
             exit_program(1);
 
         p = ost->enc->pix_fmts;
@@ -144,9 +144,9 @@ static char *choose_pix_fmts(OutputFilter *ofilter)
 
         for (; *p != AV_PIX_FMT_NONE; p++) {
             const char *name = av_get_pix_fmt_name(*p);
-            avio_printf(s, "%s|", name);
+            avio_printf_xij(s, "%s|", name);
         }
-        len = avio_close_dyn_buf(s, &ret);
+        len = avio_close_dyn_buf_xij(s, &ret);
         ret[len - 1] = 0;
         return ret;
     } else
@@ -167,14 +167,14 @@ static char *choose_ ## suffix (OutputFilter *ofilter)                         \
         uint8_t *ret;                                                          \
         int len;                                                               \
                                                                                \
-        if (avio_open_dyn_buf(&s) < 0)                                         \
+        if (avio_open_dyn_buf_xij(&s) < 0)                                         \
             exit_program(1);                                                           \
                                                                                \
         for (p = ofilter->supported_list; *p != none; p++) {                   \
             get_name(*p);                                                      \
-            avio_printf(s, "%s|", name);                                       \
+            avio_printf_xij(s, "%s|", name);                                       \
         }                                                                      \
-        len = avio_close_dyn_buf(s, &ret);                                     \
+        len = avio_close_dyn_buf_xij(s, &ret);                                     \
         ret[len - 1] = 0;                                                      \
         return ret;                                                            \
     } else                                                                     \
@@ -238,14 +238,14 @@ static char *describe_filter_link(FilterGraph *fg, AVFilterInOut *inout, int in)
     AVIOContext *pb;
     uint8_t *res = NULL;
 
-    if (avio_open_dyn_buf(&pb) < 0)
+    if (avio_open_dyn_buf_xij(&pb) < 0)
         exit_program(1);
 
-    avio_printf(pb, "%s", ctx->filter->name);
+    avio_printf_xij(pb, "%s", ctx->filter->name);
     if (nb_pads > 1)
-        avio_printf(pb, ":%s", avfilter_pad_get_name(pads, inout->pad_idx));
-    avio_w8(pb, 0);
-    avio_close_dyn_buf(pb, &res);
+        avio_printf_xij(pb, ":%s", avfilter_pad_get_name(pads, inout->pad_idx));
+    avio_w8_xij(pb, 0);
+    avio_close_dyn_buf_xij(pb, &res);
     return res;
 }
 
@@ -727,7 +727,7 @@ static int sub2video_prepare(InputStream *ist, InputFilter *ifilter)
        palettes for all rectangles are identical or compatible */
     ifilter->format = AV_PIX_FMT_RGB32;
 
-    ist->sub2video.frame = av_frame_alloc();
+    ist->sub2video.frame = av_frame_alloc_ijk();
     if (!ist->sub2video.frame)
         return AVERROR(ENOMEM);
     ist->sub2video.last_pts = INT64_MIN;
@@ -763,7 +763,7 @@ static int configure_input_video_filter(FilterGraph *fg, InputFilter *ifilter,
     }
 
     if (!fr.num)
-        fr = av_guess_frame_rate(input_files[ist->file_index]->ctx, ist->st, NULL);
+        fr = av_guess_frame_rate_ijk(input_files[ist->file_index]->ctx, ist->st, NULL);
 
     if (ist->dec_ctx->codec_type == AVMEDIA_TYPE_SUBTITLE) {
         ret = sub2video_prepare(ist, ifilter);
@@ -798,7 +798,7 @@ static int configure_input_video_filter(FilterGraph *fg, InputFilter *ifilter,
     last_filter = ifilter->filter;
 
     if (ist->autorotate) {
-        double theta = get_rotation(ist->st);
+        double theta = get_rotation_xij(ist->st);
 
         if (fabs(theta - 90) < 1.0) {
             ret = insert_filter(&last_filter, &pad_idx, "transpose", "clock");
@@ -1051,7 +1051,7 @@ int configure_filtergraph(FilterGraph *fg)
         AVBufferRef *device = filter_hw_device ? filter_hw_device->device_ref
                                                : hw_device_ctx;
         for (i = 0; i < fg->graph->nb_filters; i++) {
-            fg->graph->filters[i]->hw_device_ctx = av_buffer_ref(device);
+            fg->graph->filters[i]->hw_device_ctx = av_buffer_ref_ijk(device);
             if (!fg->graph->filters[i]->hw_device_ctx) {
                 ret = AVERROR(ENOMEM);
                 goto fail;
@@ -1123,7 +1123,7 @@ int configure_filtergraph(FilterGraph *fg)
             /* identical to the same check in ffmpeg.c, needed because
                complex filter graphs are initialized earlier */
             av_log(NULL, AV_LOG_ERROR, "Encoder (codec %s) not found for output stream #%d:%d\n",
-                     avcodec_get_name(ost->st->codecpar->codec_id), ost->file_index, ost->index);
+                     avcodec_get_name_xij(ost->st->codecpar->codec_id), ost->file_index, ost->index);
             ret = AVERROR(EINVAL);
             goto fail;
         }
@@ -1138,7 +1138,7 @@ int configure_filtergraph(FilterGraph *fg)
             AVFrame *tmp;
             av_fifo_generic_read(fg->inputs[i]->frame_queue, &tmp, sizeof(tmp), NULL);
             ret = av_buffersrc_add_frame(fg->inputs[i]->filter, tmp);
-            av_frame_free(&tmp);
+            av_frame_free_xij(&tmp);
             if (ret < 0)
                 goto fail;
         }
@@ -1161,7 +1161,7 @@ int configure_filtergraph(FilterGraph *fg)
                 AVSubtitle tmp;
                 av_fifo_generic_read(ist->sub2video.sub_queue, &tmp, sizeof(tmp), NULL);
                 sub2video_update(ist, &tmp);
-                avsubtitle_free(&tmp);
+                avsubtitle_free_xij(&tmp);
             }
         }
     }
@@ -1175,7 +1175,7 @@ fail:
 
 int ifilter_parameters_from_frame(InputFilter *ifilter, const AVFrame *frame)
 {
-    av_buffer_unref(&ifilter->hw_frames_ctx);
+    av_buffer_unref_xij(&ifilter->hw_frames_ctx);
 
     ifilter->format = frame->format;
 
@@ -1188,7 +1188,7 @@ int ifilter_parameters_from_frame(InputFilter *ifilter, const AVFrame *frame)
     ifilter->channel_layout      = frame->channel_layout;
 
     if (frame->hw_frames_ctx) {
-        ifilter->hw_frames_ctx = av_buffer_ref(frame->hw_frames_ctx);
+        ifilter->hw_frames_ctx = av_buffer_ref_ijk(frame->hw_frames_ctx);
         if (!ifilter->hw_frames_ctx)
             return AVERROR(ENOMEM);
     }

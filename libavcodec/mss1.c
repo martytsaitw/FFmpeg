@@ -151,7 +151,7 @@ static int mss1_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
 
     arith_init(&acoder, &gb);
 
-    if ((ret = ff_reget_buffer(avctx, ctx->pic)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, ctx->pic)) < 0)
         return ret;
 
     c->pal_pic    =  ctx->pic->data[0] + ctx->pic->linesize[0] * (avctx->height - 1);
@@ -176,7 +176,7 @@ static int mss1_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     memcpy(ctx->pic->data[1], c->pal, AVPALETTE_SIZE);
     ctx->pic->palette_has_changed = pal_changed;
 
-    if ((ret = av_frame_ref(data, ctx->pic)) < 0)
+    if ((ret = av_frame_ref_xij(data, ctx->pic)) < 0)
         return ret;
 
     *got_frame      = 1;
@@ -192,13 +192,13 @@ static av_cold int mss1_decode_init(AVCodecContext *avctx)
 
     c->ctx.avctx       = avctx;
 
-    c->pic = av_frame_alloc();
+    c->pic = av_frame_alloc_ijk();
     if (!c->pic)
         return AVERROR(ENOMEM);
 
     ret = ff_mss12_decode_init(&c->ctx, 0, &c->sc, NULL);
     if (ret < 0)
-        av_frame_free(&c->pic);
+        av_frame_free_xij(&c->pic);
 
     avctx->pix_fmt = AV_PIX_FMT_PAL8;
 
@@ -209,7 +209,7 @@ static av_cold int mss1_decode_end(AVCodecContext *avctx)
 {
     MSS1Context * const ctx = avctx->priv_data;
 
-    av_frame_free(&ctx->pic);
+    av_frame_free_xij(&ctx->pic);
     ff_mss12_decode_end(&ctx->ctx);
 
     return 0;

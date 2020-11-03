@@ -545,7 +545,7 @@ static int mmap_read_frame(AVFormatContext *ctx, AVPacket *pkt)
     /* Image is at s->buff_start[buf.index] */
     if (atomic_load(&s->buffers_queued) == FFMAX(s->buffers / 8, 1)) {
         /* when we start getting low on queued buffers, fall back on copying data */
-        res = av_new_packet(pkt, buf.bytesused);
+        res = av_new_packet_ijk(pkt, buf.bytesused);
         if (res < 0) {
             av_log(ctx, AV_LOG_ERROR, "Error allocating a packet.\n");
             enqueue_buffer(s, &buf);
@@ -555,7 +555,7 @@ static int mmap_read_frame(AVFormatContext *ctx, AVPacket *pkt)
 
         res = enqueue_buffer(s, &buf);
         if (res) {
-            av_packet_unref(pkt);
+            av_packet_unref_ijk(pkt);
             return res;
         }
     } else {
@@ -577,7 +577,7 @@ static int mmap_read_frame(AVFormatContext *ctx, AVPacket *pkt)
         buf_descriptor->index = buf.index;
         buf_descriptor->s     = s;
 
-        pkt->buf = av_buffer_create(pkt->data, pkt->size, mmap_release_buffer,
+        pkt->buf = av_buffer_create_ijk(pkt->data, pkt->size, mmap_release_buffer,
                                     buf_descriptor, 0);
         if (!pkt->buf) {
             av_log(ctx, AV_LOG_ERROR, "Failed to create a buffer\n");
@@ -785,7 +785,7 @@ static int device_try_init(AVFormatContext *ctx,
             if (ctx->video_codec_id == AV_CODEC_ID_NONE ||
                 ff_fmt_conversion_table[i].codec_id == ctx->video_codec_id) {
                 av_log(ctx, AV_LOG_DEBUG, "Trying to set codec:%s pix_fmt:%s\n",
-                       avcodec_get_name(ff_fmt_conversion_table[i].codec_id),
+                       avcodec_get_name_xij(ff_fmt_conversion_table[i].codec_id),
                        (char *)av_x_if_null(av_get_pix_fmt_name(ff_fmt_conversion_table[i].ff_fmt), "none"));
 
                 *desired_format = ff_fmt_conversion_table[i].v4l2_fmt;
@@ -801,7 +801,7 @@ static int device_try_init(AVFormatContext *ctx,
         if (*desired_format == 0) {
             av_log(ctx, AV_LOG_ERROR, "Cannot find a proper format for "
                    "codec '%s' (id %d), pixel format '%s' (id %d)\n",
-                   avcodec_get_name(ctx->video_codec_id), ctx->video_codec_id,
+                   avcodec_get_name_xij(ctx->video_codec_id), ctx->video_codec_id,
                    (char *)av_x_if_null(av_get_pix_fmt_name(pix_fmt), "none"), pix_fmt);
             ret = AVERROR(EINVAL);
         }
@@ -829,7 +829,7 @@ static int v4l2_read_header(AVFormatContext *ctx)
     enum AVPixelFormat pix_fmt = AV_PIX_FMT_NONE;
     struct v4l2_input input = { 0 };
 
-    st = avformat_new_stream(ctx, NULL);
+    st = avformat_new_stream_ijk(ctx, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
@@ -884,7 +884,7 @@ static int v4l2_read_header(AVFormatContext *ctx)
         goto fail;
     }
 
-    avpriv_set_pts_info(st, 64, 1, 1000000); /* 64 bits pts in us */
+    avpriv_set_pts_info_ijk(st, 64, 1, 1000000); /* 64 bits pts in us */
 
     if (s->pixel_format) {
         const AVCodecDescriptor *desc = avcodec_descriptor_get_by_name(s->pixel_format);

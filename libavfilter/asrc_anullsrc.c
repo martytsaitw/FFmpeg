@@ -117,8 +117,8 @@ static int request_frame(AVFilterLink *outlink)
     samplesref->channel_layout = null->channel_layout;
     samplesref->sample_rate = outlink->sample_rate;
 
-    ret = ff_filter_frame(outlink, av_frame_clone(samplesref));
-    av_frame_free(&samplesref);
+    ret = ff_filter_frame(outlink, av_frame_clone_xij(samplesref));
+    av_frame_free_xij(&samplesref);
     if (ret < 0)
         return ret;
 

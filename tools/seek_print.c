@@ -65,11 +65,11 @@ int main(int argc, char **argv)
     argv++;
     argc--;
 
-    if ((ret = avformat_open_input(&avf, filename, NULL, NULL)) < 0) {
+    if ((ret = avformat_open_input_ijk(&avf, filename, NULL, NULL)) < 0) {
         fprintf(stderr, "%s: %s\n", filename, av_err2str(ret));
         return 1;
     }
-    if ((ret = avformat_find_stream_info(avf, NULL)) < 0) {
+    if ((ret = avformat_find_stream_info_ijk(avf, NULL)) < 0) {
         fprintf(stderr, "%s: could not find codec parameters: %s\n", filename,
                 av_err2str(ret));
         return 1;
@@ -77,7 +77,7 @@ int main(int argc, char **argv)
 
     for (; argc; argc--, argv++) {
         if (!strcmp(*argv, "read")) {
-            ret = av_read_frame(avf, &packet);
+            ret = av_read_frame_ijk(avf, &packet);
             if (ret < 0) {
                 printf("read: %d (%s)\n", ret, av_err2str(ret));
             } else {
@@ -86,11 +86,11 @@ int main(int argc, char **argv)
                        ret, packet.size, packet.stream_index,
                        av_ts2str(packet.dts), av_ts2timestr(packet.dts, tb),
                        av_ts2str(packet.pts), av_ts2timestr(packet.pts, tb));
-                av_packet_unref(&packet);
+                av_packet_unref_ijk(&packet);
             }
         } else if (sscanf(*argv, "seek:%i:%"SCNi64":%"SCNi64":%"SCNi64":%i",
                    &stream, &min_ts, &ts, &max_ts, &flags) == 5) {
-            ret = avformat_seek_file(avf, stream, min_ts, ts, max_ts, flags);
+            ret = avformat_seek_file_ijk(avf, stream, min_ts, ts, max_ts, flags);
             printf("seek: %d (%s)\n", ret, av_err2str(ret));
         } else {
             fprintf(stderr, "'%s': unknown command\n", *argv);

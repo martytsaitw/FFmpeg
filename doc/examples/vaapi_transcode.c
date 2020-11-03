@@ -63,19 +63,19 @@ static int open_input_file(const char *filename)
     AVCodec *decoder = NULL;
     AVStream *video = NULL;
 
-    if ((ret = avformat_open_input(&ifmt_ctx, filename, NULL, NULL)) < 0) {
+    if ((ret = avformat_open_input_ijk(&ifmt_ctx, filename, NULL, NULL)) < 0) {
         fprintf(stderr, "Cannot open input file '%s', Error code: %s\n",
                 filename, av_err2str(ret));
         return ret;
     }
 
-    if ((ret = avformat_find_stream_info(ifmt_ctx, NULL)) < 0) {
+    if ((ret = avformat_find_stream_info_ijk(ifmt_ctx, NULL)) < 0) {
         fprintf(stderr, "Cannot find input stream information. Error code: %s\n",
                 av_err2str(ret));
         return ret;
     }
 
-    ret = av_find_best_stream(ifmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, &decoder, 0);
+    ret = av_find_best_stream_ijk(ifmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, &decoder, 0);
     if (ret < 0) {
         fprintf(stderr, "Cannot find a video stream in the input file. "
                 "Error code: %s\n", av_err2str(ret));
@@ -83,24 +83,24 @@ static int open_input_file(const char *filename)
     }
     video_stream = ret;
 
-    if (!(decoder_ctx = avcodec_alloc_context3(decoder)))
+    if (!(decoder_ctx = avcodec_alloc_context3_ijk(decoder)))
         return AVERROR(ENOMEM);
 
     video = ifmt_ctx->streams[video_stream];
-    if ((ret = avcodec_parameters_to_context(decoder_ctx, video->codecpar)) < 0) {
-        fprintf(stderr, "avcodec_parameters_to_context error. Error code: %s\n",
+    if ((ret = avcodec_parameters_to_context_ijk(decoder_ctx, video->codecpar)) < 0) {
+        fprintf(stderr, "avcodec_parameters_to_context_ijk error. Error code: %s\n",
                 av_err2str(ret));
         return ret;
     }
 
-    decoder_ctx->hw_device_ctx = av_buffer_ref(hw_device_ctx);
+    decoder_ctx->hw_device_ctx = av_buffer_ref_ijk(hw_device_ctx);
     if (!decoder_ctx->hw_device_ctx) {
         fprintf(stderr, "A hardware device reference create failed.\n");
         return AVERROR(ENOMEM);
     }
     decoder_ctx->get_format    = get_vaapi_format;
 
-    if ((ret = avcodec_open2(decoder_ctx, decoder, NULL)) < 0)
+    if ((ret = avcodec_open2_xij(decoder_ctx, decoder, NULL)) < 0)
         fprintf(stderr, "Failed to open codec for decoding. Error code: %s\n",
                 av_err2str(ret));
 
@@ -112,7 +112,7 @@ static int encode_write(AVFrame *frame)
     int ret = 0;
     AVPacket enc_pkt;
 
-    av_init_packet(&enc_pkt);
+    av_init_packet_ijk(&enc_pkt);
     enc_pkt.data = NULL;
     enc_pkt.size = 0;
 
@@ -126,9 +126,9 @@ static int encode_write(AVFrame *frame)
             break;
 
         enc_pkt.stream_index = 0;
-        av_packet_rescale_ts(&enc_pkt, ifmt_ctx->streams[video_stream]->time_base,
+        av_packet_rescale_ts_xij(&enc_pkt, ifmt_ctx->streams[video_stream]->time_base,
                              ofmt_ctx->streams[0]->time_base);
-        ret = av_interleaved_write_frame(ofmt_ctx, &enc_pkt);
+        ret = av_interleaved_write_frame_xij(ofmt_ctx, &enc_pkt);
         if (ret < 0) {
             fprintf(stderr, "Error during writing data to output file. "
                     "Error code: %s\n", av_err2str(ret));
@@ -148,19 +148,19 @@ static int dec_enc(AVPacket *pkt, AVCodec *enc_codec)
     AVFrame *frame;
     int ret = 0;
 
-    ret = avcodec_send_packet(decoder_ctx, pkt);
+    ret = avcodec_send_packet_xij(decoder_ctx, pkt);
     if (ret < 0) {
         fprintf(stderr, "Error during decoding. Error code: %s\n", av_err2str(ret));
         return ret;
     }
 
     while (ret >= 0) {
-        if (!(frame = av_frame_alloc()))
+        if (!(frame = av_frame_alloc_ijk()))
             return AVERROR(ENOMEM);
 
-        ret = avcodec_receive_frame(decoder_ctx, frame);
+        ret = avcodec_receive_frame_xij(decoder_ctx, frame);
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-            av_frame_free(&frame);
+            av_frame_free_xij(&frame);
             return 0;
         } else if (ret < 0) {
             fprintf(stderr, "Error while decoding. Error code: %s\n", av_err2str(ret));
@@ -170,7 +170,7 @@ static int dec_enc(AVPacket *pkt, AVCodec *enc_codec)
         if (!initialized) {
             /* we need to ref hw_frames_ctx of decoder to initialize encoder's codec.
                Only after we get a decoded frame, can we obtain its hw_frames_ctx */
-            encoder_ctx->hw_frames_ctx = av_buffer_ref(decoder_ctx->hw_frames_ctx);
+            encoder_ctx->hw_frames_ctx = av_buffer_ref_ijk(decoder_ctx->hw_frames_ctx);
             if (!encoder_ctx->hw_frames_ctx) {
                 ret = AVERROR(ENOMEM);
                 goto fail;
@@ -184,20 +184,20 @@ static int dec_enc(AVPacket *pkt, AVCodec *enc_codec)
             encoder_ctx->width     = decoder_ctx->width;
             encoder_ctx->height    = decoder_ctx->height;
 
-            if ((ret = avcodec_open2(encoder_ctx, enc_codec, NULL)) < 0) {
+            if ((ret = avcodec_open2_xij(encoder_ctx, enc_codec, NULL)) < 0) {
                 fprintf(stderr, "Failed to open encode codec. Error code: %s\n",
                         av_err2str(ret));
                 goto fail;
             }
 
-            if (!(ost = avformat_new_stream(ofmt_ctx, enc_codec))) {
+            if (!(ost = avformat_new_stream_ijk(ofmt_ctx, enc_codec))) {
                 fprintf(stderr, "Failed to allocate stream for output format.\n");
                 ret = AVERROR(ENOMEM);
                 goto fail;
             }
 
             ost->time_base = encoder_ctx->time_base;
-            ret = avcodec_parameters_from_context(ost->codecpar, encoder_ctx);
+            ret = avcodec_parameters_from_context_ijk(ost->codecpar, encoder_ctx);
             if (ret < 0) {
                 fprintf(stderr, "Failed to copy the stream parameters. "
                         "Error code: %s\n", av_err2str(ret));
@@ -205,7 +205,7 @@ static int dec_enc(AVPacket *pkt, AVCodec *enc_codec)
             }
 
             /* write the stream header */
-            if ((ret = avformat_write_header(ofmt_ctx, NULL)) < 0) {
+            if ((ret = avformat_write_header_xij(ofmt_ctx, NULL)) < 0) {
                 fprintf(stderr, "Error while writing stream header. "
                         "Error code: %s\n", av_err2str(ret));
                 goto fail;
@@ -218,7 +218,7 @@ static int dec_enc(AVPacket *pkt, AVCodec *enc_codec)
             fprintf(stderr, "Error during encoding and writing.\n");
 
 fail:
-        av_frame_free(&frame);
+        av_frame_free_xij(&frame);
         if (ret < 0)
             return ret;
     }
@@ -247,24 +247,24 @@ int main(int argc, char **argv)
     if ((ret = open_input_file(argv[1])) < 0)
         goto end;
 
-    if (!(enc_codec = avcodec_find_encoder_by_name(argv[2]))) {
+    if (!(enc_codec = avcodec_find_encoder_by_name_xij(argv[2]))) {
         fprintf(stderr, "Could not find encoder '%s'\n", argv[2]);
         ret = -1;
         goto end;
     }
 
-    if ((ret = (avformat_alloc_output_context2(&ofmt_ctx, NULL, NULL, argv[3]))) < 0) {
+    if ((ret = (avformat_alloc_output_context2_ijk(&ofmt_ctx, NULL, NULL, argv[3]))) < 0) {
         fprintf(stderr, "Failed to deduce output format from file extension. Error code: "
                 "%s\n", av_err2str(ret));
         goto end;
     }
 
-    if (!(encoder_ctx = avcodec_alloc_context3(enc_codec))) {
+    if (!(encoder_ctx = avcodec_alloc_context3_ijk(enc_codec))) {
         ret = AVERROR(ENOMEM);
         goto end;
     }
 
-    ret = avio_open(&ofmt_ctx->pb, argv[3], AVIO_FLAG_WRITE);
+    ret = avio_open_xij(&ofmt_ctx->pb, argv[3], AVIO_FLAG_WRITE);
     if (ret < 0) {
         fprintf(stderr, "Cannot open output file. "
                 "Error code: %s\n", av_err2str(ret));
@@ -273,32 +273,32 @@ int main(int argc, char **argv)
 
     /* read all packets and only transcoding video */
     while (ret >= 0) {
-        if ((ret = av_read_frame(ifmt_ctx, &dec_pkt)) < 0)
+        if ((ret = av_read_frame_ijk(ifmt_ctx, &dec_pkt)) < 0)
             break;
 
         if (video_stream == dec_pkt.stream_index)
             ret = dec_enc(&dec_pkt, enc_codec);
 
-        av_packet_unref(&dec_pkt);
+        av_packet_unref_ijk(&dec_pkt);
     }
 
     /* flush decoder */
     dec_pkt.data = NULL;
     dec_pkt.size = 0;
     ret = dec_enc(&dec_pkt, enc_codec);
-    av_packet_unref(&dec_pkt);
+    av_packet_unref_ijk(&dec_pkt);
 
     /* flush encoder */
     ret = encode_write(NULL);
 
     /* write the trailer for output stream */
-    av_write_trailer(ofmt_ctx);
+    av_write_trailer_xij(ofmt_ctx);
 
 end:
-    avformat_close_input(&ifmt_ctx);
-    avformat_close_input(&ofmt_ctx);
-    avcodec_free_context(&decoder_ctx);
-    avcodec_free_context(&encoder_ctx);
-    av_buffer_unref(&hw_device_ctx);
+    avformat_close_input_xij(&ifmt_ctx);
+    avformat_close_input_xij(&ofmt_ctx);
+    avcodec_free_context_ijk(&decoder_ctx);
+    avcodec_free_context_ijk(&encoder_ctx);
+    av_buffer_unref_xij(&hw_device_ctx);
     return ret;
 }

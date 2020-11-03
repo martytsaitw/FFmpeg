@@ -1142,9 +1142,9 @@ static av_cold int svq3_decode_init(AVCodecContext *avctx)
         goto fail;
     }
 
-    s->cur_pic->f  = av_frame_alloc();
-    s->last_pic->f = av_frame_alloc();
-    s->next_pic->f = av_frame_alloc();
+    s->cur_pic->f  = av_frame_alloc_ijk();
+    s->last_pic->f = av_frame_alloc_ijk();
+    s->next_pic->f = av_frame_alloc_ijk();
     if (!s->cur_pic->f || !s->last_pic->f || !s->next_pic->f)
         return AVERROR(ENOMEM);
 
@@ -1340,12 +1340,12 @@ static void free_picture(AVCodecContext *avctx, SVQ3Frame *pic)
 {
     int i;
     for (i = 0; i < 2; i++) {
-        av_buffer_unref(&pic->motion_val_buf[i]);
-        av_buffer_unref(&pic->ref_index_buf[i]);
+        av_buffer_unref_xij(&pic->motion_val_buf[i]);
+        av_buffer_unref_xij(&pic->ref_index_buf[i]);
     }
-    av_buffer_unref(&pic->mb_type_buf);
+    av_buffer_unref_xij(&pic->mb_type_buf);
 
-    av_frame_unref(pic->f);
+    av_frame_unref_xij(pic->f);
 }
 
 static int get_buffer(AVCodecContext *avctx, SVQ3Frame *pic)
@@ -1360,14 +1360,14 @@ static int get_buffer(AVCodecContext *avctx, SVQ3Frame *pic)
     if (!pic->motion_val_buf[0]) {
         int i;
 
-        pic->mb_type_buf = av_buffer_allocz((big_mb_num + s->mb_stride) * sizeof(uint32_t));
+        pic->mb_type_buf = av_buffer_allocz_xij((big_mb_num + s->mb_stride) * sizeof(uint32_t));
         if (!pic->mb_type_buf)
             return AVERROR(ENOMEM);
         pic->mb_type = (uint32_t*)pic->mb_type_buf->data + 2 * s->mb_stride + 1;
 
         for (i = 0; i < 2; i++) {
-            pic->motion_val_buf[i] = av_buffer_allocz(2 * (b4_array_size + 4) * sizeof(int16_t));
-            pic->ref_index_buf[i]  = av_buffer_allocz(4 * mb_array_size);
+            pic->motion_val_buf[i] = av_buffer_allocz_xij(2 * (b4_array_size + 4) * sizeof(int16_t));
+            pic->ref_index_buf[i]  = av_buffer_allocz_xij(4 * mb_array_size);
             if (!pic->motion_val_buf[i] || !pic->ref_index_buf[i]) {
                 ret = AVERROR(ENOMEM);
                 goto fail;
@@ -1378,7 +1378,7 @@ static int get_buffer(AVCodecContext *avctx, SVQ3Frame *pic)
         }
     }
 
-    ret = ff_get_buffer(avctx, pic->f,
+    ret = ff_get_buffer_xij(avctx, pic->f,
                         (s->pict_type != AV_PICTURE_TYPE_B) ?
                          AV_GET_BUFFER_FLAG_REF : 0);
     if (ret < 0)
@@ -1408,7 +1408,7 @@ static int svq3_decode_frame(AVCodecContext *avctx, void *data,
     /* special case for last picture */
     if (buf_size == 0) {
         if (s->next_pic->f->data[0] && !s->low_delay && !s->last_frame_output) {
-            ret = av_frame_ref(data, s->next_pic->f);
+            ret = av_frame_ref_xij(data, s->next_pic->f);
             if (ret < 0)
                 return ret;
             s->last_frame_output = 1;
@@ -1420,7 +1420,7 @@ static int svq3_decode_frame(AVCodecContext *avctx, void *data,
     s->mb_x = s->mb_y = s->mb_xy = 0;
 
     if (s->watermark_key) {
-        av_fast_padded_malloc(&s->buf, &s->buf_size, buf_size);
+        av_fast_padded_malloc_xij(&s->buf, &s->buf_size, buf_size);
         if (!s->buf)
             return AVERROR(ENOMEM);
         memcpy(s->buf, avpkt->data, buf_size);
@@ -1441,7 +1441,7 @@ static int svq3_decode_frame(AVCodecContext *avctx, void *data,
     if (s->pict_type != AV_PICTURE_TYPE_B)
         FFSWAP(SVQ3Frame*, s->next_pic, s->last_pic);
 
-    av_frame_unref(s->cur_pic->f);
+    av_frame_unref_xij(s->cur_pic->f);
 
     /* for skipping the frame */
     s->cur_pic->f->pict_type = s->pict_type;
@@ -1465,7 +1465,7 @@ static int svq3_decode_frame(AVCodecContext *avctx, void *data,
     if (s->pict_type != AV_PICTURE_TYPE_I) {
         if (!s->last_pic->f->data[0]) {
             av_log(avctx, AV_LOG_ERROR, "Missing reference frame.\n");
-            av_frame_unref(s->last_pic->f);
+            av_frame_unref_xij(s->last_pic->f);
             ret = get_buffer(avctx, s->last_pic);
             if (ret < 0)
                 return ret;
@@ -1478,7 +1478,7 @@ static int svq3_decode_frame(AVCodecContext *avctx, void *data,
 
         if (s->pict_type == AV_PICTURE_TYPE_B && !s->next_pic->f->data[0]) {
             av_log(avctx, AV_LOG_ERROR, "Missing reference frame.\n");
-            av_frame_unref(s->next_pic->f);
+            av_frame_unref_xij(s->next_pic->f);
             ret = get_buffer(avctx, s->next_pic);
             if (ret < 0)
                 return ret;
@@ -1493,7 +1493,7 @@ static int svq3_decode_frame(AVCodecContext *avctx, void *data,
     if (avctx->debug & FF_DEBUG_PICT_INFO)
         av_log(s->avctx, AV_LOG_DEBUG,
                "%c hpel:%d, tpel:%d aqp:%d qp:%d, slice_num:%02X\n",
-               av_get_picture_type_char(s->pict_type),
+               av_get_picture_type_char_xij(s->pict_type),
                s->halfpel_flag, s->thirdpel_flag,
                s->adaptive_quant, s->qscale, s->slice_num);
 
@@ -1587,7 +1587,7 @@ static int svq3_decode_frame(AVCodecContext *avctx, void *data,
 
     if (s->mb_y != s->mb_height || s->mb_x != s->mb_width) {
         av_log(avctx, AV_LOG_INFO, "frame num %d incomplete pic x %d y %d left %d\n", avctx->frame_number, s->mb_y, s->mb_x, left);
-        //av_hex_dump(stderr, buf+buf_size-8, 8);
+        //av_hex_dump_xij(stderr, buf+buf_size-8, 8);
     }
 
     if (left < 0) {
@@ -1596,9 +1596,9 @@ static int svq3_decode_frame(AVCodecContext *avctx, void *data,
     }
 
     if (s->pict_type == AV_PICTURE_TYPE_B || s->low_delay)
-        ret = av_frame_ref(data, s->cur_pic->f);
+        ret = av_frame_ref_xij(data, s->cur_pic->f);
     else if (s->last_pic->f->data[0])
-        ret = av_frame_ref(data, s->last_pic->f);
+        ret = av_frame_ref_xij(data, s->last_pic->f);
     if (ret < 0)
         return ret;
 
@@ -1609,7 +1609,7 @@ static int svq3_decode_frame(AVCodecContext *avctx, void *data,
     if (s->pict_type != AV_PICTURE_TYPE_B) {
         FFSWAP(SVQ3Frame*, s->cur_pic, s->next_pic);
     } else {
-        av_frame_unref(s->cur_pic->f);
+        av_frame_unref_xij(s->cur_pic->f);
     }
 
     return buf_size;
@@ -1622,9 +1622,9 @@ static av_cold int svq3_decode_end(AVCodecContext *avctx)
     free_picture(avctx, s->cur_pic);
     free_picture(avctx, s->next_pic);
     free_picture(avctx, s->last_pic);
-    av_frame_free(&s->cur_pic->f);
-    av_frame_free(&s->next_pic->f);
-    av_frame_free(&s->last_pic->f);
+    av_frame_free_xij(&s->cur_pic->f);
+    av_frame_free_xij(&s->next_pic->f);
+    av_frame_free_xij(&s->last_pic->f);
     av_freep(&s->cur_pic);
     av_freep(&s->next_pic);
     av_freep(&s->last_pic);

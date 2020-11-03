@@ -168,7 +168,7 @@ static unsigned int get_size(AVIOContext *s, int len)
 {
     int v = 0;
     while (len--)
-        v = (v << 7) + (avio_r8(s) & 0x7F);
+        v = (v << 7) + (avio_r8_xij(s) & 0x7F);
     return v;
 }
 
@@ -205,8 +205,8 @@ static int check_tag(AVIOContext *s, int offset, unsigned int len)
     char tag[4];
 
     if (len > 4 ||
-        avio_seek(s, offset, SEEK_SET) < 0 ||
-        avio_read(s, tag, len) < (int)len)
+        avio_seek_xij(s, offset, SEEK_SET) < 0 ||
+        avio_read_xij(s, tag, len) < (int)len)
         return -1;
     else if (!AV_RB32(tag) || is_tag(tag, len))
         return 1;
@@ -246,10 +246,10 @@ static int decode_str(AVFormatContext *s, AVIOContext *pb, int encoding,
     uint8_t tmp;
     uint32_t ch = 1;
     int left = *maxread;
-    unsigned int (*get)(AVIOContext*) = avio_rb16;
+    unsigned int (*get)(AVIOContext*) = avio_rb16_xij;
     AVIOContext *dynbuf;
 
-    if ((ret = avio_open_dyn_buf(&dynbuf)) < 0) {
+    if ((ret = avio_open_dyn_buf_xij(&dynbuf)) < 0) {
         av_log(s, AV_LOG_ERROR, "Error opening memory stream\n");
         return ret;
     }
@@ -257,8 +257,8 @@ static int decode_str(AVFormatContext *s, AVIOContext *pb, int encoding,
     switch (encoding) {
     case ID3v2_ENCODING_ISO8859:
         while (left && ch) {
-            ch = avio_r8(pb);
-            PUT_UTF8(ch, tmp, avio_w8(dynbuf, tmp);)
+            ch = avio_r8_xij(pb);
+            PUT_UTF8(ch, tmp, avio_w8_xij(dynbuf, tmp);)
             left--;
         }
         break;
@@ -266,18 +266,18 @@ static int decode_str(AVFormatContext *s, AVIOContext *pb, int encoding,
     case ID3v2_ENCODING_UTF16BOM:
         if ((left -= 2) < 0) {
             av_log(s, AV_LOG_ERROR, "Cannot read BOM value, input too short\n");
-            ffio_free_dyn_buf(&dynbuf);
+            ffio_free_dyn_buf_xij(&dynbuf);
             *dst = NULL;
             return AVERROR_INVALIDDATA;
         }
-        switch (avio_rb16(pb)) {
+        switch (avio_rb16_xij(pb)) {
         case 0xfffe:
-            get = avio_rl16;
+            get = avio_rl16_xij;
         case 0xfeff:
             break;
         default:
             av_log(s, AV_LOG_ERROR, "Incorrect BOM value\n");
-            ffio_free_dyn_buf(&dynbuf);
+            ffio_free_dyn_buf_xij(&dynbuf);
             *dst = NULL;
             *maxread = left;
             return AVERROR_INVALIDDATA;
@@ -287,7 +287,7 @@ static int decode_str(AVFormatContext *s, AVIOContext *pb, int encoding,
     case ID3v2_ENCODING_UTF16BE:
         while ((left > 1) && ch) {
             GET_UTF16(ch, ((left -= 2) >= 0 ? get(pb) : 0), break;)
-            PUT_UTF8(ch, tmp, avio_w8(dynbuf, tmp);)
+            PUT_UTF8(ch, tmp, avio_w8_xij(dynbuf, tmp);)
         }
         if (left < 0)
             left += 2;  /* did not read last char from pb */
@@ -295,8 +295,8 @@ static int decode_str(AVFormatContext *s, AVIOContext *pb, int encoding,
 
     case ID3v2_ENCODING_UTF8:
         while (left && ch) {
-            ch = avio_r8(pb);
-            avio_w8(dynbuf, ch);
+            ch = avio_r8_xij(pb);
+            avio_w8_xij(dynbuf, ch);
             left--;
         }
         break;
@@ -305,9 +305,9 @@ static int decode_str(AVFormatContext *s, AVIOContext *pb, int encoding,
     }
 
     if (ch)
-        avio_w8(dynbuf, 0);
+        avio_w8_xij(dynbuf, 0);
 
-    avio_close_dyn_buf(dynbuf, dst);
+    avio_close_dyn_buf_xij(dynbuf, dst);
     *maxread = left;
 
     return 0;
@@ -326,7 +326,7 @@ static void read_ttag(AVFormatContext *s, AVIOContext *pb, int taglen,
     if (taglen < 1)
         return;
 
-    encoding = avio_r8(pb);
+    encoding = avio_r8_xij(pb);
     taglen--; /* account for encoding type byte */
 
     if (decode_str(s, pb, encoding, &dst, &taglen) < 0) {
@@ -368,10 +368,10 @@ static void read_uslt(AVFormatContext *s, AVIOContext *pb, int taglen,
     if (taglen < 1)
         goto error;
 
-    encoding = avio_r8(pb);
+    encoding = avio_r8_xij(pb);
     taglen--;
 
-    if (avio_read(pb, lang, 3) < 3)
+    if (avio_read_xij(pb, lang, 3) < 3)
         goto error;
     lang[3] = '\0';
     taglen -= 3;
@@ -414,8 +414,8 @@ static void read_comment(AVFormatContext *s, AVIOContext *pb, int taglen,
     if (taglen < 4)
         return;
 
-    encoding = avio_r8(pb);
-    language = avio_rl24(pb);
+    encoding = avio_r8_xij(pb);
+    language = avio_rl24_xij(pb);
     taglen -= 4;
 
     if (decode_str(s, pb, encoding, &dst, &taglen) < 0) {
@@ -472,7 +472,7 @@ static void read_geobtag(AVFormatContext *s, AVIOContext *pb, int taglen,
     }
 
     /* read encoding type byte */
-    encoding = avio_r8(pb);
+    encoding = avio_r8_xij(pb);
     taglen--;
 
     /* read MIME type (always ISO-8859) */
@@ -498,7 +498,7 @@ static void read_geobtag(AVFormatContext *s, AVIOContext *pb, int taglen,
             av_log(s, AV_LOG_ERROR, "Failed to alloc %d bytes\n", taglen);
             goto fail;
         }
-        if ((len = avio_read(pb, geob_data->data, taglen)) < taglen)
+        if ((len = avio_read_xij(pb, geob_data->data, taglen)) < taglen)
             av_log(s, AV_LOG_WARNING,
                    "Error reading GEOB frame, data truncated.\n");
         geob_data->datasize = len;
@@ -573,7 +573,7 @@ finish:
 static void free_apic(void *obj)
 {
     ID3v2ExtraMetaAPIC *apic = obj;
-    av_buffer_unref(&apic->buf);
+    av_buffer_unref_xij(&apic->buf);
     av_freep(&apic->description);
     av_freep(&apic);
 }
@@ -605,14 +605,14 @@ static void read_apic(AVFormatContext *s, AVIOContext *pb, int taglen,
     if (!new_extra || !apic)
         goto fail;
 
-    enc = avio_r8(pb);
+    enc = avio_r8_xij(pb);
     taglen--;
 
     /* mimetype */
     if (isv34) {
-        taglen -= avio_get_str(pb, taglen, mimetype, sizeof(mimetype));
+        taglen -= avio_get_str_xij(pb, taglen, mimetype, sizeof(mimetype));
     } else {
-        avio_read(pb, mimetype, 3);
+        avio_read_xij(pb, mimetype, 3);
         mimetype[3] = 0;
         taglen    -= 3;
     }
@@ -632,7 +632,7 @@ static void read_apic(AVFormatContext *s, AVIOContext *pb, int taglen,
     apic->id = id;
 
     /* picture type */
-    pic_type = avio_r8(pb);
+    pic_type = avio_r8_xij(pb);
     taglen--;
     if (pic_type < 0 || pic_type >= FF_ARRAY_ELEMS(ff_id3v2_picture_types)) {
         av_log(s, AV_LOG_WARNING, "Unknown attached picture type %d.\n",
@@ -648,8 +648,8 @@ static void read_apic(AVFormatContext *s, AVIOContext *pb, int taglen,
         goto fail;
     }
 
-    apic->buf = av_buffer_alloc(taglen + AV_INPUT_BUFFER_PADDING_SIZE);
-    if (!apic->buf || !taglen || avio_read(pb, apic->buf->data, taglen) != taglen)
+    apic->buf = av_buffer_alloc_ijk(taglen + AV_INPUT_BUFFER_PADDING_SIZE);
+    if (!apic->buf || !taglen || avio_read_xij(pb, apic->buf->data, taglen) != taglen)
         goto fail;
     memset(apic->buf->data + taglen, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 
@@ -668,7 +668,7 @@ fail:
     if (apic)
         free_apic(apic);
     av_freep(&new_extra);
-    avio_seek(pb, end, SEEK_SET);
+    avio_seek_xij(pb, end, SEEK_SET);
 }
 
 static void free_chapter(void *obj)
@@ -698,24 +698,24 @@ static void read_chapter(AVFormatContext *s, AVIOContext *pb, int len, const cha
     if (len < 16)
         goto fail;
 
-    chap->start = avio_rb32(pb);
-    chap->end   = avio_rb32(pb);
-    avio_skip(pb, 8);
+    chap->start = avio_rb32_xij(pb);
+    chap->end   = avio_rb32_xij(pb);
+    avio_skip_xij(pb, 8);
 
     len -= 16;
     while (len > 10) {
-        if (avio_read(pb, tag, 4) < 4)
+        if (avio_read_xij(pb, tag, 4) < 4)
             goto fail;
         tag[4] = 0;
-        taglen = avio_rb32(pb);
-        avio_skip(pb, 2);
+        taglen = avio_rb32_xij(pb);
+        avio_skip_xij(pb, 2);
         len -= 10;
         if (taglen < 0 || taglen > len)
             goto fail;
         if (tag[0] == 'T')
             read_ttag(s, pb, taglen, &chap->meta, tag);
         else
-            avio_skip(pb, taglen);
+            avio_skip_xij(pb, taglen);
         len -= taglen;
     }
 
@@ -764,7 +764,7 @@ static void read_priv(AVFormatContext *s, AVIOContext *pb, int taglen,
 
     priv->datasize = taglen;
 
-    if (avio_read(pb, priv->data, priv->datasize) != priv->datasize)
+    if (avio_read_xij(pb, priv->data, priv->datasize) != priv->datasize)
         goto fail;
 
     meta->tag   = "PRIV";
@@ -872,7 +872,7 @@ static void id3v2_parse(AVIOContext *pb, AVDictionary **metadata,
             reason = "invalid extended header length";
             goto error;
         }
-        avio_skip(pb, extlen);
+        avio_skip_xij(pb, extlen);
         len -= extlen + 4;
         if (len < 0) {
             reason = "extended header too long.";
@@ -888,38 +888,38 @@ static void id3v2_parse(AVIOContext *pb, AVDictionary **metadata,
         unsigned long av_unused dlen;
 
         if (isv34) {
-            if (avio_read(pb, tag, 4) < 4)
+            if (avio_read_xij(pb, tag, 4) < 4)
                 break;
             tag[4] = 0;
             if (version == 3) {
-                tlen = avio_rb32(pb);
+                tlen = avio_rb32_xij(pb);
             } else {
                 /* some encoders incorrectly uses v3 sizes instead of syncsafe ones
                  * so check the next tag to see which one to use */
-                tlen = avio_rb32(pb);
+                tlen = avio_rb32_xij(pb);
                 if (tlen > 0x7f) {
                     if (tlen < len) {
                         int64_t cur = avio_tell(pb);
 
-                        if (ffio_ensure_seekback(pb, 2 /* tflags */ + tlen + 4 /* next tag */))
+                        if (ffio_ensure_seekback_xij(pb, 2 /* tflags */ + tlen + 4 /* next tag */))
                             break;
 
                         if (check_tag(pb, cur + 2 + size_to_syncsafe(tlen), 4) == 1)
                             tlen = size_to_syncsafe(tlen);
                         else if (check_tag(pb, cur + 2 + tlen, 4) != 1)
                             break;
-                        avio_seek(pb, cur, SEEK_SET);
+                        avio_seek_xij(pb, cur, SEEK_SET);
                     } else
                         tlen = size_to_syncsafe(tlen);
                 }
             }
-            tflags  = avio_rb16(pb);
+            tflags  = avio_rb16_xij(pb);
             tunsync = tflags & ID3v2_FLAG_UNSYNCH;
         } else {
-            if (avio_read(pb, tag, 3) < 3)
+            if (avio_read_xij(pb, tag, 3) < 3)
                 break;
             tag[3] = 0;
-            tlen   = avio_rb24(pb);
+            tlen   = avio_rb24_xij(pb);
         }
         if (tlen > (1<<28))
             break;
@@ -940,7 +940,7 @@ static void id3v2_parse(AVIOContext *pb, AVDictionary **metadata,
         if (tflags & ID3v2_FLAG_DATALEN) {
             if (tlen < 4)
                 break;
-            dlen = avio_rb32(pb);
+            dlen = avio_rb32_xij(pb);
             tlen -= 4;
         } else
             dlen = tlen;
@@ -959,7 +959,7 @@ static void id3v2_parse(AVIOContext *pb, AVDictionary **metadata,
                 type = "encrypted and compressed";
 
             av_log(s, AV_LOG_WARNING, "Skipping %s ID3v2 frame %s.\n", type, tag);
-            avio_skip(pb, tlen);
+            avio_skip_xij(pb, tlen);
         /* check for text tag or supported special meta tag */
         } else if (tag[0] == 'T' ||
                    !memcmp(tag, "USLT", 4) ||
@@ -980,7 +980,7 @@ static void id3v2_parse(AVIOContext *pb, AVDictionary **metadata,
                 uint8_t *t = buffer;
                 uint8_t *end = t + tlen;
 
-                if (avio_read(pb, buffer, tlen) != tlen) {
+                if (avio_read_xij(pb, buffer, tlen) != tlen) {
                     av_log(s, AV_LOG_ERROR, "Failed to read tag data\n");
                     goto seek;
                 }
@@ -991,7 +991,7 @@ static void id3v2_parse(AVIOContext *pb, AVDictionary **metadata,
                         t++;
                 }
 
-                ffio_init_context(&pb_local, buffer, b - buffer, 0, NULL, NULL, NULL,
+                ffio_init_context_xij(&pb_local, buffer, b - buffer, 0, NULL, NULL, NULL,
                                   NULL);
                 tlen = b - buffer;
                 pbx  = &pb_local; // read from sync buffer
@@ -1010,7 +1010,7 @@ static void id3v2_parse(AVIOContext *pb, AVDictionary **metadata,
                     }
 
                     if (!(unsync || tunsync)) {
-                        err = avio_read(pb, buffer, tlen);
+                        err = avio_read_xij(pb, buffer, tlen);
                         if (err < 0) {
                             av_log(s, AV_LOG_ERROR, "Failed to read compressed tag\n");
                             goto seek;
@@ -1023,7 +1023,7 @@ static void id3v2_parse(AVIOContext *pb, AVDictionary **metadata,
                         av_log(s, AV_LOG_ERROR, "Failed to uncompress tag: %d\n", err);
                         goto seek;
                     }
-                    ffio_init_context(&pb_local, uncompressed_buffer, dlen, 0, NULL, NULL, NULL, NULL);
+                    ffio_init_context_xij(&pb_local, uncompressed_buffer, dlen, 0, NULL, NULL, NULL, NULL);
                     tlen = dlen;
                     pbx = &pb_local; // read from sync buffer
                 }
@@ -1041,12 +1041,12 @@ static void id3v2_parse(AVIOContext *pb, AVDictionary **metadata,
         } else if (!tag[0]) {
             if (tag[1])
                 av_log(s, AV_LOG_WARNING, "invalid frame id, assuming padding\n");
-            avio_skip(pb, tlen);
+            avio_skip_xij(pb, tlen);
             break;
         }
         /* Skip to end of tag */
 seek:
-        avio_seek(pb, next, SEEK_SET);
+        avio_seek_xij(pb, next, SEEK_SET);
     }
 
     /* Footer preset, always 10 bytes, skip over it */
@@ -1057,7 +1057,7 @@ error:
     if (reason)
         av_log(s, AV_LOG_INFO, "ID3v2.%d tag skipped, cannot handle %s\n",
                version, reason);
-    avio_seek(pb, end, SEEK_SET);
+    avio_seek_xij(pb, end, SEEK_SET);
     av_free(buffer);
     av_free(uncompressed_buffer);
     return;
@@ -1080,15 +1080,15 @@ static void id3v2_read_internal(AVIOContext *pb, AVDictionary **metadata,
         /* save the current offset in case there's nothing to read/skip */
         off = avio_tell(pb);
         if (max_search_size && off - start >= max_search_size - ID3v2_HEADER_SIZE) {
-            avio_seek(pb, off, SEEK_SET);
+            avio_seek_xij(pb, off, SEEK_SET);
             break;
         }
 
-        ret = ffio_ensure_seekback(pb, ID3v2_HEADER_SIZE);
+        ret = ffio_ensure_seekback_xij(pb, ID3v2_HEADER_SIZE);
         if (ret >= 0)
-            ret = avio_read(pb, buf, ID3v2_HEADER_SIZE);
+            ret = avio_read_xij(pb, buf, ID3v2_HEADER_SIZE);
         if (ret != ID3v2_HEADER_SIZE) {
-            avio_seek(pb, off, SEEK_SET);
+            avio_seek_xij(pb, off, SEEK_SET);
             break;
         }
         found_header = ff_id3v2_match(buf, magic);
@@ -1100,7 +1100,7 @@ static void id3v2_read_internal(AVIOContext *pb, AVDictionary **metadata,
                    (buf[9] & 0x7f);
             id3v2_parse(pb, metadata, s, len, buf[3], buf[5], extra_meta);
         } else {
-            avio_seek(pb, off, SEEK_SET);
+            avio_seek_xij(pb, off, SEEK_SET);
         }
     } while (found_header);
     ff_metadata_conv(metadata, NULL, ff_id3v2_34_metadata_conv);
@@ -1149,7 +1149,7 @@ int ff_id3v2_parse_apic(AVFormatContext *s, ID3v2ExtraMeta **extra_meta)
             continue;
         apic = cur->data;
 
-        if (!(st = avformat_new_stream(s, NULL)))
+        if (!(st = avformat_new_stream_ijk(s, NULL)))
             return AVERROR(ENOMEM);
 
         st->disposition      |= AV_DISPOSITION_ATTACHED_PIC;
@@ -1164,7 +1164,7 @@ int ff_id3v2_parse_apic(AVFormatContext *s, ID3v2ExtraMeta **extra_meta)
 
         av_dict_set(&st->metadata, "comment", apic->type, 0);
 
-        av_init_packet(&st->attached_pic);
+        av_init_packet_ijk(&st->attached_pic);
         st->attached_pic.buf          = apic->buf;
         st->attached_pic.data         = apic->buf->data;
         st->attached_pic.size         = apic->buf->size - AV_INPUT_BUFFER_PADDING_SIZE;
@@ -1215,7 +1215,7 @@ int ff_id3v2_parse_chapters(AVFormatContext *s, ID3v2ExtraMeta **extra_meta)
         AVChapter *chapter;
 
         chap = chapters[i];
-        chapter = avpriv_new_chapter(s, i, time_base, chap->start, chap->end, chap->element_id);
+        chapter = avpriv_new_chapter_xij(s, i, time_base, chap->start, chap->end, chap->element_id);
         if (!chapter)
             continue;
 

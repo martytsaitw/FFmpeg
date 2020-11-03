@@ -86,7 +86,7 @@ static av_cold void uninit(AVFilterContext *ctx)
     int i;
 
     ff_framesync_uninit(&s->fs);
-    av_frame_free(&s->prev_frame);
+    av_frame_free_xij(&s->prev_frame);
 
     for (i = 0; i < 4; i++) {
         av_expr_free(s->comp_expr[i]);
@@ -221,14 +221,14 @@ static int process_frame(FFFrameSync *fs)
         return ret;
 
     if (ctx->is_disabled || !srcy) {
-        out = av_frame_clone(srcx);
+        out = av_frame_clone_xij(srcx);
         if (!out)
             return AVERROR(ENOMEM);
     } else {
         out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out)
             return AVERROR(ENOMEM);
-        av_frame_copy_props(out, srcx);
+        av_frame_copy_props_xij(out, srcx);
 
         s->lut2(s, out, srcx, srcy);
     }
@@ -407,13 +407,13 @@ static int tlut2_filter_frame(AVFilterLink *inlink, AVFrame *frame)
     if (s->prev_frame) {
         AVFrame *out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out) {
-            av_frame_free(&s->prev_frame);
+            av_frame_free_xij(&s->prev_frame);
             s->prev_frame = frame;
             return AVERROR(ENOMEM);
         }
-        av_frame_copy_props(out, frame);
+        av_frame_copy_props_xij(out, frame);
         s->lut2(s, out, frame, s->prev_frame);
-        av_frame_free(&s->prev_frame);
+        av_frame_free_xij(&s->prev_frame);
         s->prev_frame = frame;
         return ff_filter_frame(outlink, out);
     }

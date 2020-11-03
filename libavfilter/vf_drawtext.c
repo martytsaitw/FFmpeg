@@ -883,7 +883,7 @@ static int func_pict_type(AVFilterContext *ctx, AVBPrint *bp,
 {
     DrawTextContext *s = ctx->priv;
 
-    av_bprintf(bp, "%c", av_get_picture_type_char(s->var_values[VAR_PICT_TYPE]));
+    av_bprintf(bp, "%c", av_get_picture_type_char_xij(s->var_values[VAR_PICT_TYPE]));
     return 0;
 }
 
@@ -1462,13 +1462,13 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
 
     if (s->reload) {
         if ((ret = load_textfile(ctx)) < 0) {
-            av_frame_free(&frame);
+            av_frame_free_xij(&frame);
             return ret;
         }
 #if CONFIG_LIBFRIBIDI
         if (s->text_shaping)
             if ((ret = shape_text(ctx)) < 0) {
-                av_frame_free(&frame);
+                av_frame_free_xij(&frame);
                 return ret;
             }
 #endif

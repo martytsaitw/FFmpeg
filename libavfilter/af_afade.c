@@ -284,13 +284,13 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
         ( s->type && (cur_sample + nb_samples < s->start_sample)))
         return ff_filter_frame(outlink, buf);
 
-    if (av_frame_is_writable(buf)) {
+    if (av_frame_is_writable_xij(buf)) {
         out_buf = buf;
     } else {
         out_buf = ff_get_audio_buffer(outlink, nb_samples);
         if (!out_buf)
             return AVERROR(ENOMEM);
-        av_frame_copy_props(out_buf, buf);
+        av_frame_copy_props_xij(out_buf, buf);
     }
 
     if ((!s->type && (cur_sample + nb_samples < s->start_sample)) ||
@@ -312,7 +312,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
     }
 
     if (buf != out_buf)
-        av_frame_free(&buf);
+        av_frame_free_xij(&buf);
 
     return ff_filter_frame(outlink, out_buf);
 }
@@ -480,13 +480,13 @@ static int activate(AVFilterContext *ctx)
 
             ret = ff_inlink_consume_samples(ctx->inputs[0], s->nb_samples, s->nb_samples, &cf[0]);
             if (ret < 0) {
-                av_frame_free(&out);
+                av_frame_free_xij(&out);
                 return ret;
             }
 
             ret = ff_inlink_consume_samples(ctx->inputs[1], s->nb_samples, s->nb_samples, &cf[1]);
             if (ret < 0) {
-                av_frame_free(&out);
+                av_frame_free_xij(&out);
                 return ret;
             }
 
@@ -498,8 +498,8 @@ static int activate(AVFilterContext *ctx)
             s->pts += av_rescale_q(s->nb_samples,
                 (AVRational){ 1, outlink->sample_rate }, outlink->time_base);
             s->crossfade_is_over = 1;
-            av_frame_free(&cf[0]);
-            av_frame_free(&cf[1]);
+            av_frame_free_xij(&cf[0]);
+            av_frame_free_xij(&cf[1]);
             return ff_filter_frame(outlink, out);
         } else {
             out = ff_get_audio_buffer(outlink, s->nb_samples);
@@ -508,7 +508,7 @@ static int activate(AVFilterContext *ctx)
 
             ret = ff_inlink_consume_samples(ctx->inputs[0], s->nb_samples, s->nb_samples, &cf[0]);
             if (ret < 0) {
-                av_frame_free(&out);
+                av_frame_free_xij(&out);
                 return ret;
             }
 
@@ -517,7 +517,7 @@ static int activate(AVFilterContext *ctx)
             out->pts = s->pts;
             s->pts += av_rescale_q(s->nb_samples,
                 (AVRational){ 1, outlink->sample_rate }, outlink->time_base);
-            av_frame_free(&cf[0]);
+            av_frame_free_xij(&cf[0]);
             ret = ff_filter_frame(outlink, out);
             if (ret < 0)
                 return ret;
@@ -528,7 +528,7 @@ static int activate(AVFilterContext *ctx)
 
             ret = ff_inlink_consume_samples(ctx->inputs[1], s->nb_samples, s->nb_samples, &cf[1]);
             if (ret < 0) {
-                av_frame_free(&out);
+                av_frame_free_xij(&out);
                 return ret;
             }
 
@@ -538,7 +538,7 @@ static int activate(AVFilterContext *ctx)
             s->pts += av_rescale_q(s->nb_samples,
                 (AVRational){ 1, outlink->sample_rate }, outlink->time_base);
             s->crossfade_is_over = 1;
-            av_frame_free(&cf[1]);
+            av_frame_free_xij(&cf[1]);
             return ff_filter_frame(outlink, out);
         }
     } else if (ff_outlink_frame_wanted(ctx->outputs[0])) {

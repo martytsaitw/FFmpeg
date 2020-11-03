@@ -350,7 +350,7 @@ static int dfa_decode_frame(AVCodecContext *avctx,
     int i, pal_elems;
     int version = avctx->extradata_size==2 ? AV_RL16(avctx->extradata) : 0;
 
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     bytestream2_init(&gb, avpkt->data, avpkt->size);

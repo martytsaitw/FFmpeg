@@ -620,13 +620,13 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     ff_snow_release_buffer(avctx);
 
     if(!(s->avctx->debug&2048))
-        res = av_frame_ref(picture, s->current_picture);
+        res = av_frame_ref_xij(picture, s->current_picture);
     else
-        res = av_frame_ref(picture, s->mconly_picture);
+        res = av_frame_ref_xij(picture, s->mconly_picture);
     if (res >= 0 && s->avmv_index) {
         AVFrameSideData *sd;
 
-        sd = av_frame_new_side_data(picture, AV_FRAME_DATA_MOTION_VECTORS, s->avmv_index * sizeof(AVMotionVector));
+        sd = av_frame_new_side_data_xij(picture, AV_FRAME_DATA_MOTION_VECTORS, s->avmv_index * sizeof(AVMotionVector));
         if (!sd)
             return AVERROR(ENOMEM);
         memcpy(sd->data, s->avmv, s->avmv_index * sizeof(AVMotionVector));

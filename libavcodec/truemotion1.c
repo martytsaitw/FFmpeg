@@ -409,14 +409,14 @@ static int truemotion1_decode_header(TrueMotion1Context *s)
 
     if (s->w != s->avctx->width || s->h != s->avctx->height ||
         new_pix_fmt != s->avctx->pix_fmt) {
-        av_frame_unref(s->frame);
+        av_frame_unref_xij(s->frame);
         s->avctx->sample_aspect_ratio = (AVRational){ 1 << width_shift, 1 };
         s->avctx->pix_fmt = new_pix_fmt;
 
-        if ((ret = ff_set_dimensions(s->avctx, s->w, s->h)) < 0)
+        if ((ret = ff_set_dimensions_xij(s->avctx, s->w, s->h)) < 0)
             return ret;
 
-        ff_set_sar(s->avctx, s->avctx->sample_aspect_ratio);
+        ff_set_sar_xij(s->avctx, s->avctx->sample_aspect_ratio);
 
         av_fast_malloc(&s->vert_pred, &s->vert_pred_size, s->avctx->width * sizeof(unsigned int));
         if (!s->vert_pred)
@@ -482,7 +482,7 @@ static av_cold int truemotion1_decode_init(AVCodecContext *avctx)
 //    else
 //        avctx->pix_fmt = AV_PIX_FMT_RGB555;
 
-    s->frame = av_frame_alloc();
+    s->frame = av_frame_alloc_ijk();
     if (!s->frame)
         return AVERROR(ENOMEM);
 
@@ -490,7 +490,7 @@ static av_cold int truemotion1_decode_init(AVCodecContext *avctx)
      * predictor is 0 to start with */
     av_fast_malloc(&s->vert_pred, &s->vert_pred_size, s->avctx->width * sizeof(unsigned int));
     if (!s->vert_pred) {
-        av_frame_free(&s->frame);
+        av_frame_free_xij(&s->frame);
         return AVERROR(ENOMEM);
     }
 
@@ -882,7 +882,7 @@ static int truemotion1_decode_frame(AVCodecContext *avctx,
     if ((ret = truemotion1_decode_header(s)) < 0)
         return ret;
 
-    if ((ret = ff_reget_buffer(avctx, s->frame)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, s->frame)) < 0)
         return ret;
 
     if (compression_types[s->compression].algorithm == ALGO_RGB24H) {
@@ -891,7 +891,7 @@ static int truemotion1_decode_frame(AVCodecContext *avctx,
         truemotion1_decode_16bit(s);
     }
 
-    if ((ret = av_frame_ref(data, s->frame)) < 0)
+    if ((ret = av_frame_ref_xij(data, s->frame)) < 0)
         return ret;
 
     *got_frame      = 1;
@@ -904,7 +904,7 @@ static av_cold int truemotion1_decode_end(AVCodecContext *avctx)
 {
     TrueMotion1Context *s = avctx->priv_data;
 
-    av_frame_free(&s->frame);
+    av_frame_free_xij(&s->frame);
     av_freep(&s->vert_pred);
 
     return 0;

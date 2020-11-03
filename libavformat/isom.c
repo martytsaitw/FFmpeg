@@ -31,7 +31,7 @@
 
 /* http://www.mp4ra.org */
 /* ordered by muxing preference */
-const AVCodecTag ff_mp4_obj_type[] = {
+const AVCodecTag ff_mp4_obj_type_xij[] = {
     { AV_CODEC_ID_MOV_TEXT    , 0x08 },
     { AV_CODEC_ID_MPEG4       , 0x20 },
     { AV_CODEC_ID_H264        , 0x21 },
@@ -72,7 +72,7 @@ const AVCodecTag ff_mp4_obj_type[] = {
     { AV_CODEC_ID_NONE        ,    0 },
 };
 
-const AVCodecTag ff_codec_movvideo_tags[] = {
+const AVCodecTag ff_codec_movvideo_tags_xij[] = {
 /*  { AV_CODEC_ID_, MKTAG('I', 'V', '5', '0') }, *//* Indeo 5.0 */
 
     { AV_CODEC_ID_RAWVIDEO, MKTAG('r', 'a', 'w', ' ') }, /* uncompressed RGB */
@@ -309,7 +309,7 @@ const AVCodecTag ff_codec_movvideo_tags[] = {
     { AV_CODEC_ID_NONE, 0 },
 };
 
-const AVCodecTag ff_codec_movaudio_tags[] = {
+const AVCodecTag ff_codec_movaudio_tags_xij[] = {
     { AV_CODEC_ID_AAC,             MKTAG('m', 'p', '4', 'a') },
     { AV_CODEC_ID_AC3,             MKTAG('a', 'c', '-', '3') }, /* ETSI TS 102 366 Annex F */
     { AV_CODEC_ID_AC3,             MKTAG('s', 'a', 'c', '3') }, /* Nero Recode */
@@ -366,7 +366,7 @@ const AVCodecTag ff_codec_movaudio_tags[] = {
     { AV_CODEC_ID_NONE, 0 },
 };
 
-const AVCodecTag ff_codec_movsubtitle_tags[] = {
+const AVCodecTag ff_codec_movsubtitle_tags_xij[] = {
     { AV_CODEC_ID_MOV_TEXT, MKTAG('t', 'e', 'x', 't') },
     { AV_CODEC_ID_MOV_TEXT, MKTAG('t', 'x', '3', 'g') },
     { AV_CODEC_ID_EIA_608,  MKTAG('c', '6', '0', '8') },
@@ -399,7 +399,7 @@ static const char mov_mdhd_language_map[][4] = {
     "cat", "lat", "que", "grn", "aym", "tat", "uig", "dzo", "jav"
 };
 
-int ff_mov_iso639_to_lang(const char lang[4], int mp4)
+int ff_mov_iso639_to_lang_xij(const char lang[4], int mp4)
 {
     int i, code = 0;
 
@@ -426,7 +426,7 @@ int ff_mov_iso639_to_lang(const char lang[4], int mp4)
     return code;
 }
 
-int ff_mov_lang_to_iso639(unsigned code, char to[4])
+int ff_mov_lang_to_iso639_xij(unsigned code, char to[4])
 {
     int i;
     memset(to, 0, 4);
@@ -448,12 +448,12 @@ int ff_mov_lang_to_iso639(unsigned code, char to[4])
     return 1;
 }
 
-int ff_mp4_read_descr_len(AVIOContext *pb)
+int ff_mp4_read_descr_len_xij(AVIOContext *pb)
 {
     int len = 0;
     int count = 4;
     while (count--) {
-        int c = avio_r8(pb);
+        int c = avio_r8_xij(pb);
         len = (len << 7) | (c & 0x7f);
         if (!(c & 0x80))
             break;
@@ -461,29 +461,29 @@ int ff_mp4_read_descr_len(AVIOContext *pb)
     return len;
 }
 
-int ff_mp4_read_descr(AVFormatContext *fc, AVIOContext *pb, int *tag)
+int ff_mp4_read_descr_xij(AVFormatContext *fc, AVIOContext *pb, int *tag)
 {
     int len;
-    *tag = avio_r8(pb);
-    len = ff_mp4_read_descr_len(pb);
+    *tag = avio_r8_xij(pb);
+    len = ff_mp4_read_descr_len_xij(pb);
     av_log(fc, AV_LOG_TRACE, "MPEG-4 description: tag=0x%02x len=%d\n", *tag, len);
     return len;
 }
 
-void ff_mp4_parse_es_descr(AVIOContext *pb, int *es_id)
+void ff_mp4_parse_es_descr_xij(AVIOContext *pb, int *es_id)
 {
      int flags;
-     if (es_id) *es_id = avio_rb16(pb);
-     else                avio_rb16(pb);
-     flags = avio_r8(pb);
+     if (es_id) *es_id = avio_rb16_xij(pb);
+     else                avio_rb16_xij(pb);
+     flags = avio_r8_xij(pb);
      if (flags & 0x80) //streamDependenceFlag
-         avio_rb16(pb);
+         avio_rb16_xij(pb);
      if (flags & 0x40) { //URL_Flag
-         int len = avio_r8(pb);
-         avio_skip(pb, len);
+         int len = avio_r8_xij(pb);
+         avio_skip_xij(pb, len);
      }
      if (flags & 0x20) //OCRstreamFlag
-         avio_rb16(pb);
+         avio_rb16_xij(pb);
 }
 
 static const AVCodecTag mp4_audio_types[] = {
@@ -495,17 +495,17 @@ static const AVCodecTag mp4_audio_types[] = {
     { AV_CODEC_ID_NONE,   AOT_NULL },
 };
 
-int ff_mp4_read_dec_config_descr(AVFormatContext *fc, AVStream *st, AVIOContext *pb)
+int ff_mp4_read_dec_config_descr_xij(AVFormatContext *fc, AVStream *st, AVIOContext *pb)
 {
     enum AVCodecID codec_id;
     unsigned v;
     int len, tag;
     int ret;
-    int object_type_id = avio_r8(pb);
-    avio_r8(pb); /* stream type */
-    avio_rb24(pb); /* buffer size db */
+    int object_type_id = avio_r8_xij(pb);
+    avio_r8_xij(pb); /* stream type */
+    avio_rb24_xij(pb); /* buffer size db */
 
-    v = avio_rb32(pb);
+    v = avio_rb32_xij(pb);
 
     // TODO: fix this with codecpar
 #if FF_API_LAVF_AVCTX
@@ -515,22 +515,22 @@ FF_DISABLE_DEPRECATION_WARNINGS
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
 
-    st->codecpar->bit_rate = avio_rb32(pb); /* avg bitrate */
+    st->codecpar->bit_rate = avio_rb32_xij(pb); /* avg bitrate */
 
-    codec_id= ff_codec_get_id(ff_mp4_obj_type, object_type_id);
+    codec_id= ff_codec_get_id_xij(ff_mp4_obj_type_xij, object_type_id);
     if (codec_id)
         st->codecpar->codec_id = codec_id;
     av_log(fc, AV_LOG_TRACE, "esds object type id 0x%02x\n", object_type_id);
-    len = ff_mp4_read_descr(fc, pb, &tag);
+    len = ff_mp4_read_descr_xij(fc, pb, &tag);
     if (tag == MP4DecSpecificDescrTag) {
         av_log(fc, AV_LOG_TRACE, "Specific MPEG-4 header len=%d\n", len);
         if (!len || (uint64_t)len > (1<<30))
             return AVERROR_INVALIDDATA;
-        if ((ret = ff_get_extradata(fc, st->codecpar, pb, len)) < 0)
+        if ((ret = ff_get_extradata_xij(fc, st->codecpar, pb, len)) < 0)
             return ret;
         if (st->codecpar->codec_id == AV_CODEC_ID_AAC) {
             MPEG4AudioConfig cfg = {0};
-            ret = avpriv_mpeg4audio_get_config(&cfg, st->codecpar->extradata,
+            ret = avpriv_mpeg4audio_get_config_xij(&cfg, st->codecpar->extradata,
                                                st->codecpar->extradata_size * 8, 1);
             if (ret < 0)
                 return ret;
@@ -545,7 +545,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
                     "sample rate %d ext sample rate %d\n", st->codecpar->channels,
                     cfg.object_type, cfg.ext_object_type,
                     cfg.sample_rate, cfg.ext_sample_rate);
-            if (!(st->codecpar->codec_id = ff_codec_get_id(mp4_audio_types,
+            if (!(st->codecpar->codec_id = ff_codec_get_id_xij(mp4_audio_types,
                                                         cfg.object_type)))
                 st->codecpar->codec_id = AV_CODEC_ID_AAC;
         }
@@ -594,18 +594,18 @@ int ff_mov_read_chan(AVFormatContext *s, AVStream *st, int64_t size)
     if (size < 12)
         return AVERROR_INVALIDDATA;
 
-    layout_tag = avio_rb32(pb);
+    layout_tag = avio_rb32_xij(pb);
     size -= 4;
     if (layout_tag == 0) { // kCAFChannelLayoutTag_UseChannelDescriptions
         // Channel descriptions not implemented
         av_log_ask_for_sample(s, "Unimplemented container channel layout.\n");
-        avio_skip(pb, size);
+        avio_skip_xij(pb, size);
         return 0;
     }
     if (layout_tag == 0x10000) { // kCAFChannelLayoutTag_UseChannelBitmap
-        codec->channel_layout = avio_rb32(pb);
+        codec->channel_layout = avio_rb32_xij(pb);
         size -= 4;
-        avio_skip(pb, size);
+        avio_skip_xij(pb, size);
         return 0;
     }
     while (layouts->channel_layout) {
@@ -617,13 +617,13 @@ int ff_mov_read_chan(AVFormatContext *s, AVStream *st, int64_t size)
     }
     if (!codec->channel_layout)
         av_log(s, AV_LOG_WARNING, "Unknown container channel layout.\n");
-    avio_skip(pb, size);
+    avio_skip_xij(pb, size);
 
     return 0;
 }
 #endif
 
-void ff_mov_write_chan(AVIOContext *pb, int64_t channel_layout)
+void ff_mov_write_chan_xij(AVIOContext *pb, int64_t channel_layout)
 {
     const MovChannelLayout *layouts;
     uint32_t layout_tag = 0;
@@ -635,21 +635,21 @@ void ff_mov_write_chan(AVIOContext *pb, int64_t channel_layout)
         }
 
     if (layout_tag) {
-        avio_wb32(pb, layout_tag); // mChannelLayoutTag
-        avio_wb32(pb, 0);          // mChannelBitmap
+        avio_wb32_xij(pb, layout_tag); // mChannelLayoutTag
+        avio_wb32_xij(pb, 0);          // mChannelBitmap
     } else {
-        avio_wb32(pb, 0x10000);    // kCAFChannelLayoutTag_UseChannelBitmap
-        avio_wb32(pb, channel_layout);
+        avio_wb32_xij(pb, 0x10000);    // kCAFChannelLayoutTag_UseChannelBitmap
+        avio_wb32_xij(pb, channel_layout);
     }
-    avio_wb32(pb, 0);              // mNumberChannelDescriptions
+    avio_wb32_xij(pb, 0);              // mNumberChannelDescriptions
 }
 
-const struct AVCodecTag *avformat_get_mov_video_tags(void)
+const struct AVCodecTag *avformat_get_mov_video_tags_xij(void)
 {
-    return ff_codec_movvideo_tags;
+    return ff_codec_movvideo_tags_xij;
 }
 
-const struct AVCodecTag *avformat_get_mov_audio_tags(void)
+const struct AVCodecTag *avformat_get_mov_audio_tags_xij(void)
 {
-    return ff_codec_movaudio_tags;
+    return ff_codec_movaudio_tags_xij;
 }

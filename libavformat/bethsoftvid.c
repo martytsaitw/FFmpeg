@@ -76,12 +76,12 @@ static int vid_read_header(AVFormatContext *s)
     *    bytes: 'V' 'I' 'D'
     *    int16s: always_512, nframes, width, height, delay, always_14
     */
-    avio_skip(pb, 5);
-    vid->nframes = avio_rl16(pb);
-    vid->width   = avio_rl16(pb);
-    vid->height  = avio_rl16(pb);
-    vid->bethsoft_global_delay = avio_rl16(pb);
-    avio_rl16(pb);
+    avio_skip_xij(pb, 5);
+    vid->nframes = avio_rl16_xij(pb);
+    vid->width   = avio_rl16_xij(pb);
+    vid->height  = avio_rl16_xij(pb);
+    vid->bethsoft_global_delay = avio_rl16_xij(pb);
+    avio_rl16_xij(pb);
 
     // wait until the first packet to create each stream
     vid->video_index = -1;
@@ -106,7 +106,7 @@ static int read_frame(BVID_DemuxContext *vid, AVIOContext *pb, AVPacket *pkt,
     AVStream *st;
 
     if (vid->video_index < 0) {
-        st = avformat_new_stream(s, NULL);
+        st = avformat_new_stream_ijk(s, NULL);
         if (!st)
             return AVERROR(ENOMEM);
         vid->video_index = st->index;
@@ -115,7 +115,7 @@ static int read_frame(BVID_DemuxContext *vid, AVIOContext *pb, AVPacket *pkt,
                                   "having no audio packet before the first "
                                   "video packet");
         }
-        avpriv_set_pts_info(st, 64, 185, vid->sample_rate);
+        avpriv_set_pts_info_ijk(st, 64, 185, vid->sample_rate);
         st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
         st->codecpar->codec_id   = AV_CODEC_ID_BETHSOFTVID;
         st->codecpar->width      = vid->width;
@@ -134,11 +134,11 @@ static int read_frame(BVID_DemuxContext *vid, AVIOContext *pb, AVPacket *pkt,
     vidbuf_start[vidbuf_nbytes++] = block_type;
 
     // get the current packet duration
-    duration = vid->bethsoft_global_delay + avio_rl16(pb);
+    duration = vid->bethsoft_global_delay + avio_rl16_xij(pb);
 
     // set the y offset if it exists (decoder header data should be in data section)
     if(block_type == VIDEO_YOFF_P_FRAME){
-        if (avio_read(pb, &vidbuf_start[vidbuf_nbytes], 2) != 2) {
+        if (avio_read_xij(pb, &vidbuf_start[vidbuf_nbytes], 2) != 2) {
             ret = AVERROR(EIO);
             goto fail;
         }
@@ -150,14 +150,14 @@ static int read_frame(BVID_DemuxContext *vid, AVIOContext *pb, AVPacket *pkt,
         if(!vidbuf_start)
             return AVERROR(ENOMEM);
 
-        code = avio_r8(pb);
+        code = avio_r8_xij(pb);
         vidbuf_start[vidbuf_nbytes++] = code;
 
         if(code >= 0x80){ // rle sequence
             if(block_type == VIDEO_I_FRAME)
-                vidbuf_start[vidbuf_nbytes++] = avio_r8(pb);
+                vidbuf_start[vidbuf_nbytes++] = avio_r8_xij(pb);
         } else if(code){ // plain sequence
-            if (avio_read(pb, &vidbuf_start[vidbuf_nbytes], code) != code) {
+            if (avio_read_xij(pb, &vidbuf_start[vidbuf_nbytes], code) != code) {
                 ret = AVERROR(EIO);
                 goto fail;
             }
@@ -166,8 +166,8 @@ static int read_frame(BVID_DemuxContext *vid, AVIOContext *pb, AVPacket *pkt,
         bytes_copied += code & 0x7F;
         if(bytes_copied == npixels){ // sometimes no stop character is given, need to keep track of bytes copied
             // may contain a 0 byte even if read all pixels
-            if(avio_r8(pb))
-                avio_seek(pb, -1, SEEK_CUR);
+            if(avio_r8_xij(pb))
+                avio_seek_xij(pb, -1, SEEK_CUR);
             break;
         }
         if (bytes_copied > npixels) {
@@ -177,7 +177,7 @@ static int read_frame(BVID_DemuxContext *vid, AVIOContext *pb, AVPacket *pkt,
     } while(code);
 
     // copy data into packet
-    if ((ret = av_new_packet(pkt, vidbuf_nbytes)) < 0)
+    if ((ret = av_new_packet_ijk(pkt, vidbuf_nbytes)) < 0)
         goto fail;
     memcpy(pkt->data, vidbuf_start, vidbuf_nbytes);
 
@@ -189,7 +189,7 @@ static int read_frame(BVID_DemuxContext *vid, AVIOContext *pb, AVPacket *pkt,
 
     /* if there is a new palette available, add it to packet side data */
     if (vid->palette) {
-        uint8_t *pdata = av_packet_new_side_data(pkt, AV_PKT_DATA_PALETTE,
+        uint8_t *pdata = av_packet_new_side_data_xij(pkt, AV_PKT_DATA_PALETTE,
                                                  BVID_PALETTE_SIZE);
         if (!pdata) {
             ret = AVERROR(ENOMEM);
@@ -216,10 +216,10 @@ static int vid_read_packet(AVFormatContext *s,
     int audio_length;
     int ret_value;
 
-    if(vid->is_finished || avio_feof(pb))
+    if(vid->is_finished || avio_feof_xij(pb))
         return AVERROR_EOF;
 
-    block_type = avio_r8(pb);
+    block_type = avio_r8_xij(pb);
     switch(block_type){
         case PALETTE_BLOCK:
             if (vid->palette) {
@@ -229,19 +229,19 @@ static int vid_read_packet(AVFormatContext *s,
             vid->palette = av_malloc(BVID_PALETTE_SIZE);
             if (!vid->palette)
                 return AVERROR(ENOMEM);
-            if (avio_read(pb, vid->palette, BVID_PALETTE_SIZE) != BVID_PALETTE_SIZE) {
+            if (avio_read_xij(pb, vid->palette, BVID_PALETTE_SIZE) != BVID_PALETTE_SIZE) {
                 av_freep(&vid->palette);
                 return AVERROR(EIO);
             }
             return vid_read_packet(s, pkt);
 
         case FIRST_AUDIO_BLOCK:
-            avio_rl16(pb);
+            avio_rl16_xij(pb);
             // soundblaster DAC used for sample rate, as on specification page (link above)
-            vid->sample_rate = 1000000 / (256 - avio_r8(pb));
+            vid->sample_rate = 1000000 / (256 - avio_r8_xij(pb));
         case AUDIO_BLOCK:
             if (vid->audio_index < 0) {
-                AVStream *st = avformat_new_stream(s, NULL);
+                AVStream *st = avformat_new_stream_ijk(s, NULL);
                 if (!st)
                     return AVERROR(ENOMEM);
                 vid->audio_index                 = st->index;
@@ -253,10 +253,10 @@ static int vid_read_packet(AVFormatContext *s,
                 st->codecpar->sample_rate           = vid->sample_rate;
                 st->codecpar->bit_rate              = 8 * st->codecpar->sample_rate;
                 st->start_time                   = 0;
-                avpriv_set_pts_info(st, 64, 1, vid->sample_rate);
+                avpriv_set_pts_info_ijk(st, 64, 1, vid->sample_rate);
             }
-            audio_length = avio_rl16(pb);
-            if ((ret_value = av_get_packet(pb, pkt, audio_length)) != audio_length) {
+            audio_length = avio_rl16_xij(pb);
+            if ((ret_value = av_get_packet_xij(pb, pkt, audio_length)) != audio_length) {
                 if (ret_value < 0)
                     return ret_value;
                 av_log(s, AV_LOG_ERROR, "incomplete audio block\n");

@@ -40,7 +40,7 @@ static const CodedBitstreamType *cbs_type_table[] = {
 #endif
 };
 
-const enum AVCodecID ff_cbs_all_codec_ids[] = {
+const enum AVCodecID ff_cbs_all_codec_ids_xij[] = {
 #if CONFIG_CBS_H264
     AV_CODEC_ID_H264,
 #endif
@@ -53,7 +53,7 @@ const enum AVCodecID ff_cbs_all_codec_ids[] = {
     AV_CODEC_ID_NONE
 };
 
-int ff_cbs_init(CodedBitstreamContext **ctx_ptr,
+int ff_cbs_init_xij(CodedBitstreamContext **ctx_ptr,
                 enum AVCodecID codec_id, void *log_ctx)
 {
     CodedBitstreamContext *ctx;
@@ -92,7 +92,7 @@ int ff_cbs_init(CodedBitstreamContext **ctx_ptr,
     return 0;
 }
 
-void ff_cbs_close(CodedBitstreamContext **ctx_ptr)
+void ff_cbs_close_xij(CodedBitstreamContext **ctx_ptr)
 {
     CodedBitstreamContext *ctx = *ctx_ptr;
 
@@ -109,10 +109,10 @@ void ff_cbs_close(CodedBitstreamContext **ctx_ptr)
 static void cbs_unit_uninit(CodedBitstreamContext *ctx,
                             CodedBitstreamUnit *unit)
 {
-    av_buffer_unref(&unit->content_ref);
+    av_buffer_unref_xij(&unit->content_ref);
     unit->content = NULL;
 
-    av_buffer_unref(&unit->data_ref);
+    av_buffer_unref_xij(&unit->data_ref);
     unit->data             = NULL;
     unit->data_size        = 0;
     unit->data_bit_padding = 0;
@@ -128,7 +128,7 @@ void ff_cbs_fragment_uninit(CodedBitstreamContext *ctx,
     av_freep(&frag->units);
     frag->nb_units = 0;
 
-    av_buffer_unref(&frag->data_ref);
+    av_buffer_unref_xij(&frag->data_ref);
     frag->data             = NULL;
     frag->data_size        = 0;
     frag->data_bit_padding = 0;
@@ -149,7 +149,7 @@ static int cbs_read_fragment_content(CodedBitstreamContext *ctx,
                 continue;
         }
 
-        av_buffer_unref(&frag->units[i].content_ref);
+        av_buffer_unref_xij(&frag->units[i].content_ref);
         frag->units[i].content = NULL;
 
         err = ctx->codec->read_unit(ctx, &frag->units[i]);
@@ -167,7 +167,7 @@ static int cbs_read_fragment_content(CodedBitstreamContext *ctx,
     return 0;
 }
 
-int ff_cbs_read_extradata(CodedBitstreamContext *ctx,
+int ff_cbs_read_extradata_xij(CodedBitstreamContext *ctx,
                           CodedBitstreamFragment *frag,
                           const AVCodecParameters *par)
 {
@@ -195,7 +195,7 @@ static int cbs_fill_fragment_data(CodedBitstreamContext *ctx,
     av_assert0(!frag->data && !frag->data_ref);
 
     frag->data_ref =
-        av_buffer_alloc(size + AV_INPUT_BUFFER_PADDING_SIZE);
+        av_buffer_alloc_ijk(size + AV_INPUT_BUFFER_PADDING_SIZE);
     if (!frag->data_ref)
         return AVERROR(ENOMEM);
 
@@ -209,7 +209,7 @@ static int cbs_fill_fragment_data(CodedBitstreamContext *ctx,
     return 0;
 }
 
-int ff_cbs_read_packet(CodedBitstreamContext *ctx,
+int ff_cbs_read_packet_xij(CodedBitstreamContext *ctx,
                        CodedBitstreamFragment *frag,
                        const AVPacket *pkt)
 {
@@ -218,7 +218,7 @@ int ff_cbs_read_packet(CodedBitstreamContext *ctx,
     memset(frag, 0, sizeof(*frag));
 
     if (pkt->buf) {
-        frag->data_ref = av_buffer_ref(pkt->buf);
+        frag->data_ref = av_buffer_ref_ijk(pkt->buf);
         if (!frag->data_ref)
             return AVERROR(ENOMEM);
 
@@ -238,7 +238,7 @@ int ff_cbs_read_packet(CodedBitstreamContext *ctx,
     return cbs_read_fragment_content(ctx, frag);
 }
 
-int ff_cbs_read(CodedBitstreamContext *ctx,
+int ff_cbs_read_xij(CodedBitstreamContext *ctx,
                 CodedBitstreamFragment *frag,
                 const uint8_t *data, size_t size)
 {
@@ -258,7 +258,7 @@ int ff_cbs_read(CodedBitstreamContext *ctx,
 }
 
 
-int ff_cbs_write_fragment_data(CodedBitstreamContext *ctx,
+int ff_cbs_write_fragment_data_xij(CodedBitstreamContext *ctx,
                                CodedBitstreamFragment *frag)
 {
     int err, i;
@@ -269,7 +269,7 @@ int ff_cbs_write_fragment_data(CodedBitstreamContext *ctx,
         if (!unit->content)
             continue;
 
-        av_buffer_unref(&unit->data_ref);
+        av_buffer_unref_xij(&unit->data_ref);
         unit->data = NULL;
 
         err = ctx->codec->write_unit(ctx, unit);
@@ -280,7 +280,7 @@ int ff_cbs_write_fragment_data(CodedBitstreamContext *ctx,
         }
     }
 
-    av_buffer_unref(&frag->data_ref);
+    av_buffer_unref_xij(&frag->data_ref);
     frag->data = NULL;
 
     err = ctx->codec->assemble_fragment(ctx, frag);
@@ -292,13 +292,13 @@ int ff_cbs_write_fragment_data(CodedBitstreamContext *ctx,
     return 0;
 }
 
-int ff_cbs_write_extradata(CodedBitstreamContext *ctx,
+int ff_cbs_write_extradata_xij(CodedBitstreamContext *ctx,
                            AVCodecParameters *par,
                            CodedBitstreamFragment *frag)
 {
     int err;
 
-    err = ff_cbs_write_fragment_data(ctx, frag);
+    err = ff_cbs_write_fragment_data_xij(ctx, frag);
     if (err < 0)
         return err;
 
@@ -317,23 +317,23 @@ int ff_cbs_write_extradata(CodedBitstreamContext *ctx,
     return 0;
 }
 
-int ff_cbs_write_packet(CodedBitstreamContext *ctx,
+int ff_cbs_write_packet_xij(CodedBitstreamContext *ctx,
                         AVPacket *pkt,
                         CodedBitstreamFragment *frag)
 {
     AVBufferRef *buf;
     int err;
 
-    err = ff_cbs_write_fragment_data(ctx, frag);
+    err = ff_cbs_write_fragment_data_xij(ctx, frag);
     if (err < 0)
         return err;
 
     av_assert0(frag->data_ref);
-    buf = av_buffer_ref(frag->data_ref);
+    buf = av_buffer_ref_ijk(frag->data_ref);
     if (!buf)
         return AVERROR(ENOMEM);
 
-    av_init_packet(pkt);
+    av_init_packet_ijk(pkt);
     pkt->buf  = buf;
     pkt->data = frag->data;
     pkt->size = frag->data_size;
@@ -342,7 +342,7 @@ int ff_cbs_write_packet(CodedBitstreamContext *ctx,
 }
 
 
-void ff_cbs_trace_header(CodedBitstreamContext *ctx,
+void ff_cbs_trace_header_xij(CodedBitstreamContext *ctx,
                          const char *name)
 {
     if (!ctx->trace_enable)
@@ -351,7 +351,7 @@ void ff_cbs_trace_header(CodedBitstreamContext *ctx,
     av_log(ctx->log_ctx, ctx->trace_level, "%s\n", name);
 }
 
-void ff_cbs_trace_syntax_element(CodedBitstreamContext *ctx, int position,
+void ff_cbs_trace_syntax_element_xij(CodedBitstreamContext *ctx, int position,
                                  const char *name, const char *bits,
                                  int64_t value)
 {
@@ -375,7 +375,7 @@ void ff_cbs_trace_syntax_element(CodedBitstreamContext *ctx, int position,
            position, name, pad, bits, value);
 }
 
-int ff_cbs_read_unsigned(CodedBitstreamContext *ctx, GetBitContext *gbc,
+int ff_cbs_read_unsigned_xij(CodedBitstreamContext *ctx, GetBitContext *gbc,
                          int width, const char *name, uint32_t *write_to,
                          uint32_t range_min, uint32_t range_max)
 {
@@ -402,7 +402,7 @@ int ff_cbs_read_unsigned(CodedBitstreamContext *ctx, GetBitContext *gbc,
             bits[i] = value >> (width - i - 1) & 1 ? '1' : '0';
         bits[i] = 0;
 
-        ff_cbs_trace_syntax_element(ctx, position, name, bits, value);
+        ff_cbs_trace_syntax_element_xij(ctx, position, name, bits, value);
     }
 
     if (value < range_min || value > range_max) {
@@ -416,7 +416,7 @@ int ff_cbs_read_unsigned(CodedBitstreamContext *ctx, GetBitContext *gbc,
     return 0;
 }
 
-int ff_cbs_write_unsigned(CodedBitstreamContext *ctx, PutBitContext *pbc,
+int ff_cbs_write_unsigned_xij(CodedBitstreamContext *ctx, PutBitContext *pbc,
                           int width, const char *name, uint32_t value,
                           uint32_t range_min, uint32_t range_max)
 {
@@ -439,7 +439,7 @@ int ff_cbs_write_unsigned(CodedBitstreamContext *ctx, PutBitContext *pbc,
             bits[i] = value >> (width - i - 1) & 1 ? '1' : '0';
         bits[i] = 0;
 
-        ff_cbs_trace_syntax_element(ctx, put_bits_count(pbc), name, bits, value);
+        ff_cbs_trace_syntax_element_xij(ctx, put_bits_count(pbc), name, bits, value);
     }
 
     if (width < 32)
@@ -451,7 +451,7 @@ int ff_cbs_write_unsigned(CodedBitstreamContext *ctx, PutBitContext *pbc,
 }
 
 
-int ff_cbs_alloc_unit_content(CodedBitstreamContext *ctx,
+int ff_cbs_alloc_unit_content_xij(CodedBitstreamContext *ctx,
                               CodedBitstreamUnit *unit,
                               size_t size,
                               void (*free)(void *opaque, uint8_t *data))
@@ -462,7 +462,7 @@ int ff_cbs_alloc_unit_content(CodedBitstreamContext *ctx,
     if (!unit->content)
         return AVERROR(ENOMEM);
 
-    unit->content_ref = av_buffer_create(unit->content, size,
+    unit->content_ref = av_buffer_create_ijk(unit->content, size,
                                          free, ctx, 0);
     if (!unit->content_ref) {
         av_freep(&unit->content);
@@ -472,13 +472,13 @@ int ff_cbs_alloc_unit_content(CodedBitstreamContext *ctx,
     return 0;
 }
 
-int ff_cbs_alloc_unit_data(CodedBitstreamContext *ctx,
+int ff_cbs_alloc_unit_data_xij(CodedBitstreamContext *ctx,
                            CodedBitstreamUnit *unit,
                            size_t size)
 {
     av_assert0(!unit->data && !unit->data_ref);
 
-    unit->data_ref = av_buffer_alloc(size + AV_INPUT_BUFFER_PADDING_SIZE);
+    unit->data_ref = av_buffer_alloc_ijk(size + AV_INPUT_BUFFER_PADDING_SIZE);
     if (!unit->data_ref)
         return AVERROR(ENOMEM);
 
@@ -515,7 +515,7 @@ static int cbs_insert_unit(CodedBitstreamContext *ctx,
     return 0;
 }
 
-int ff_cbs_insert_unit_content(CodedBitstreamContext *ctx,
+int ff_cbs_insert_unit_content_xij(CodedBitstreamContext *ctx,
                                CodedBitstreamFragment *frag,
                                int position,
                                CodedBitstreamUnitType type,
@@ -531,7 +531,7 @@ int ff_cbs_insert_unit_content(CodedBitstreamContext *ctx,
     av_assert0(position >= 0 && position <= frag->nb_units);
 
     if (content_buf) {
-        content_ref = av_buffer_ref(content_buf);
+        content_ref = av_buffer_ref_ijk(content_buf);
         if (!content_ref)
             return AVERROR(ENOMEM);
     } else {
@@ -540,7 +540,7 @@ int ff_cbs_insert_unit_content(CodedBitstreamContext *ctx,
 
     err = cbs_insert_unit(ctx, frag, position);
     if (err < 0) {
-        av_buffer_unref(&content_ref);
+        av_buffer_unref_xij(&content_ref);
         return err;
     }
 
@@ -552,7 +552,7 @@ int ff_cbs_insert_unit_content(CodedBitstreamContext *ctx,
     return 0;
 }
 
-int ff_cbs_insert_unit_data(CodedBitstreamContext *ctx,
+int ff_cbs_insert_unit_data_xij(CodedBitstreamContext *ctx,
                             CodedBitstreamFragment *frag,
                             int position,
                             CodedBitstreamUnitType type,
@@ -568,15 +568,15 @@ int ff_cbs_insert_unit_data(CodedBitstreamContext *ctx,
     av_assert0(position >= 0 && position <= frag->nb_units);
 
     if (data_buf)
-        data_ref = av_buffer_ref(data_buf);
+        data_ref = av_buffer_ref_ijk(data_buf);
     else
-        data_ref = av_buffer_create(data, data_size, NULL, NULL, 0);
+        data_ref = av_buffer_create_ijk(data, data_size, NULL, NULL, 0);
     if (!data_ref)
         return AVERROR(ENOMEM);
 
     err = cbs_insert_unit(ctx, frag, position);
     if (err < 0) {
-        av_buffer_unref(&data_ref);
+        av_buffer_unref_xij(&data_ref);
         return err;
     }
 
@@ -589,7 +589,7 @@ int ff_cbs_insert_unit_data(CodedBitstreamContext *ctx,
     return 0;
 }
 
-int ff_cbs_delete_unit(CodedBitstreamContext *ctx,
+int ff_cbs_delete_unit_xij(CodedBitstreamContext *ctx,
                        CodedBitstreamFragment *frag,
                        int position)
 {

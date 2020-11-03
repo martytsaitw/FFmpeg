@@ -223,7 +223,7 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     int mb_x, mb_y;
 
     if (pict->width % 16 || pict->height % 16) {
-        AVFrame *clone = av_frame_alloc();
+        AVFrame *clone = av_frame_alloc_ijk();
         int i;
 
         if (!clone)
@@ -231,15 +231,15 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         clone->format = pict->format;
         clone->width  = FFALIGN(pict->width, 16);
         clone->height = FFALIGN(pict->height, 16);
-        ret = av_frame_get_buffer(clone, 32);
+        ret = av_frame_get_buffer_xij(clone, 32);
         if (ret < 0) {
-            av_frame_free(&clone);
+            av_frame_free_xij(&clone);
             return ret;
         }
 
-        ret = av_frame_copy(clone, pict);
+        ret = av_frame_copy_xij(clone, pict);
         if (ret < 0) {
-            av_frame_free(&clone);
+            av_frame_free_xij(&clone);
             return ret;
         }
 
@@ -260,7 +260,7 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         }
         ret = encode_frame(avctx, pkt, clone, got_packet);
 
-        av_frame_free(&clone);
+        av_frame_free_xij(&clone);
         return ret;
     }
 

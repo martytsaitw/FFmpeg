@@ -89,21 +89,21 @@ int main(int argc, char **argv)
     strcat(fntemplate, PKTFILESUFF);
     printf("FNTEMPLATE: '%s'\n", fntemplate);
 
-    err = avformat_open_input(&fctx, argv[1], NULL, NULL);
+    err = avformat_open_input_ijk(&fctx, argv[1], NULL, NULL);
     if (err < 0) {
         fprintf(stderr, "cannot open input: error %d\n", err);
         return 1;
     }
 
-    err = avformat_find_stream_info(fctx, NULL);
+    err = avformat_find_stream_info_ijk(fctx, NULL);
     if (err < 0) {
-        fprintf(stderr, "avformat_find_stream_info: error %d\n", err);
+        fprintf(stderr, "avformat_find_stream_info_ijk: error %d\n", err);
         return 1;
     }
 
-    av_init_packet(&pkt);
+    av_init_packet_ijk(&pkt);
 
-    while ((err = av_read_frame(fctx, &pkt)) >= 0) {
+    while ((err = av_read_frame_ijk(fctx, &pkt)) >= 0) {
         int fd;
         snprintf(pktfilename, sizeof(pktfilename), fntemplate, pktnum,
                  pkt.stream_index, pkt.pts, pkt.size,
@@ -119,7 +119,7 @@ int main(int argc, char **argv)
             }
             close(fd);
         }
-        av_packet_unref(&pkt);
+        av_packet_unref_ijk(&pkt);
         pktnum++;
         if (maxpkts && (pktnum >= maxpkts))
             break;

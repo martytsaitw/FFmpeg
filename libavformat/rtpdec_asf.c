@@ -90,7 +90,7 @@ static int packetizer_read(void *opaque, uint8_t *buf, int buf_size)
 
 static void init_packetizer(AVIOContext *pb, uint8_t *buf, int len)
 {
-    ffio_init_context(pb, buf, len, 0, NULL, packetizer_read, NULL, NULL);
+    ffio_init_context_xij(pb, buf, len, 0, NULL, packetizer_read, NULL, NULL);
 
     /* this "fills" the buffer with its current content */
     pb->pos     = len;
@@ -117,13 +117,13 @@ int ff_wms_parse_sdp_a_line(AVFormatContext *s, const char *p)
                    "Failed to fix invalid RTSP-MS/ASF min_pktsize\n");
         init_packetizer(&pb, buf, len);
         if (rt->asf_ctx) {
-            avformat_close_input(&rt->asf_ctx);
+            avformat_close_input_xij(&rt->asf_ctx);
         }
 
-        if (!(iformat = av_find_input_format("asf")))
+        if (!(iformat = av_find_input_format_xij("asf")))
             return AVERROR_DEMUXER_NOT_FOUND;
 
-        rt->asf_ctx = avformat_alloc_context();
+        rt->asf_ctx = avformat_alloc_context_ijk();
         if (!rt->asf_ctx) {
             av_free(buf);
             return AVERROR(ENOMEM);
@@ -131,12 +131,12 @@ int ff_wms_parse_sdp_a_line(AVFormatContext *s, const char *p)
         rt->asf_ctx->pb      = &pb;
         av_dict_set(&opts, "no_resync_search", "1", 0);
 
-        if ((ret = ff_copy_whiteblacklists(rt->asf_ctx, s)) < 0) {
+        if ((ret = ff_copy_whiteblacklists_xij(rt->asf_ctx, s)) < 0) {
             av_dict_free(&opts);
             return ret;
         }
 
-        ret = avformat_open_input(&rt->asf_ctx, "", iformat, &opts);
+        ret = avformat_open_input_ijk(&rt->asf_ctx, "", iformat, &opts);
         av_dict_free(&opts);
         if (ret < 0) {
             av_free(pb.buffer);
@@ -165,11 +165,11 @@ static int asfrtp_parse_sdp_line(AVFormatContext *s, int stream_index,
 
             for (i = 0; i < rt->asf_ctx->nb_streams; i++) {
                 if (s->streams[stream_index]->id == rt->asf_ctx->streams[i]->id) {
-                    avcodec_parameters_copy(s->streams[stream_index]->codecpar,
+                    avcodec_parameters_copy_ijk(s->streams[stream_index]->codecpar,
                                             rt->asf_ctx->streams[i]->codecpar);
                     s->streams[stream_index]->need_parsing =
                         rt->asf_ctx->streams[i]->need_parsing;
-                    avpriv_set_pts_info(s->streams[stream_index], 32, 1, 1000);
+                    avpriv_set_pts_info_ijk(s->streams[stream_index], 32, 1, 1000);
                 }
            }
         }
@@ -209,19 +209,19 @@ static int asfrtp_parse_packet(AVFormatContext *s, PayloadContext *asf,
 
         av_freep(&asf->buf);
 
-        ffio_init_context(pb, (uint8_t *)buf, len, 0, NULL, NULL, NULL, NULL);
+        ffio_init_context_xij(pb, (uint8_t *)buf, len, 0, NULL, NULL, NULL, NULL);
 
         while (avio_tell(pb) + 4 < len) {
             int start_off = avio_tell(pb);
 
-            mflags = avio_r8(pb);
-            len_off = avio_rb24(pb);
+            mflags = avio_r8_xij(pb);
+            len_off = avio_rb24_xij(pb);
             if (mflags & 0x20)   /**< relative timestamp */
-                avio_skip(pb, 4);
+                avio_skip_xij(pb, 4);
             if (mflags & 0x10)   /**< has duration */
-                avio_skip(pb, 4);
+                avio_skip_xij(pb, 4);
             if (mflags & 0x8)    /**< has location ID */
-                avio_skip(pb, 4);
+                avio_skip_xij(pb, 4);
             off = avio_tell(pb);
 
             if (!(mflags & 0x40)) {
@@ -232,19 +232,19 @@ static int asfrtp_parse_packet(AVFormatContext *s, PayloadContext *asf,
                  * multiple RTP packets.
                  */
                 if (asf->pktbuf && len_off != avio_tell(asf->pktbuf)) {
-                    ffio_free_dyn_buf(&asf->pktbuf);
+                    ffio_free_dyn_buf_xij(&asf->pktbuf);
                 }
                 if (!len_off && !asf->pktbuf &&
-                    (res = avio_open_dyn_buf(&asf->pktbuf)) < 0)
+                    (res = avio_open_dyn_buf_xij(&asf->pktbuf)) < 0)
                     return res;
                 if (!asf->pktbuf)
                     return AVERROR(EIO);
 
-                avio_write(asf->pktbuf, buf + off, len - off);
-                avio_skip(pb, len - off);
+                avio_write_xij(asf->pktbuf, buf + off, len - off);
+                avio_skip_xij(pb, len - off);
                 if (!(flags & RTP_FLAG_MARKER))
                     return -1;
-                out_len     = avio_close_dyn_buf(asf->pktbuf, &asf->buf);
+                out_len     = avio_close_dyn_buf_xij(asf->pktbuf, &asf->buf);
                 asf->pktbuf = NULL;
             } else {
                 /**
@@ -264,7 +264,7 @@ static int asfrtp_parse_packet(AVFormatContext *s, PayloadContext *asf,
                     return res;
                 memcpy(asf->buf + prev_len, buf + off,
                        FFMIN(cur_len, len - off));
-                avio_skip(pb, cur_len);
+                avio_skip_xij(pb, cur_len);
             }
         }
 
@@ -277,7 +277,7 @@ static int asfrtp_parse_packet(AVFormatContext *s, PayloadContext *asf,
     for (;;) {
         int i;
 
-        res = ff_read_packet(rt->asf_ctx, pkt);
+        res = ff_read_packet_ijk(rt->asf_ctx, pkt);
         rt->asf_pb_pos = avio_tell(pb);
         if (res != 0)
             break;
@@ -287,7 +287,7 @@ static int asfrtp_parse_packet(AVFormatContext *s, PayloadContext *asf,
                 return 1; // FIXME: return 0 if last packet
             }
         }
-        av_packet_unref(pkt);
+        av_packet_unref_ijk(pkt);
     }
 
     return res == 1 ? -1 : res;
@@ -295,7 +295,7 @@ static int asfrtp_parse_packet(AVFormatContext *s, PayloadContext *asf,
 
 static void asfrtp_close_context(PayloadContext *asf)
 {
-    ffio_free_dyn_buf(&asf->pktbuf);
+    ffio_free_dyn_buf_xij(&asf->pktbuf);
     av_freep(&asf->buf);
 }
 

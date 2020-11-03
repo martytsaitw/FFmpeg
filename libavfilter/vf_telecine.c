@@ -185,12 +185,12 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
         s->pattern_pos = 0;
 
     if (!len) { // do not output any field from this frame
-        av_frame_free(&inpicref);
+        av_frame_free_xij(&inpicref);
         return 0;
     }
 
     if (s->occupied) {
-        av_frame_make_writable(s->frame[nout]);
+        av_frame_make_writable_xij(s->frame[nout]);
         for (i = 0; i < s->nb_planes; i++) {
             // fill in the EARLIER field from the buffered pic
             av_image_copy_plane(s->frame[nout]->data[i] + s->frame[nout]->linesize[i] * s->first_field,
@@ -214,7 +214,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
 
     while (len >= 2) {
         // output THIS image as-is
-        av_frame_make_writable(s->frame[nout]);
+        av_frame_make_writable_xij(s->frame[nout]);
         for (i = 0; i < s->nb_planes; i++)
             av_image_copy_plane(s->frame[nout]->data[i], s->frame[nout]->linesize[i],
                                 inpicref->data[i], inpicref->linesize[i],
@@ -235,20 +235,20 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
     }
 
     for (i = 0; i < nout; i++) {
-        AVFrame *frame = av_frame_clone(s->frame[i]);
+        AVFrame *frame = av_frame_clone_xij(s->frame[i]);
 
         if (!frame) {
-            av_frame_free(&inpicref);
+            av_frame_free_xij(&inpicref);
             return AVERROR(ENOMEM);
         }
 
-        av_frame_copy_props(frame, inpicref);
+        av_frame_copy_props_xij(frame, inpicref);
         frame->pts = ((s->start_time == AV_NOPTS_VALUE) ? 0 : s->start_time) +
                      av_rescale(outlink->frame_count_in, s->ts_unit.num,
                                 s->ts_unit.den);
         ret = ff_filter_frame(outlink, frame);
     }
-    av_frame_free(&inpicref);
+    av_frame_free_xij(&inpicref);
 
     return ret;
 }
@@ -258,9 +258,9 @@ static av_cold void uninit(AVFilterContext *ctx)
     TelecineContext *s = ctx->priv;
     int i;
 
-    av_frame_free(&s->temp);
+    av_frame_free_xij(&s->temp);
     for (i = 0; i < s->out_cnt; i++)
-        av_frame_free(&s->frame[i]);
+        av_frame_free_xij(&s->frame[i]);
 }
 
 static const AVFilterPad telecine_inputs[] = {

@@ -328,17 +328,17 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     AVFrame *out;
     // Set 'direct' if we can modify the input frame in-place.  Otherwise we
     // need to retrieve a new frame from the output link.
-    int direct = av_frame_is_writable(in) && !ctx->is_disabled;
+    int direct = av_frame_is_writable_xij(in) && !ctx->is_disabled;
 
     if (direct) {
         out = in;
     } else {
         out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out) {
-            av_frame_free(&in);
+            av_frame_free_xij(&in);
             return AVERROR(ENOMEM);
         }
-        av_frame_copy_props(out, in);
+        av_frame_copy_props_xij(out, in);
     }
 
     // Now we've got the input and output frames (which may be the same frame)
@@ -346,12 +346,12 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     normalize(s, in, out);
 
     if (ctx->is_disabled) {
-        av_frame_free(&out);
+        av_frame_free_xij(&out);
         return ff_filter_frame(outlink, in);
     }
 
     if (!direct)
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
 
     return ff_filter_frame(outlink, out);
 }

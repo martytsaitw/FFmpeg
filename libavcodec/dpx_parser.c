@@ -98,7 +98,7 @@ static int dpx_parse(AVCodecParserContext *s, AVCodecContext *avctx,
     }
 
 flush:
-    if (ff_combine_frame(&d->pc, next, &buf, &buf_size) < 0)
+    if (ff_combine_frame_xij(&d->pc, next, &buf, &buf_size) < 0)
         return buf_size;
 
     d->pc.frame_start_found = 0;
@@ -112,5 +112,5 @@ AVCodecParser ff_dpx_parser = {
     .codec_ids      = { AV_CODEC_ID_DPX },
     .priv_data_size = sizeof(DPXParseContext),
     .parser_parse   = dpx_parse,
-    .parser_close   = ff_parse_close,
+    .parser_close   = ff_parse_close_xij,
 };

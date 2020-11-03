@@ -31,7 +31,7 @@ int ff_rtp_chain_mux_open(AVFormatContext **out, AVFormatContext *s,
 {
     AVFormatContext *rtpctx = NULL;
     int ret;
-    AVOutputFormat *rtp_format = av_guess_format("rtp", NULL, NULL);
+    AVOutputFormat *rtp_format = av_guess_format_xij("rtp", NULL, NULL);
     uint8_t *rtpflags;
     AVDictionary *opts = NULL;
 
@@ -41,14 +41,14 @@ int ff_rtp_chain_mux_open(AVFormatContext **out, AVFormatContext *s,
     }
 
     /* Allocate an AVFormatContext for each output stream */
-    rtpctx = avformat_alloc_context();
+    rtpctx = avformat_alloc_context_ijk();
     if (!rtpctx) {
         ret = AVERROR(ENOMEM);
         goto fail;
     }
 
     rtpctx->oformat = rtp_format;
-    if (!avformat_new_stream(rtpctx, NULL)) {
+    if (!avformat_new_stream_ijk(rtpctx, NULL)) {
         ret = AVERROR(ENOMEM);
         goto fail;
     }
@@ -74,26 +74,26 @@ int ff_rtp_chain_mux_open(AVFormatContext **out, AVFormatContext *s,
     /* Set the synchronized start time. */
     rtpctx->start_time_realtime = s->start_time_realtime;
 
-    avcodec_parameters_copy(rtpctx->streams[0]->codecpar, st->codecpar);
+    avcodec_parameters_copy_ijk(rtpctx->streams[0]->codecpar, st->codecpar);
     rtpctx->streams[0]->time_base = st->time_base;
 
     if (handle) {
-        ret = ffio_fdopen(&rtpctx->pb, handle);
+        ret = ffio_fdopen_xij(&rtpctx->pb, handle);
         if (ret < 0)
             ffurl_close(handle);
     } else
-        ret = ffio_open_dyn_packet_buf(&rtpctx->pb, packet_size);
+        ret = ffio_open_dyn_packet_buf_xij(&rtpctx->pb, packet_size);
     if (!ret)
-        ret = avformat_write_header(rtpctx, &opts);
+        ret = avformat_write_header_xij(rtpctx, &opts);
     av_dict_free(&opts);
 
     if (ret) {
         if (handle && rtpctx->pb) {
-            avio_closep(&rtpctx->pb);
+            avio_closep_xij(&rtpctx->pb);
         } else if (rtpctx->pb) {
-            ffio_free_dyn_buf(&rtpctx->pb);
+            ffio_free_dyn_buf_xij(&rtpctx->pb);
         }
-        avformat_free_context(rtpctx);
+        avformat_free_context_ijk(rtpctx);
         return ret;
     }
 
@@ -101,7 +101,7 @@ int ff_rtp_chain_mux_open(AVFormatContext **out, AVFormatContext *s,
     return 0;
 
 fail:
-    avformat_free_context(rtpctx);
+    avformat_free_context_ijk(rtpctx);
     if (handle)
         ffurl_close(handle);
     return ret;

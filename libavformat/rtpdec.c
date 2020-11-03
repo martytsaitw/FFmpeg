@@ -327,16 +327,16 @@ int ff_rtp_check_and_send_back_rr(RTPDemuxContext *s, URLContext *fd,
 
     if (!fd)
         pb = avio;
-    else if (avio_open_dyn_buf(&pb) < 0)
+    else if (avio_open_dyn_buf_xij(&pb) < 0)
         return -1;
 
     // Receiver Report
-    avio_w8(pb, (RTP_VERSION << 6) + 1); /* 1 report block */
-    avio_w8(pb, RTCP_RR);
-    avio_wb16(pb, 7); /* length in words - 1 */
+    avio_w8_xij(pb, (RTP_VERSION << 6) + 1); /* 1 report block */
+    avio_w8_xij(pb, RTCP_RR);
+    avio_wb16_xij(pb, 7); /* length in words - 1 */
     // our own SSRC: we use the server's SSRC + 1 to avoid conflicts
-    avio_wb32(pb, s->ssrc + 1);
-    avio_wb32(pb, s->ssrc); // server SSRC
+    avio_wb32_xij(pb, s->ssrc + 1);
+    avio_wb32_xij(pb, s->ssrc); // server SSRC
     // some placeholders we should really fill...
     // RFC 1889/p64
     extended_max          = stats->cycles + stats->max_seq;
@@ -355,40 +355,40 @@ int ff_rtp_check_and_send_back_rr(RTPDemuxContext *s, URLContext *fd,
 
     fraction = (fraction << 24) | lost;
 
-    avio_wb32(pb, fraction); /* 8 bits of fraction, 24 bits of total packets lost */
-    avio_wb32(pb, extended_max); /* max sequence received */
-    avio_wb32(pb, stats->jitter >> 4); /* jitter */
+    avio_wb32_xij(pb, fraction); /* 8 bits of fraction, 24 bits of total packets lost */
+    avio_wb32_xij(pb, extended_max); /* max sequence received */
+    avio_wb32_xij(pb, stats->jitter >> 4); /* jitter */
 
     if (s->last_rtcp_ntp_time == AV_NOPTS_VALUE) {
-        avio_wb32(pb, 0); /* last SR timestamp */
-        avio_wb32(pb, 0); /* delay since last SR */
+        avio_wb32_xij(pb, 0); /* last SR timestamp */
+        avio_wb32_xij(pb, 0); /* delay since last SR */
     } else {
         uint32_t middle_32_bits   = s->last_rtcp_ntp_time >> 16; // this is valid, right? do we need to handle 64 bit values special?
         uint32_t delay_since_last = av_rescale(av_gettime_relative() - s->last_rtcp_reception_time,
                                                65536, AV_TIME_BASE);
 
-        avio_wb32(pb, middle_32_bits); /* last SR timestamp */
-        avio_wb32(pb, delay_since_last); /* delay since last SR */
+        avio_wb32_xij(pb, middle_32_bits); /* last SR timestamp */
+        avio_wb32_xij(pb, delay_since_last); /* delay since last SR */
     }
 
     // CNAME
-    avio_w8(pb, (RTP_VERSION << 6) + 1); /* 1 report block */
-    avio_w8(pb, RTCP_SDES);
+    avio_w8_xij(pb, (RTP_VERSION << 6) + 1); /* 1 report block */
+    avio_w8_xij(pb, RTCP_SDES);
     len = strlen(s->hostname);
-    avio_wb16(pb, (7 + len + 3) / 4); /* length in words - 1 */
-    avio_wb32(pb, s->ssrc + 1);
-    avio_w8(pb, 0x01);
-    avio_w8(pb, len);
-    avio_write(pb, s->hostname, len);
-    avio_w8(pb, 0); /* END */
+    avio_wb16_xij(pb, (7 + len + 3) / 4); /* length in words - 1 */
+    avio_wb32_xij(pb, s->ssrc + 1);
+    avio_w8_xij(pb, 0x01);
+    avio_w8_xij(pb, len);
+    avio_write_xij(pb, s->hostname, len);
+    avio_w8_xij(pb, 0); /* END */
     // padding
     for (len = (7 + len) % 4; len % 4; len++)
-        avio_w8(pb, 0);
+        avio_w8_xij(pb, 0);
 
-    avio_flush(pb);
+    avio_flush_xij(pb);
     if (!fd)
         return 0;
-    len = avio_close_dyn_buf(pb, &buf);
+    len = avio_close_dyn_buf_xij(pb, &buf);
     if ((len > 0) && buf) {
         int av_unused result;
         av_log(s->ic, AV_LOG_TRACE, "sending %d bytes of RR\n", len);
@@ -406,32 +406,32 @@ void ff_rtp_send_punch_packets(URLContext *rtp_handle)
     int len;
 
     /* Send a small RTP packet */
-    if (avio_open_dyn_buf(&pb) < 0)
+    if (avio_open_dyn_buf_xij(&pb) < 0)
         return;
 
-    avio_w8(pb, (RTP_VERSION << 6));
-    avio_w8(pb, 0); /* Payload type */
-    avio_wb16(pb, 0); /* Seq */
-    avio_wb32(pb, 0); /* Timestamp */
-    avio_wb32(pb, 0); /* SSRC */
+    avio_w8_xij(pb, (RTP_VERSION << 6));
+    avio_w8_xij(pb, 0); /* Payload type */
+    avio_wb16_xij(pb, 0); /* Seq */
+    avio_wb32_xij(pb, 0); /* Timestamp */
+    avio_wb32_xij(pb, 0); /* SSRC */
 
-    avio_flush(pb);
-    len = avio_close_dyn_buf(pb, &buf);
+    avio_flush_xij(pb);
+    len = avio_close_dyn_buf_xij(pb, &buf);
     if ((len > 0) && buf)
         ffurl_write(rtp_handle, buf, len);
     av_free(buf);
 
     /* Send a minimal RTCP RR */
-    if (avio_open_dyn_buf(&pb) < 0)
+    if (avio_open_dyn_buf_xij(&pb) < 0)
         return;
 
-    avio_w8(pb, (RTP_VERSION << 6));
-    avio_w8(pb, RTCP_RR); /* receiver report */
-    avio_wb16(pb, 1); /* length in words - 1 */
-    avio_wb32(pb, 0); /* our own SSRC */
+    avio_w8_xij(pb, (RTP_VERSION << 6));
+    avio_w8_xij(pb, RTCP_RR); /* receiver report */
+    avio_wb16_xij(pb, 1); /* length in words - 1 */
+    avio_wb32_xij(pb, 0); /* our own SSRC */
 
-    avio_flush(pb);
-    len = avio_close_dyn_buf(pb, &buf);
+    avio_flush_xij(pb);
+    len = avio_close_dyn_buf_xij(pb, &buf);
     if ((len > 0) && buf)
         ffurl_write(rtp_handle, buf, len);
     av_free(buf);
@@ -497,33 +497,33 @@ int ff_rtp_send_rtcp_feedback(RTPDemuxContext *s, URLContext *fd,
 
     if (!fd)
         pb = avio;
-    else if (avio_open_dyn_buf(&pb) < 0)
+    else if (avio_open_dyn_buf_xij(&pb) < 0)
         return -1;
 
     if (need_keyframe) {
-        avio_w8(pb, (RTP_VERSION << 6) | 1); /* PLI */
-        avio_w8(pb, RTCP_PSFB);
-        avio_wb16(pb, 2); /* length in words - 1 */
+        avio_w8_xij(pb, (RTP_VERSION << 6) | 1); /* PLI */
+        avio_w8_xij(pb, RTCP_PSFB);
+        avio_wb16_xij(pb, 2); /* length in words - 1 */
         // our own SSRC: we use the server's SSRC + 1 to avoid conflicts
-        avio_wb32(pb, s->ssrc + 1);
-        avio_wb32(pb, s->ssrc); // server SSRC
+        avio_wb32_xij(pb, s->ssrc + 1);
+        avio_wb32_xij(pb, s->ssrc); // server SSRC
     }
 
     if (missing_packets) {
-        avio_w8(pb, (RTP_VERSION << 6) | 1); /* NACK */
-        avio_w8(pb, RTCP_RTPFB);
-        avio_wb16(pb, 3); /* length in words - 1 */
-        avio_wb32(pb, s->ssrc + 1);
-        avio_wb32(pb, s->ssrc); // server SSRC
+        avio_w8_xij(pb, (RTP_VERSION << 6) | 1); /* NACK */
+        avio_w8_xij(pb, RTCP_RTPFB);
+        avio_wb16_xij(pb, 3); /* length in words - 1 */
+        avio_wb32_xij(pb, s->ssrc + 1);
+        avio_wb32_xij(pb, s->ssrc); // server SSRC
 
-        avio_wb16(pb, first_missing);
-        avio_wb16(pb, missing_mask);
+        avio_wb16_xij(pb, first_missing);
+        avio_wb16_xij(pb, missing_mask);
     }
 
-    avio_flush(pb);
+    avio_flush_xij(pb);
     if (!fd)
         return 0;
-    len = avio_close_dyn_buf(pb, &buf);
+    len = avio_close_dyn_buf_xij(pb, &buf);
     if (len > 0 && buf) {
         ffurl_write(fd, buf, len);
         av_free(buf);
@@ -693,7 +693,7 @@ static int rtp_parse_packet_internal(RTPDemuxContext *s, AVPacket *pkt,
                                       s->st, pkt, &timestamp, buf, len, seq,
                                       flags);
     } else if (st) {
-        if ((rv = av_new_packet(pkt, len)) < 0)
+        if ((rv = av_new_packet_ijk(pkt, len)) < 0)
             return rv;
         memcpy(pkt->data, buf, len);
         pkt->stream_index = st->index;
@@ -911,7 +911,7 @@ int ff_parse_fmtp(AVFormatContext *s,
     while (*p && *p == ' ')
         p++;                     // strip trailing spaces
 
-    while (ff_rtsp_next_attr_and_value(&p,
+    while (ff_rtsp_next_attr_and_value_xij(&p,
                                        attr, sizeof(attr),
                                        value, value_size)) {
         res = parse_fmtp(s, stream, data, attr, value);
@@ -927,12 +927,12 @@ int ff_parse_fmtp(AVFormatContext *s,
 int ff_rtp_finalize_packet(AVPacket *pkt, AVIOContext **dyn_buf, int stream_idx)
 {
     int ret;
-    av_init_packet(pkt);
+    av_init_packet_ijk(pkt);
 
-    pkt->size         = avio_close_dyn_buf(*dyn_buf, &pkt->data);
+    pkt->size         = avio_close_dyn_buf_xij(*dyn_buf, &pkt->data);
     pkt->stream_index = stream_idx;
     *dyn_buf = NULL;
-    if ((ret = av_packet_from_data(pkt, pkt->data, pkt->size)) < 0) {
+    if ((ret = av_packet_from_data_ijk(pkt, pkt->data, pkt->size)) < 0) {
         av_freep(&pkt->data);
         return ret;
     }

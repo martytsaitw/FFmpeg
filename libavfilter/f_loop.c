@@ -89,7 +89,7 @@ static int push_samples(AVFilterContext *ctx, int nb_samples)
             return AVERROR(ENOMEM);
         ret = av_audio_fifo_peek_at(s->fifo, (void **)out->extended_data, out->nb_samples, s->current_sample);
         if (ret < 0) {
-            av_frame_free(&out);
+            av_frame_free_xij(&out);
             return ret;
         }
         out->pts = s->pts;
@@ -150,7 +150,7 @@ static int afilter_frame(AVFilterLink *inlink, AVFrame *frame)
         } else {
             int nb_samples = frame->nb_samples;
 
-            av_frame_free(&frame);
+            av_frame_free_xij(&frame);
             ret = push_samples(ctx, nb_samples);
         }
     } else {
@@ -257,7 +257,7 @@ static av_cold void uninit(AVFilterContext *ctx)
     int i;
 
     for (i = 0; i < s->nb_frames; i++)
-        av_frame_free(&s->frames[i]);
+        av_frame_free_xij(&s->frames[i]);
 
     av_freep(&s->frames);
     s->nb_frames = 0;
@@ -270,7 +270,7 @@ static int push_frame(AVFilterContext *ctx)
     int64_t pts;
     int ret;
 
-    AVFrame *out = av_frame_clone(s->frames[s->current_frame]);
+    AVFrame *out = av_frame_clone_xij(s->frames[s->current_frame]);
 
     if (!out)
         return AVERROR(ENOMEM);
@@ -301,16 +301,16 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
         if (s->nb_frames < s->size) {
             if (!s->nb_frames)
                 s->start_pts = frame->pts;
-            s->frames[s->nb_frames] = av_frame_clone(frame);
+            s->frames[s->nb_frames] = av_frame_clone_xij(frame);
             if (!s->frames[s->nb_frames]) {
-                av_frame_free(&frame);
+                av_frame_free_xij(&frame);
                 return AVERROR(ENOMEM);
             }
             s->nb_frames++;
             s->duration = frame->pts + frame->pkt_duration;
             ret = ff_filter_frame(outlink, frame);
         } else {
-            av_frame_free(&frame);
+            av_frame_free_xij(&frame);
             ret = push_frame(ctx);
         }
     } else {

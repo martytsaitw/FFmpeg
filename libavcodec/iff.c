@@ -1504,7 +1504,7 @@ static int decode_frame(AVCodecContext *avctx,
     if ((res = extract_header(avctx, avpkt)) < 0)
         return res;
 
-    if ((res = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((res = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return res;
     s->frame = frame;
 

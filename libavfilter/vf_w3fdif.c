@@ -456,7 +456,7 @@ static int filter(AVFilterContext *ctx, int is_second)
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out)
         return AVERROR(ENOMEM);
-    av_frame_copy_props(out, s->cur);
+    av_frame_copy_props_xij(out, s->cur);
     out->interlaced_frame = 0;
 
     if (!is_second) {
@@ -491,23 +491,23 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
     W3FDIFContext *s = ctx->priv;
     int ret;
 
-    av_frame_free(&s->prev);
+    av_frame_free_xij(&s->prev);
     s->prev = s->cur;
     s->cur  = s->next;
     s->next = frame;
 
     if (!s->cur) {
-        s->cur = av_frame_clone(s->next);
+        s->cur = av_frame_clone_xij(s->next);
         if (!s->cur)
             return AVERROR(ENOMEM);
     }
 
     if ((s->deint && !s->cur->interlaced_frame) || ctx->is_disabled) {
-        AVFrame *out = av_frame_clone(s->cur);
+        AVFrame *out = av_frame_clone_xij(s->cur);
         if (!out)
             return AVERROR(ENOMEM);
 
-        av_frame_free(&s->prev);
+        av_frame_free_xij(&s->prev);
         if (out->pts != AV_NOPTS_VALUE)
             out->pts *= 2;
         return ff_filter_frame(ctx->outputs[0], out);
@@ -535,7 +535,7 @@ static int request_frame(AVFilterLink *outlink)
     ret = ff_request_frame(ctx->inputs[0]);
 
     if (ret == AVERROR_EOF && s->cur) {
-        AVFrame *next = av_frame_clone(s->next);
+        AVFrame *next = av_frame_clone_xij(s->next);
         if (!next)
             return AVERROR(ENOMEM);
         next->pts = s->next->pts * 2 - s->cur->pts;
@@ -553,9 +553,9 @@ static av_cold void uninit(AVFilterContext *ctx)
     W3FDIFContext *s = ctx->priv;
     int i;
 
-    av_frame_free(&s->prev);
-    av_frame_free(&s->cur );
-    av_frame_free(&s->next);
+    av_frame_free_xij(&s->prev);
+    av_frame_free_xij(&s->cur );
+    av_frame_free_xij(&s->next);
 
     for (i = 0; i < s->nb_threads; i++)
         av_freep(&s->work_line[i]);

@@ -108,7 +108,7 @@ static int caf_write_header(AVFormatContext *s)
     AVCodecParameters *par = s->streams[0]->codecpar;
     CAFContext *caf = s->priv_data;
     AVDictionaryEntry *t = NULL;
-    unsigned int codec_tag = ff_codec_get_tag(ff_codec_caf_tags, par->codec_id);
+    unsigned int codec_tag = ff_codec_get_tag_xij(ff_codec_caf_tags, par->codec_id);
     int64_t chunk_size = 0;
     int frame_size = par->frame_size;
 
@@ -142,68 +142,68 @@ static int caf_write_header(AVFormatContext *s)
         frame_size = samples_per_packet(par->codec_id, par->channels, par->block_align);
 
     ffio_wfourcc(pb, "caff"); //< mFileType
-    avio_wb16(pb, 1);         //< mFileVersion
-    avio_wb16(pb, 0);         //< mFileFlags
+    avio_wb16_xij(pb, 1);         //< mFileVersion
+    avio_wb16_xij(pb, 0);         //< mFileFlags
 
     ffio_wfourcc(pb, "desc");                         //< Audio Description chunk
-    avio_wb64(pb, 32);                                //< mChunkSize
-    avio_wb64(pb, av_double2int(par->sample_rate));   //< mSampleRate
-    avio_wl32(pb, codec_tag);                         //< mFormatID
-    avio_wb32(pb, codec_flags(par->codec_id));        //< mFormatFlags
-    avio_wb32(pb, par->block_align);                  //< mBytesPerPacket
-    avio_wb32(pb, frame_size);                        //< mFramesPerPacket
-    avio_wb32(pb, par->channels);                     //< mChannelsPerFrame
-    avio_wb32(pb, av_get_bits_per_sample(par->codec_id)); //< mBitsPerChannel
+    avio_wb64_xij(pb, 32);                                //< mChunkSize
+    avio_wb64_xij(pb, av_double2int(par->sample_rate));   //< mSampleRate
+    avio_wl32_xij(pb, codec_tag);                         //< mFormatID
+    avio_wb32_xij(pb, codec_flags(par->codec_id));        //< mFormatFlags
+    avio_wb32_xij(pb, par->block_align);                  //< mBytesPerPacket
+    avio_wb32_xij(pb, frame_size);                        //< mFramesPerPacket
+    avio_wb32_xij(pb, par->channels);                     //< mChannelsPerFrame
+    avio_wb32_xij(pb, av_get_bits_per_sample_xij(par->codec_id)); //< mBitsPerChannel
 
     if (par->channel_layout) {
         ffio_wfourcc(pb, "chan");
-        avio_wb64(pb, 12);
-        ff_mov_write_chan(pb, par->channel_layout);
+        avio_wb64_xij(pb, 12);
+        ff_mov_write_chan_xij(pb, par->channel_layout);
     }
 
     if (par->codec_id == AV_CODEC_ID_ALAC) {
         ffio_wfourcc(pb, "kuki");
-        avio_wb64(pb, 12 + par->extradata_size);
-        avio_write(pb, "\0\0\0\14frmaalac", 12);
-        avio_write(pb, par->extradata, par->extradata_size);
+        avio_wb64_xij(pb, 12 + par->extradata_size);
+        avio_write_xij(pb, "\0\0\0\14frmaalac", 12);
+        avio_write_xij(pb, par->extradata, par->extradata_size);
     } else if (par->codec_id == AV_CODEC_ID_AMR_NB) {
         ffio_wfourcc(pb, "kuki");
-        avio_wb64(pb, 29);
-        avio_write(pb, "\0\0\0\14frmasamr", 12);
-        avio_wb32(pb, 0x11); /* size */
-        avio_write(pb, "samrFFMP", 8);
-        avio_w8(pb, 0); /* decoder version */
+        avio_wb64_xij(pb, 29);
+        avio_write_xij(pb, "\0\0\0\14frmasamr", 12);
+        avio_wb32_xij(pb, 0x11); /* size */
+        avio_write_xij(pb, "samrFFMP", 8);
+        avio_w8_xij(pb, 0); /* decoder version */
 
-        avio_wb16(pb, 0x81FF); /* Mode set (all modes for AMR_NB) */
-        avio_w8(pb, 0x00); /* Mode change period (no restriction) */
-        avio_w8(pb, 0x01); /* Frames per sample */
+        avio_wb16_xij(pb, 0x81FF); /* Mode set (all modes for AMR_NB) */
+        avio_w8_xij(pb, 0x00); /* Mode change period (no restriction) */
+        avio_w8_xij(pb, 0x01); /* Frames per sample */
     } else if (par->codec_id == AV_CODEC_ID_QDM2 || par->codec_id == AV_CODEC_ID_QDMC) {
         ffio_wfourcc(pb, "kuki");
-        avio_wb64(pb, par->extradata_size);
-        avio_write(pb, par->extradata, par->extradata_size);
+        avio_wb64_xij(pb, par->extradata_size);
+        avio_write_xij(pb, par->extradata, par->extradata_size);
     }
 
-    ff_standardize_creation_time(s);
+    ff_standardize_creation_time_xij(s);
     if (av_dict_count(s->metadata)) {
         ffio_wfourcc(pb, "info"); //< Information chunk
         while ((t = av_dict_get(s->metadata, "", t, AV_DICT_IGNORE_SUFFIX))) {
             chunk_size += strlen(t->key) + strlen(t->value) + 2;
         }
-        avio_wb64(pb, chunk_size + 4);
-        avio_wb32(pb, av_dict_count(s->metadata));
+        avio_wb64_xij(pb, chunk_size + 4);
+        avio_wb32_xij(pb, av_dict_count(s->metadata));
         t = NULL;
         while ((t = av_dict_get(s->metadata, "", t, AV_DICT_IGNORE_SUFFIX))) {
-            avio_put_str(pb, t->key);
-            avio_put_str(pb, t->value);
+            avio_put_str_xij(pb, t->key);
+            avio_put_str_xij(pb, t->value);
         }
     }
 
     ffio_wfourcc(pb, "data"); //< Audio Data chunk
     caf->data = avio_tell(pb);
-    avio_wb64(pb, -1);        //< mChunkSize
-    avio_wb32(pb, 0);         //< mEditCount
+    avio_wb64_xij(pb, -1);        //< mChunkSize
+    avio_wb32_xij(pb, 0);         //< mEditCount
 
-    avio_flush(pb);
+    avio_flush_xij(pb);
     return 0;
 }
 
@@ -211,7 +211,7 @@ static int caf_write_packet(AVFormatContext *s, AVPacket *pkt)
 {
     CAFContext *caf = s->priv_data;
 
-    avio_write(s->pb, pkt->data, pkt->size);
+    avio_write_xij(s->pb, pkt->data, pkt->size);
     if (!s->streams[0]->codecpar->block_align) {
         void *pkt_sizes = caf->pkt_sizes;
         int i, alloc_size = caf->size_entries_used + 5;
@@ -246,20 +246,20 @@ static int caf_write_trailer(AVFormatContext *s)
     if (pb->seekable & AVIO_SEEKABLE_NORMAL) {
         int64_t file_size = avio_tell(pb);
 
-        avio_seek(pb, caf->data, SEEK_SET);
-        avio_wb64(pb, file_size - caf->data - 8);
-        avio_seek(pb, file_size, SEEK_SET);
+        avio_seek_xij(pb, caf->data, SEEK_SET);
+        avio_wb64_xij(pb, file_size - caf->data - 8);
+        avio_seek_xij(pb, file_size, SEEK_SET);
         if (!par->block_align) {
             ffio_wfourcc(pb, "pakt");
-            avio_wb64(pb, caf->size_entries_used + 24);
-            avio_wb64(pb, caf->packets); ///< mNumberPackets
-            avio_wb64(pb, caf->packets * samples_per_packet(par->codec_id, par->channels, par->block_align)); ///< mNumberValidFrames
-            avio_wb32(pb, 0); ///< mPrimingFrames
-            avio_wb32(pb, 0); ///< mRemainderFrames
-            avio_write(pb, caf->pkt_sizes, caf->size_entries_used);
+            avio_wb64_xij(pb, caf->size_entries_used + 24);
+            avio_wb64_xij(pb, caf->packets); ///< mNumberPackets
+            avio_wb64_xij(pb, caf->packets * samples_per_packet(par->codec_id, par->channels, par->block_align)); ///< mNumberValidFrames
+            avio_wb32_xij(pb, 0); ///< mPrimingFrames
+            avio_wb32_xij(pb, 0); ///< mRemainderFrames
+            avio_write_xij(pb, caf->pkt_sizes, caf->size_entries_used);
             caf->size_buffer_size = 0;
         }
-        avio_flush(pb);
+        avio_flush_xij(pb);
     }
     av_freep(&caf->pkt_sizes);
     return 0;

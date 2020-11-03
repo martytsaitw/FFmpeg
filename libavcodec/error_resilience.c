@@ -954,8 +954,8 @@ void ff_er_frame_end(ERContext *s)
         av_log(s->avctx, AV_LOG_ERROR, "Warning MVs not available\n");
 
         for (i = 0; i < 2; i++) {
-            s->ref_index_buf[i]  = av_buffer_allocz(s->mb_stride * s->mb_height * 4 * sizeof(uint8_t));
-            s->motion_val_buf[i] = av_buffer_allocz((size + 4) * 2 * sizeof(uint16_t));
+            s->ref_index_buf[i]  = av_buffer_allocz_xij(s->mb_stride * s->mb_height * 4 * sizeof(uint8_t));
+            s->motion_val_buf[i] = av_buffer_allocz_xij((size + 4) * 2 * sizeof(uint16_t));
             if (!s->ref_index_buf[i] || !s->motion_val_buf[i])
                 break;
             s->cur_pic.ref_index[i]  = s->ref_index_buf[i]->data;
@@ -963,8 +963,8 @@ void ff_er_frame_end(ERContext *s)
         }
         if (i < 2) {
             for (i = 0; i < 2; i++) {
-                av_buffer_unref(&s->ref_index_buf[i]);
-                av_buffer_unref(&s->motion_val_buf[i]);
+                av_buffer_unref_xij(&s->ref_index_buf[i]);
+                av_buffer_unref_xij(&s->motion_val_buf[i]);
                 s->cur_pic.ref_index[i]  = NULL;
                 s->cur_pic.motion_val[i] = NULL;
             }
@@ -1120,7 +1120,7 @@ void ff_er_frame_end(ERContext *s)
             mv_error++;
     }
     av_log(s->avctx, AV_LOG_INFO, "concealing %d DC, %d AC, %d MV errors in %c frame\n",
-           dc_error, ac_error, mv_error, av_get_picture_type_char(s->cur_pic.f->pict_type));
+           dc_error, ac_error, mv_error, av_get_picture_type_char_xij(s->cur_pic.f->pict_type));
 
     is_intra_likely = is_intra_more_likely(s);
 
@@ -1353,8 +1353,8 @@ ec_clean:
     }
 
     for (i = 0; i < 2; i++) {
-        av_buffer_unref(&s->ref_index_buf[i]);
-        av_buffer_unref(&s->motion_val_buf[i]);
+        av_buffer_unref_xij(&s->ref_index_buf[i]);
+        av_buffer_unref_xij(&s->motion_val_buf[i]);
         s->cur_pic.ref_index[i]  = NULL;
         s->cur_pic.motion_val[i] = NULL;
     }

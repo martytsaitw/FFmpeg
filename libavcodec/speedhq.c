@@ -442,7 +442,7 @@ static int speedhq_decode_frame(AVCodecContext *avctx,
     avctx->coded_width = FFALIGN(avctx->width, 16);
     avctx->coded_height = FFALIGN(avctx->height, 16);
 
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0) {
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0) {
         return ret;
     }
     frame->key_frame = 1;

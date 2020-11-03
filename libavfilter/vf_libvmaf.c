@@ -130,8 +130,8 @@ FRAMESYNC_DEFINE_CLASS(libvmaf, LIBVMAFContext, fs);
     \
     ret = !s->frame_set;                                                        \
     \
-    av_frame_unref(s->gref);                                                    \
-    av_frame_unref(s->gmain);                                                   \
+    av_frame_unref_xij(s->gref);                                                    \
+    av_frame_unref_xij(s->gmain);                                                   \
     s->frame_set = 0;                                                           \
     \
     pthread_cond_signal(&s->cond);                                              \
@@ -209,8 +209,8 @@ static int do_vmaf(FFFrameSync *fs)
         return AVERROR(EINVAL);
     }
 
-    av_frame_ref(s->gref, ref);
-    av_frame_ref(s->gmain, master);
+    av_frame_ref_xij(s->gref, ref);
+    av_frame_ref_xij(s->gmain, master);
 
     s->frame_set = 1;
 
@@ -224,8 +224,8 @@ static av_cold int init(AVFilterContext *ctx)
 {
     LIBVMAFContext *s = ctx->priv;
 
-    s->gref = av_frame_alloc();
-    s->gmain = av_frame_alloc();
+    s->gref = av_frame_alloc_ijk();
+    s->gmain = av_frame_alloc_ijk();
     s->error = 0;
 
     pthread_mutex_init(&s->lock, NULL);
@@ -319,8 +319,8 @@ static av_cold void uninit(AVFilterContext *ctx)
 
     pthread_join(s->vmaf_thread, NULL);
 
-    av_frame_free(&s->gref);
-    av_frame_free(&s->gmain);
+    av_frame_free_xij(&s->gref);
+    av_frame_free_xij(&s->gmain);
 
     pthread_mutex_destroy(&s->lock);
     pthread_cond_destroy(&s->cond);

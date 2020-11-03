@@ -189,7 +189,7 @@ static int vpx_decode(AVCodecContext *avctx,
     if (ret)
         return ret;
 
-    side_data = av_packet_get_side_data(avpkt,
+    side_data = av_packet_get_side_data_xij(avpkt,
                                         AV_PKT_DATA_MATROSKA_BLOCKADDITIONAL,
                                         &side_data_size);
     if (side_data_size > 1) {
@@ -240,11 +240,11 @@ static int vpx_decode(AVCodecContext *avctx,
         if ((int) img->d_w != avctx->width || (int) img->d_h != avctx->height) {
             av_log(avctx, AV_LOG_INFO, "dimension change! %dx%d -> %dx%d\n",
                    avctx->width, avctx->height, img->d_w, img->d_h);
-            ret = ff_set_dimensions(avctx, img->d_w, img->d_h);
+            ret = ff_set_dimensions_xij(avctx, img->d_w, img->d_h);
             if (ret < 0)
                 return ret;
         }
-        if ((ret = ff_get_buffer(avctx, picture, 0)) < 0)
+        if ((ret = ff_get_buffer_xij(avctx, picture, 0)) < 0)
             return ret;
 
         planes[0] = img->planes[VPX_PLANE_Y];

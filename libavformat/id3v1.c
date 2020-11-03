@@ -240,14 +240,14 @@ void ff_id3v1_read(AVFormatContext *s)
 
     if (s->pb->seekable & AVIO_SEEKABLE_NORMAL) {
         /* XXX: change that */
-        filesize = avio_size(s->pb);
+        filesize = avio_size_xij(s->pb);
         if (filesize > 128) {
-            avio_seek(s->pb, filesize - 128, SEEK_SET);
-            ret = avio_read(s->pb, buf, ID3v1_TAG_SIZE);
+            avio_seek_xij(s->pb, filesize - 128, SEEK_SET);
+            ret = avio_read_xij(s->pb, buf, ID3v1_TAG_SIZE);
             if (ret == ID3v1_TAG_SIZE) {
                 parse_tag(s, buf);
             }
-            avio_seek(s->pb, position, SEEK_SET);
+            avio_seek_xij(s->pb, position, SEEK_SET);
         }
     }
 }

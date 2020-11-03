@@ -519,15 +519,15 @@ static AVFrame *apply_lut(AVFilterLink *inlink, AVFrame *in)
     AVFrame *out;
     ThreadData td;
 
-    if (av_frame_is_writable(in)) {
+    if (av_frame_is_writable_xij(in)) {
         out = in;
     } else {
         out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out) {
-            av_frame_free(&in);
+            av_frame_free_xij(&in);
             return NULL;
         }
-        av_frame_copy_props(out, in);
+        av_frame_copy_props_xij(out, in);
     }
 
     td.in  = in;
@@ -535,7 +535,7 @@ static AVFrame *apply_lut(AVFilterLink *inlink, AVFrame *in)
     ctx->internal->execute(ctx, lut3d->interp, &td, NULL, FFMIN(outlink->h, ff_filter_get_nb_threads(ctx)));
 
     if (out != in)
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
 
     return out;
 }

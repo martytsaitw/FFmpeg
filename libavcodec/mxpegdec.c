@@ -52,7 +52,7 @@ static av_cold int mxpeg_decode_end(AVCodecContext *avctx)
     ff_mjpeg_decode_end(avctx);
 
     for (i = 0; i < 2; ++i)
-        av_frame_free(&s->picture[i]);
+        av_frame_free_xij(&s->picture[i]);
 
     s->bitmask_size = 0;
     av_freep(&s->mxm_bitmask);
@@ -65,8 +65,8 @@ static av_cold int mxpeg_decode_init(AVCodecContext *avctx)
 {
     MXpegDecodeContext *s = avctx->priv_data;
 
-    s->picture[0] = av_frame_alloc();
-    s->picture[1] = av_frame_alloc();
+    s->picture[0] = av_frame_alloc_ijk();
+    s->picture[1] = av_frame_alloc_ijk();
     if (!s->picture[0] || !s->picture[1]) {
         mxpeg_decode_end(avctx);
         return AVERROR(ENOMEM);
@@ -273,8 +273,8 @@ static int mxpeg_decode_frame(AVCodecContext *avctx,
                         break;
                     }
                     /* use stored SOF data to allocate current picture */
-                    av_frame_unref(jpg->picture_ptr);
-                    if ((ret = ff_get_buffer(avctx, jpg->picture_ptr,
+                    av_frame_unref_xij(jpg->picture_ptr);
+                    if ((ret = ff_get_buffer_xij(avctx, jpg->picture_ptr,
                                              AV_GET_BUFFER_FLAG_REF)) < 0)
                         return ret;
                     jpg->picture_ptr->pict_type = AV_PICTURE_TYPE_P;
@@ -292,7 +292,7 @@ static int mxpeg_decode_frame(AVCodecContext *avctx,
 
                     /* allocate dummy reference picture if needed */
                     if (!reference_ptr->data[0] &&
-                        (ret = ff_get_buffer(avctx, reference_ptr,
+                        (ret = ff_get_buffer_xij(avctx, reference_ptr,
                                              AV_GET_BUFFER_FLAG_REF)) < 0)
                         return ret;
 
@@ -315,7 +315,7 @@ static int mxpeg_decode_frame(AVCodecContext *avctx,
 
 the_end:
     if (jpg->got_picture) {
-        int ret = av_frame_ref(data, jpg->picture_ptr);
+        int ret = av_frame_ref_xij(data, jpg->picture_ptr);
         if (ret < 0)
             return ret;
         *got_frame = 1;

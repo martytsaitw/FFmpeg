@@ -36,18 +36,18 @@ static int dcstr_read_header(AVFormatContext *s)
     int mult;
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
     st->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
-    st->codecpar->channels    = avio_rl32(s->pb);
-    st->codecpar->sample_rate = avio_rl32(s->pb);
-    codec                  = avio_rl32(s->pb);
-    align                  = avio_rl32(s->pb);
-    avio_skip(s->pb, 4);
-    st->duration           = avio_rl32(s->pb);
-    mult                   = avio_rl32(s->pb);
+    st->codecpar->channels    = avio_rl32_xij(s->pb);
+    st->codecpar->sample_rate = avio_rl32_xij(s->pb);
+    codec                  = avio_rl32_xij(s->pb);
+    align                  = avio_rl32_xij(s->pb);
+    avio_skip_xij(s->pb, 4);
+    st->duration           = avio_rl32_xij(s->pb);
+    mult                   = avio_rl32_xij(s->pb);
     if (st->codecpar->channels <= 0 || mult <= 0 || mult > INT_MAX / st->codecpar->channels) {
         av_log(s, AV_LOG_ERROR, "invalid number of channels %d x %d\n", st->codecpar->channels, mult);
         return AVERROR_INVALIDDATA;
@@ -64,8 +64,8 @@ static int dcstr_read_header(AVFormatContext *s)
              return AVERROR_PATCHWELCOME;
     }
 
-    avio_skip(s->pb, 0x800 - avio_tell(s->pb));
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avio_skip_xij(s->pb, 0x800 - avio_tell(s->pb));
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }
@@ -73,7 +73,7 @@ static int dcstr_read_header(AVFormatContext *s)
 static int dcstr_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     AVCodecParameters *par    = s->streams[0]->codecpar;
-    return av_get_packet(s->pb, pkt, par->block_align);
+    return av_get_packet_xij(s->pb, pkt, par->block_align);
 }
 
 AVInputFormat ff_dcstr_demuxer = {

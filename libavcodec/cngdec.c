@@ -149,7 +149,7 @@ static int cng_decode_frame(AVCodecContext *avctx, void *data,
                                  p->excitation, avctx->frame_size, p->order);
 
     frame->nb_samples = avctx->frame_size;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
     buf_out = (int16_t *)frame->data[0];
     for (i = 0; i < avctx->frame_size; i++)

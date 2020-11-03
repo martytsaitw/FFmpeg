@@ -66,5 +66,5 @@ extern AVInputFormat  ff_libdc1394_demuxer;
 
 void avdevice_register_all(void)
 {
-    avpriv_register_devices(outdev_list, indev_list);
+    avpriv_register_devices_xij(outdev_list, indev_list);
 }

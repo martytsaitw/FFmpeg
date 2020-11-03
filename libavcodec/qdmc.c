@@ -754,7 +754,7 @@ static int qdmc_decode_frame(AVCodecContext *avctx, void *data,
 
     s->avctx = avctx;
     frame->nb_samples = s->frame_size;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     if ((ret = init_get_bits8(&gb, avpkt->data, s->checksum_size)) < 0)

@@ -40,30 +40,30 @@ static int read_header(AVFormatContext *s)
     AVRational  fps;
     uint32_t chunk_size;
 
-    avio_skip(pb, 4);
-    chunk_size = avio_rb32(pb);
+    avio_skip_xij(pb, 4);
+    chunk_size = avio_rb32_xij(pb);
     if (chunk_size != 80)
         return AVERROR(EIO);
-    avio_skip(pb, 20);
+    avio_skip_xij(pb, 20);
 
-    st = avformat_new_stream(s, 0);
+    st = avformat_new_stream_ijk(s, 0);
     if (!st)
         return AVERROR(ENOMEM);
 
     st->need_parsing = AVSTREAM_PARSE_HEADERS;
     st->start_time = 0;
     st->nb_frames  =
-    st->duration   = avio_rb32(pb);
-    fps = av_d2q(av_int2float(avio_rb32(pb)), INT_MAX);
-    st->codecpar->width  = avio_rb32(pb);
-    st->codecpar->height = avio_rb32(pb);
-    avio_skip(pb, 12);
+    st->duration   = avio_rb32_xij(pb);
+    fps = av_d2q(av_int2float(avio_rb32_xij(pb)), INT_MAX);
+    st->codecpar->width  = avio_rb32_xij(pb);
+    st->codecpar->height = avio_rb32_xij(pb);
+    avio_skip_xij(pb, 12);
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
-    st->codecpar->codec_tag  = avio_rb32(pb);
-    st->codecpar->codec_id   = ff_codec_get_id(ff_codec_bmp_tags,
+    st->codecpar->codec_tag  = avio_rb32_xij(pb);
+    st->codecpar->codec_id   = ff_codec_get_id_xij(ff_codec_bmp_tags,
                                                st->codecpar->codec_tag);
-    avpriv_set_pts_info(st, 64, fps.den, fps.num);
-    avio_skip(pb, 20);
+    avpriv_set_pts_info_ijk(st, 64, fps.den, fps.num);
+    avio_skip_xij(pb, 20);
 
     return 0;
 }
@@ -74,24 +74,24 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
     uint32_t chunk_size, payload_size;
     int ret;
 
-    if (avio_feof(pb))
+    if (avio_feof_xij(pb))
         return AVERROR_EOF;
 
-    avio_skip(pb, 4);
-    chunk_size = avio_rb32(pb);
-    avio_skip(pb, 4);
-    payload_size = avio_rb32(pb);
+    avio_skip_xij(pb, 4);
+    chunk_size = avio_rb32_xij(pb);
+    avio_skip_xij(pb, 4);
+    payload_size = avio_rb32_xij(pb);
 
     if (chunk_size < payload_size + 16)
         return AVERROR(EIO);
 
-    ret = av_get_packet(pb, pkt, payload_size);
+    ret = av_get_packet_xij(pb, pkt, payload_size);
     if (ret < 0)
         return ret;
 
     pkt->pos -= 16;
     pkt->duration = 1;
-    avio_skip(pb, chunk_size - (ret + 16));
+    avio_skip_xij(pb, chunk_size - (ret + 16));
 
     return ret;
 }

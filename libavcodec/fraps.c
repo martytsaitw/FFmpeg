@@ -209,7 +209,7 @@ static int decode_frame(AVCodecContext *avctx,
         }
         offs[planes] = buf_size - header_size;
         for (i = 0; i < planes; i++) {
-            av_fast_padded_malloc(&s->tmpbuf, &s->tmpbuf_size, offs[i + 1] - offs[i] - 1024);
+            av_fast_padded_malloc_xij(&s->tmpbuf, &s->tmpbuf_size, offs[i + 1] - offs[i] - 1024);
             if (!s->tmpbuf)
                 return AVERROR(ENOMEM);
         }

@@ -903,22 +903,22 @@ static int apply_palette(AVFilterLink *inlink, AVFrame *in, AVFrame **outf)
 
     AVFrame *out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out) {
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         *outf = NULL;
         return AVERROR(ENOMEM);
     }
-    av_frame_copy_props(out, in);
+    av_frame_copy_props_xij(out, in);
 
     set_processing_window(s->diff_mode, s->last_in, in,
                           s->last_out, out, &x, &y, &w, &h);
-    av_frame_free(&s->last_in);
-    av_frame_free(&s->last_out);
-    s->last_in  = av_frame_clone(in);
-    s->last_out = av_frame_clone(out);
+    av_frame_free_xij(&s->last_in);
+    av_frame_free_xij(&s->last_out);
+    s->last_in  = av_frame_clone_xij(in);
+    s->last_out = av_frame_clone_xij(out);
     if (!s->last_in || !s->last_out ||
-        av_frame_make_writable(s->last_in) < 0) {
-        av_frame_free(&in);
-        av_frame_free(&out);
+        av_frame_make_writable_xij(s->last_in) < 0) {
+        av_frame_free_xij(&in);
+        av_frame_free_xij(&out);
         *outf = NULL;
         return AVERROR(ENOMEM);
     }
@@ -928,14 +928,14 @@ static int apply_palette(AVFilterLink *inlink, AVFrame *in, AVFrame **outf)
 
     ret = s->set_frame(s, out, in, x, y, w, h);
     if (ret < 0) {
-        av_frame_free(&out);
+        av_frame_free_xij(&out);
         *outf = NULL;
         return ret;
     }
     memcpy(out->data[1], s->palette, AVPALETTE_SIZE);
     if (s->calc_mean_err)
         debug_mean_error(s, in, out, inlink->frame_count_out);
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
     *outf = out;
     return 0;
 }
@@ -1036,7 +1036,7 @@ static int load_apply_palette(FFFrameSync *fs)
     return ff_filter_frame(ctx->outputs[0], out);
 
 error:
-    av_frame_free(&master);
+    av_frame_free_xij(&master);
     return ret;
 }
 
@@ -1113,8 +1113,8 @@ static av_cold void uninit(AVFilterContext *ctx)
     ff_framesync_uninit(&s->fs);
     for (i = 0; i < CACHE_SIZE; i++)
         av_freep(&s->cache[i].entries);
-    av_frame_free(&s->last_in);
-    av_frame_free(&s->last_out);
+    av_frame_free_xij(&s->last_in);
+    av_frame_free_xij(&s->last_out);
 }
 
 static const AVFilterPad paletteuse_inputs[] = {

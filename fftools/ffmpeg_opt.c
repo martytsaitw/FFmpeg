@@ -474,7 +474,7 @@ static int opt_vaapi_device(void *optctx, const char *opt, const char *arg)
     av_free(tmp);
     if (err < 0)
         return err;
-    hw_device_ctx = av_buffer_ref(dev->device_ref);
+    hw_device_ctx = av_buffer_ref_ijk(dev->device_ref);
     if (!hw_device_ctx)
         return AVERROR(ENOMEM);
     return 0;
@@ -656,12 +656,12 @@ static AVCodec *find_codec_or_die(const char *name, enum AVMediaType type, int e
     AVCodec *codec;
 
     codec = encoder ?
-        avcodec_find_encoder_by_name(name) :
-        avcodec_find_decoder_by_name(name);
+        avcodec_find_encoder_by_name_xij(name) :
+        avcodec_find_decoder_by_name_xij(name);
 
     if (!codec && (desc = avcodec_descriptor_get_by_name(name))) {
-        codec = encoder ? avcodec_find_encoder(desc->id) :
-                          avcodec_find_decoder(desc->id);
+        codec = encoder ? avcodec_find_encoder_ijk(desc->id) :
+                          avcodec_find_decoder_ijk(desc->id);
         if (codec)
             av_log(NULL, AV_LOG_VERBOSE, "Matched %s '%s' for codec '%s'.\n",
                    codec_string, codec->name, desc->name);
@@ -688,7 +688,7 @@ static AVCodec *choose_decoder(OptionsContext *o, AVFormatContext *s, AVStream *
         st->codecpar->codec_id = codec->id;
         return codec;
     } else
-        return avcodec_find_decoder(st->codecpar->codec_id);
+        return avcodec_find_decoder_ijk(st->codecpar->codec_id);
 }
 
 /* Add all the streams from the given input file to the global
@@ -707,7 +707,7 @@ static void add_input_streams(OptionsContext *o, AVFormatContext *ic)
         char *codec_tag = NULL;
         char *next;
         char *discard_str = NULL;
-        const AVClass *cc = avcodec_get_class();
+        const AVClass *cc = avcodec_get_class_ijk();
         const AVOption *discard_opt = av_opt_find(&cc, "skip_frame", NULL, 0, 0);
 
         if (!ist)
@@ -754,13 +754,13 @@ static void add_input_streams(OptionsContext *o, AVFormatContext *ic)
 
         ist->filter_in_rescale_delta_last = AV_NOPTS_VALUE;
 
-        ist->dec_ctx = avcodec_alloc_context3(ist->dec);
+        ist->dec_ctx = avcodec_alloc_context3_ijk(ist->dec);
         if (!ist->dec_ctx) {
             av_log(NULL, AV_LOG_ERROR, "Error allocating the decoder context.\n");
             exit_program(1);
         }
 
-        ret = avcodec_parameters_to_context(ist->dec_ctx, par);
+        ret = avcodec_parameters_to_context_ijk(ist->dec_ctx, par);
         if (ret < 0) {
             av_log(NULL, AV_LOG_ERROR, "Error initializing the decoder context.\n");
             exit_program(1);
@@ -772,7 +772,7 @@ static void add_input_streams(OptionsContext *o, AVFormatContext *ic)
         switch (par->codec_type) {
         case AVMEDIA_TYPE_VIDEO:
             if(!ist->dec)
-                ist->dec = avcodec_find_decoder(par->codec_id);
+                ist->dec = avcodec_find_decoder_ijk(par->codec_id);
 #if FF_API_LOWRES
             if (st->codec->lowres) {
                 ist->dec_ctx->lowres = st->codec->lowres;
@@ -783,7 +783,7 @@ static void add_input_streams(OptionsContext *o, AVFormatContext *ic)
             }
 #endif
 
-            // avformat_find_stream_info() doesn't set this for us anymore.
+            // avformat_find_stream_info_ijk() doesn't set this for us anymore.
             ist->dec_ctx->framerate = st->avg_frame_rate;
 
             MATCH_PER_STREAM_OPT(frame_rates, str, framerate, ic, st);
@@ -873,7 +873,7 @@ static void add_input_streams(OptionsContext *o, AVFormatContext *ic)
         case AVMEDIA_TYPE_SUBTITLE: {
             char *canvas_size = NULL;
             if(!ist->dec)
-                ist->dec = avcodec_find_decoder(par->codec_id);
+                ist->dec = avcodec_find_decoder_ijk(par->codec_id);
             MATCH_PER_STREAM_OPT(fix_sub_duration, i, ist->fix_sub_duration, ic, st);
             MATCH_PER_STREAM_OPT(canvas_sizes, str, canvas_size, ic, st);
             if (canvas_size &&
@@ -890,7 +890,7 @@ static void add_input_streams(OptionsContext *o, AVFormatContext *ic)
             abort();
         }
 
-        ret = avcodec_parameters_from_context(par, ist->dec_ctx);
+        ret = avcodec_parameters_from_context_ijk(par, ist->dec_ctx);
         if (ret < 0) {
             av_log(NULL, AV_LOG_ERROR, "Error initializing the decoder context.\n");
             exit_program(1);
@@ -948,15 +948,15 @@ static void dump_attachment(AVStream *st, const char *filename)
 
     assert_file_overwrite(filename);
 
-    if ((ret = avio_open2(&out, filename, AVIO_FLAG_WRITE, &int_cb, NULL)) < 0) {
+    if ((ret = avio_open2_xij(&out, filename, AVIO_FLAG_WRITE, &int_cb, NULL)) < 0) {
         av_log(NULL, AV_LOG_FATAL, "Could not open file %s for writing.\n",
                filename);
         exit_program(1);
     }
 
-    avio_write(out, st->codecpar->extradata, st->codecpar->extradata_size);
-    avio_flush(out);
-    avio_close(out);
+    avio_write_xij(out, st->codecpar->extradata, st->codecpar->extradata_size);
+    avio_flush_xij(out);
+    avio_close_xij(out);
 }
 
 static int open_input_file(OptionsContext *o, const char *filename)
@@ -990,7 +990,7 @@ static int open_input_file(OptionsContext *o, const char *filename)
     }
 
     if (o->format) {
-        if (!(file_iformat = av_find_input_format(o->format))) {
+        if (!(file_iformat = av_find_input_format_xij(o->format))) {
             av_log(NULL, AV_LOG_FATAL, "Unknown input format: '%s'\n", o->format);
             exit_program(1);
         }
@@ -1003,9 +1003,9 @@ static int open_input_file(OptionsContext *o, const char *filename)
                          strcmp(filename, "/dev/stdin");
 
     /* get default parameters from command line */
-    ic = avformat_alloc_context();
+    ic = avformat_alloc_context_ijk();
     if (!ic) {
-        print_error(filename, AVERROR(ENOMEM));
+        print_error_xij(filename, AVERROR(ENOMEM));
         exit_program(1);
     }
     if (o->nb_audio_sample_rate) {
@@ -1066,9 +1066,9 @@ static int open_input_file(OptionsContext *o, const char *filename)
         scan_all_pmts_set = 1;
     }
     /* open the input file with generic avformat function */
-    err = avformat_open_input(&ic, filename, file_iformat, &o->g->format_opts);
+    err = avformat_open_input_ijk(&ic, filename, file_iformat, &o->g->format_opts);
     if (err < 0) {
-        print_error(filename, err);
+        print_error_xij(filename, err);
         if (err == AVERROR_PROTOCOL_NOT_FOUND)
             av_log(NULL, AV_LOG_ERROR, "Did you mean file:%s?\n", filename);
         exit_program(1);
@@ -1088,7 +1088,7 @@ static int open_input_file(OptionsContext *o, const char *filename)
 
         /* If not enough info to get the stream parameters, we decode the
            first frames to get it. (used in mpeg case for example) */
-        ret = avformat_find_stream_info(ic, opts);
+        ret = avformat_find_stream_info_ijk(ic, opts);
 
         for (i = 0; i < orig_nb_streams; i++)
             av_dict_free(&opts[i]);
@@ -1097,7 +1097,7 @@ static int open_input_file(OptionsContext *o, const char *filename)
         if (ret < 0) {
             av_log(NULL, AV_LOG_FATAL, "%s: could not find codec parameters\n", filename);
             if (ic->nb_streams == 0) {
-                avformat_close_input(&ic);
+                avformat_close_input_xij(&ic);
                 exit_program(1);
             }
         }
@@ -1129,7 +1129,7 @@ static int open_input_file(OptionsContext *o, const char *filename)
                 seek_timestamp -= 3*AV_TIME_BASE / 23;
             }
         }
-        ret = avformat_seek_file(ic, -1, INT64_MIN, seek_timestamp, seek_timestamp, 0);
+        ret = avformat_seek_file_ijk(ic, -1, INT64_MIN, seek_timestamp, seek_timestamp, 0);
         if (ret < 0) {
             av_log(NULL, AV_LOG_WARNING, "%s: could not seek to position %0.3f\n",
                    filename, (double)timestamp / AV_TIME_BASE);
@@ -1140,7 +1140,7 @@ static int open_input_file(OptionsContext *o, const char *filename)
     add_input_streams(o, ic);
 
     /* dump the file content */
-    av_dump_format(ic, nb_input_files, filename, 0);
+    av_dump_format_ijk(ic, nb_input_files, filename, 0);
 
     GROW_ARRAY(input_files, nb_input_files);
     f = av_mallocz(sizeof(*f));
@@ -1175,10 +1175,10 @@ static int open_input_file(OptionsContext *o, const char *filename)
 
     e = NULL;
     while ((e = av_dict_get(unused_opts, "", e, AV_DICT_IGNORE_SUFFIX))) {
-        const AVClass *class = avcodec_get_class();
+        const AVClass *class = avcodec_get_class_ijk();
         const AVOption *option = av_opt_find(&class, e->key, NULL, 0,
                                              AV_OPT_SEARCH_CHILDREN | AV_OPT_SEARCH_FAKE_OBJ);
-        const AVClass *fclass = avformat_get_class();
+        const AVClass *fclass = avformat_get_class_ijk();
         const AVOption *foption = av_opt_find(&fclass, e->key, NULL, 0,
                                              AV_OPT_SEARCH_CHILDREN | AV_OPT_SEARCH_FAKE_OBJ);
         if (!option || foption)
@@ -1224,15 +1224,15 @@ static uint8_t *get_line(AVIOContext *s)
     uint8_t *buf;
     char c;
 
-    if (avio_open_dyn_buf(&line) < 0) {
+    if (avio_open_dyn_buf_xij(&line) < 0) {
         av_log(NULL, AV_LOG_FATAL, "Could not alloc buffer for reading preset.\n");
         exit_program(1);
     }
 
-    while ((c = avio_r8(s)) && c != '\n')
-        avio_w8(line, c);
-    avio_w8(line, 0);
-    avio_close_dyn_buf(line, &buf);
+    while ((c = avio_r8_xij(s)) && c != '\n')
+        avio_w8_xij(line, c);
+    avio_w8_xij(line, 0);
+    avio_close_dyn_buf_xij(line, &buf);
 
     return buf;
 }
@@ -1252,12 +1252,12 @@ static int get_preset_file_2(const char *preset_name, const char *codec_name, AV
         if (codec_name) {
             snprintf(filename, sizeof(filename), "%s%s/%s-%s.avpreset", base[i],
                      i != 1 ? "" : "/.avconv", codec_name, preset_name);
-            ret = avio_open2(s, filename, AVIO_FLAG_READ, &int_cb, NULL);
+            ret = avio_open2_xij(s, filename, AVIO_FLAG_READ, &int_cb, NULL);
         }
         if (ret < 0) {
             snprintf(filename, sizeof(filename), "%s%s/%s.avpreset", base[i],
                      i != 1 ? "" : "/.avconv", preset_name);
-            ret = avio_open2(s, filename, AVIO_FLAG_READ, &int_cb, NULL);
+            ret = avio_open2_xij(s, filename, AVIO_FLAG_READ, &int_cb, NULL);
         }
     }
     return ret;
@@ -1271,15 +1271,15 @@ static int choose_encoder(OptionsContext *o, AVFormatContext *s, OutputStream *o
     if (type == AVMEDIA_TYPE_VIDEO || type == AVMEDIA_TYPE_AUDIO || type == AVMEDIA_TYPE_SUBTITLE) {
         MATCH_PER_STREAM_OPT(codec_names, str, codec_name, s, ost->st);
         if (!codec_name) {
-            ost->st->codecpar->codec_id = av_guess_codec(s->oformat, NULL, s->url,
+            ost->st->codecpar->codec_id = av_guess_codec_xij(s->oformat, NULL, s->url,
                                                          NULL, ost->st->codecpar->codec_type);
-            ost->enc = avcodec_find_encoder(ost->st->codecpar->codec_id);
+            ost->enc = avcodec_find_encoder_ijk(ost->st->codecpar->codec_id);
             if (!ost->enc) {
                 av_log(NULL, AV_LOG_FATAL, "Automatic encoder selection failed for "
                        "output stream #%d:%d. Default encoder for format %s (codec %s) is "
                        "probably disabled. Please choose an encoder manually.\n",
                        ost->file_index, ost->index, s->oformat->name,
-                       avcodec_get_name(ost->st->codecpar->codec_id));
+                       avcodec_get_name_xij(ost->st->codecpar->codec_id));
                 return AVERROR_ENCODER_NOT_FOUND;
             }
         } else if (!strcmp(codec_name, "copy"))
@@ -1301,7 +1301,7 @@ static int choose_encoder(OptionsContext *o, AVFormatContext *s, OutputStream *o
 static OutputStream *new_output_stream(OptionsContext *o, AVFormatContext *oc, enum AVMediaType type, int source_index)
 {
     OutputStream *ost;
-    AVStream *st = avformat_new_stream(oc, NULL);
+    AVStream *st = avformat_new_stream_ijk(oc, NULL);
     int idx      = oc->nb_streams - 1, ret = 0;
     const char *bsfs = NULL, *time_base = NULL;
     char *next, *codec_tag = NULL;
@@ -1333,14 +1333,14 @@ static OutputStream *new_output_stream(OptionsContext *o, AVFormatContext *oc, e
         exit_program(1);
     }
 
-    ost->enc_ctx = avcodec_alloc_context3(ost->enc);
+    ost->enc_ctx = avcodec_alloc_context3_ijk(ost->enc);
     if (!ost->enc_ctx) {
         av_log(NULL, AV_LOG_ERROR, "Error allocating the encoding context.\n");
         exit_program(1);
     }
     ost->enc_ctx->codec_type = type;
 
-    ost->ref_par = avcodec_parameters_alloc();
+    ost->ref_par = avcodec_parameters_alloc_ijk();
     if (!ost->ref_par) {
         av_log(NULL, AV_LOG_ERROR, "Error allocating the encoding parameters.\n");
         exit_program(1);
@@ -1368,7 +1368,7 @@ static OutputStream *new_output_stream(OptionsContext *o, AVFormatContext *oc, e
                 av_dict_set(&ost->encoder_opts, buf, arg, AV_DICT_DONT_OVERWRITE);
                 av_free(buf);
             } while (!s->eof_reached);
-            avio_closep(&s);
+            avio_closep_xij(&s);
         }
         if (ret) {
             av_log(NULL, AV_LOG_FATAL,
@@ -1431,7 +1431,7 @@ static OutputStream *new_output_stream(OptionsContext *o, AVFormatContext *oc, e
         if (!bsf_name)
             exit_program(1);
 
-        filter = av_bsf_get_by_name(bsf_name);
+        filter = av_bsf_get_by_name_ijk(bsf_name);
         if (!filter) {
             av_log(NULL, AV_LOG_FATAL, "Unknown bitstream filter %s\n", bsf_name);
             exit_program(1);
@@ -1443,7 +1443,7 @@ static OutputStream *new_output_stream(OptionsContext *o, AVFormatContext *oc, e
         if (!ost->bsf_ctx)
             exit_program(1);
 
-        ret = av_bsf_alloc(filter, &ost->bsf_ctx[ost->nb_bitstream_filters]);
+        ret = av_bsf_alloc_ijk(filter, &ost->bsf_ctx[ost->nb_bitstream_filters]);
         if (ret < 0) {
             av_log(NULL, AV_LOG_ERROR, "Error allocating a bitstream filter context\n");
             exit_program(1);
@@ -1498,7 +1498,7 @@ static OutputStream *new_output_stream(OptionsContext *o, AVFormatContext *oc, e
     av_dict_copy(&ost->sws_dict, o->g->sws_dict, 0);
 
     av_dict_copy(&ost->swr_opts, o->g->swr_opts, 0);
-    if (ost->enc && av_get_exact_bits_per_sample(ost->enc->id) == 24)
+    if (ost->enc && av_get_exact_bits_per_sample_xij(ost->enc->id) == 24)
         av_dict_set(&ost->swr_opts, "output_sample_bits", "24", 0);
 
     av_dict_copy(&ost->resample_opts, o->g->resample_opts, 0);
@@ -1540,7 +1540,7 @@ static uint8_t *read_file(const char *filename)
 {
     AVIOContext *pb      = NULL;
     AVIOContext *dyn_buf = NULL;
-    int ret = avio_open(&pb, filename, AVIO_FLAG_READ);
+    int ret = avio_open_xij(&pb, filename, AVIO_FLAG_READ);
     uint8_t buf[1024], *str;
 
     if (ret < 0) {
@@ -1548,17 +1548,17 @@ static uint8_t *read_file(const char *filename)
         return NULL;
     }
 
-    ret = avio_open_dyn_buf(&dyn_buf);
+    ret = avio_open_dyn_buf_xij(&dyn_buf);
     if (ret < 0) {
-        avio_closep(&pb);
+        avio_closep_xij(&pb);
         return NULL;
     }
-    while ((ret = avio_read(pb, buf, sizeof(buf))) > 0)
-        avio_write(dyn_buf, buf, ret);
-    avio_w8(dyn_buf, 0);
-    avio_closep(&pb);
+    while ((ret = avio_read_xij(pb, buf, sizeof(buf))) > 0)
+        avio_write_xij(dyn_buf, buf, ret);
+    avio_w8_xij(dyn_buf, 0);
+    avio_closep_xij(&pb);
 
-    ret = avio_close_dyn_buf(dyn_buf, &str);
+    ret = avio_close_dyn_buf_xij(dyn_buf, &str);
     if (ret < 0)
         return NULL;
     return str;
@@ -1593,7 +1593,7 @@ static void check_streamcopy_filters(OptionsContext *o, AVFormatContext *oc,
                "Filtering and streamcopy cannot be used together.\n",
                ost->filters ? "Filtergraph" : "Filtergraph script",
                ost->filters ? ost->filters : ost->filters_script,
-               av_get_media_type_string(type), ost->file_index, ost->index);
+               av_get_media_type_string_xij(type), ost->file_index, ost->index);
         exit_program(1);
     }
 }
@@ -1948,7 +1948,7 @@ static int opt_streamid(void *optctx, const char *opt, const char *arg)
     }
     *p++ = '\0';
     idx = parse_number_or_die(opt, idx_str, OPT_INT, 0, MAX_STREAMS-1);
-    o->streamid_map = grow_array(o->streamid_map, sizeof(*o->streamid_map), &o->nb_streamid_map, idx+1);
+    o->streamid_map = grow_array_xij(o->streamid_map, sizeof(*o->streamid_map), &o->nb_streamid_map, idx+1);
     o->streamid_map[idx] = parse_number_or_die(opt, p, OPT_INT, 0, INT_MAX);
     return 0;
 }
@@ -2092,9 +2092,9 @@ static int open_output_file(OptionsContext *o, const char *filename)
     if (!strcmp(filename, "-"))
         filename = "pipe:";
 
-    err = avformat_alloc_output_context2(&oc, NULL, o->format, filename);
+    err = avformat_alloc_output_context2_ijk(&oc, NULL, o->format, filename);
     if (!oc) {
-        print_error(filename, err);
+        print_error_xij(filename, err);
         exit_program(1);
     }
 
@@ -2137,9 +2137,9 @@ static int open_output_file(OptionsContext *o, const char *filename)
         /* pick the "best" stream of each type */
 
         /* video: highest resolution */
-        if (!o->video_disable && av_guess_codec(oc->oformat, NULL, filename, NULL, AVMEDIA_TYPE_VIDEO) != AV_CODEC_ID_NONE) {
+        if (!o->video_disable && av_guess_codec_xij(oc->oformat, NULL, filename, NULL, AVMEDIA_TYPE_VIDEO) != AV_CODEC_ID_NONE) {
             int area = 0, idx = -1;
-            int qcr = avformat_query_codec(oc->oformat, oc->oformat->video_codec, 0);
+            int qcr = avformat_query_codec_xij(oc->oformat, oc->oformat->video_codec, 0);
             for (i = 0; i < nb_input_streams; i++) {
                 int new_area;
                 ist = input_streams[i];
@@ -2159,7 +2159,7 @@ static int open_output_file(OptionsContext *o, const char *filename)
         }
 
         /* audio: most channels */
-        if (!o->audio_disable && av_guess_codec(oc->oformat, NULL, filename, NULL, AVMEDIA_TYPE_AUDIO) != AV_CODEC_ID_NONE) {
+        if (!o->audio_disable && av_guess_codec_xij(oc->oformat, NULL, filename, NULL, AVMEDIA_TYPE_AUDIO) != AV_CODEC_ID_NONE) {
             int best_score = 0, idx = -1;
             for (i = 0; i < nb_input_streams; i++) {
                 int score;
@@ -2177,14 +2177,14 @@ static int open_output_file(OptionsContext *o, const char *filename)
 
         /* subtitles: pick first */
         MATCH_PER_TYPE_OPT(codec_names, str, subtitle_codec_name, oc, "s");
-        if (!o->subtitle_disable && (avcodec_find_encoder(oc->oformat->subtitle_codec) || subtitle_codec_name)) {
+        if (!o->subtitle_disable && (avcodec_find_encoder_ijk(oc->oformat->subtitle_codec) || subtitle_codec_name)) {
             for (i = 0; i < nb_input_streams; i++)
                 if (input_streams[i]->st->codecpar->codec_type == AVMEDIA_TYPE_SUBTITLE) {
                     AVCodecDescriptor const *input_descriptor =
                         avcodec_descriptor_get(input_streams[i]->st->codecpar->codec_id);
                     AVCodecDescriptor const *output_descriptor = NULL;
                     AVCodec const *output_codec =
-                        avcodec_find_encoder(oc->oformat->subtitle_codec);
+                        avcodec_find_encoder_ijk(oc->oformat->subtitle_codec);
                     int input_props = 0, output_props = 0;
                     if (output_codec)
                         output_descriptor = avcodec_descriptor_get(output_codec->id);
@@ -2205,7 +2205,7 @@ static int open_output_file(OptionsContext *o, const char *filename)
         }
         /* Data only if codec id match */
         if (!o->data_disable ) {
-            enum AVCodecID codec_id = av_guess_codec(oc->oformat, NULL, filename, NULL, AVMEDIA_TYPE_DATA);
+            enum AVCodecID codec_id = av_guess_codec_xij(oc->oformat, NULL, filename, NULL, AVMEDIA_TYPE_DATA);
             for (i = 0; codec_id != AV_CODEC_ID_NONE && i < nb_input_streams; i++) {
                 if (input_streams[i]->st->codecpar->codec_type == AVMEDIA_TYPE_DATA
                     && input_streams[i]->st->codecpar->codec_id == codec_id )
@@ -2292,12 +2292,12 @@ loop_end:
         const char *p;
         int64_t len;
 
-        if ((err = avio_open2(&pb, o->attachments[i], AVIO_FLAG_READ, &int_cb, NULL)) < 0) {
+        if ((err = avio_open2_xij(&pb, o->attachments[i], AVIO_FLAG_READ, &int_cb, NULL)) < 0) {
             av_log(NULL, AV_LOG_FATAL, "Could not open attachment file %s.\n",
                    o->attachments[i]);
             exit_program(1);
         }
-        if ((len = avio_size(pb)) <= 0) {
+        if ((len = avio_size_xij(pb)) <= 0) {
             av_log(NULL, AV_LOG_FATAL, "Could not get size of the attachment %s.\n",
                    o->attachments[i]);
             exit_program(1);
@@ -2307,7 +2307,7 @@ loop_end:
                    o->attachments[i]);
             exit_program(1);
         }
-        avio_read(pb, attachment, len);
+        avio_read_xij(pb, attachment, len);
 
         ost = new_attachment_stream(o, oc, -1);
         ost->stream_copy               = 0;
@@ -2317,7 +2317,7 @@ loop_end:
 
         p = strrchr(o->attachments[i], '/');
         av_dict_set(&ost->st->metadata, "filename", (p && *p) ? p + 1 : o->attachments[i], AV_DICT_DONT_OVERWRITE);
-        avio_closep(&pb);
+        avio_closep_xij(&pb);
     }
 
 #if FF_API_LAVF_AVCTX
@@ -2334,7 +2334,7 @@ loop_end:
 #endif
 
     if (!oc->nb_streams && !(oc->oformat->flags & AVFMT_NOSTREAMS)) {
-        av_dump_format(oc, nb_output_files - 1, oc->url, 1);
+        av_dump_format_ijk(oc, nb_output_files - 1, oc->url, 1);
         av_log(NULL, AV_LOG_ERROR, "Output file #%d does not contain any stream\n", nb_output_files - 1);
         exit_program(1);
     }
@@ -2350,10 +2350,10 @@ loop_end:
 
     e = NULL;
     while ((e = av_dict_get(unused_opts, "", e, AV_DICT_IGNORE_SUFFIX))) {
-        const AVClass *class = avcodec_get_class();
+        const AVClass *class = avcodec_get_class_ijk();
         const AVOption *option = av_opt_find(&class, e->key, NULL, 0,
                                              AV_OPT_SEARCH_CHILDREN | AV_OPT_SEARCH_FAKE_OBJ);
-        const AVClass *fclass = avformat_get_class();
+        const AVClass *fclass = avformat_get_class_ijk();
         const AVOption *foption = av_opt_find(&fclass, e->key, NULL, 0,
                                               AV_OPT_SEARCH_CHILDREN | AV_OPT_SEARCH_FAKE_OBJ);
         if (!option || foption)
@@ -2466,8 +2466,8 @@ loop_end:
 
     /* check filename in case of an image number is expected */
     if (oc->oformat->flags & AVFMT_NEEDNUMBER) {
-        if (!av_filename_number_test(oc->url)) {
-            print_error(oc->url, AVERROR(EINVAL));
+        if (!av_filename_number_test_xij(oc->url)) {
+            print_error_xij(oc->url, AVERROR(EINVAL));
             exit_program(1);
         }
     }
@@ -2483,13 +2483,13 @@ loop_end:
         assert_file_overwrite(filename);
 
         /* open the file */
-        if ((err = avio_open2(&oc->pb, filename, AVIO_FLAG_WRITE,
+        if ((err = avio_open2_xij(&oc->pb, filename, AVIO_FLAG_WRITE,
                               &oc->interrupt_callback,
                               &of->opts)) < 0) {
-            print_error(filename, err);
+            print_error_xij(filename, err);
             exit_program(1);
         }
-    } else if (strcmp(oc->oformat->name, "image2")==0 && !av_filename_number_test(filename))
+    } else if (strcmp(oc->oformat->name, "image2")==0 && !av_filename_number_test_xij(filename))
         assert_file_overwrite(filename);
 
     if (o->mux_preload) {
@@ -2580,7 +2580,7 @@ loop_end:
             av_freep(&key);
         }
 
-        program = av_new_program(oc, progid);
+        program = av_new_program_xij(oc, progid);
 
         p = o->program[i].u.str;
         while(*p) {
@@ -2607,7 +2607,7 @@ loop_end:
             } else if (!strcmp(key, "program_num")) {
             } else if (!strcmp(key, "st")) {
                 int st_num = strtol(p2, NULL, 0);
-                av_program_add_stream_index(oc, progid, st_num);
+                av_program_add_stream_index_xij(oc, progid, st_num);
             } else {
                 av_log(NULL, AV_LOG_FATAL, "Unknown program key %s.\n", key);
                 exit_program(1);
@@ -3152,14 +3152,14 @@ void show_help_default(const char *opt, const char *arg)
 
     if (show_avoptions) {
         int flags = AV_OPT_FLAG_DECODING_PARAM | AV_OPT_FLAG_ENCODING_PARAM;
-        show_help_children(avcodec_get_class(), flags);
-        show_help_children(avformat_get_class(), flags);
+        show_help_children(avcodec_get_class_ijk(), flags);
+        show_help_children(avformat_get_class_ijk(), flags);
 #if CONFIG_SWSCALE
         show_help_children(sws_get_class(), flags);
 #endif
         show_help_children(swr_get_class(), AV_OPT_FLAG_AUDIO_PARAM);
         show_help_children(avfilter_get_class(), AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_FILTERING_PARAM);
-        show_help_children(av_bsf_get_class(), AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_BSF_PARAM);
+        show_help_children(av_bsf_get_class_xij(), AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_BSF_PARAM);
     }
 }
 
@@ -3278,7 +3278,7 @@ static int opt_progress(void *optctx, const char *opt, const char *arg)
 
     if (!strcmp(arg, "-"))
         arg = "pipe:";
-    ret = avio_open2(&avio, arg, AVIO_FLAG_WRITE, &int_cb, NULL);
+    ret = avio_open2_xij(&avio, arg, AVIO_FLAG_WRITE, &int_cb, NULL);
     if (ret < 0) {
         av_log(NULL, AV_LOG_ERROR, "Failed to open progress URL \"%s\": %s\n",
                arg, av_err2str(ret));

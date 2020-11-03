@@ -67,7 +67,7 @@ static av_cold int qtrle_encode_end(AVCodecContext *avctx)
 {
     QtrleEncContext *s = avctx->priv_data;
 
-    av_frame_free(&s->previous_frame);
+    av_frame_free_xij(&s->previous_frame);
     av_free(s->rlecode_table);
     av_free(s->length_table);
     av_free(s->skip_table);
@@ -115,7 +115,7 @@ static av_cold int qtrle_encode_init(AVCodecContext *avctx)
         av_log(avctx, AV_LOG_ERROR, "Error allocating memory.\n");
         return AVERROR(ENOMEM);
     }
-    s->previous_frame = av_frame_alloc();
+    s->previous_frame = av_frame_alloc_ijk();
     if (!s->previous_frame) {
         av_log(avctx, AV_LOG_ERROR, "Error allocating picture\n");
         return AVERROR(ENOMEM);
@@ -379,8 +379,8 @@ static int qtrle_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     pkt->size = encode_frame(s, pict, pkt->data);
 
     /* save the current frame */
-    av_frame_unref(s->previous_frame);
-    ret = av_frame_ref(s->previous_frame, pict);
+    av_frame_unref_xij(s->previous_frame);
+    ret = av_frame_ref_xij(s->previous_frame, pict);
     if (ret < 0) {
         av_log(avctx, AV_LOG_ERROR, "cannot add reference\n");
         return ret;

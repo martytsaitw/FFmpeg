@@ -192,8 +192,8 @@ static av_cold void uninit(AVFilterContext *ctx)
 {
     TInterlaceContext *tinterlace = ctx->priv;
 
-    av_frame_free(&tinterlace->cur );
-    av_frame_free(&tinterlace->next);
+    av_frame_free_xij(&tinterlace->cur );
+    av_frame_free_xij(&tinterlace->next);
     av_freep(&tinterlace->black_data[0]);
 }
 
@@ -353,7 +353,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *picref)
     AVFrame *cur, *next, *out;
     int field, tff, ret;
 
-    av_frame_free(&tinterlace->cur);
+    av_frame_free_xij(&tinterlace->cur);
     tinterlace->cur  = tinterlace->next;
     tinterlace->next = picref;
 
@@ -371,7 +371,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *picref)
         out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out)
             return AVERROR(ENOMEM);
-        av_frame_copy_props(out, cur);
+        av_frame_copy_props_xij(out, cur);
         out->height = outlink->h;
         out->interlaced_frame = 1;
         out->top_field_first = 1;
@@ -388,15 +388,15 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *picref)
                            inlink->format, inlink->w, inlink->h,
                            FIELD_UPPER_AND_LOWER, 1, tinterlace->mode == MODE_MERGEX2 ? inlink->frame_count_out & 1 ? FIELD_UPPER : FIELD_LOWER : FIELD_LOWER, tinterlace->flags);
         if (tinterlace->mode != MODE_MERGEX2)
-            av_frame_free(&tinterlace->next);
+            av_frame_free_xij(&tinterlace->next);
         break;
 
     case MODE_DROP_ODD:  /* only output even frames, odd  frames are dropped; height unchanged, half framerate */
     case MODE_DROP_EVEN: /* only output odd  frames, even frames are dropped; height unchanged, half framerate */
-        out = av_frame_clone(tinterlace->mode == MODE_DROP_EVEN ? cur : next);
+        out = av_frame_clone_xij(tinterlace->mode == MODE_DROP_EVEN ? cur : next);
         if (!out)
             return AVERROR(ENOMEM);
-        av_frame_free(&tinterlace->next);
+        av_frame_free_xij(&tinterlace->next);
         break;
 
     case MODE_PAD: /* expand each frame to double height, but pad alternate
@@ -404,7 +404,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *picref)
         out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out)
             return AVERROR(ENOMEM);
-        av_frame_copy_props(out, cur);
+        av_frame_copy_props_xij(out, cur);
         out->height = outlink->h;
         out->sample_aspect_ratio = av_mul_q(cur->sample_aspect_ratio, av_make_q(2, 1));
 
@@ -429,7 +429,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *picref)
         out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out)
             return AVERROR(ENOMEM);
-        av_frame_copy_props(out, cur);
+        av_frame_copy_props_xij(out, cur);
         out->interlaced_frame = 1;
         out->top_field_first = tff;
 
@@ -445,11 +445,11 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *picref)
                            inlink->format, inlink->w, inlink->h,
                            tff ? FIELD_LOWER : FIELD_UPPER, 1, tff ? FIELD_LOWER : FIELD_UPPER,
                            tinterlace->flags);
-        av_frame_free(&tinterlace->next);
+        av_frame_free_xij(&tinterlace->next);
         break;
     case MODE_INTERLACEX2: /* re-interlace preserving image height, double frame rate */
         /* output current frame first */
-        out = av_frame_clone(cur);
+        out = av_frame_clone_xij(cur);
         if (!out)
             return AVERROR(ENOMEM);
         out->interlaced_frame = 1;
@@ -465,7 +465,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *picref)
         out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out)
             return AVERROR(ENOMEM);
-        av_frame_copy_props(out, next);
+        av_frame_copy_props_xij(out, next);
         out->interlaced_frame = 1;
         out->top_field_first = !tff;
 

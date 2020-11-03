@@ -110,8 +110,8 @@ static av_cold void uninit(AVFilterContext *ctx)
 {
     SmartblurContext *s = ctx->priv;
 
-    sws_freeContext(s->luma.filter_context);
-    sws_freeContext(s->chroma.filter_context);
+    sws_freeContext_xij(s->luma.filter_context);
+    sws_freeContext_xij(s->chroma.filter_context);
 }
 
 static int query_formats(AVFilterContext *ctx)
@@ -135,21 +135,21 @@ static int alloc_sws_context(FilterParam *f, int width, int height, unsigned int
     SwsVector *vec;
     SwsFilter sws_filter;
 
-    vec = sws_getGaussianVec(f->radius, f->quality);
+    vec = sws_getGaussianVec_xij(f->radius, f->quality);
 
     if (!vec)
         return AVERROR(EINVAL);
 
-    sws_scaleVec(vec, f->strength);
+    sws_scaleVec_xij(vec, f->strength);
     vec->coeff[vec->length / 2] += 1.0 - f->strength;
     sws_filter.lumH = sws_filter.lumV = vec;
     sws_filter.chrH = sws_filter.chrV = NULL;
-    f->filter_context = sws_getCachedContext(NULL,
+    f->filter_context = sws_getCachedContext_xij(NULL,
                                              width, height, AV_PIX_FMT_GRAY8,
                                              width, height, AV_PIX_FMT_GRAY8,
                                              flags, &sws_filter, NULL, NULL);
 
-    sws_freeVec(vec);
+    sws_freeVec_xij(vec);
 
     if (!f->filter_context)
         return AVERROR(EINVAL);
@@ -248,10 +248,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
 
     outpic = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!outpic) {
-        av_frame_free(&inpic);
+        av_frame_free_xij(&inpic);
         return AVERROR(ENOMEM);
     }
-    av_frame_copy_props(outpic, inpic);
+    av_frame_copy_props_xij(outpic, inpic);
 
     blur(outpic->data[0], outpic->linesize[0],
          inpic->data[0],  inpic->linesize[0],
@@ -269,7 +269,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
              s->chroma.filter_context);
     }
 
-    av_frame_free(&inpic);
+    av_frame_free_xij(&inpic);
     return ff_filter_frame(outlink, outpic);
 }
 

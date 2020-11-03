@@ -163,10 +163,10 @@ static int jacosub_read_header(AVFormatContext *s)
     int merge_line = 0;
     int i, ret;
 
-    AVStream *st = avformat_new_stream(s, NULL);
+    AVStream *st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
-    avpriv_set_pts_info(st, 64, 1, 100);
+    avpriv_set_pts_info_ijk(st, 64, 1, 100);
     st->codecpar->codec_type = AVMEDIA_TYPE_SUBTITLE;
     st->codecpar->codec_id   = AV_CODEC_ID_JACOSUB;
 
@@ -174,11 +174,11 @@ static int jacosub_read_header(AVFormatContext *s)
 
     av_bprint_init(&header, 1024+AV_INPUT_BUFFER_PADDING_SIZE, 4096);
 
-    while (!avio_feof(pb)) {
+    while (!avio_feof_xij(pb)) {
         int cmd_len;
         const char *p = line;
         int64_t pos = avio_tell(pb);
-        int len = ff_get_line(pb, line, sizeof(line));
+        int len = ff_get_line_xij(pb, line, sizeof(line));
 
         p = jss_skip_whitespace(p);
 
@@ -230,7 +230,7 @@ static int jacosub_read_header(AVFormatContext *s)
     }
 
     /* general/essential directives in the extradata */
-    ret = ff_bprint_to_codecpar_extradata(st->codecpar, &header);
+    ret = ff_bprint_to_codecpar_extradata_xij(st->codecpar, &header);
     if (ret < 0)
         goto fail;
 

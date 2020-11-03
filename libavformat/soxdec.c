@@ -51,26 +51,26 @@ static int sox_read_header(AVFormatContext *s)
     double sample_rate, sample_rate_frac;
     AVStream *st;
 
-    st = avformat_new_stream(s, NULL);
+    st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
 
-    if (avio_rl32(pb) == SOX_TAG) {
+    if (avio_rl32_xij(pb) == SOX_TAG) {
         st->codecpar->codec_id = AV_CODEC_ID_PCM_S32LE;
-        header_size         = avio_rl32(pb);
-        avio_skip(pb, 8); /* sample count */
-        sample_rate         = av_int2double(avio_rl64(pb));
-        st->codecpar->channels = avio_rl32(pb);
-        comment_size        = avio_rl32(pb);
+        header_size         = avio_rl32_xij(pb);
+        avio_skip_xij(pb, 8); /* sample count */
+        sample_rate         = av_int2double(avio_rl64_xij(pb));
+        st->codecpar->channels = avio_rl32_xij(pb);
+        comment_size        = avio_rl32_xij(pb);
     } else {
         st->codecpar->codec_id = AV_CODEC_ID_PCM_S32BE;
-        header_size         = avio_rb32(pb);
-        avio_skip(pb, 8); /* sample count */
-        sample_rate         = av_int2double(avio_rb64(pb));
-        st->codecpar->channels = avio_rb32(pb);
-        comment_size        = avio_rb32(pb);
+        header_size         = avio_rb32_xij(pb);
+        avio_skip_xij(pb, 8); /* sample count */
+        sample_rate         = av_int2double(avio_rb64_xij(pb));
+        st->codecpar->channels = avio_rb32_xij(pb);
+        comment_size        = avio_rb32_xij(pb);
     }
 
     if (comment_size > 0xFFFFFFFFU - SOX_FIXED_HDR - 4U) {
@@ -99,7 +99,7 @@ static int sox_read_header(AVFormatContext *s)
         char *comment = av_malloc(comment_size+1);
         if(!comment)
             return AVERROR(ENOMEM);
-        if (avio_read(pb, comment, comment_size) != comment_size) {
+        if (avio_read_xij(pb, comment, comment_size) != comment_size) {
             av_freep(&comment);
             return AVERROR(EIO);
         }
@@ -109,7 +109,7 @@ static int sox_read_header(AVFormatContext *s)
                                AV_DICT_DONT_STRDUP_VAL);
     }
 
-    avio_skip(pb, header_size - SOX_FIXED_HDR - comment_size);
+    avio_skip_xij(pb, header_size - SOX_FIXED_HDR - comment_size);
 
     st->codecpar->sample_rate           = sample_rate;
     st->codecpar->bits_per_coded_sample = 32;
@@ -119,7 +119,7 @@ static int sox_read_header(AVFormatContext *s)
     st->codecpar->block_align           = st->codecpar->bits_per_coded_sample *
                                           st->codecpar->channels / 8;
 
-    avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
+    avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
 }

@@ -143,7 +143,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
     ret = av_audio_fifo_write(asns->fifo, (void **)insamples->extended_data, nb_samples);
     if (ret > 0 && asns->next_out_pts == AV_NOPTS_VALUE)
         asns->next_out_pts = insamples->pts;
-    av_frame_free(&insamples);
+    av_frame_free_xij(&insamples);
 
     if (ret < 0)
         return ret;

@@ -125,7 +125,7 @@ static av_cold int mimic_decode_end(AVCodecContext *avctx)
     for (i = 0; i < FF_ARRAY_ELEMS(ctx->frames); i++) {
         if (ctx->frames[i].f)
             ff_thread_release_buffer(avctx, &ctx->frames[i]);
-        av_frame_free(&ctx->frames[i].f);
+        av_frame_free_xij(&ctx->frames[i].f);
     }
 
     if (!avctx->internal->is_copy)
@@ -156,7 +156,7 @@ static av_cold int mimic_decode_init(AVCodecContext *avctx)
     ff_init_scantable(ctx->idsp.idct_permutation, &ctx->scantable, col_zag);
 
     for (i = 0; i < FF_ARRAY_ELEMS(ctx->frames); i++) {
-        ctx->frames[i].f = av_frame_alloc();
+        ctx->frames[i].f = av_frame_alloc_ijk();
         if (!ctx->frames[i].f) {
             mimic_decode_end(avctx);
             return AVERROR(ENOMEM);
@@ -181,7 +181,7 @@ static int mimic_decode_update_thread_context(AVCodecContext *avctx, const AVCod
     for (i = 0; i < FF_ARRAY_ELEMS(dst->frames); i++) {
         ff_thread_release_buffer(avctx, &dst->frames[i]);
         if (i != src->next_cur_index && src->frames[i].f->data[0]) {
-            ret = ff_thread_ref_frame(&dst->frames[i], &src->frames[i]);
+            ret = ff_thread_ref_frame_xij(&dst->frames[i], &src->frames[i]);
             if (ret < 0)
                 return ret;
         }
@@ -390,7 +390,7 @@ static int mimic_decode_frame(AVCodecContext *avctx, void *data,
             return AVERROR_INVALIDDATA;
         }
 
-        res = ff_set_dimensions(avctx, width, height);
+        res = ff_set_dimensions_xij(avctx, width, height);
         if (res < 0)
             return res;
 
@@ -422,7 +422,7 @@ static int mimic_decode_frame(AVCodecContext *avctx, void *data,
 
     ff_thread_finish_setup(avctx);
 
-    av_fast_padded_malloc(&ctx->swap_buf, &ctx->swap_buf_size, swap_buf_size);
+    av_fast_padded_malloc_xij(&ctx->swap_buf, &ctx->swap_buf_size, swap_buf_size);
     if (!ctx->swap_buf)
         return AVERROR(ENOMEM);
 
@@ -439,7 +439,7 @@ static int mimic_decode_frame(AVCodecContext *avctx, void *data,
         return res;
     }
 
-    if ((res = av_frame_ref(data, ctx->frames[ctx->cur_index].f)) < 0)
+    if ((res = av_frame_ref_xij(data, ctx->frames[ctx->cur_index].f)) < 0)
         return res;
     *got_frame      = 1;
 
@@ -458,7 +458,7 @@ static av_cold int mimic_init_thread_copy(AVCodecContext *avctx)
     int i;
 
     for (i = 0; i < FF_ARRAY_ELEMS(ctx->frames); i++) {
-        ctx->frames[i].f = av_frame_alloc();
+        ctx->frames[i].f = av_frame_alloc_ijk();
         if (!ctx->frames[i].f) {
             mimic_decode_end(avctx);
             return AVERROR(ENOMEM);

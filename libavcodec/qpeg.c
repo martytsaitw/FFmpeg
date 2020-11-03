@@ -261,7 +261,7 @@ static int decode_frame(AVCodecContext *avctx,
     uint8_t* outdata;
     int delta, ret;
     int pal_size;
-    const uint8_t *pal = av_packet_get_side_data(avpkt, AV_PKT_DATA_PALETTE, &pal_size);
+    const uint8_t *pal = av_packet_get_side_data_xij(avpkt, AV_PKT_DATA_PALETTE, &pal_size);
 
     if (avpkt->size < 0x86) {
         av_log(avctx, AV_LOG_ERROR, "Packet is too small\n");
@@ -270,10 +270,10 @@ static int decode_frame(AVCodecContext *avctx,
 
     bytestream2_init(&a->buffer, avpkt->data, avpkt->size);
 
-    av_frame_unref(ref);
-    av_frame_move_ref(ref, p);
+    av_frame_unref_xij(ref);
+    av_frame_move_ref_xij(ref, p);
 
-    if ((ret = ff_get_buffer(avctx, p, AV_GET_BUFFER_FLAG_REF)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, p, AV_GET_BUFFER_FLAG_REF)) < 0)
         return ret;
     outdata = p->data[0];
     bytestream2_skip(&a->buffer, 4);
@@ -296,7 +296,7 @@ static int decode_frame(AVCodecContext *avctx,
     }
     memcpy(p->data[1], a->pal, AVPALETTE_SIZE);
 
-    if ((ret = av_frame_ref(data, p)) < 0)
+    if ((ret = av_frame_ref_xij(data, p)) < 0)
         return ret;
 
     *got_frame      = 1;
@@ -320,8 +320,8 @@ static av_cold int decode_end(AVCodecContext *avctx)
 {
     QpegContext * const a = avctx->priv_data;
 
-    av_frame_free(&a->pic);
-    av_frame_free(&a->ref);
+    av_frame_free_xij(&a->pic);
+    av_frame_free_xij(&a->ref);
 
     return 0;
 }
@@ -334,8 +334,8 @@ static av_cold int decode_init(AVCodecContext *avctx){
 
     decode_flush(avctx);
 
-    a->pic = av_frame_alloc();
-    a->ref = av_frame_alloc();
+    a->pic = av_frame_alloc_ijk();
+    a->ref = av_frame_alloc_ijk();
     if (!a->pic || !a->ref) {
         decode_end(avctx);
         return AVERROR(ENOMEM);

@@ -35,7 +35,7 @@
  * provides various "special" platform-specific muxers and demuxers, e.g. for
  * grabbing devices, audio capture and playback etc. As a consequence, the
  * (de)muxers in libavdevice are of the AVFMT_NOFILE type (they use their own
- * I/O functions). The filename passed to avformat_open_input() often does not
+ * I/O functions). The filename passed to avformat_open_input_ijk() often does not
  * refer to an actually existing file, but has some special device-specific
  * meaning - e.g. for xcbgrab it is the display name.
  *
@@ -53,7 +53,7 @@
 /**
  * Return the LIBAVDEVICE_VERSION_INT constant.
  */
-unsigned avdevice_version(void);
+unsigned avdevice_version_ijk(void);
 
 /**
  * Return the libavdevice build-time configuration.
@@ -365,7 +365,7 @@ int avdevice_dev_to_app_control_message(struct AVFormatContext *s,
  *  AVOptionRanges *ranges;
  *  int ret;
  *
- *  if ((ret = avformat_alloc_output_context2(&oc, NULL, "opengl", NULL)) < 0)
+ *  if ((ret = avformat_alloc_output_context2_ijk(&oc, NULL, "opengl", NULL)) < 0)
  *      goto fail;
  *  if (avdevice_capabilities_create(&caps, oc, NULL) < 0)
  *      goto fail;
@@ -387,7 +387,7 @@ int avdevice_dev_to_app_control_message(struct AVFormatContext *s,
  * fail:
  *  //clean up code
  *  avdevice_capabilities_free(&query, oc);
- *  avformat_free_context(oc);
+ *  avformat_free_context_ijk(oc);
  * @endcode
  */
 
@@ -429,8 +429,8 @@ extern const AVOption av_device_capabilities[];
  * @param device_options An AVDictionary filled with device-private options.
  *                       On return this parameter will be destroyed and replaced with a dict
  *                       containing options that were not found. May be NULL.
- *                       The same options must be passed later to avformat_write_header() for output
- *                       devices or avformat_open_input() for input devices, or at any other place
+ *                       The same options must be passed later to avformat_write_header_xij() for output
+ *                       devices or avformat_open_input_ijk() for input devices, or at any other place
  *                       that affects device-private options.
  *
  * @return >= 0 on success, negative otherwise.
@@ -495,8 +495,8 @@ void avdevice_free_list_devices(AVDeviceInfoList **device_list);
  * @param device           device format. May be NULL if device name is set.
  * @param device_name      device name. May be NULL if device format is set.
  * @param device_options   An AVDictionary filled with device-private options. May be NULL.
- *                         The same options must be passed later to avformat_write_header() for output
- *                         devices or avformat_open_input() for input devices, or at any other place
+ *                         The same options must be passed later to avformat_write_header_xij() for output
+ *                         devices or avformat_open_input_ijk() for input devices, or at any other place
  *                         that affects device-private options.
  * @param[out] device_list list of autodetected devices
  * @return count of autodetected devices, negative on error.

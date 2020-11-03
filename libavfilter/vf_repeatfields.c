@@ -35,7 +35,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 {
     RepeatFieldsContext *s = ctx->priv;
 
-    av_frame_free(&s->frame);
+    av_frame_free_xij(&s->frame);
 }
 
 static int query_formats(AVFilterContext *ctx)
@@ -92,7 +92,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in) {
     int state = s->state;
 
     if (!s->frame) {
-        s->frame = av_frame_clone(in);
+        s->frame = av_frame_clone_xij(in);
         if (!s->frame)
             return AVERROR(ENOMEM);
         s->frame->pts = AV_NOPTS_VALUE;
@@ -111,14 +111,14 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in) {
     if (state == 0) {
         AVFrame *new;
 
-        new = av_frame_clone(in);
+        new = av_frame_clone_xij(in);
         if (!new)
             return AVERROR(ENOMEM);
 
         ret = ff_filter_frame(outlink, new);
 
         if (in->repeat_pict) {
-            av_frame_make_writable(out);
+            av_frame_make_writable_xij(out);
             update_pts(outlink, out, in->pts, 2);
             for (i = 0; i < s->nb_planes; i++) {
                 av_image_copy_plane(out->data[i], out->linesize[i] * 2,
@@ -129,25 +129,25 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in) {
         }
     } else {
         for (i = 0; i < s->nb_planes; i++) {
-            av_frame_make_writable(out);
+            av_frame_make_writable_xij(out);
             av_image_copy_plane(out->data[i] + out->linesize[i], out->linesize[i] * 2,
                                 in->data[i] + in->linesize[i], in->linesize[i] * 2,
                                 s->linesize[i], s->planeheight[i] / 2);
         }
 
-        ret = ff_filter_frame(outlink, av_frame_clone(out));
+        ret = ff_filter_frame(outlink, av_frame_clone_xij(out));
 
         if (in->repeat_pict) {
             AVFrame *new;
 
-            new = av_frame_clone(in);
+            new = av_frame_clone_xij(in);
             if (!new)
                 return AVERROR(ENOMEM);
 
             ret = ff_filter_frame(outlink, new);
             state = 0;
         } else {
-            av_frame_make_writable(out);
+            av_frame_make_writable_xij(out);
             update_pts(outlink, out, in->pts, 1);
             for (i = 0; i < s->nb_planes; i++) {
                 av_image_copy_plane(out->data[i], out->linesize[i] * 2,
@@ -159,7 +159,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in) {
 
     s->state = state;
 
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
     return ret;
 }
 
