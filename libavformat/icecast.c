@@ -124,7 +124,7 @@ static int icecast_open(URLContext *h, const char *uri, int flags)
         av_dict_set(&opt_dict, "user_agent", s->user_agent, 0);
 
     // Parse URI
-    av_url_split(NULL, 0, auth, sizeof(auth), host, sizeof(host),
+    av_url_split_xij(NULL, 0, auth, sizeof(auth), host, sizeof(host),
                  &port, path, sizeof(path), uri);
 
     // Check for auth data in URI

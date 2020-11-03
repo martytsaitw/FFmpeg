@@ -58,12 +58,12 @@ static const AVClass *codec_child_class_next(const AVClass *prev)
     AVCodec *c = NULL;
 
     /* find the codec that corresponds to prev */
-    while (prev && (c = av_codec_next(c)))
+    while (prev && (c = av_codec_next_xij(c)))
         if (c->priv_class == prev)
             break;
 
     /* find next codec with priv options */
-    while (c = av_codec_next(c))
+    while (c = av_codec_next_xij(c))
         if (c->priv_class)
             return c->priv_class;
     return NULL;
@@ -112,10 +112,10 @@ static int init_context_defaults(AVCodecContext *s, const AVCodec *codec)
     s->time_base           = (AVRational){0,1};
     s->framerate           = (AVRational){ 0, 1 };
     s->pkt_timebase        = (AVRational){ 0, 1 };
-    s->get_buffer2         = avcodec_default_get_buffer2;
-    s->get_format          = avcodec_default_get_format;
-    s->execute             = avcodec_default_execute;
-    s->execute2            = avcodec_default_execute2;
+    s->get_buffer2         = avcodec_default_get_buffer2_xij;
+    s->get_format          = avcodec_default_get_format_xij;
+    s->execute             = avcodec_default_execute_xij;
+    s->execute2            = avcodec_default_execute2_xij;
     s->sample_aspect_ratio = (AVRational){0,1};
     s->pix_fmt             = AV_PIX_FMT_NONE;
     s->sw_pix_fmt          = AV_PIX_FMT_NONE;
@@ -147,7 +147,7 @@ static int init_context_defaults(AVCodecContext *s, const AVCodec *codec)
 }
 
 #if FF_API_GET_CONTEXT_DEFAULTS
-int avcodec_get_context_defaults3(AVCodecContext *s, const AVCodec *codec)
+int avcodec_get_context_defaults3_xij(AVCodecContext *s, const AVCodec *codec)
 {
     return init_context_defaults(s, codec);
 }
@@ -175,7 +175,7 @@ void avcodec_free_context_ijk(AVCodecContext **pavctx)
     if (!avctx)
         return;
 
-    avcodec_close(avctx);
+    avcodec_close_xij(avctx);
 
     av_freep(&avctx->extradata);
     av_freep(&avctx->subtitle_header);
@@ -194,7 +194,7 @@ static void copy_context_reset(AVCodecContext *avctx)
     av_opt_free(avctx);
 #if FF_API_CODED_FRAME
 FF_DISABLE_DEPRECATION_WARNINGS
-    av_frame_free(&avctx->coded_frame);
+    av_frame_free_xij(&avctx->coded_frame);
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
     av_freep(&avctx->rc_override);
@@ -202,8 +202,8 @@ FF_ENABLE_DEPRECATION_WARNINGS
     av_freep(&avctx->inter_matrix);
     av_freep(&avctx->extradata);
     av_freep(&avctx->subtitle_header);
-    av_buffer_unref(&avctx->hw_frames_ctx);
-    av_buffer_unref(&avctx->hw_device_ctx);
+    av_buffer_unref_xij(&avctx->hw_frames_ctx);
+    av_buffer_unref_xij(&avctx->hw_device_ctx);
     for (i = 0; i < avctx->nb_coded_side_data; i++)
         av_freep(&avctx->coded_side_data[i].data);
     av_freep(&avctx->coded_side_data);
@@ -212,12 +212,12 @@ FF_ENABLE_DEPRECATION_WARNINGS
     avctx->extradata_size = 0;
 }
 
-int avcodec_copy_context(AVCodecContext *dest, const AVCodecContext *src)
+int avcodec_copy_context_xij(AVCodecContext *dest, const AVCodecContext *src)
 {
     const AVCodec *orig_codec = dest->codec;
     uint8_t *orig_priv_data = dest->priv_data;
 
-    if (avcodec_is_open(dest)) { // check that the dest context is uninitialized
+    if (avcodec_is_open_xij(dest)) { // check that the dest context is uninitialized
         av_log(dest, AV_LOG_ERROR,
                "Tried to copy AVCodecContext %p into already-initialized %p\n",
                src, dest);
@@ -318,7 +318,7 @@ static const AVClass av_frame_class = {
     .version                 = LIBAVUTIL_VERSION_INT,
 };
 
-const AVClass *avcodec_get_frame_class(void)
+const AVClass *avcodec_get_frame_class_xij(void)
 {
     return &av_frame_class;
 }
@@ -343,7 +343,7 @@ static const AVClass av_subtitle_rect_class = {
     .version                = LIBAVUTIL_VERSION_INT,
 };
 
-const AVClass *avcodec_get_subtitle_rect_class(void)
+const AVClass *avcodec_get_subtitle_rect_class_xij(void)
 {
     return &av_subtitle_rect_class;
 }
@@ -476,20 +476,20 @@ static void test_copy(const AVCodec *c1, const AVCodec *c2)
         av_opt_set(ctx2->priv_data, "num", "667", 0);
         av_opt_set(ctx2->priv_data, "str", "i'm dest value before copy", 0);
     }
-    avcodec_copy_context(ctx2, ctx1);
+    avcodec_copy_context_xij(ctx2, ctx1);
     test_copy_print_codec(ctx1);
     test_copy_print_codec(ctx2);
     if (ctx1->codec) {
         printf("opened:\n");
-        avcodec_open2(ctx1, ctx1->codec, NULL);
+        avcodec_open2_xij(ctx1, ctx1->codec, NULL);
         if (ctx2->codec && ctx2->codec->priv_class && ctx2->codec->priv_data_size) {
             av_opt_set(ctx2->priv_data, "num", "667", 0);
             av_opt_set(ctx2->priv_data, "str", "i'm dest value before copy", 0);
         }
-        avcodec_copy_context(ctx2, ctx1);
+        avcodec_copy_context_xij(ctx2, ctx1);
         test_copy_print_codec(ctx1);
         test_copy_print_codec(ctx2);
-        avcodec_close(ctx1);
+        avcodec_close_xij(ctx1);
     }
     avcodec_free_context_ijk(&ctx1);
     avcodec_free_context_ijk(&ctx2);
@@ -507,9 +507,9 @@ int main(void)
     int i, j;
 
     for (i = 0; dummy_codec[i]; i++)
-        avcodec_register(dummy_codec[i]);
+        avcodec_register_xij(dummy_codec[i]);
 
-    printf("testing avcodec_copy_context()\n");
+    printf("testing avcodec_copy_context_xij()\n");
     for (i = 0; i < FF_ARRAY_ELEMS(dummy_codec); i++)
         for (j = 0; j < FF_ARRAY_ELEMS(dummy_codec); j++)
             test_copy(dummy_codec[i], dummy_codec[j]);

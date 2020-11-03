@@ -162,7 +162,7 @@ int ffurl_accept(URLContext *s, URLContext **c);
 
 /**
  * Perform one step of the protocol handshake to accept a new client.
- * See avio_handshake() for details.
+ * See avio_handshake_xij() for details.
  * Implementations should try to return decreasing values.
  * If the protocol uses an underlying protocol, the underlying handshake is
  * usually the first step, and the return value can be:
@@ -281,12 +281,12 @@ int ff_udp_get_local_port(URLContext *h);
 
 /**
  * Assemble a URL string from components. This is the reverse operation
- * of av_url_split.
+ * of av_url_split_xij.
  *
  * Note, this requires networking to be initialized, so the caller must
  * ensure ff_network_init has been called.
  *
- * @see av_url_split
+ * @see av_url_split_xij
  *
  * @param str the buffer to fill with the url
  * @param size the size of the str buffer

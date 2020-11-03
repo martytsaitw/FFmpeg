@@ -58,7 +58,7 @@ static int vp8_broken_sequence(AVFormatContext *ctx, PayloadContext *vp8,
 {
     vp8->sequence_ok = 0;
     av_log(ctx, AV_LOG_WARNING, "%s", msg);
-    ffio_free_dyn_buf(&vp8->data);
+    ffio_free_dyn_buf_xij(&vp8->data);
     return AVERROR(EAGAIN);
 }
 
@@ -141,7 +141,7 @@ static int vp8_handle_packet(AVFormatContext *ctx, PayloadContext *vp8,
         int res;
         int non_key = buf[0] & 0x01;
         if (!non_key) {
-            ffio_free_dyn_buf(&vp8->data);
+            ffio_free_dyn_buf_xij(&vp8->data);
             // Keyframe, decoding ok again
             vp8->sequence_ok = 1;
             vp8->sequence_dirty = 0;
@@ -196,12 +196,12 @@ static int vp8_handle_packet(AVFormatContext *ctx, PayloadContext *vp8,
                     old_timestamp = vp8->timestamp;
                 } else {
                     // Shouldn't happen
-                    ffio_free_dyn_buf(&vp8->data);
+                    ffio_free_dyn_buf_xij(&vp8->data);
                 }
             }
         }
         vp8->first_part_size = (AV_RL16(&buf[1]) << 3 | buf[0] >> 5) + 3;
-        if ((res = avio_open_dyn_buf(&vp8->data)) < 0)
+        if ((res = avio_open_dyn_buf_xij(&vp8->data)) < 0)
             return res;
         vp8->timestamp = *timestamp;
         vp8->broken_frame = 0;
@@ -238,7 +238,7 @@ static int vp8_handle_packet(AVFormatContext *ctx, PayloadContext *vp8,
 
     vp8->prev_seq = seq;
     if (!vp8->broken_frame)
-        avio_write(vp8->data, buf, len);
+        avio_write_xij(vp8->data, buf, len);
 
     if (returned_old_frame) {
         *timestamp = old_timestamp;
@@ -268,7 +268,7 @@ static av_cold int vp8_init(AVFormatContext *s, int st_index, PayloadContext *vp
 
 static void vp8_close_context(PayloadContext *vp8)
 {
-    ffio_free_dyn_buf(&vp8->data);
+    ffio_free_dyn_buf_xij(&vp8->data);
 }
 
 static int vp8_need_keyframe(PayloadContext *vp8)

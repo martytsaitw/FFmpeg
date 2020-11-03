@@ -153,7 +153,7 @@ static int ass_read_header(AVFormatContext *s)
         sub->duration = duration;
     }
 
-    res = ff_bprint_to_codecpar_extradata(st->codecpar, &header);
+    res = ff_bprint_to_codecpar_extradata_xij(st->codecpar, &header);
     if (res < 0)
         goto end;
 

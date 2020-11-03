@@ -33,12 +33,12 @@ static int rtp_mpegts_write_close(AVFormatContext *s)
     struct MuxChain *chain = s->priv_data;
 
     if (chain->mpegts_ctx) {
-        av_write_trailer(chain->mpegts_ctx);
-        ffio_free_dyn_buf(&chain->mpegts_ctx->pb);
+        av_write_trailer_xij(chain->mpegts_ctx);
+        ffio_free_dyn_buf_xij(&chain->mpegts_ctx->pb);
         avformat_free_context_ijk(chain->mpegts_ctx);
     }
     if (chain->rtp_ctx) {
-        av_write_trailer(chain->rtp_ctx);
+        av_write_trailer_xij(chain->rtp_ctx);
         avformat_free_context_ijk(chain->rtp_ctx);
     }
     return 0;
@@ -48,8 +48,8 @@ static int rtp_mpegts_write_header(AVFormatContext *s)
 {
     struct MuxChain *chain = s->priv_data;
     AVFormatContext *mpegts_ctx = NULL, *rtp_ctx = NULL;
-    AVOutputFormat *mpegts_format = av_guess_format("mpegts", NULL, NULL);
-    AVOutputFormat *rtp_format    = av_guess_format("rtp", NULL, NULL);
+    AVOutputFormat *mpegts_format = av_guess_format_xij("mpegts", NULL, NULL);
+    AVOutputFormat *rtp_format    = av_guess_format_xij("rtp", NULL, NULL);
     int i, ret = AVERROR(ENOMEM);
     AVStream *st;
 
@@ -68,9 +68,9 @@ static int rtp_mpegts_write_header(AVFormatContext *s)
         st->sample_aspect_ratio = s->streams[i]->sample_aspect_ratio;
         avcodec_parameters_copy_ijk(st->codecpar, s->streams[i]->codecpar);
     }
-    if ((ret = avio_open_dyn_buf(&mpegts_ctx->pb)) < 0)
+    if ((ret = avio_open_dyn_buf_xij(&mpegts_ctx->pb)) < 0)
         goto fail;
-    if ((ret = avformat_write_header(mpegts_ctx, NULL)) < 0)
+    if ((ret = avformat_write_header_xij(mpegts_ctx, NULL)) < 0)
         goto fail;
     for (i = 0; i < s->nb_streams; i++)
         s->streams[i]->time_base = mpegts_ctx->streams[i]->time_base;
@@ -93,7 +93,7 @@ static int rtp_mpegts_write_header(AVFormatContext *s)
     st->time_base.den   = 90000;
     st->codecpar->codec_id = AV_CODEC_ID_MPEG2TS;
     rtp_ctx->pb = s->pb;
-    if ((ret = avformat_write_header(rtp_ctx, NULL)) < 0)
+    if ((ret = avformat_write_header_xij(rtp_ctx, NULL)) < 0)
         goto fail;
     chain->rtp_ctx = rtp_ctx;
 
@@ -101,7 +101,7 @@ static int rtp_mpegts_write_header(AVFormatContext *s)
 
 fail:
     if (mpegts_ctx) {
-        ffio_free_dyn_buf(&mpegts_ctx->pb);
+        ffio_free_dyn_buf_xij(&mpegts_ctx->pb);
         avformat_free_context_ijk(mpegts_ctx);
     }
     if (rtp_ctx)
@@ -118,12 +118,12 @@ static int rtp_mpegts_write_packet(AVFormatContext *s, AVPacket *pkt)
     AVPacket local_pkt;
 
     if (!chain->mpegts_ctx->pb) {
-        if ((ret = avio_open_dyn_buf(&chain->mpegts_ctx->pb)) < 0)
+        if ((ret = avio_open_dyn_buf_xij(&chain->mpegts_ctx->pb)) < 0)
             return ret;
     }
-    if ((ret = av_write_frame(chain->mpegts_ctx, pkt)) < 0)
+    if ((ret = av_write_frame_xij(chain->mpegts_ctx, pkt)) < 0)
         return ret;
-    size = avio_close_dyn_buf(chain->mpegts_ctx->pb, &buf);
+    size = avio_close_dyn_buf_xij(chain->mpegts_ctx->pb, &buf);
     chain->mpegts_ctx->pb = NULL;
     if (size == 0) {
         av_free(buf);
@@ -141,7 +141,7 @@ static int rtp_mpegts_write_packet(AVFormatContext *s, AVPacket *pkt)
         local_pkt.dts = av_rescale_q(pkt->dts,
                                      s->streams[pkt->stream_index]->time_base,
                                      chain->rtp_ctx->streams[0]->time_base);
-    ret = av_write_frame(chain->rtp_ctx, &local_pkt);
+    ret = av_write_frame_xij(chain->rtp_ctx, &local_pkt);
     av_free(buf);
 
     return ret;

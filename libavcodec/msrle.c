@@ -95,12 +95,12 @@ static int msrle_decode_frame(AVCodecContext *avctx,
     s->buf = buf;
     s->size = buf_size;
 
-    if ((ret = ff_reget_buffer(avctx, s->frame)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, s->frame)) < 0)
         return ret;
 
     if (avctx->bits_per_coded_sample > 1 && avctx->bits_per_coded_sample <= 8) {
         int size;
-        const uint8_t *pal = av_packet_get_side_data(avpkt, AV_PKT_DATA_PALETTE, &size);
+        const uint8_t *pal = av_packet_get_side_data_xij(avpkt, AV_PKT_DATA_PALETTE, &size);
 
         if (pal && size == AVPALETTE_SIZE) {
             s->frame->palette_has_changed = 1;
@@ -141,7 +141,7 @@ static int msrle_decode_frame(AVCodecContext *avctx,
         ff_msrle_decode(avctx, s->frame, avctx->bits_per_coded_sample, &s->gb);
     }
 
-    if ((ret = av_frame_ref(data, s->frame)) < 0)
+    if ((ret = av_frame_ref_xij(data, s->frame)) < 0)
         return ret;
 
     *got_frame      = 1;
@@ -155,7 +155,7 @@ static av_cold int msrle_decode_end(AVCodecContext *avctx)
     MsrleContext *s = avctx->priv_data;
 
     /* release the last frame */
-    av_frame_free(&s->frame);
+    av_frame_free_xij(&s->frame);
 
     return 0;
 }

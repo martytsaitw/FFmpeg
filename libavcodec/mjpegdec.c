@@ -423,7 +423,7 @@ int ff_mjpeg_decode_sof(MJpegDecodeContext *s)
             height *= 2;
         }
 
-        ret = ff_set_dimensions(s->avctx, width, height);
+        ret = ff_set_dimensions_xij(s->avctx, width, height);
         if (ret < 0)
             return ret;
 
@@ -661,7 +661,7 @@ unk_pixfmt:
             s->avctx->pix_fmt,
             AV_PIX_FMT_NONE,
         };
-        s->hwaccel_pix_fmt = ff_get_format(s->avctx, pix_fmts);
+        s->hwaccel_pix_fmt = ff_get_format_xij(s->avctx, pix_fmts);
         if (s->hwaccel_pix_fmt < 0)
             return AVERROR(EINVAL);
 
@@ -676,8 +676,8 @@ unk_pixfmt:
         return 0;
     }
 
-    av_frame_unref(s->picture_ptr);
-    if (ff_get_buffer(s->avctx, s->picture_ptr, AV_GET_BUFFER_FLAG_REF) < 0)
+    av_frame_unref_xij(s->picture_ptr);
+    if (ff_get_buffer_xij(s->avctx, s->picture_ptr, AV_GET_BUFFER_FLAG_REF) < 0)
         return -1;
     s->picture_ptr->pict_type = AV_PICTURE_TYPE_I;
     s->picture_ptr->key_frame = 1;
@@ -2107,7 +2107,7 @@ int ff_mjpeg_find_marker(MJpegDecodeContext *s,
     int start_code;
     start_code = find_marker(buf_ptr, buf_end);
 
-    av_fast_padded_malloc(&s->buffer, &s->buffer_size, buf_end - *buf_ptr);
+    av_fast_padded_malloc_xij(&s->buffer, &s->buffer_size, buf_end - *buf_ptr);
     if (!s->buffer)
         return AVERROR(ENOMEM);
 
@@ -2417,7 +2417,7 @@ eoi_parser:
 
                 av_freep(&s->hwaccel_picture_private);
             }
-            if ((ret = av_frame_ref(frame, s->picture_ptr)) < 0)
+            if ((ret = av_frame_ref_xij(frame, s->picture_ptr)) < 0)
                 return ret;
             *got_frame = 1;
             s->got_picture = 0;
@@ -2430,7 +2430,7 @@ eoi_parser:
                 AVBufferRef *qp_table_buf = av_buffer_alloc_ijk(qpw);
                 if (qp_table_buf) {
                     memset(qp_table_buf->data, qp, qpw);
-                    av_frame_set_qp_table(data, qp_table_buf, 0, FF_QSCALE_TYPE_MPEG1);
+                    av_frame_set_qp_table_xij(data, qp_table_buf, 0, FF_QSCALE_TYPE_MPEG1);
                 }
 
                 if(avctx->debug & FF_DEBUG_QP)
@@ -2689,7 +2689,7 @@ the_end:
         for (i = 0; i < s->iccnum; i++)
             total_size += s->iccdatalens[i];
 
-        sd = av_frame_new_side_data(data, AV_FRAME_DATA_ICC_PROFILE, total_size);
+        sd = av_frame_new_side_data_xij(data, AV_FRAME_DATA_ICC_PROFILE, total_size);
         if (!sd) {
             av_log(s->avctx, AV_LOG_ERROR, "Could not allocate frame side data\n");
             return AVERROR(ENOMEM);
@@ -2722,10 +2722,10 @@ av_cold int ff_mjpeg_decode_end(AVCodecContext *avctx)
     }
 
     if (s->picture) {
-        av_frame_free(&s->picture);
+        av_frame_free_xij(&s->picture);
         s->picture_ptr = NULL;
     } else if (s->picture_ptr)
-        av_frame_unref(s->picture_ptr);
+        av_frame_unref_xij(s->picture_ptr);
 
     av_freep(&s->buffer);
     av_freep(&s->stereo3d);

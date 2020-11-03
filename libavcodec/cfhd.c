@@ -198,7 +198,7 @@ static int alloc_buffers(AVCodecContext *avctx)
     int chroma_x_shift, chroma_y_shift;
     unsigned k;
 
-    if ((ret = ff_set_dimensions(avctx, s->coded_width, s->coded_height)) < 0)
+    if ((ret = ff_set_dimensions_xij(avctx, s->coded_width, s->coded_height)) < 0)
         return ret;
     avctx->pix_fmt = s->coded_format;
 
@@ -491,7 +491,7 @@ static int cfhd_decode(AVCodecContext *avctx, void *data, int *got_frame,
                     return ret;
                 }
             }
-            ret = ff_set_dimensions(avctx, s->coded_width, s->coded_height);
+            ret = ff_set_dimensions_xij(avctx, s->coded_width, s->coded_height);
             if (ret < 0)
                 return ret;
             if (s->cropped_height)

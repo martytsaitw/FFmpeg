@@ -629,7 +629,7 @@ static int pixlet_decode_frame(AVCodecContext *avctx, void *data,
         return AVERROR_INVALIDDATA;
     }
 
-    ret = ff_set_dimensions(avctx, w, h);
+    ret = ff_set_dimensions_xij(avctx, w, h);
     if (ret < 0)
         return ret;
     avctx->width  = width;

@@ -129,7 +129,7 @@ int main(int argc, char **argv)
     av_opt_set_sample_fmt(swr_ctx, "out_sample_fmt", dst_sample_fmt, 0);
 
     /* initialize the resampling context */
-    if ((ret = swr_init(swr_ctx)) < 0) {
+    if ((ret = swr_init_xij(swr_ctx)) < 0) {
         fprintf(stderr, "Failed to initialize the resampling context\n");
         goto end;
     }
@@ -165,7 +165,7 @@ int main(int argc, char **argv)
         fill_samples((double *)src_data[0], src_nb_samples, src_nb_channels, src_rate, &t);
 
         /* compute destination number of samples */
-        dst_nb_samples = av_rescale_rnd(swr_get_delay(swr_ctx, src_rate) +
+        dst_nb_samples = av_rescale_rnd(swr_get_delay_xij(swr_ctx, src_rate) +
                                         src_nb_samples, dst_rate, src_rate, AV_ROUND_UP);
         if (dst_nb_samples > max_dst_nb_samples) {
             av_freep(&dst_data[0]);
@@ -177,7 +177,7 @@ int main(int argc, char **argv)
         }
 
         /* convert to destination format */
-        ret = swr_convert(swr_ctx, dst_data, dst_nb_samples, (const uint8_t **)src_data, src_nb_samples);
+        ret = swr_convert_xij(swr_ctx, dst_data, dst_nb_samples, (const uint8_t **)src_data, src_nb_samples);
         if (ret < 0) {
             fprintf(stderr, "Error while converting\n");
             goto end;
@@ -209,6 +209,6 @@ end:
         av_freep(&dst_data[0]);
     av_freep(&dst_data);
 
-    swr_free(&swr_ctx);
+    swr_free_xij(&swr_ctx);
     return ret < 0;
 }

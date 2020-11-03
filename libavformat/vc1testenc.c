@@ -34,20 +34,20 @@ static int vc1test_write_header(AVFormatContext *s)
         av_log(s, AV_LOG_ERROR, "Only WMV3 is accepted!\n");
         return -1;
     }
-    avio_wl24(pb, 0); //frames count will be here
-    avio_w8(pb, 0xC5);
-    avio_wl32(pb, 4);
-    avio_write(pb, par->extradata, 4);
-    avio_wl32(pb, par->height);
-    avio_wl32(pb, par->width);
-    avio_wl32(pb, 0xC);
-    avio_wl24(pb, 0); // hrd_buffer
-    avio_w8(pb, 0x80); // level|cbr|res1
-    avio_wl32(pb, 0); // hrd_rate
+    avio_wl24_xij(pb, 0); //frames count will be here
+    avio_w8_xij(pb, 0xC5);
+    avio_wl32_xij(pb, 4);
+    avio_write_xij(pb, par->extradata, 4);
+    avio_wl32_xij(pb, par->height);
+    avio_wl32_xij(pb, par->width);
+    avio_wl32_xij(pb, 0xC);
+    avio_wl24_xij(pb, 0); // hrd_buffer
+    avio_w8_xij(pb, 0x80); // level|cbr|res1
+    avio_wl32_xij(pb, 0); // hrd_rate
     if (s->streams[0]->avg_frame_rate.den && s->streams[0]->avg_frame_rate.num == 1)
-        avio_wl32(pb, s->streams[0]->avg_frame_rate.den);
+        avio_wl32_xij(pb, s->streams[0]->avg_frame_rate.den);
     else
-        avio_wl32(pb, 0xFFFFFFFF); //variable framerate
+        avio_wl32_xij(pb, 0xFFFFFFFF); //variable framerate
     avpriv_set_pts_info_ijk(s->streams[0], 32, 1, 1000);
 
     return 0;
@@ -60,9 +60,9 @@ static int vc1test_write_packet(AVFormatContext *s, AVPacket *pkt)
 
     if (!pkt->size)
         return 0;
-    avio_wl32(pb, pkt->size | ((pkt->flags & AV_PKT_FLAG_KEY) ? 0x80000000 : 0));
-    avio_wl32(pb, pkt->pts);
-    avio_write(pb, pkt->data, pkt->size);
+    avio_wl32_xij(pb, pkt->size | ((pkt->flags & AV_PKT_FLAG_KEY) ? 0x80000000 : 0));
+    avio_wl32_xij(pb, pkt->pts);
+    avio_write_xij(pb, pkt->data, pkt->size);
     ctx->frames++;
 
     return 0;
@@ -74,9 +74,9 @@ static int vc1test_write_trailer(AVFormatContext *s)
     AVIOContext *pb = s->pb;
 
     if (s->pb->seekable & AVIO_SEEKABLE_NORMAL) {
-        avio_seek(pb, 0, SEEK_SET);
-        avio_wl24(pb, ctx->frames);
-        avio_flush(pb);
+        avio_seek_xij(pb, 0, SEEK_SET);
+        avio_wl24_xij(pb, ctx->frames);
+        avio_flush_xij(pb);
     }
     return 0;
 }

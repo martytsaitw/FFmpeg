@@ -79,7 +79,7 @@ static int bethsoftvid_decode_frame(AVCodecContext *avctx,
     int code, ret;
     int yoffset;
 
-    if ((ret = ff_reget_buffer(avctx, vid->frame)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, vid->frame)) < 0)
         return ret;
     wrap_to_next_line = vid->frame->linesize[0] - avctx->width;
 
@@ -138,7 +138,7 @@ static int bethsoftvid_decode_frame(AVCodecContext *avctx,
     }
     end:
 
-    if ((ret = av_frame_ref(data, vid->frame)) < 0)
+    if ((ret = av_frame_ref_xij(data, vid->frame)) < 0)
         return ret;
 
     *got_frame = 1;
@@ -149,7 +149,7 @@ static int bethsoftvid_decode_frame(AVCodecContext *avctx,
 static av_cold int bethsoftvid_decode_end(AVCodecContext *avctx)
 {
     BethsoftvidContext * vid = avctx->priv_data;
-    av_frame_free(&vid->frame);
+    av_frame_free_xij(&vid->frame);
     return 0;
 }
 

@@ -536,7 +536,7 @@ static int vaapi_frames_init(AVHWFramesContext *hwfc)
         }
 
         hwfc->internal->pool_internal =
-            av_buffer_pool_init2(sizeof(VASurfaceID), hwfc,
+            av_buffer_pool_init2_xij(sizeof(VASurfaceID), hwfc,
                                  &vaapi_pool_alloc, NULL);
         if (!hwfc->internal->pool_internal) {
             av_log(hwfc, AV_LOG_ERROR, "Failed to create VAAPI surface pool.\n");
@@ -548,7 +548,7 @@ static int vaapi_frames_init(AVHWFramesContext *hwfc)
     // Allocate a single surface to test whether vaDeriveImage() is going
     // to work for the specific configuration.
     if (hwfc->pool) {
-        test_surface = av_buffer_pool_get(hwfc->pool);
+        test_surface = av_buffer_pool_get_xij(hwfc->pool);
         if (!test_surface) {
             av_log(hwfc, AV_LOG_ERROR, "Unable to allocate a surface from "
                    "user-configured buffer pool.\n");
@@ -556,7 +556,7 @@ static int vaapi_frames_init(AVHWFramesContext *hwfc)
             goto fail;
         }
     } else {
-        test_surface = av_buffer_pool_get(hwfc->internal->pool_internal);
+        test_surface = av_buffer_pool_get_xij(hwfc->internal->pool_internal);
         if (!test_surface) {
             av_log(hwfc, AV_LOG_ERROR, "Unable to allocate a surface from "
                    "internal buffer pool.\n");
@@ -593,11 +593,11 @@ static int vaapi_frames_init(AVHWFramesContext *hwfc)
                "image format is not supported.\n");
     }
 
-    av_buffer_unref(&test_surface);
+    av_buffer_unref_xij(&test_surface);
     return 0;
 
 fail:
-    av_buffer_unref(&test_surface);
+    av_buffer_unref_xij(&test_surface);
     av_freep(&avfc->surface_ids);
     av_freep(&ctx->attributes);
     return err;
@@ -614,7 +614,7 @@ static void vaapi_frames_uninit(AVHWFramesContext *hwfc)
 
 static int vaapi_get_buffer(AVHWFramesContext *hwfc, AVFrame *frame)
 {
-    frame->buf[0] = av_buffer_pool_get(hwfc->pool);
+    frame->buf[0] = av_buffer_pool_get_xij(hwfc->pool);
     if (!frame->buf[0])
         return AVERROR(ENOMEM);
 
@@ -856,13 +856,13 @@ static int vaapi_transfer_data_from(AVHWFramesContext *hwfc,
     map->width  = dst->width;
     map->height = dst->height;
 
-    err = av_frame_copy(dst, map);
+    err = av_frame_copy_xij(dst, map);
     if (err)
         goto fail;
 
     err = 0;
 fail:
-    av_frame_free(&map);
+    av_frame_free_xij(&map);
     return err;
 }
 
@@ -887,13 +887,13 @@ static int vaapi_transfer_data_to(AVHWFramesContext *hwfc,
     map->width  = src->width;
     map->height = src->height;
 
-    err = av_frame_copy(map, src);
+    err = av_frame_copy_xij(map, src);
     if (err)
         goto fail;
 
     err = 0;
 fail:
-    av_frame_free(&map);
+    av_frame_free_xij(&map);
     return err;
 }
 
@@ -912,7 +912,7 @@ static int vaapi_map_to_memory(AVHWFramesContext *hwfc, AVFrame *dst,
     if (err)
         return err;
 
-    err = av_frame_copy_props(dst, src);
+    err = av_frame_copy_props_xij(dst, src);
     if (err)
         return err;
 

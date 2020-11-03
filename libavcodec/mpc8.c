@@ -411,7 +411,7 @@ static int mpc8_decode_frame(AVCodecContext * avctx, void *data,
     }
 
     frame->nb_samples = MPC_FRAME_SIZE;
-    if ((res = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((res = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return res;
 
     ff_mpc_dequantize_and_synth(c, maxband - 1,

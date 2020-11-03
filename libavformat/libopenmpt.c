@@ -87,13 +87,13 @@ static int read_header_openmpt(AVFormatContext *s)
 #endif
     int ret;
 
-    size = avio_size(s->pb);
+    size = avio_size_xij(s->pb);
     if (size <= 0)
         return AVERROR_INVALIDDATA;
     buf = av_malloc(size);
     if (!buf)
         return AVERROR(ENOMEM);
-    size = avio_read(s->pb, buf, size);
+    size = avio_read_xij(s->pb, buf, size);
     if (size < 0) {
         av_log(s, AV_LOG_ERROR, "Reading input buffer failed.\n");
         av_freep(&buf);

@@ -79,7 +79,7 @@
     { "buffer_size",        "Underlying protocol send/receive buffer size",                  OFFSET(buffer_size),           AV_OPT_TYPE_INT, { .i64 = -1 }, -1, INT_MAX, DEC|ENC } \
 
 
-const AVOption ff_rtsp_options[] = {
+const AVOption ff_rtsp_options_xij[] = {
     { "initial_pause",  "do not start playing the stream immediately", OFFSET(initial_pause), AV_OPT_TYPE_BOOL, {.i64 = 0}, 0, 1, DEC },
     FF_RTP_FLAG_OPTS(RTSPState, rtp_muxer_flags),
     { "rtsp_transport", "set RTSP transport protocols", OFFSET(lower_transport_mask), AV_OPT_TYPE_FLAGS, {.i64 = 0}, INT_MIN, INT_MAX, DEC|ENC, "rtsp_transport" }, \
@@ -323,7 +323,7 @@ static int sdp_parse_rtpmap(AVFormatContext *s,
 /* parse the attribute line from the fmtp a line of an sdp response. This
  * is broken out as a function because it is used in rtp_h264.c, which is
  * forthcoming. */
-int ff_rtsp_next_attr_and_value(const char **p, char *attr, int attr_size,
+int ff_rtsp_next_attr_and_value_xij(const char **p, char *attr, int attr_size,
                                 char *value, int value_size)
 {
     *p += strspn(*p, SPACE_CHARS);
@@ -544,7 +544,7 @@ static void sdp_parse_line_ijk(AVFormatContext *s, SDPParseState *s1,
                 rtsp_st = rt->rtsp_streams[rt->nb_rtsp_streams - 1];
 
                 /* XXX: may need to add full url resolution */
-                av_url_split(proto, sizeof(proto), NULL, 0, NULL, 0,
+                av_url_split_xij(proto, sizeof(proto), NULL, 0, NULL, 0,
                              NULL, NULL, 0, p);
                 if (proto[0] == '\0') {
                     /* relative control URL */
@@ -740,13 +740,13 @@ void ff_rtsp_undo_setup_ijk(AVFormatContext *s, int send_packets)
         if (rtsp_st->transport_priv) {
             if (s->oformat) {
                 AVFormatContext *rtpctx = rtsp_st->transport_priv;
-                av_write_trailer(rtpctx);
+                av_write_trailer_xij(rtpctx);
                 if (rt->lower_transport == RTSP_LOWER_TRANSPORT_TCP) {
                     if (CONFIG_RTSP_MUXER && rtpctx->pb && send_packets)
                         ff_rtsp_tcp_write_packet_ijk(s, rtsp_st);
-                    ffio_free_dyn_buf(&rtpctx->pb);
+                    ffio_free_dyn_buf_xij(&rtpctx->pb);
                 } else {
-                    avio_closep(&rtpctx->pb);
+                    avio_closep_xij(&rtpctx->pb);
                 }
                 avformat_free_context_ijk(rtpctx);
             } else if (CONFIG_RTPDEC && rt->transport == RTSP_TRANSPORT_RDT)
@@ -790,7 +790,7 @@ void ff_rtsp_close_streams_ijk(AVFormatContext *s)
     }
     av_freep(&rt->rtsp_streams);
     if (rt->asf_ctx) {
-        avformat_close_input(&rt->asf_ctx);
+        avformat_close_input_xij(&rt->asf_ctx);
     }
     if (CONFIG_RTPDEC && rt->ts)
         avpriv_mpegts_parse_close(rt->ts);
@@ -1693,7 +1693,7 @@ int ff_rtsp_connect_ijk(AVFormatContext *s)
 
 redirect:
     /* extract hostname and port */
-    av_url_split(proto, sizeof(proto), auth, sizeof(auth),
+    av_url_split_xij(proto, sizeof(proto), auth, sizeof(auth),
                  host, sizeof(host), &port, path, sizeof(path), s->url);
 
     if (!strcmp(proto, "rtsps")) {
@@ -1806,7 +1806,7 @@ redirect:
          * count variable between the two sessions, if we'd do more requests
          * with the original session, though.)
          */
-        ff_http_init_auth_state(rt->rtsp_hd_out, rt->rtsp_hd);
+        ff_http_init_auth_state_xij(rt->rtsp_hd_out, rt->rtsp_hd);
 
         /* complete the connection */
         if (ffurl_connect(rt->rtsp_hd_out, NULL)) {
@@ -1918,7 +1918,7 @@ redirect:
             err = AVERROR(ENOMEM);
             goto fail2;
         }
-        ff_format_set_url(s, new_url);
+        ff_format_set_url_xij(s, new_url);
         rt->session_id[0] = '\0';
         av_log(s, AV_LOG_INFO, "Status %d: Redirecting to %s\n",
                reply->status_code,
@@ -2104,7 +2104,7 @@ static int read_packet(AVFormatContext *s,
             wait_end && wait_end < av_gettime_relative())
             len = AVERROR(EAGAIN);
         else
-            len = avio_read_partial(s->pb, rt->recvbuf, RECVBUF_SIZE);
+            len = avio_read_partial_xij(s->pb, rt->recvbuf, RECVBUF_SIZE);
         len = pick_stream(s, rtsp_st, rt->recvbuf, len);
         if (len > 0 && (*rtsp_st)->transport_priv && rt->transport == RTSP_TRANSPORT_RTP)
             ff_rtp_check_and_send_back_rr((*rtsp_st)->transport_priv, NULL, s->pb, len);
@@ -2328,7 +2328,7 @@ static int sdp_read_header(AVFormatContext *s)
     content = av_malloc(SDP_MAX_SIZE);
     if (!content)
         return AVERROR(ENOMEM);
-    size = avio_read(s->pb, content, SDP_MAX_SIZE - 1);
+    size = avio_read_xij(s->pb, content, SDP_MAX_SIZE - 1);
     if (size <= 0) {
         av_free(content);
         return AVERROR_INVALIDDATA;
@@ -2489,7 +2489,7 @@ static int rtp_read_header(AVFormatContext *s)
                                   "describing it\n");
     }
 
-    av_url_split(NULL, 0, NULL, 0, host, sizeof(host), &port,
+    av_url_split_xij(NULL, 0, NULL, 0, host, sizeof(host), &port,
                  NULL, 0, s->url);
 
     snprintf(sdp, sizeof(sdp),
@@ -2501,7 +2501,7 @@ static int rtp_read_header(AVFormatContext *s)
     av_log(s, AV_LOG_VERBOSE, "SDP:\n%s\n", sdp);
     avcodec_parameters_free_ijk(&par);
 
-    ffio_init_context(&pb, sdp, strlen(sdp), 0, NULL, NULL, NULL, NULL);
+    ffio_init_context_xij(&pb, sdp, strlen(sdp), 0, NULL, NULL, NULL, NULL);
     s->pb = &pb;
 
     /* sdp_read_header initializes this again */

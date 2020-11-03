@@ -1231,7 +1231,7 @@ static av_cold int nvenc_setup_encoder(AVCodecContext *avctx)
     if (ctx->encode_config.rcParams.averageBitRate > 0)
         avctx->bit_rate = ctx->encode_config.rcParams.averageBitRate;
 
-    cpb_props = ff_add_cpb_side_data(avctx);
+    cpb_props = ff_add_cpb_side_data_xij(avctx);
     if (!cpb_props)
         return AVERROR(ENOMEM);
     cpb_props->max_bitrate = ctx->encode_config.rcParams.maxBitRate;
@@ -1309,7 +1309,7 @@ static av_cold int nvenc_alloc_surface(AVCodecContext *avctx, int idx)
         int err = nvenc_print_error(avctx, nv_status, "CreateBitstreamBuffer failed");
         if (avctx->pix_fmt != AV_PIX_FMT_CUDA && avctx->pix_fmt != AV_PIX_FMT_D3D11)
             p_nvenc->nvEncDestroyInputBuffer(ctx->nvencoder, ctx->surfaces[idx].input_surface);
-        av_frame_free(&ctx->surfaces[idx].in_ref);
+        av_frame_free_xij(&ctx->surfaces[idx].in_ref);
         return err;
     }
 
@@ -1433,7 +1433,7 @@ av_cold int ff_nvenc_encode_close(AVCodecContext *avctx)
         for (i = 0; i < ctx->nb_surfaces; ++i) {
             if (avctx->pix_fmt != AV_PIX_FMT_CUDA && avctx->pix_fmt != AV_PIX_FMT_D3D11)
                 p_nvenc->nvEncDestroyInputBuffer(ctx->nvencoder, ctx->surfaces[i].input_surface);
-            av_frame_free(&ctx->surfaces[i].in_ref);
+            av_frame_free_xij(&ctx->surfaces[i].in_ref);
             p_nvenc->nvEncDestroyBitstreamBuffer(ctx->nvencoder, ctx->surfaces[i].output_surface);
         }
     }
@@ -1656,7 +1656,7 @@ static int nvenc_upload_frame(AVCodecContext *avctx, const AVFrame *frame,
             return reg_idx;
         }
 
-        res = av_frame_ref(nvenc_frame->in_ref, frame);
+        res = av_frame_ref_xij(nvenc_frame->in_ref, frame);
         if (res < 0)
             return res;
 
@@ -1665,7 +1665,7 @@ static int nvenc_upload_frame(AVCodecContext *avctx, const AVFrame *frame,
             ctx->registered_frames[reg_idx].in_map.registeredResource = ctx->registered_frames[reg_idx].regptr;
             nv_status = p_nvenc->nvEncMapInputResource(ctx->nvencoder, &ctx->registered_frames[reg_idx].in_map);
             if (nv_status != NV_ENC_SUCCESS) {
-                av_frame_unref(nvenc_frame->in_ref);
+                av_frame_unref_xij(nvenc_frame->in_ref);
                 return nvenc_print_error(avctx, nv_status, "Error mapping an input resource");
             }
         }
@@ -1849,7 +1849,7 @@ static int process_output_surface(AVCodecContext *avctx, AVPacket *pkt, NvencSur
             goto error;
         }
 
-        av_frame_unref(tmpoutsurf->in_ref);
+        av_frame_unref_xij(tmpoutsurf->in_ref);
 
         tmpoutsurf->input_surface = NULL;
     }
@@ -1882,7 +1882,7 @@ FF_DISABLE_DEPRECATION_WARNINGS
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
 
-    ff_side_data_set_encoder_stats(pkt,
+    ff_side_data_set_encoder_stats_xij(pkt,
         (lock_params.frameAvgQP - 1) * FF_QP2LAMBDA, NULL, 0, pict_type);
 
     res = nvenc_set_timestamp(avctx, &lock_params, pkt);

@@ -150,17 +150,17 @@ static int s337m_read_packet(AVFormatContext *s, AVPacket *pkt)
     int64_t pos;
 
     while (!IS_LE_MARKER(state)) {
-        state = (state << 8) | avio_r8(pb);
-        if (avio_feof(pb))
+        state = (state << 8) | avio_r8_xij(pb);
+        if (avio_feof_xij(pb))
             return AVERROR_EOF;
     }
 
     if (IS_16LE_MARKER(state)) {
-        data_type = avio_rl16(pb);
-        data_size = avio_rl16(pb);
+        data_type = avio_rl16_xij(pb);
+        data_size = avio_rl16_xij(pb);
     } else {
-        data_type = avio_rl24(pb);
-        data_size = avio_rl24(pb);
+        data_type = avio_rl24_xij(pb);
+        data_size = avio_rl24_xij(pb);
     }
 
     pos = avio_tell(pb);
@@ -173,7 +173,7 @@ static int s337m_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     pkt->pos = pos;
 
-    if (avio_read(pb, pkt->data, pkt->size) < pkt->size) {
+    if (avio_read_xij(pb, pkt->data, pkt->size) < pkt->size) {
         av_packet_unref_ijk(pkt);
         return AVERROR_EOF;
     }

@@ -65,11 +65,11 @@ static int librsvg_decode_frame(AVCodecContext *avctx, void *data, int *got_fram
             dimensions.height = lrintf(dimensions.width  / default_ar);
     }
 
-    if ((ret = ff_set_dimensions(avctx, dimensions.width, dimensions.height)))
+    if ((ret = ff_set_dimensions_xij(avctx, dimensions.width, dimensions.height)))
         return ret;
     avctx->pix_fmt = AV_PIX_FMT_RGB32;
 
-    if ((ret = ff_get_buffer(avctx, frame, 0)))
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)))
         return ret;
     frame->pict_type = AV_PICTURE_TYPE_I;
     frame->key_frame = 1;

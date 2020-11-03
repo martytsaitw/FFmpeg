@@ -135,14 +135,14 @@ static int str_read_header(AVFormatContext *s)
     int i;
 
     /* skip over any RIFF header */
-    if (avio_read(pb, sector, RIFF_HEADER_SIZE) != RIFF_HEADER_SIZE)
+    if (avio_read_xij(pb, sector, RIFF_HEADER_SIZE) != RIFF_HEADER_SIZE)
         return AVERROR(EIO);
     if (AV_RL32(&sector[0]) == RIFF_TAG)
         start = RIFF_HEADER_SIZE;
     else
         start = 0;
 
-    avio_seek(pb, start, SEEK_SET);
+    avio_seek_xij(pb, start, SEEK_SET);
 
     for(i=0; i<32; i++){
         str->channels[i].video_stream_index=
@@ -166,7 +166,7 @@ static int str_read_packet(AVFormatContext *s,
 
     while (1) {
 
-        if (avio_read(pb, sector, RAW_CD_SECTOR_SIZE) != RAW_CD_SECTOR_SIZE)
+        if (avio_read_xij(pb, sector, RAW_CD_SECTOR_SIZE) != RAW_CD_SECTOR_SIZE)
             return AVERROR(EIO);
 
         channel = sector[0x11];
@@ -281,7 +281,7 @@ static int str_read_packet(AVFormatContext *s,
             break;
         }
 
-        if (avio_feof(pb))
+        if (avio_feof_xij(pb))
             return AVERROR(EIO);
     }
 }

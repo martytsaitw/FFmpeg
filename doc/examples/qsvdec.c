@@ -93,7 +93,7 @@ static int decode_packet(DecodeContext *decode, AVCodecContext *decoder_ctx,
 {
     int ret = 0;
 
-    ret = avcodec_send_packet(decoder_ctx, pkt);
+    ret = avcodec_send_packet_xij(decoder_ctx, pkt);
     if (ret < 0) {
         fprintf(stderr, "Error during decoding\n");
         return ret;
@@ -102,7 +102,7 @@ static int decode_packet(DecodeContext *decode, AVCodecContext *decoder_ctx,
     while (ret >= 0) {
         int i, j;
 
-        ret = avcodec_receive_frame(decoder_ctx, frame);
+        ret = avcodec_receive_frame_xij(decoder_ctx, frame);
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
             break;
         else if (ret < 0) {
@@ -121,11 +121,11 @@ static int decode_packet(DecodeContext *decode, AVCodecContext *decoder_ctx,
 
         for (i = 0; i < FF_ARRAY_ELEMS(sw_frame->data) && sw_frame->data[i]; i++)
             for (j = 0; j < (sw_frame->height >> (i > 0)); j++)
-                avio_write(output_ctx, sw_frame->data[i] + j * sw_frame->linesize[i], sw_frame->width);
+                avio_write_xij(output_ctx, sw_frame->data[i] + j * sw_frame->linesize[i], sw_frame->width);
 
 fail:
-        av_frame_unref(sw_frame);
-        av_frame_unref(frame);
+        av_frame_unref_xij(sw_frame);
+        av_frame_unref_xij(frame);
 
         if (ret < 0)
             return ret;
@@ -185,7 +185,7 @@ int main(int argc, char **argv)
     }
 
     /* initialize the decoder */
-    decoder = avcodec_find_decoder_by_name("h264_qsv");
+    decoder = avcodec_find_decoder_by_name_xij("h264_qsv");
     if (!decoder) {
         fprintf(stderr, "The QSV decoder is not present in libavcodec\n");
         goto finish;
@@ -212,14 +212,14 @@ int main(int argc, char **argv)
     decoder_ctx->opaque      = &decode;
     decoder_ctx->get_format  = get_format;
 
-    ret = avcodec_open2(decoder_ctx, NULL, NULL);
+    ret = avcodec_open2_xij(decoder_ctx, NULL, NULL);
     if (ret < 0) {
         fprintf(stderr, "Error opening the decoder: ");
         goto finish;
     }
 
     /* open the output stream */
-    ret = avio_open(&output_ctx, argv[2], AVIO_FLAG_WRITE);
+    ret = avio_open_xij(&output_ctx, argv[2], AVIO_FLAG_WRITE);
     if (ret < 0) {
         fprintf(stderr, "Error opening the output context: ");
         goto finish;
@@ -256,16 +256,16 @@ finish:
         fprintf(stderr, "%s\n", buf);
     }
 
-    avformat_close_input(&input_ctx);
+    avformat_close_input_xij(&input_ctx);
 
-    av_frame_free(&frame);
-    av_frame_free(&sw_frame);
+    av_frame_free_xij(&frame);
+    av_frame_free_xij(&sw_frame);
 
     avcodec_free_context_ijk(&decoder_ctx);
 
-    av_buffer_unref(&decode.hw_device_ref);
+    av_buffer_unref_xij(&decode.hw_device_ref);
 
-    avio_close(output_ctx);
+    avio_close_xij(output_ctx);
 
     return ret;
 }

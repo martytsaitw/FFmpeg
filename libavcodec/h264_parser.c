@@ -264,7 +264,7 @@ static inline int parse_nal_units(AVCodecParserContext *s,
     if (!buf_size)
         return 0;
 
-    av_fast_padded_malloc(&rbsp.rbsp_buffer, &rbsp.rbsp_buffer_alloc_size, buf_size);
+    av_fast_padded_malloc_xij(&rbsp.rbsp_buffer, &rbsp.rbsp_buffer_alloc_size, buf_size);
     if (!rbsp.rbsp_buffer)
         return AVERROR(ENOMEM);
 
@@ -357,8 +357,8 @@ static inline int parse_nal_units(AVCodecParserContext *s,
                 goto fail;
             }
 
-            av_buffer_unref(&p->ps.pps_ref);
-            av_buffer_unref(&p->ps.sps_ref);
+            av_buffer_unref_xij(&p->ps.pps_ref);
+            av_buffer_unref_xij(&p->ps.sps_ref);
             p->ps.pps = NULL;
             p->ps.sps = NULL;
             p->ps.pps_ref = av_buffer_ref_ijk(p->ps.pps_list[pps_id]);
@@ -589,7 +589,7 @@ static int h264_parse(AVCodecParserContext *s,
     } else {
         next = h264_find_frame_end(p, buf, buf_size, avctx);
 
-        if (ff_combine_frame(pc, next, &buf, &buf_size) < 0) {
+        if (ff_combine_frame_xij(pc, next, &buf, &buf_size) < 0) {
             *poutbuf      = NULL;
             *poutbuf_size = 0;
             return buf_size;
@@ -654,7 +654,7 @@ static int h264_split(AVCodecContext *avctx,
     int nalu_type;
 
     while (ptr < end) {
-        ptr = avpriv_find_start_code(ptr, end, &state);
+        ptr = avpriv_find_start_code_xij(ptr, end, &state);
         if ((state & 0xFFFFFF00) != 0x100)
             break;
         nalu_type = state & 0x1F;

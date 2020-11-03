@@ -146,11 +146,11 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     int plane;
 
     if (!out) {
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         return AVERROR(ENOMEM);
     }
 
-    av_frame_copy_props(out, in);
+    av_frame_copy_props_xij(out, in);
 
     for (plane = 0; plane < rect->nb_planes; ++plane) {
         int hsub = plane == 1 || plane == 2 ? rect->hsub : 0;
@@ -196,7 +196,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         ctx->internal->execute(ctx, filter_slice, &td, NULL, FFMIN(h, ff_filter_get_nb_threads(ctx)));
     }
 
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
     return ff_filter_frame(outlink, out);
 }
 

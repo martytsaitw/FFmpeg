@@ -95,8 +95,8 @@ public:
     {
         int ret = --_refs;
         if (!ret) {
-            av_frame_free(&_avframe);
-            av_packet_free(&_avpacket);
+            av_frame_free_xij(&_avframe);
+            av_packet_free_xij(&_avpacket);
             delete this;
         }
         return ret;
@@ -122,7 +122,7 @@ public:
         struct decklink_ctx *ctx = frame->_ctx;
 
         if (frame->_avframe)
-            av_frame_unref(frame->_avframe);
+            av_frame_unref_xij(frame->_avframe);
         if (frame->_avpacket)
             av_packet_unref_ijk(frame->_avpacket);
 
@@ -288,7 +288,7 @@ static int decklink_write_video_packet(AVFormatContext *avctx, AVPacket *pkt)
             return AVERROR(EINVAL);
         }
 
-        avframe = av_frame_clone(tmp);
+        avframe = av_frame_clone_xij(tmp);
         if (!avframe) {
             av_log(avctx, AV_LOG_ERROR, "Could not clone video frame.\n");
             return AVERROR(EIO);
@@ -296,7 +296,7 @@ static int decklink_write_video_packet(AVFormatContext *avctx, AVPacket *pkt)
 
         frame = new decklink_frame(ctx, avframe, st->codecpar->codec_id, avframe->height, avframe->width);
     } else {
-        avpacket = av_packet_clone(pkt);
+        avpacket = av_packet_clone_xij(pkt);
         if (!avpacket) {
             av_log(avctx, AV_LOG_ERROR, "Could not clone video frame.\n");
             return AVERROR(EIO);
@@ -307,8 +307,8 @@ static int decklink_write_video_packet(AVFormatContext *avctx, AVPacket *pkt)
 
     if (!frame) {
         av_log(avctx, AV_LOG_ERROR, "Could not create new frame.\n");
-        av_frame_free(&avframe);
-        av_packet_free(&avpacket);
+        av_frame_free_xij(&avframe);
+        av_packet_free_xij(&avpacket);
         return AVERROR(EIO);
     }
 

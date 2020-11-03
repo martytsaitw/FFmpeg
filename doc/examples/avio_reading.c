@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
         ret = AVERROR(ENOMEM);
         goto end;
     }
-    avio_ctx = avio_alloc_context(avio_ctx_buffer, avio_ctx_buffer_size,
+    avio_ctx = avio_alloc_context_xij(avio_ctx_buffer, avio_ctx_buffer_size,
                                   0, &bd, &read_packet, NULL, NULL);
     if (!avio_ctx) {
         ret = AVERROR(ENOMEM);
@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
     av_dump_format_ijk(fmt_ctx, 0, input_filename, 0);
 
 end:
-    avformat_close_input(&fmt_ctx);
+    avformat_close_input_xij(&fmt_ctx);
     /* note: the internal buffer could have changed, and be != avio_ctx_buffer */
     if (avio_ctx) {
         av_freep(&avio_ctx->buffer);

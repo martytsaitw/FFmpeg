@@ -200,7 +200,7 @@ static int output_single_frame(AVFilterContext *ctx, AVFrame *in, double *var_va
     py[1] = py[2] = AV_CEIL_RSHIFT(y, s->desc->log2_chroma_h);
     py[0] = py[3] = y;
 
-    s->sws = sws_alloc_context();
+    s->sws = sws_alloc_context_xij();
     if (!s->sws) {
         ret = AVERROR(ENOMEM);
         goto error;
@@ -217,7 +217,7 @@ static int output_single_frame(AVFilterContext *ctx, AVFrame *in, double *var_va
     av_opt_set_int(s->sws, "dst_format", outlink->format, 0);
     av_opt_set_int(s->sws, "sws_flags", SWS_BICUBIC, 0);
 
-    if ((ret = sws_init_context(s->sws, NULL, NULL)) < 0)
+    if ((ret = sws_init_context_xij(s->sws, NULL, NULL)) < 0)
         goto error;
 
     sws_scale(s->sws, (const uint8_t *const *)&input, in->linesize, 0, h, out->data, out->linesize);
@@ -226,7 +226,7 @@ static int output_single_frame(AVFilterContext *ctx, AVFrame *in, double *var_va
     s->frame_count++;
 
     ret = ff_filter_frame(outlink, out);
-    sws_freeContext(s->sws);
+    sws_freeContext_xij(s->sws);
     s->sws = NULL;
     s->current_frame++;
 
@@ -240,12 +240,12 @@ static int output_single_frame(AVFilterContext *ctx, AVFrame *in, double *var_va
         s->prev_nb_frames = s->nb_frames;
         s->nb_frames = 0;
         s->current_frame = 0;
-        av_frame_free(&s->in);
+        av_frame_free_xij(&s->in);
         s->finished = 1;
     }
     return ret;
 error:
-    av_frame_free(&out);
+    av_frame_free_xij(&out);
     return ret;
 }
 
@@ -293,7 +293,7 @@ static int activate(AVFilterContext *ctx)
         if ((ret = av_expr_parse_and_eval(&nb_frames, s->duration_expr_str,
                                           var_names, s->var_values,
                                           NULL, NULL, NULL, NULL, NULL, 0, ctx)) < 0) {
-            av_frame_free(&s->in);
+            av_frame_free_xij(&s->in);
             return ret;
         }
 
@@ -342,7 +342,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 {
     ZPContext *s = ctx->priv;
 
-    sws_freeContext(s->sws);
+    sws_freeContext_xij(s->sws);
     s->sws = NULL;
 }
 

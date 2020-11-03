@@ -94,7 +94,7 @@ static int process_frame(FFFrameSync *fs)
         return ret;
 
     if (ctx->is_disabled) {
-        out = av_frame_clone(in0);
+        out = av_frame_clone_xij(in0);
         if (!out)
             return AVERROR(ENOMEM);
     } else {
@@ -103,7 +103,7 @@ static int process_frame(FFFrameSync *fs)
         out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out)
             return AVERROR(ENOMEM);
-        av_frame_copy_props(out, in0);
+        av_frame_copy_props_xij(out, in0);
 
         for (p = 0; p < s->nb_planes; p++) {
             if (!((1 << p) & s->planes)) {

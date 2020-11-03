@@ -279,9 +279,9 @@ static double get_scene_score(AVFilterContext *ctx, AVFrame *frame)
         diff = fabs(mafd - select->prev_mafd);
         ret  = av_clipf(FFMIN(mafd, diff) / 100., 0, 1);
         select->prev_mafd = mafd;
-        av_frame_free(&prev_picref);
+        av_frame_free_xij(&prev_picref);
     }
-    select->prev_picref = av_frame_clone(frame);
+    select->prev_picref = av_frame_clone_xij(frame);
     return ret;
 }
 
@@ -361,7 +361,7 @@ static void select_frame(AVFilterContext *ctx, AVFrame *frame)
         av_log(inlink->dst, AV_LOG_DEBUG, " interlace_type:%c pict_type:%c scene:%f",
                (!frame->interlaced_frame) ? 'P' :
                frame->top_field_first     ? 'T' : 'B',
-               av_get_picture_type_char(frame->pict_type),
+               av_get_picture_type_char_xij(frame->pict_type),
                select->var_values[VAR_SCENE]);
         break;
     case AVMEDIA_TYPE_AUDIO:
@@ -403,7 +403,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
     if (select->select)
         return ff_filter_frame(ctx->outputs[select->select_out], frame);
 
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
     return 0;
 }
 
@@ -426,7 +426,7 @@ static av_cold void uninit(AVFilterContext *ctx)
         av_freep(&ctx->output_pads[i].name);
 
     if (select->do_scene_detect) {
-        av_frame_free(&select->prev_picref);
+        av_frame_free_xij(&select->prev_picref);
     }
 }
 

@@ -85,7 +85,7 @@ int main(int argc, char **argv)
     codec_name = argv[2];
 
     /* find the mpeg1video encoder */
-    codec = avcodec_find_encoder_by_name(codec_name);
+    codec = avcodec_find_encoder_by_name_xij(codec_name);
     if (!codec) {
         fprintf(stderr, "Codec '%s' not found\n", codec_name);
         exit(1);
@@ -124,7 +124,7 @@ int main(int argc, char **argv)
         av_opt_set(c->priv_data, "preset", "slow", 0);
 
     /* open it */
-    ret = avcodec_open2(c, codec, NULL);
+    ret = avcodec_open2_xij(c, codec, NULL);
     if (ret < 0) {
         fprintf(stderr, "Could not open codec: %s\n", av_err2str(ret));
         exit(1);
@@ -145,7 +145,7 @@ int main(int argc, char **argv)
     frame->width  = c->width;
     frame->height = c->height;
 
-    ret = av_frame_get_buffer(frame, 32);
+    ret = av_frame_get_buffer_xij(frame, 32);
     if (ret < 0) {
         fprintf(stderr, "Could not allocate the video frame data\n");
         exit(1);
@@ -156,7 +156,7 @@ int main(int argc, char **argv)
         fflush(stdout);
 
         /* make sure the frame data is writable */
-        ret = av_frame_make_writable(frame);
+        ret = av_frame_make_writable_xij(frame);
         if (ret < 0)
             exit(1);
 
@@ -190,8 +190,8 @@ int main(int argc, char **argv)
     fclose(f);
 
     avcodec_free_context_ijk(&c);
-    av_frame_free(&frame);
-    av_packet_free(&pkt);
+    av_frame_free_xij(&frame);
+    av_packet_free_xij(&pkt);
 
     return 0;
 }

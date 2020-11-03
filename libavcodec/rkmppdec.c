@@ -124,7 +124,7 @@ static int rkmpp_write_data(AVCodecContext *avctx, uint8_t *buffer, int size, in
 static int rkmpp_close_decoder(AVCodecContext *avctx)
 {
     RKMPPDecodeContext *rk_context = avctx->priv_data;
-    av_buffer_unref(&rk_context->decoder_ref);
+    av_buffer_unref_xij(&rk_context->decoder_ref);
     return 0;
 }
 
@@ -143,8 +143,8 @@ static void rkmpp_release_decoder(void *opaque, uint8_t *data)
         decoder->frame_group = NULL;
     }
 
-    av_buffer_unref(&decoder->frames_ref);
-    av_buffer_unref(&decoder->device_ref);
+    av_buffer_unref_xij(&decoder->frames_ref);
+    av_buffer_unref_xij(&decoder->device_ref);
 
     av_free(decoder);
 }
@@ -311,8 +311,8 @@ static void rkmpp_release_frame(void *opaque, uint8_t *data)
     RKMPPFrameContext *framecontext = (RKMPPFrameContext *)framecontextref->data;
 
     mpp_frame_deinit(&framecontext->frame);
-    av_buffer_unref(&framecontext->decoder_ref);
-    av_buffer_unref(&framecontextref);
+    av_buffer_unref_xij(&framecontext->decoder_ref);
+    av_buffer_unref_xij(&framecontextref);
 
     av_free(desc);
 }
@@ -352,7 +352,7 @@ static int rkmpp_retrieve_frame(AVCodecContext *avctx, AVFrame *frame)
 
             decoder->mpi->control(decoder->ctx, MPP_DEC_SET_INFO_CHANGE_READY, NULL);
 
-            av_buffer_unref(&decoder->frames_ref);
+            av_buffer_unref_xij(&decoder->frames_ref);
 
             decoder->frames_ref = av_hwframe_ctx_alloc(decoder->device_ref);
             if (!decoder->frames_ref) {
@@ -438,7 +438,7 @@ static int rkmpp_retrieve_frame(AVCodecContext *avctx, AVFrame *frame)
 
             // we also allocate a struct in buf[0] that will allow to hold additionnal information
             // for releasing properly MPP frames and decoder
-            framecontextref = av_buffer_allocz(sizeof(*framecontext));
+            framecontextref = av_buffer_allocz_xij(sizeof(*framecontext));
             if (!framecontextref) {
                 ret = AVERROR(ENOMEM);
                 goto fail;
@@ -482,10 +482,10 @@ fail:
         mpp_frame_deinit(&mppframe);
 
     if (framecontext)
-        av_buffer_unref(&framecontext->decoder_ref);
+        av_buffer_unref_xij(&framecontext->decoder_ref);
 
     if (framecontextref)
-        av_buffer_unref(&framecontextref);
+        av_buffer_unref_xij(&framecontextref);
 
     if (desc)
         av_free(desc);
@@ -511,7 +511,7 @@ static int rkmpp_receive_frame(AVCodecContext *avctx, AVFrame *frame)
 
         freeslots = INPUT_MAX_PACKETS - usedslots;
         if (freeslots > 0) {
-            ret = ff_decode_get_packet(avctx, &pkt);
+            ret = ff_decode_get_packet_xij(avctx, &pkt);
             if (ret < 0 && ret != AVERROR_EOF) {
                 return ret;
             }

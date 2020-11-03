@@ -224,7 +224,7 @@ static int mmsh_open_internal(URLContext *h, const char *uri, int flags, int tim
     mms = &mmsh->mms;
     av_strlcpy(mmsh->location, uri, sizeof(mmsh->location));
 
-    av_url_split(NULL, 0, NULL, 0,
+    av_url_split_xij(NULL, 0, NULL, 0,
         host, sizeof(host), &port, path, sizeof(path), mmsh->location);
     if (port<0)
         port = 80; // default mmsh protocol port

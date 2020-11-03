@@ -119,7 +119,7 @@ static void add_keyframes_index(AVFormatContext *s)
         for (i = 0; i < flv->keyframe_count; i++) {
             av_log(s, AV_LOG_TRACE, "keyframe filepositions = %"PRId64" times = %"PRId64"\n",
                    flv->keyframe_filepositions[i], flv->keyframe_times[i] * 1000);
-            av_add_index_entry(stream, flv->keyframe_filepositions[i],
+            av_add_index_entry_xij(stream, flv->keyframe_filepositions[i],
                 flv->keyframe_times[i] * 1000, 0, 0, AVINDEX_KEYFRAME);
         }
     } else
@@ -324,12 +324,12 @@ static int flv_set_video_codec(AVFormatContext *s, AVStream *vstream,
             par->codec_id = AV_CODEC_ID_VP6A;
         if (read) {
             if (par->extradata_size != 1) {
-                ff_alloc_extradata(par, 1);
+                ff_alloc_extradata_xij(par, 1);
             }
             if (par->extradata)
-                par->extradata[0] = avio_r8(s->pb);
+                par->extradata[0] = avio_r8_xij(s->pb);
             else
-                avio_skip(s->pb, 1);
+                avio_skip_xij(s->pb, 1);
         }
         ret = 1;     // 1 byte body size adjustment for flv_read_packet()
         break;
@@ -362,13 +362,13 @@ static int flv_set_video_codec(AVFormatContext *s, AVStream *vstream,
 
 static int amf_get_string(AVIOContext *ioc, char *buffer, int buffsize)
 {
-    int length = avio_rb16(ioc);
+    int length = avio_rb16_xij(ioc);
     if (length >= buffsize) {
-        avio_skip(ioc, length);
+        avio_skip_xij(ioc, length);
         return -1;
     }
 
-    avio_read(ioc, buffer, length);
+    avio_read_xij(ioc, buffer, length);
 
     buffer[length] = '\0';
 
@@ -401,10 +401,10 @@ static int parse_keyframes_index(AVFormatContext *s, AVIOContext *ioc, int64_t m
         unsigned int arraylen;
 
         // Expect array object in context
-        if (avio_r8(ioc) != AMF_DATA_TYPE_ARRAY)
+        if (avio_r8_xij(ioc) != AMF_DATA_TYPE_ARRAY)
             break;
 
-        arraylen = avio_rb32(ioc);
+        arraylen = avio_rb32_xij(ioc);
         if (arraylen>>28)
             break;
 
@@ -426,9 +426,9 @@ static int parse_keyframes_index(AVFormatContext *s, AVIOContext *ioc, int64_t m
         }
 
         for (i = 0; i < arraylen && avio_tell(ioc) < max_pos - 1; i++) {
-            if (avio_r8(ioc) != AMF_DATA_TYPE_NUMBER)
+            if (avio_r8_xij(ioc) != AMF_DATA_TYPE_NUMBER)
                 goto invalid;
-            current_array[0][i] = av_int2double(avio_rb64(ioc));
+            current_array[0][i] = av_int2double(avio_rb64_xij(ioc));
         }
         if (times && filepositions) {
             // All done, exiting at a position allowing amf_parse_object
@@ -457,7 +457,7 @@ invalid:
 finish:
     av_freep(&times);
     av_freep(&filepositions);
-    avio_seek(ioc, initial_pos, SEEK_SET);
+    avio_seek_xij(ioc, initial_pos, SEEK_SET);
     return ret;
 }
 
@@ -474,14 +474,14 @@ static int amf_parse_object(AVFormatContext *s, AVStream *astream,
 
     num_val  = 0;
     ioc      = s->pb;
-    amf_type = avio_r8(ioc);
+    amf_type = avio_r8_xij(ioc);
 
     switch (amf_type) {
     case AMF_DATA_TYPE_NUMBER:
-        num_val = av_int2double(avio_rb64(ioc));
+        num_val = av_int2double(avio_rb64_xij(ioc));
         break;
     case AMF_DATA_TYPE_BOOL:
-        num_val = avio_r8(ioc);
+        num_val = avio_r8_xij(ioc);
         break;
     case AMF_DATA_TYPE_STRING:
         if (amf_get_string(ioc, str_val, sizeof(str_val)) < 0) {
@@ -503,7 +503,7 @@ static int amf_parse_object(AVFormatContext *s, AVStream *astream,
             if (amf_parse_object(s, astream, vstream, str_val, max_pos,
                                  depth + 1) < 0)
                 return -1;     // if we couldn't skip, bomb out.
-        if (avio_r8(ioc) != AMF_END_OF_OBJECT) {
+        if (avio_r8_xij(ioc) != AMF_END_OF_OBJECT) {
             av_log(s, AV_LOG_ERROR, "Missing AMF_END_OF_OBJECT in AMF_DATA_TYPE_OBJECT\n");
             return -1;
         }
@@ -515,7 +515,7 @@ static int amf_parse_object(AVFormatContext *s, AVStream *astream,
     case AMF_DATA_TYPE_MIXEDARRAY:
     {
         unsigned v;
-        avio_skip(ioc, 4);     // skip 32-bit max array index
+        avio_skip_xij(ioc, 4);     // skip 32-bit max array index
         while (avio_tell(ioc) < max_pos - 2 &&
                amf_get_string(ioc, str_val, sizeof(str_val)) > 0)
             // this is the only case in which we would want a nested
@@ -523,7 +523,7 @@ static int amf_parse_object(AVFormatContext *s, AVStream *astream,
             if (amf_parse_object(s, astream, vstream, str_val, max_pos,
                                  depth + 1) < 0)
                 return -1;
-        v = avio_r8(ioc);
+        v = avio_r8_xij(ioc);
         if (v != AMF_END_OF_OBJECT) {
             av_log(s, AV_LOG_ERROR, "Missing AMF_END_OF_OBJECT in AMF_DATA_TYPE_MIXEDARRAY, found %d\n", v);
             return -1;
@@ -534,7 +534,7 @@ static int amf_parse_object(AVFormatContext *s, AVStream *astream,
     {
         unsigned int arraylen, i;
 
-        arraylen = avio_rb32(ioc);
+        arraylen = avio_rb32_xij(ioc);
         for (i = 0; i < arraylen && avio_tell(ioc) < max_pos - 1; i++)
             if (amf_parse_object(s, NULL, NULL, NULL, max_pos,
                                  depth + 1) < 0)
@@ -542,7 +542,7 @@ static int amf_parse_object(AVFormatContext *s, AVStream *astream,
     }
     break;
     case AMF_DATA_TYPE_DATE:
-        avio_skip(ioc, 8 + 2);  // timestamp (double) and UTC offset (int16)
+        avio_skip_xij(ioc, 8 + 2);  // timestamp (double) and UTC offset (int16)
         break;
     default:                    // unsupported type, we couldn't skip
         av_log(s, AV_LOG_ERROR, "unsupported amf type %d\n", amf_type);
@@ -671,7 +671,7 @@ static int flv_read_metabody(AVFormatContext *s, int64_t next_pos)
     ioc     = s->pb;
 
     // first object needs to be "onMetaData" string
-    type = avio_r8(ioc);
+    type = avio_r8_xij(ioc);
     if (type != AMF_DATA_TYPE_STRING ||
         amf_get_string(ioc, buffer, sizeof(buffer)) < 0)
         return TYPE_UNKNOWN;
@@ -720,22 +720,22 @@ static int flv_read_header(AVFormatContext *s)
     int offset;
     int pre_tag_size = 0;
 
-    avio_skip(s->pb, 4);
-    flags = avio_r8(s->pb);
+    avio_skip_xij(s->pb, 4);
+    flags = avio_r8_xij(s->pb);
 
     flv->missing_streams = flags & (FLV_HEADER_FLAG_HASVIDEO | FLV_HEADER_FLAG_HASAUDIO);
 
     s->ctx_flags |= AVFMTCTX_NOHEADER;
 
-    offset = avio_rb32(s->pb);
-    avio_seek(s->pb, offset, SEEK_SET);
+    offset = avio_rb32_xij(s->pb);
+    avio_seek_xij(s->pb, offset, SEEK_SET);
 
     /* Annex E. The FLV File Format
      * E.3 TheFLVFileBody
      *     Field               Type    Comment
      *     PreviousTagSize0    UI32    Always 0
      * */
-    pre_tag_size = avio_rb32(s->pb);
+    pre_tag_size = avio_rb32_xij(s->pb);
     if (pre_tag_size) {
         av_log(s, AV_LOG_WARNING, "Read FLV header error, input file is not a standard flv format, first PreviousTagSize0 always is 0\n");
     }
@@ -761,7 +761,7 @@ static int flv_read_close(AVFormatContext *s)
 static int flv_get_extradata(AVFormatContext *s, AVStream *st, int size)
 {
     av_freep(&st->codecpar->extradata);
-    if (ff_get_extradata(s, st->codecpar, s->pb, size) < 0)
+    if (ff_get_extradata_xij(s, st->codecpar, s->pb, size) < 0)
         return AVERROR(ENOMEM);
     st->internal->need_context_update = 1;
     return 0;
@@ -776,7 +776,7 @@ static int flv_queue_extradata(FLVContext *flv, AVIOContext *pb, int stream,
     if (!flv->new_extradata[stream])
         return AVERROR(ENOMEM);
     flv->new_extradata_size[stream] = size;
-    avio_read(pb, flv->new_extradata[stream], size);
+    avio_read_xij(pb, flv->new_extradata[stream], size);
     return 0;
 }
 
@@ -802,29 +802,29 @@ static int amf_skip_tag(AVIOContext *pb, AMFDataType type)
 
     switch (type) {
     case AMF_DATA_TYPE_NUMBER:
-        avio_skip(pb, 8);
+        avio_skip_xij(pb, 8);
         break;
     case AMF_DATA_TYPE_BOOL:
-        avio_skip(pb, 1);
+        avio_skip_xij(pb, 1);
         break;
     case AMF_DATA_TYPE_STRING:
-        avio_skip(pb, avio_rb16(pb));
+        avio_skip_xij(pb, avio_rb16_xij(pb));
         break;
     case AMF_DATA_TYPE_ARRAY:
         parse_name = 0;
     case AMF_DATA_TYPE_MIXEDARRAY:
-        nb = avio_rb32(pb);
+        nb = avio_rb32_xij(pb);
     case AMF_DATA_TYPE_OBJECT:
         while(!pb->eof_reached && (nb-- > 0 || type != AMF_DATA_TYPE_ARRAY)) {
             if (parse_name) {
-                int size = avio_rb16(pb);
+                int size = avio_rb16_xij(pb);
                 if (!size) {
-                    avio_skip(pb, 1);
+                    avio_skip_xij(pb, 1);
                     break;
                 }
-                avio_skip(pb, size);
+                avio_skip_xij(pb, size);
             }
-            if ((ret = amf_skip_tag(pb, avio_r8(pb))) < 0)
+            if ((ret = amf_skip_tag(pb, avio_r8_xij(pb))) < 0)
                 return ret;
         }
         break;
@@ -847,11 +847,11 @@ static int flv_data_packet(AVFormatContext *s, AVPacket *pkt,
     int i, length = -1;
     int array = 0;
 
-    switch (avio_r8(pb)) {
+    switch (avio_r8_xij(pb)) {
     case AMF_DATA_TYPE_ARRAY:
         array = 1;
     case AMF_DATA_TYPE_MIXEDARRAY:
-        avio_seek(pb, 4, SEEK_CUR);
+        avio_seek_xij(pb, 4, SEEK_CUR);
     case AMF_DATA_TYPE_OBJECT:
         break;
     default:
@@ -859,10 +859,10 @@ static int flv_data_packet(AVFormatContext *s, AVPacket *pkt,
     }
 
     while (array || (ret = amf_get_string(pb, buf, sizeof(buf))) > 0) {
-        AMFDataType type = avio_r8(pb);
+        AMFDataType type = avio_r8_xij(pb);
         if (type == AMF_DATA_TYPE_STRING && (array || !strcmp(buf, "text"))) {
-            length = avio_rb16(pb);
-            ret    = av_get_packet(pb, pkt, length);
+            length = avio_rb16_xij(pb);
+            ret    = av_get_packet_xij(pb, pkt, length);
             if (ret < 0)
                 goto skip;
             else
@@ -899,7 +899,7 @@ static int flv_data_packet(AVFormatContext *s, AVPacket *pkt,
     pkt->flags       |= AV_PKT_FLAG_KEY;
 
 skip:
-    avio_seek(s->pb, next + 4, SEEK_SET);
+    avio_seek_xij(s->pb, next + 4, SEEK_SET);
 
     return ret;
 }
@@ -910,11 +910,11 @@ static int resync(AVFormatContext *s)
     int64_t i;
     int64_t pos = avio_tell(s->pb);
 
-    for (i=0; !avio_feof(s->pb); i++) {
+    for (i=0; !avio_feof_xij(s->pb); i++) {
         int j  = i & (RESYNC_BUFFER_SIZE-1);
         int j1 = j + RESYNC_BUFFER_SIZE;
         flv->resync_buffer[j ] =
-        flv->resync_buffer[j1] = avio_r8(s->pb);
+        flv->resync_buffer[j1] = avio_r8_xij(s->pb);
 
         if (i > 22) {
             unsigned lsize2 = AV_RB32(flv->resync_buffer + j1 - 4);
@@ -924,7 +924,7 @@ static int resync(AVFormatContext *s)
                 if (lsize1 >= 11 && lsize1 + 8LL + lsize2 < FFMIN(i, RESYNC_BUFFER_SIZE)) {
                     unsigned  size1 = AV_RB24(flv->resync_buffer + j1 - lsize1 + 1 - lsize2 - 8);
                     if (size1 == lsize1 - 11 && size2  == lsize2 - 11) {
-                        avio_seek(s->pb, pos + i - lsize1 - lsize2 - 8, SEEK_SET);
+                        avio_seek_xij(s->pb, pos + i - lsize1 - lsize2 - 8, SEEK_SET);
                         return 1;
                     }
                 }
@@ -951,16 +951,16 @@ static int flv_read_packet(AVFormatContext *s, AVPacket *pkt)
 retry:
     /* pkt size is repeated at end. skip it */
         pos  = avio_tell(s->pb);
-        type = (avio_r8(s->pb) & 0x1F);
+        type = (avio_r8_xij(s->pb) & 0x1F);
         orig_size =
-        size = avio_rb24(s->pb);
+        size = avio_rb24_xij(s->pb);
         flv->sum_flv_tag_size += size + 11;
-        dts  = avio_rb24(s->pb);
-        dts |= (unsigned)avio_r8(s->pb) << 24;
+        dts  = avio_rb24_xij(s->pb);
+        dts |= (unsigned)avio_r8_xij(s->pb) << 24;
         av_log(s, AV_LOG_TRACE, "type:%d, size:%d, last:%d, dts:%"PRId64" pos:%"PRId64"\n", type, size, last, dts, avio_tell(s->pb));
-        if (avio_feof(s->pb))
+        if (avio_feof_xij(s->pb))
             return AVERROR_EOF;
-        avio_skip(s->pb, 3); /* stream id, always 0 */
+        avio_skip_xij(s->pb, 3); /* stream id, always 0 */
         flags = 0;
 
         if (flv->validate_next < flv->validate_count) {
@@ -988,11 +988,11 @@ retry:
 
         if (type == FLV_TAG_TYPE_AUDIO) {
             stream_type = FLV_STREAM_TYPE_AUDIO;
-            flags    = avio_r8(s->pb);
+            flags    = avio_r8_xij(s->pb);
             size--;
         } else if (type == FLV_TAG_TYPE_VIDEO) {
             stream_type = FLV_STREAM_TYPE_VIDEO;
-            flags    = avio_r8(s->pb);
+            flags    = avio_r8_xij(s->pb);
             size--;
             if ((flags & FLV_VIDEO_FRAMETYPE_MASK) == FLV_FRAME_VIDEO_INFO_CMD)
                 goto skip;
@@ -1017,14 +1017,14 @@ retry:
                 } else if (type == TYPE_ONCAPTION) {
                     return flv_data_packet(s, pkt, dts, next);
                 }
-                avio_seek(s->pb, meta_pos, SEEK_SET);
+                avio_seek_xij(s->pb, meta_pos, SEEK_SET);
             }
         } else {
             av_log(s, AV_LOG_DEBUG,
                    "Skipping flv packet: type %d, size %d, flags %d.\n",
                    type, size, flags);
 skip:
-            if (avio_seek(s->pb, next, SEEK_SET) != next) {
+            if (avio_seek_xij(s->pb, next, SEEK_SET) != next) {
                  // This can happen if flv_read_metabody above read past
                  // next, on a non-seekable input, and the preceding data has
                  // been flushed out from the IO buffer.
@@ -1069,13 +1069,13 @@ skip:
         if ((s->pb->seekable & AVIO_SEEKABLE_NORMAL) &&
             ((flags & FLV_VIDEO_FRAMETYPE_MASK) == FLV_FRAME_KEY ||
               stream_type == FLV_STREAM_TYPE_AUDIO))
-            av_add_index_entry(st, pos, dts, size, 0, AVINDEX_KEYFRAME);
+            av_add_index_entry_xij(st, pos, dts, size, 0, AVINDEX_KEYFRAME);
 
         if (  (st->discard >= AVDISCARD_NONKEY && !((flags & FLV_VIDEO_FRAMETYPE_MASK) == FLV_FRAME_KEY || (stream_type == FLV_STREAM_TYPE_AUDIO)))
             ||(st->discard >= AVDISCARD_BIDIR  &&  ((flags & FLV_VIDEO_FRAMETYPE_MASK) == FLV_FRAME_DISP_INTER && (stream_type == FLV_STREAM_TYPE_VIDEO)))
             || st->discard >= AVDISCARD_ALL
         ) {
-            avio_seek(s->pb, next, SEEK_SET);
+            avio_seek_xij(s->pb, next, SEEK_SET);
             ret = FFERROR_REDO;
             goto leave;
         }
@@ -1089,17 +1089,17 @@ skip:
         const int64_t pos   = avio_tell(s->pb);
         // Read the last 4 bytes of the file, this should be the size of the
         // previous FLV tag. Use the timestamp of its payload as duration.
-        int64_t fsize       = avio_size(s->pb);
+        int64_t fsize       = avio_size_xij(s->pb);
 retry_duration:
-        avio_seek(s->pb, fsize - 4, SEEK_SET);
-        size = avio_rb32(s->pb);
+        avio_seek_xij(s->pb, fsize - 4, SEEK_SET);
+        size = avio_rb32_xij(s->pb);
         if (size > 0 && size < fsize) {
             // Seek to the start of the last FLV tag at position (fsize - 4 - size)
             // but skip the byte indicating the type.
-            avio_seek(s->pb, fsize - 3 - size, SEEK_SET);
-            if (size == avio_rb24(s->pb) + 11) {
-                uint32_t ts = avio_rb24(s->pb);
-                ts         |= avio_r8(s->pb) << 24;
+            avio_seek_xij(s->pb, fsize - 3 - size, SEEK_SET);
+            if (size == avio_rb24_xij(s->pb) + 11) {
+                uint32_t ts = avio_rb24_xij(s->pb);
+                ts         |= avio_r8_xij(s->pb) << 24;
                 if (ts)
                     s->duration = ts * (int64_t)AV_TIME_BASE / 1000;
                 else if (fsize >= 8 && fsize - 8 >= size) {
@@ -1109,7 +1109,7 @@ retry_duration:
             }
         }
 
-        avio_seek(s->pb, pos, SEEK_SET);
+        avio_seek_xij(s->pb, pos, SEEK_SET);
         flv->searched_for_end = 1;
     }
 
@@ -1160,7 +1160,7 @@ retry_duration:
         st->codecpar->codec_id == AV_CODEC_ID_H264 ||
         st->codecpar->codec_id == AV_CODEC_ID_MPEG4 ||
         st->codecpar->codec_id == AV_CODEC_ID_HEVC) {
-        int type = avio_r8(s->pb);
+        int type = avio_r8_xij(s->pb);
         size--;
 
         if (size < 0) {
@@ -1170,7 +1170,7 @@ retry_duration:
 
         if (st->codecpar->codec_id == AV_CODEC_ID_H264 || st->codecpar->codec_id == AV_CODEC_ID_MPEG4 || st->codecpar->codec_id == AV_CODEC_ID_HEVC) {
             // sign extension
-            int32_t cts = (avio_rb24(s->pb) + 0xff800000) ^ 0xff800000;
+            int32_t cts = (avio_rb24_xij(s->pb) + 0xff800000) ^ 0xff800000;
             pts = dts + cts;
             if (cts < 0) { // dts might be wrong
                 if (!flv->wrong_dts)
@@ -1204,7 +1204,7 @@ retry_duration:
             if (st->codecpar->codec_id == AV_CODEC_ID_AAC && 0) {
                 MPEG4AudioConfig cfg;
 
-                if (avpriv_mpeg4audio_get_config(&cfg, st->codecpar->extradata,
+                if (avpriv_mpeg4audio_get_config_xij(&cfg, st->codecpar->extradata,
                                                  st->codecpar->extradata_size * 8, 1) >= 0) {
                 st->codecpar->channels       = cfg.channels;
                 st->codecpar->channel_layout = 0;
@@ -1228,7 +1228,7 @@ retry_duration:
         goto leave;
     }
 
-    ret = av_get_packet(s->pb, pkt, size);
+    ret = av_get_packet_xij(s->pb, pkt, size);
     if (ret < 0)
         return ret;
     pkt->dts          = dts;
@@ -1236,7 +1236,7 @@ retry_duration:
     pkt->stream_index = st->index;
     pkt->pos          = pos;
     if (flv->new_extradata[stream_type]) {
-        uint8_t *side = av_packet_new_side_data(pkt, AV_PKT_DATA_NEW_EXTRADATA,
+        uint8_t *side = av_packet_new_side_data_xij(pkt, AV_PKT_DATA_NEW_EXTRADATA,
                                                 flv->new_extradata_size[stream_type]);
         if (side) {
             memcpy(side, flv->new_extradata[stream_type],
@@ -1250,7 +1250,7 @@ retry_duration:
                      channels    != flv->last_channels)) {
         flv->last_sample_rate = sample_rate;
         flv->last_channels    = channels;
-        ff_add_param_change(pkt, channels, 0, sample_rate, 0, 0);
+        ff_add_param_change_xij(pkt, channels, 0, sample_rate, 0, 0);
     }
 
     if (    stream_type == FLV_STREAM_TYPE_AUDIO ||
@@ -1260,13 +1260,13 @@ retry_duration:
 
         pkt->codec_id     = st->codecpar->codec_id;
 leave:
-    last = avio_rb32(s->pb);
+    last = avio_rb32_xij(s->pb);
     if (last != orig_size + 11 && last != orig_size + 10 &&
-        !avio_feof(s->pb) &&
+        !avio_feof_xij(s->pb) &&
         (last != orig_size || !last) && last != flv->sum_flv_tag_size &&
         !flv->broken_sizes) {
         av_log(s, AV_LOG_ERROR, "Packet mismatch %d %d %d\n", last, orig_size + 11, flv->sum_flv_tag_size);
-        avio_seek(s->pb, pos + 1, SEEK_SET);
+        avio_seek_xij(s->pb, pos + 1, SEEK_SET);
         ret = resync(s);
         av_packet_unref_ijk(pkt);
         if (ret >= 0) {
@@ -1281,7 +1281,7 @@ static int flv_read_seek(AVFormatContext *s, int stream_index,
 {
     FLVContext *flv = s->priv_data;
     flv->validate_count = 0;
-    return avio_seek_time(s->pb, stream_index, ts, flags);
+    return avio_seek_time_xij(s->pb, stream_index, ts, flags);
 }
 
 #define OFFSET(x) offsetof(FLVContext, x)
@@ -1299,7 +1299,7 @@ static const AVClass flv_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVInputFormat ff_flv_demuxer = {
+AVInputFormat ff_flv_demuxer_xij = {
     .name           = "flv",
     .long_name      = NULL_IF_CONFIG_SMALL("FLV (Flash Video)"),
     .priv_data_size = sizeof(FLVContext),
@@ -1319,7 +1319,7 @@ static const AVClass live_flv_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVInputFormat ff_live_flv_demuxer = {
+AVInputFormat ff_live_flv_demuxer_xij = {
     .name           = "live_flv",
     .long_name      = NULL_IF_CONFIG_SMALL("live RTMP FLV (Flash Video)"),
     .priv_data_size = sizeof(FLVContext),

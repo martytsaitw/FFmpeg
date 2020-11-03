@@ -194,7 +194,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     float *src, *dst, *ptr;
 
     if (!out) {
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         return AVERROR(ENOMEM);
     }
 
@@ -235,7 +235,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     }
 
     out->pts = in->pts;
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
 
     return ff_filter_frame(outlink, out);
 }
@@ -302,7 +302,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 {
     SuperEqualizerContext *s = ctx->priv;
 
-    av_frame_free(&s->out);
+    av_frame_free_xij(&s->out);
     av_freep(&s->irest);
     av_freep(&s->ires);
     av_freep(&s->fsamples);

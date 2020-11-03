@@ -66,9 +66,9 @@ static int aea_read_header(AVFormatContext *s)
         return AVERROR(ENOMEM);
 
     /* Parse the amount of channels and skip to pos 2048(0x800) */
-    avio_skip(s->pb, 264);
-    st->codecpar->channels = avio_r8(s->pb);
-    avio_skip(s->pb, 1783);
+    avio_skip_xij(s->pb, 264);
+    st->codecpar->channels = avio_r8_xij(s->pb);
+    avio_skip_xij(s->pb, 1783);
 
 
     st->codecpar->codec_type     = AVMEDIA_TYPE_AUDIO;
@@ -89,7 +89,7 @@ static int aea_read_header(AVFormatContext *s)
 
 static int aea_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
-    int ret = av_get_packet(s->pb, pkt, s->streams[0]->codecpar->block_align);
+    int ret = av_get_packet_xij(s->pb, pkt, s->streams[0]->codecpar->block_align);
 
     pkt->stream_index = 0;
     if (ret <= 0)

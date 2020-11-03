@@ -56,7 +56,7 @@ typedef struct VP9RawReorderContext {
 static void vp9_raw_reorder_frame_free(VP9RawReorderFrame **frame)
 {
     if (*frame)
-        av_packet_free(&(*frame)->packet);
+        av_packet_free_xij(&(*frame)->packet);
     av_freep(frame);
 }
 
@@ -204,7 +204,7 @@ static int vp9_raw_reorder_make_output(AVBSFContext *bsf,
                "%"PRId64" (%"PRId64") in order.\n",
                frame->sequence, frame->pts);
 
-        av_packet_move_ref(out, frame->packet);
+        av_packet_move_ref_xij(out, frame->packet);
 
         frame->needs_output = frame->needs_display = 0;
     } else if (frame->needs_output) {
@@ -218,7 +218,7 @@ static int vp9_raw_reorder_make_output(AVBSFContext *bsf,
                    frame->sequence, frame->pts);
         }
 
-        av_packet_move_ref(out, frame->packet);
+        av_packet_move_ref_xij(out, frame->packet);
         out->pts = out->dts;
 
         frame->needs_output = 0;
@@ -285,7 +285,7 @@ static int vp9_raw_reorder_filter(AVBSFContext *bsf, AVPacket *out)
         frame = ctx->next_frame;
 
     } else {
-        err = ff_bsf_get_packet(bsf, &in);
+        err = ff_bsf_get_packet_xij(bsf, &in);
         if (err < 0) {
             if (err == AVERROR_EOF)
                 return vp9_raw_reorder_make_output(bsf, out, NULL);
@@ -295,13 +295,13 @@ static int vp9_raw_reorder_filter(AVBSFContext *bsf, AVPacket *out)
         if (in->data[in->size - 1] & 0xe0 == 0xc0) {
             av_log(bsf, AV_LOG_ERROR, "Input in superframes is not "
                    "supported.\n");
-            av_packet_free(&in);
+            av_packet_free_xij(&in);
             return AVERROR(ENOSYS);
         }
 
         frame = av_mallocz(sizeof(*frame));
         if (!frame) {
-            av_packet_free(&in);
+            av_packet_free_xij(&in);
             return AVERROR(ENOMEM);
         }
 

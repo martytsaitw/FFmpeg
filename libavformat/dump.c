@@ -71,12 +71,12 @@ static void hex_dump_internal(void *avcl, FILE *f, int level,
     }
 }
 
-void av_hex_dump(FILE *f, const uint8_t *buf, int size)
+void av_hex_dump_xij(FILE *f, const uint8_t *buf, int size)
 {
     hex_dump_internal(NULL, f, 0, buf, size);
 }
 
-void av_hex_dump_log(void *avcl, int level, const uint8_t *buf, int size)
+void av_hex_dump_log_xij(void *avcl, int level, const uint8_t *buf, int size)
 {
     hex_dump_internal(avcl, NULL, level, buf, size);
 }
@@ -105,12 +105,12 @@ static void pkt_dump_internal(void *avcl, FILE *f, int level, const AVPacket *pk
         hex_dump_internal(avcl, f, level, pkt->data, pkt->size);
 }
 
-void av_pkt_dump2(FILE *f, const AVPacket *pkt, int dump_payload, const AVStream *st)
+void av_pkt_dump2_xij(FILE *f, const AVPacket *pkt, int dump_payload, const AVStream *st)
 {
     pkt_dump_internal(NULL, f, 0, pkt, dump_payload, st->time_base);
 }
 
-void av_pkt_dump_log2(void *avcl, int level, const AVPacket *pkt, int dump_payload,
+void av_pkt_dump_log2_xij(void *avcl, int level, const AVPacket *pkt, int dump_payload,
                       const AVStream *st)
 {
     pkt_dump_internal(avcl, NULL, level, pkt, dump_payload, st->time_base);
@@ -423,7 +423,7 @@ static void dump_sidedata(void *ctx, AVStream *st, const char *indent)
             break;
         case AV_PKT_DATA_QUALITY_STATS:
             av_log(ctx, AV_LOG_INFO, "quality factor: %"PRId32", pict_type: %c",
-                   AV_RL32(sd.data), av_get_picture_type_char(sd.data[4]));
+                   AV_RL32(sd.data), av_get_picture_type_char_xij(sd.data[4]));
             break;
         case AV_PKT_DATA_CPB_PROPERTIES:
             av_log(ctx, AV_LOG_INFO, "cpb: ");
@@ -481,7 +481,7 @@ static void dump_stream_format_ijk(AVFormatContext *ic, int i,
 
     if (separator)
         av_opt_set(avctx, "dump_separator", separator, 0);
-    avcodec_string(buf, sizeof(buf), avctx, is_output);
+    avcodec_string_xij(buf, sizeof(buf), avctx, is_output);
     avcodec_free_context_ijk(&avctx);
 
     av_log(NULL, AV_LOG_INFO, "    Stream #%d:%d", index, i);

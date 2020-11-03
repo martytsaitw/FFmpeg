@@ -121,7 +121,7 @@ static void check_idct(void)
     int dc;
     declare_func_emms(AV_CPU_FLAG_MMX, void, uint8_t *dst, int16_t *block, ptrdiff_t stride);
 
-    ff_vp8dsp_init(&d);
+    ff_vp8dsp_init_xij(&d);
     randomize_buffers(src, dst, 4, coef);
 
     dct4x4(coef);
@@ -166,7 +166,7 @@ static void check_idct_dc4(void)
     int i, chroma;
     declare_func_emms(AV_CPU_FLAG_MMX, void, uint8_t *dst, int16_t block[4][16], ptrdiff_t stride);
 
-    ff_vp8dsp_init(&d);
+    ff_vp8dsp_init_xij(&d);
 
     for (chroma = 0; chroma <= 1; chroma++) {
         void (*idct4dc)(uint8_t *, int16_t[4][16], ptrdiff_t) = chroma ? d.vp8_idct_dc_add4uv : d.vp8_idct_dc_add4y;
@@ -209,7 +209,7 @@ static void check_luma_dc_wht(void)
     int blockx, blocky;
     declare_func_emms(AV_CPU_FLAG_MMX, void, int16_t block[4][4][16], int16_t dc[16]);
 
-    ff_vp8dsp_init(&d);
+    ff_vp8dsp_init_xij(&d);
 
     for (blocky = 0; blocky < 4; blocky++) {
         for (blockx = 0; blockx < 4; blockx++) {
@@ -271,7 +271,7 @@ static void check_mc(void)
     int type, k, dx, dy;
     declare_func_emms(AV_CPU_FLAG_MMX, void, uint8_t *, ptrdiff_t, uint8_t *, ptrdiff_t, int, int, int);
 
-    ff_vp78dsp_init(&d);
+    ff_vp78dsp_init_xij(&d);
 
     for (type = 0; type < 2; type++) {
         vp8_mc_func (*tab)[3][3] = type ? d.put_vp8_bilinear_pixels_tab : d.put_vp8_epel_pixels_tab;
@@ -385,7 +385,7 @@ static void check_loopfilter_16y(void)
     int flim_E = 20, flim_I = 10, hev_thresh = 7;
     declare_func_emms(AV_CPU_FLAG_MMX, void, uint8_t *, ptrdiff_t, int, int, int);
 
-    ff_vp8dsp_init(&d);
+    ff_vp8dsp_init_xij(&d);
 
     for (dir = 0; dir < 2; dir++) {
         int midoff = dir ? 4 * 16 : 4;
@@ -431,7 +431,7 @@ static void check_loopfilter_8uv(void)
     int flim_E = 20, flim_I = 10, hev_thresh = 7;
     declare_func_emms(AV_CPU_FLAG_MMX, void, uint8_t *, uint8_t *, ptrdiff_t, int, int, int);
 
-    ff_vp8dsp_init(&d);
+    ff_vp8dsp_init_xij(&d);
 
     for (dir = 0; dir < 2; dir++) {
         int midoff = dir ? 4 * 16 : 4;
@@ -482,7 +482,7 @@ static void check_loopfilter_simple(void)
     int flim_E = 20, flim_I = 30, hev_thresh = 0;
     declare_func_emms(AV_CPU_FLAG_MMX, void, uint8_t *, ptrdiff_t, int);
 
-    ff_vp8dsp_init(&d);
+    ff_vp8dsp_init_xij(&d);
 
     for (dir = 0; dir < 2; dir++) {
         int midoff = dir ? 4 * 16 : 4;

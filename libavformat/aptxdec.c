@@ -74,12 +74,12 @@ static int aptx_hd_read_header(AVFormatContext *s)
 
 static int aptx_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
-    return av_get_packet(s->pb, pkt, APTX_PACKET_SIZE);
+    return av_get_packet_xij(s->pb, pkt, APTX_PACKET_SIZE);
 }
 
 static int aptx_hd_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
-    return av_get_packet(s->pb, pkt, APTX_HD_PACKET_SIZE);
+    return av_get_packet_xij(s->pb, pkt, APTX_HD_PACKET_SIZE);
 }
 
 static const AVOption aptx_options[] = {

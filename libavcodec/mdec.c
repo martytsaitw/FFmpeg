@@ -181,7 +181,7 @@ static int decode_frame(AVCodecContext *avctx,
     frame.f->pict_type = AV_PICTURE_TYPE_I;
     frame.f->key_frame = 1;
 
-    av_fast_padded_malloc(&a->bitstream_buffer, &a->bitstream_buffer_size, buf_size);
+    av_fast_padded_malloc_xij(&a->bitstream_buffer, &a->bitstream_buffer_size, buf_size);
     if (!a->bitstream_buffer)
         return AVERROR(ENOMEM);
     a->bbdsp.bswap16_buf((uint16_t *)a->bitstream_buffer, (uint16_t *)buf, (buf_size + 1) / 2);

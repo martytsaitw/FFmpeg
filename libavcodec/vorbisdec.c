@@ -1793,7 +1793,7 @@ static int vorbis_decode_frame(AVCodecContext *avctx, void *data,
 
     /* get output buffer */
     frame->nb_samples = vc->blocksize[1] / 2;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     if (vc->audio_channels > 8) {
@@ -1815,7 +1815,7 @@ static int vorbis_decode_frame(AVCodecContext *avctx, void *data,
     if (!vc->first_frame) {
         vc->first_frame = 1;
         *got_frame_ptr = 0;
-        av_frame_unref(frame);
+        av_frame_unref_xij(frame);
         return buf_size;
     }
 

@@ -90,14 +90,14 @@ int ff_isom_write_vpcc(AVFormatContext *s, AVIOContext *pb,
         }
     }
 
-    avio_w8(pb, profile);
-    avio_w8(pb, level);
-    avio_w8(pb, (bit_depth << 4) | (vpx_chroma_subsampling << 1) | vpx_video_full_range_flag);
-    avio_w8(pb, par->color_primaries);
-    avio_w8(pb, par->color_trc);
-    avio_w8(pb, par->color_space);
+    avio_w8_xij(pb, profile);
+    avio_w8_xij(pb, level);
+    avio_w8_xij(pb, (bit_depth << 4) | (vpx_chroma_subsampling << 1) | vpx_video_full_range_flag);
+    avio_w8_xij(pb, par->color_primaries);
+    avio_w8_xij(pb, par->color_trc);
+    avio_w8_xij(pb, par->color_space);
 
     // vp9 does not have codec initialization data.
-    avio_wb16(pb, 0);
+    avio_wb16_xij(pb, 0);
     return 0;
 }

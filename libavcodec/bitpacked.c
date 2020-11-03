@@ -48,7 +48,7 @@ static int bitpacked_decode_uyvy422(AVCodecContext *avctx, AVFrame *frame,
     ret = av_image_fill_arrays(frame->data, frame->linesize, avpkt->data,
                                avctx->pix_fmt, avctx->width, avctx->height, 1);
     if (ret < 0) {
-        av_buffer_unref(&frame->buf[0]);
+        av_buffer_unref_xij(&frame->buf[0]);
         return ret;
     }
 
@@ -64,7 +64,7 @@ static int bitpacked_decode_yuv422p10(AVCodecContext *avctx, AVFrame *frame,
     uint16_t *y, *u, *v;
     int ret, i, j;
 
-    ret = ff_get_buffer(avctx, frame, 0);
+    ret = ff_get_buffer_xij(avctx, frame, 0);
     if (ret < 0)
         return ret;
 

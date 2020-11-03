@@ -85,7 +85,7 @@ static void *device_next(void *prev, int output,
     AVClassCategory category = AV_CLASS_CATEGORY_NA;
     do {
         if (output) {
-            if (!(prev = av_oformat_next(prev)))
+            if (!(prev = av_oformat_next_xij(prev)))
                 break;
             pc = ((AVOutputFormat *)prev)->priv_class;
         } else {

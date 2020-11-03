@@ -1005,7 +1005,7 @@ static av_cold int aac_encode_init(AVCodecContext *avctx)
 
     /* Samplerate */
     for (i = 0; i < 16; i++)
-        if (avctx->sample_rate == avpriv_mpeg4audio_sample_rates[i])
+        if (avctx->sample_rate == avpriv_mpeg4audio_sample_rates_xij[i])
             break;
     s->samplerate_index = i;
     ERROR_IF(s->samplerate_index == 16 ||

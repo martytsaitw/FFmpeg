@@ -109,12 +109,12 @@ static int parse_playlist(URLContext *h, const char *url)
     char line[1024];
     const char *ptr;
 
-    if ((ret = ffio_open_whitelist(&in, url, AVIO_FLAG_READ,
+    if ((ret = ffio_open_whitelist_xij(&in, url, AVIO_FLAG_READ,
                                    &h->interrupt_callback, NULL,
                                    h->protocol_whitelist, h->protocol_blacklist)) < 0)
         return ret;
 
-    ff_get_chomp_line(in, line, sizeof(line));
+    ff_get_chomp_line_xij(in, line, sizeof(line));
     if (strcmp(line, "#EXTM3U")) {
         ret = AVERROR_INVALIDDATA;
         goto fail;
@@ -122,12 +122,12 @@ static int parse_playlist(URLContext *h, const char *url)
 
     free_segment_list(s);
     s->finished = 0;
-    while (!avio_feof(in)) {
-        ff_get_chomp_line(in, line, sizeof(line));
+    while (!avio_feof_xij(in)) {
+        ff_get_chomp_line_xij(in, line, sizeof(line));
         if (av_strstart(line, "#EXT-X-STREAM-INF:", &ptr)) {
             struct variant_info info = {{0}};
             is_variant = 1;
-            ff_parse_key_value(ptr, (ff_parse_key_val_cb) handle_variant_args,
+            ff_parse_key_value_xij(ptr, (ff_parse_key_val_cb) handle_variant_args,
                                &info);
             bandwidth = atoi(info.bandwidth);
         } else if (av_strstart(line, "#EXT-X-TARGETDURATION:", &ptr)) {
@@ -168,7 +168,7 @@ static int parse_playlist(URLContext *h, const char *url)
     s->last_load_time = av_gettime_relative();
 
 fail:
-    avio_close(in);
+    avio_close_xij(in);
     return ret;
 }
 

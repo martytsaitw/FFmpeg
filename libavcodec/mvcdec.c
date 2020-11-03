@@ -47,7 +47,7 @@ static av_cold int mvc_decode_init(AVCodecContext *avctx)
     }
     width  &= ~3;
     height &= ~3;
-    if ((ret = ff_set_dimensions(avctx, width, height)) < 0)
+    if ((ret = ff_set_dimensions_xij(avctx, width, height)) < 0)
         return ret;
 
     avctx->pix_fmt = (avctx->codec_id == AV_CODEC_ID_MVC1) ? AV_PIX_FMT_RGB555
@@ -230,7 +230,7 @@ static int mvc_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     GetByteContext gb;
     int ret;
 
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     bytestream2_init(&gb, avpkt->data, avpkt->size);

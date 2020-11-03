@@ -146,13 +146,13 @@ static int mpegps_read_header(AVFormatContext *s)
     m->header_state = 0xff;
     s->ctx_flags   |= AVFMTCTX_NOHEADER;
 
-    avio_get_str(s->pb, 6, buffer, sizeof(buffer));
+    avio_get_str_xij(s->pb, 6, buffer, sizeof(buffer));
     if (!memcmp("IMKH", buffer, 4)) {
         m->imkh_cctv = 1;
     } else if (!memcmp("Sofdec", buffer, 6)) {
         m->sofdec = 1;
     } else
-       avio_seek(s->pb, last_pos, SEEK_SET);
+       avio_seek_xij(s->pb, last_pos, SEEK_SET);
 
     /* no need to do more */
     return 0;
@@ -162,8 +162,8 @@ static int64_t get_pts(AVIOContext *pb, int c)
 {
     uint8_t buf[5];
 
-    buf[0] = c < 0 ? avio_r8(pb) : c;
-    avio_read(pb, buf + 1, 4);
+    buf[0] = c < 0 ? avio_r8_xij(pb) : c;
+    avio_read_xij(pb, buf + 1, 4);
 
     return ff_parse_pes_pts(buf);
 }
@@ -177,9 +177,9 @@ static int find_next_start_code(AVIOContext *pb, int *size_ptr,
     state = *header_state;
     n     = *size_ptr;
     while (n > 0) {
-        if (avio_feof(pb))
+        if (avio_feof_xij(pb))
             break;
-        v = avio_r8(pb);
+        v = avio_r8_xij(pb);
         n--;
         if (state == 0x000001) {
             state = ((state << 8) | v) & 0xffffff;
@@ -206,30 +206,30 @@ static long mpegps_psm_parse(MpegDemuxContext *m, AVIOContext *pb)
 {
     int psm_length, ps_info_length, es_map_length;
 
-    psm_length = avio_rb16(pb);
-    avio_r8(pb);
-    avio_r8(pb);
-    ps_info_length = avio_rb16(pb);
+    psm_length = avio_rb16_xij(pb);
+    avio_r8_xij(pb);
+    avio_r8_xij(pb);
+    ps_info_length = avio_rb16_xij(pb);
 
     /* skip program_stream_info */
-    avio_skip(pb, ps_info_length);
-    /*es_map_length = */avio_rb16(pb);
+    avio_skip_xij(pb, ps_info_length);
+    /*es_map_length = */avio_rb16_xij(pb);
     /* Ignore es_map_length, trust psm_length */
     es_map_length = psm_length - ps_info_length - 10;
 
     /* at least one es available? */
     while (es_map_length >= 4) {
-        unsigned char type      = avio_r8(pb);
-        unsigned char es_id     = avio_r8(pb);
-        uint16_t es_info_length = avio_rb16(pb);
+        unsigned char type      = avio_r8_xij(pb);
+        unsigned char es_id     = avio_r8_xij(pb);
+        uint16_t es_info_length = avio_rb16_xij(pb);
 
         /* remember mapping from stream id to stream type */
         m->psm_es_type[es_id] = type;
         /* skip program_stream_info */
-        avio_skip(pb, es_info_length);
+        avio_skip_xij(pb, es_info_length);
         es_map_length -= 4 + es_info_length;
     }
-    avio_rb32(pb); /* crc32 */
+    avio_rb32_xij(pb); /* crc32 */
     return 2 + psm_length;
 }
 
@@ -247,7 +247,7 @@ static int mpegps_read_pes_header(AVFormatContext *s,
     int64_t last_sync = avio_tell(s->pb);
 
 error_redo:
-    avio_seek(s->pb, last_sync, SEEK_SET);
+    avio_seek_xij(s->pb, last_sync, SEEK_SET);
 redo:
     /* next start code (should be immediately after) */
     m->header_state = 0xff;
@@ -255,7 +255,7 @@ redo:
     startcode = find_next_start_code(s->pb, &size, &m->header_state);
     last_sync = avio_tell(s->pb);
     if (startcode < 0) {
-        if (avio_feof(s->pb))
+        if (avio_feof_xij(s->pb))
             return AVERROR_EOF;
         // FIXME we should remember header_state
         return FFERROR_REDO;
@@ -266,21 +266,21 @@ redo:
     if (startcode == SYSTEM_HEADER_START_CODE)
         goto redo;
     if (startcode == PADDING_STREAM) {
-        avio_skip(s->pb, avio_rb16(s->pb));
+        avio_skip_xij(s->pb, avio_rb16_xij(s->pb));
         goto redo;
     }
     if (startcode == PRIVATE_STREAM_2) {
         if (!m->sofdec) {
             /* Need to detect whether this from a DVD or a 'Sofdec' stream */
-            int len = avio_rb16(s->pb);
+            int len = avio_rb16_xij(s->pb);
             int bytesread = 0;
             uint8_t *ps2buf = av_malloc(len);
 
             if (ps2buf) {
-                bytesread = avio_read(s->pb, ps2buf, len);
+                bytesread = avio_read_xij(s->pb, ps2buf, len);
 
                 if (bytesread != len) {
-                    avio_skip(s->pb, len - bytesread);
+                    avio_skip_xij(s->pb, len - bytesread);
                 } else {
                     uint8_t *p = 0;
                     if (len >= 6)
@@ -329,7 +329,7 @@ redo:
                  * could be allocated, just ignore it.
                  * If we did, move back to the start of the
                  * packet (plus 'length' field) */
-                if (!m->dvd || avio_skip(s->pb, -(len + 2)) < 0) {
+                if (!m->dvd || avio_skip_xij(s->pb, -(len + 2)) < 0) {
                     /* Skip back failed.
                      * This packet will be lost but that can't be helped
                      * if we can't skip back
@@ -338,12 +338,12 @@ redo:
                 }
             } else {
                 /* No memory */
-                avio_skip(s->pb, len);
+                avio_skip_xij(s->pb, len);
                 goto redo;
             }
         } else if (!m->dvd) {
-            int len = avio_rb16(s->pb);
-            avio_skip(s->pb, len);
+            int len = avio_rb16_xij(s->pb);
+            avio_skip_xij(s->pb, len);
             goto redo;
         }
     }
@@ -362,7 +362,7 @@ redo:
     if (ppos) {
         *ppos = avio_tell(s->pb) - 4;
     }
-    len = avio_rb16(s->pb);
+    len = avio_rb16_xij(s->pb);
     pts =
     dts = AV_NOPTS_VALUE;
     if (startcode != PRIVATE_STREAM_2)
@@ -371,7 +371,7 @@ redo:
     for (;;) {
         if (len < 1)
             goto error_redo;
-        c = avio_r8(s->pb);
+        c = avio_r8_xij(s->pb);
         len--;
         /* XXX: for MPEG-1, should test only bit 7 */
         if (c != 0xff)
@@ -379,8 +379,8 @@ redo:
     }
     if ((c & 0xc0) == 0x40) {
         /* buffer scale & size */
-        avio_r8(s->pb);
-        c    = avio_r8(s->pb);
+        avio_r8_xij(s->pb);
+        c    = avio_r8_xij(s->pb);
         len -= 2;
     }
     if ((c & 0xe0) == 0x20) {
@@ -393,8 +393,8 @@ redo:
         }
     } else if ((c & 0xc0) == 0x80) {
         /* mpeg 2 PES */
-        flags      = avio_r8(s->pb);
-        header_len = avio_r8(s->pb);
+        flags      = avio_r8_xij(s->pb);
+        header_len = avio_r8_xij(s->pb);
         len       -= 2;
         if (header_len > len)
             goto error_redo;
@@ -412,7 +412,7 @@ redo:
             av_log(s, AV_LOG_WARNING, "Further flags set but no bytes left\n");
         }
         if (flags & 0x01) { /* PES extension */
-            pes_ext = avio_r8(s->pb);
+            pes_ext = avio_r8_xij(s->pb);
             header_len--;
             /* Skip PES private data, program packet sequence counter
              * and P-STD buffer */
@@ -422,14 +422,14 @@ redo:
                 av_log(s, AV_LOG_WARNING, "pes_ext %X is invalid\n", pes_ext);
                 pes_ext = skip = 0;
             }
-            avio_skip(s->pb, skip);
+            avio_skip_xij(s->pb, skip);
             header_len -= skip;
 
             if (pes_ext & 0x01) { /* PES extension 2 */
-                ext2_len = avio_r8(s->pb);
+                ext2_len = avio_r8_xij(s->pb);
                 header_len--;
                 if ((ext2_len & 0x7f) > 0) {
-                    id_ext = avio_r8(s->pb);
+                    id_ext = avio_r8_xij(s->pb);
                     if ((id_ext & 0x80) == 0)
                         startcode = ((startcode & 0xff) << 8) | id_ext;
                     header_len--;
@@ -438,26 +438,26 @@ redo:
         }
         if (header_len < 0)
             goto error_redo;
-        avio_skip(s->pb, header_len);
+        avio_skip_xij(s->pb, header_len);
     } else if (c != 0xf)
         goto redo;
     }
 
     if (startcode == PRIVATE_STREAM_1) {
-        int ret = ffio_ensure_seekback(s->pb, 2);
+        int ret = ffio_ensure_seekback_xij(s->pb, 2);
 
         if (ret < 0)
             return ret;
 
-        startcode = avio_r8(s->pb);
+        startcode = avio_r8_xij(s->pb);
         m->raw_ac3 = 0;
         if (startcode == 0x0b) {
-            if (avio_r8(s->pb) == 0x77) {
+            if (avio_r8_xij(s->pb) == 0x77) {
                 startcode = 0x80;
                 m->raw_ac3 = 1;
-                avio_skip(s->pb, -2);
+                avio_skip_xij(s->pb, -2);
             } else {
-                avio_skip(s->pb, -1);
+                avio_skip_xij(s->pb, -1);
             }
         } else {
             len--;
@@ -470,8 +470,8 @@ redo:
         for (i = 0; i < s->nb_streams; i++) {
             if (startcode == s->streams[i]->id &&
                 (s->pb->seekable & AVIO_SEEKABLE_NORMAL) /* index useless on streams anyway */) {
-                ff_reduce_index(s, i);
-                av_add_index_entry(s->streams[i], *ppos, dts, 0, 0,
+                ff_reduce_index_xij(s, i);
+                av_add_index_entry_xij(s->streams[i], *ppos, dts, 0, 0,
                                    AVINDEX_KEYFRAME /* FIXME keyframe? */);
             }
         }
@@ -506,12 +506,12 @@ redo:
 
         if (!m->raw_ac3) {
             /* audio: skip header */
-            avio_r8(s->pb);
-            lpcm_header_len = avio_rb16(s->pb);
+            avio_r8_xij(s->pb);
+            lpcm_header_len = avio_rb16_xij(s->pb);
             len -= 3;
             if (startcode >= 0xb0 && startcode <= 0xbf) {
                 /* MLP/TrueHD audio has a 4-byte header */
-                avio_r8(s->pb);
+                avio_r8_xij(s->pb);
                 len--;
             }
         }
@@ -554,8 +554,8 @@ redo:
         static const unsigned char avs_seqh[4] = { 0, 0, 1, 0xb0 };
         unsigned char buf[8];
 
-        avio_read(s->pb, buf, 8);
-        avio_seek(s->pb, -8, SEEK_CUR);
+        avio_read_xij(s->pb, buf, 8);
+        avio_seek_xij(s->pb, -8, SEEK_CUR);
         if (!memcmp(buf, avs_seqh, 4) && (buf[6] != 0 || buf[7] != 1))
             codec_id = AV_CODEC_ID_CAVS;
         else
@@ -609,7 +609,7 @@ redo:
     } else {
 skip:
         /* skip packet */
-        avio_skip(s->pb, len);
+        avio_skip_xij(s->pb, len);
         goto redo;
     }
     /* no stream found: add a new stream */
@@ -635,11 +635,11 @@ found:
       if (st->codecpar->codec_id == AV_CODEC_ID_MLP) {
             if (len < 6)
                 goto skip;
-            avio_skip(s->pb, 6);
+            avio_skip_xij(s->pb, 6);
             len -=6;
       }
     }
-    ret = av_get_packet(s->pb, pkt, len);
+    ret = av_get_packet_xij(s->pb, pkt, len);
 
     pkt->pts          = pts;
     pkt->dts          = dts;
@@ -661,7 +661,7 @@ static int64_t mpegps_read_dts(AVFormatContext *s, int stream_index,
     int64_t pos, pts, dts;
 
     pos = *ppos;
-    if (avio_seek(s->pb, pos, SEEK_SET) < 0)
+    if (avio_seek_xij(s->pb, pos, SEEK_SET) < 0)
         return AV_NOPTS_VALUE;
 
     for (;;) {
@@ -675,7 +675,7 @@ static int64_t mpegps_read_dts(AVFormatContext *s, int stream_index,
             dts != AV_NOPTS_VALUE) {
             break;
         }
-        avio_skip(s->pb, len);
+        avio_skip_xij(s->pb, len);
     }
     if (s->debug & FF_FDEBUG_TS)
         av_log(s, AV_LOG_TRACE, "pos=0x%"PRIx64" dts=0x%"PRIx64" %0.3f\n",
@@ -684,7 +684,7 @@ static int64_t mpegps_read_dts(AVFormatContext *s, int stream_index,
     return dts;
 }
 
-AVInputFormat ff_mpegps_demuxer = {
+AVInputFormat ff_mpegps_demuxer_xij = {
     .name           = "mpeg",
     .long_name      = NULL_IF_CONFIG_SMALL("MPEG-PS (MPEG-2 Program Stream)"),
     .priv_data_size = sizeof(MpegDemuxContext),
@@ -741,7 +741,7 @@ static int vobsub_read_header(AVFormatContext *s)
         av_log(s, AV_LOG_VERBOSE, "IDX/SUB: %s -> %s\n", s->url, vobsub->sub_name);
     }
 
-    if (!(iformat = av_find_input_format("mpeg"))) {
+    if (!(iformat = av_find_input_format_xij("mpeg"))) {
         ret = AVERROR_DEMUXER_NOT_FOUND;
         goto end;
     }
@@ -752,7 +752,7 @@ static int vobsub_read_header(AVFormatContext *s)
         goto end;
     }
 
-    if ((ret = ff_copy_whiteblacklists(vobsub->sub_ctx, s)) < 0)
+    if ((ret = ff_copy_whiteblacklists_xij(vobsub->sub_ctx, s)) < 0)
         goto end;
 
     ret = avformat_open_input_ijk(&vobsub->sub_ctx, vobsub->sub_name, iformat, NULL);
@@ -762,9 +762,9 @@ static int vobsub_read_header(AVFormatContext *s)
     }
 
     av_bprint_init(&header, 0, AV_BPRINT_SIZE_UNLIMITED);
-    while (!avio_feof(s->pb)) {
+    while (!avio_feof_xij(s->pb)) {
         char line[MAX_LINE_SIZE];
-        int len = ff_get_line(s->pb, line, sizeof(line));
+        int len = ff_get_line_xij(s->pb, line, sizeof(line));
 
         if (!len)
             break;
@@ -928,11 +928,11 @@ static int vobsub_read_packet(AVFormatContext *s, AVPacket *pkt)
     if (q->current_sub_idx < q->nb_subs) {
         psize = q->subs[q->current_sub_idx].pos - idx_pkt.pos;
     } else {
-        int64_t fsize = avio_size(pb);
+        int64_t fsize = avio_size_xij(pb);
         psize = fsize < 0 ? 0xffff : fsize - idx_pkt.pos;
     }
 
-    avio_seek(pb, idx_pkt.pos, SEEK_SET);
+    avio_seek_xij(pb, idx_pkt.pos, SEEK_SET);
 
     av_init_packet_ijk(pkt);
     pkt->size = 0;
@@ -967,7 +967,7 @@ static int vobsub_read_packet(AVFormatContext *s, AVPacket *pkt)
         if (ret < 0)
             goto fail;
 
-        n = avio_read(pb, pkt->data + (pkt->size - to_read), to_read);
+        n = avio_read_xij(pb, pkt->data + (pkt->size - to_read), to_read);
         if (n < to_read)
             pkt->size -= to_read - n;
     } while (total_read < psize);
@@ -1026,7 +1026,7 @@ static int vobsub_read_close(AVFormatContext *s)
     for (i = 0; i < s->nb_streams; i++)
         ff_subtitles_queue_clean(&vobsub->q[i]);
     if (vobsub->sub_ctx)
-        avformat_close_input(&vobsub->sub_ctx);
+        avformat_close_input_xij(&vobsub->sub_ctx);
     return 0;
 }
 

@@ -36,9 +36,9 @@ static int daud_write_packet(struct AVFormatContext *s, AVPacket *pkt)
                "Packet size too large for s302m. (%d > 65535)\n", pkt->size);
         return -1;
     }
-    avio_wb16(s->pb, pkt->size);
-    avio_wb16(s->pb, 0x8010); // unknown
-    avio_write(s->pb, pkt->data, pkt->size);
+    avio_wb16_xij(s->pb, pkt->size);
+    avio_wb16_xij(s->pb, 0x8010); // unknown
+    avio_write_xij(s->pb, pkt->data, pkt->size);
     return 0;
 }
 

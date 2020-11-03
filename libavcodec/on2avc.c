@@ -850,7 +850,7 @@ static int on2avc_decode_frame(AVCodecContext * avctx, void *data,
     if (c->is_av500) {
         /* get output buffer */
         frame->nb_samples = ON2AVC_SUBFRAME_SIZE;
-        if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+        if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
             return ret;
 
         if ((ret = on2avc_decode_subframe(c, buf, buf_size, frame, 0)) < 0)
@@ -874,7 +874,7 @@ static int on2avc_decode_frame(AVCodecContext * avctx, void *data,
 
         /* get output buffer */
         frame->nb_samples = ON2AVC_SUBFRAME_SIZE * num_frames;
-        if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+        if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
             return ret;
 
         audio_off = 0;

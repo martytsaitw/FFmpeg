@@ -35,14 +35,14 @@ static int video_frame_count = 0;
 
 static int decode_packet(const AVPacket *pkt)
 {
-    int ret = avcodec_send_packet(video_dec_ctx, pkt);
+    int ret = avcodec_send_packet_xij(video_dec_ctx, pkt);
     if (ret < 0) {
         fprintf(stderr, "Error while sending a packet to the decoder: %s\n", av_err2str(ret));
         return ret;
     }
 
     while (ret >= 0)  {
-        ret = avcodec_receive_frame(video_dec_ctx, frame);
+        ret = avcodec_receive_frame_xij(video_dec_ctx, frame);
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
             break;
         } else if (ret < 0) {
@@ -55,7 +55,7 @@ static int decode_packet(const AVPacket *pkt)
             AVFrameSideData *sd;
 
             video_frame_count++;
-            sd = av_frame_get_side_data(frame, AV_FRAME_DATA_MOTION_VECTORS);
+            sd = av_frame_get_side_data_xij(frame, AV_FRAME_DATA_MOTION_VECTORS);
             if (sd) {
                 const AVMotionVector *mvs = (const AVMotionVector *)sd->data;
                 for (i = 0; i < sd->size / sizeof(*mvs); i++) {
@@ -66,7 +66,7 @@ static int decode_packet(const AVPacket *pkt)
                         mv->dst_x, mv->dst_y, mv->flags);
                 }
             }
-            av_frame_unref(frame);
+            av_frame_unref_xij(frame);
         }
     }
 
@@ -84,7 +84,7 @@ static int open_codec_context(AVFormatContext *fmt_ctx, enum AVMediaType type)
     ret = av_find_best_stream_ijk(fmt_ctx, type, -1, -1, &dec, 0);
     if (ret < 0) {
         fprintf(stderr, "Could not find %s stream in input file '%s'\n",
-                av_get_media_type_string(type), src_filename);
+                av_get_media_type_string_xij(type), src_filename);
         return ret;
     } else {
         int stream_idx = ret;
@@ -104,9 +104,9 @@ static int open_codec_context(AVFormatContext *fmt_ctx, enum AVMediaType type)
 
         /* Init the video decoder */
         av_dict_set(&opts, "flags2", "+export_mvs", 0);
-        if ((ret = avcodec_open2(dec_ctx, dec, &opts)) < 0) {
+        if ((ret = avcodec_open2_xij(dec_ctx, dec, &opts)) < 0) {
             fprintf(stderr, "Failed to open %s codec\n",
-                    av_get_media_type_string(type));
+                    av_get_media_type_string_xij(type));
             return ret;
         }
 
@@ -172,7 +172,7 @@ int main(int argc, char **argv)
 
 end:
     avcodec_free_context_ijk(&video_dec_ctx);
-    avformat_close_input(&fmt_ctx);
-    av_frame_free(&frame);
+    avformat_close_input_xij(&fmt_ctx);
+    av_frame_free_xij(&frame);
     return ret < 0;
 }

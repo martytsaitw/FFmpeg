@@ -289,8 +289,8 @@ static int tgv_decode_frame(AVCodecContext *avctx,
         s->height = AV_RL16(&buf[2]);
         if (s->avctx->width != s->width || s->avctx->height != s->height) {
             av_freep(&s->frame_buffer);
-            av_frame_unref(s->last_frame);
-            if ((ret = ff_set_dimensions(s->avctx, s->width, s->height)) < 0)
+            av_frame_unref_xij(s->last_frame);
+            if ((ret = ff_set_dimensions_xij(s->avctx, s->width, s->height)) < 0)
                 return ret;
         }
 
@@ -302,7 +302,7 @@ static int tgv_decode_frame(AVCodecContext *avctx,
         }
     }
 
-    if ((ret = ff_get_buffer(avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
         return ret;
 
     memcpy(frame->data[1], s->palette, AVPALETTE_SIZE);
@@ -337,8 +337,8 @@ static int tgv_decode_frame(AVCodecContext *avctx,
         }
     }
 
-    av_frame_unref(s->last_frame);
-    if ((ret = av_frame_ref(s->last_frame, frame)) < 0)
+    av_frame_unref_xij(s->last_frame);
+    if ((ret = av_frame_ref_xij(s->last_frame, frame)) < 0)
         return ret;
 
     *got_frame = 1;
@@ -349,7 +349,7 @@ static int tgv_decode_frame(AVCodecContext *avctx,
 static av_cold int tgv_decode_end(AVCodecContext *avctx)
 {
     TgvContext *s = avctx->priv_data;
-    av_frame_free(&s->last_frame);
+    av_frame_free_xij(&s->last_frame);
     av_freep(&s->frame_buffer);
     av_freep(&s->mv_codebook);
     av_freep(&s->block_codebook);

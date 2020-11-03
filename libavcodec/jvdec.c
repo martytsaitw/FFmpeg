@@ -163,7 +163,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
             av_log(avctx, AV_LOG_ERROR, "video size %d invalid\n", video_size);
             return AVERROR_INVALIDDATA;
         }
-        if ((ret = ff_reget_buffer(avctx, s->frame)) < 0)
+        if ((ret = ff_reget_buffer_xij(avctx, s->frame)) < 0)
             return ret;
 
         if (video_type == 0 || video_type == 1) {
@@ -205,7 +205,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         s->palette_has_changed        = 0;
         memcpy(s->frame->data[1], s->palette, AVPALETTE_SIZE);
 
-        if ((ret = av_frame_ref(data, s->frame)) < 0)
+        if ((ret = av_frame_ref_xij(data, s->frame)) < 0)
             return ret;
         *got_frame = 1;
     }
@@ -217,7 +217,7 @@ static av_cold int decode_close(AVCodecContext *avctx)
 {
     JvContext *s = avctx->priv_data;
 
-    av_frame_free(&s->frame);
+    av_frame_free_xij(&s->frame);
 
     return 0;
 }

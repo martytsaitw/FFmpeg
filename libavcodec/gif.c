@@ -163,7 +163,7 @@ static int gif_image_write_image(AVCodecContext *avctx,
         } else {
             uint8_t *pal_exdata = s->pal_exdata;
             if (!pal_exdata)
-                pal_exdata = av_packet_new_side_data(pkt, AV_PKT_DATA_PALETTE, AVPALETTE_SIZE);
+                pal_exdata = av_packet_new_side_data_xij(pkt, AV_PKT_DATA_PALETTE, AVPALETTE_SIZE);
             if (!pal_exdata)
                 return AVERROR(ENOMEM);
             memcpy(pal_exdata, s->palette, AVPALETTE_SIZE);
@@ -277,7 +277,7 @@ static int gif_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     end        = pkt->data + pkt->size;
 
     if (avctx->pix_fmt == AV_PIX_FMT_PAL8) {
-        uint8_t *pal_exdata = av_packet_new_side_data(pkt, AV_PKT_DATA_PALETTE, AVPALETTE_SIZE);
+        uint8_t *pal_exdata = av_packet_new_side_data_xij(pkt, AV_PKT_DATA_PALETTE, AVPALETTE_SIZE);
         if (!pal_exdata)
             return AVERROR(ENOMEM);
         memcpy(pal_exdata, pict->data[1], AVPALETTE_SIZE);
@@ -305,8 +305,8 @@ static int gif_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         if (!s->last_frame)
             return AVERROR(ENOMEM);
     }
-    av_frame_unref(s->last_frame);
-    ret = av_frame_ref(s->last_frame, (AVFrame*)pict);
+    av_frame_unref_xij(s->last_frame);
+    ret = av_frame_ref_xij(s->last_frame, (AVFrame*)pict);
     if (ret < 0)
         return ret;
 
@@ -324,7 +324,7 @@ static int gif_encode_close(AVCodecContext *avctx)
     av_freep(&s->lzw);
     av_freep(&s->buf);
     s->buf_size = 0;
-    av_frame_free(&s->last_frame);
+    av_frame_free_xij(&s->last_frame);
     av_freep(&s->tmpl);
     return 0;
 }

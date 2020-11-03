@@ -188,7 +188,7 @@ struct SwrContext {
 };
 
 av_warn_unused_result
-int swri_realloc_audio(AudioData *a, int count);
+int swri_realloc_audio_xij(AudioData *a, int count);
 
 void swri_noise_shaping_int16 (SwrContext *s, AudioData *dsts, const AudioData *srcs, const AudioData *noises, int count);
 void swri_noise_shaping_int32 (SwrContext *s, AudioData *dsts, const AudioData *srcs, const AudioData *noises, int count);

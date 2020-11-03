@@ -2005,7 +2005,7 @@ static void free_avframe(
     const void *plane_addresses[])
 {
     AVFrame *frame = release_ctx;
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
 }
 #else
 //Not used on OSX - frame is never copied.
@@ -2191,9 +2191,9 @@ static int create_cv_pixel_buffer(AVCodecContext   *avctx,
     AVFrame *enc_frame = av_frame_alloc_ijk();
     if (!enc_frame) return AVERROR(ENOMEM);
 
-    status = av_frame_ref(enc_frame, frame);
+    status = av_frame_ref_xij(enc_frame, frame);
     if (status) {
-        av_frame_free(&enc_frame);
+        av_frame_free_xij(&enc_frame);
         return status;
     }
 
@@ -2263,13 +2263,13 @@ static int vtenc_send_frame(AVCodecContext *avctx,
         return status;
     }
 
-    side_data = av_frame_get_side_data(frame, AV_FRAME_DATA_A53_CC);
+    side_data = av_frame_get_side_data_xij(frame, AV_FRAME_DATA_A53_CC);
     if (vtctx->a53_cc && side_data && side_data->size) {
         sei = av_mallocz(sizeof(*sei));
         if (!sei) {
             av_log(avctx, AV_LOG_ERROR, "Not enough memory for closed captions, skipping\n");
         } else {
-            int ret = ff_alloc_a53_sei(frame, 0, &sei->data, &sei->size);
+            int ret = ff_alloc_a53_sei_xij(frame, 0, &sei->data, &sei->size);
             if (ret < 0) {
                 av_log(avctx, AV_LOG_ERROR, "Not enough memory for closed captions, skipping\n");
                 av_free(sei);
@@ -2461,8 +2461,8 @@ pe_cleanup:
     vtctx->session = NULL;
     vtctx->frame_ct_out = 0;
 
-    av_frame_unref(frame);
-    av_frame_free(&frame);
+    av_frame_unref_xij(frame);
+    av_frame_free_xij(&frame);
 
     av_assert0(status != 0 || (avctx->extradata && avctx->extradata_size > 0));
 

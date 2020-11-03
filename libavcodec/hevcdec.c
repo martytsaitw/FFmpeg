@@ -79,8 +79,8 @@ static void pic_arrays_free(HEVCContext *s)
     av_freep(&s->sh.size);
     av_freep(&s->sh.offset);
 
-    av_buffer_pool_uninit(&s->tab_mvf_pool);
-    av_buffer_pool_uninit(&s->rpl_tab_pool);
+    av_buffer_pool_uninit_xij(&s->tab_mvf_pool);
+    av_buffer_pool_uninit_xij(&s->rpl_tab_pool);
 }
 
 /* allocate arrays that depend on frame dimensions */
@@ -126,10 +126,10 @@ static int pic_arrays_init(HEVCContext *s, const HEVCSPS *sps)
     if (!s->horizontal_bs || !s->vertical_bs)
         goto fail;
 
-    s->tab_mvf_pool = av_buffer_pool_init(min_pu_size * sizeof(MvField),
-                                          av_buffer_allocz);
-    s->rpl_tab_pool = av_buffer_pool_init(ctb_count * sizeof(RefPicListTab),
-                                          av_buffer_allocz);
+    s->tab_mvf_pool = av_buffer_pool_init_xij(min_pu_size * sizeof(MvField),
+                                          av_buffer_allocz_xij);
+    s->rpl_tab_pool = av_buffer_pool_init_xij(ctb_count * sizeof(RefPicListTab),
+                                          av_buffer_allocz_xij);
     if (!s->tab_mvf_pool || !s->rpl_tab_pool)
         goto fail;
 
@@ -326,7 +326,7 @@ static void export_stream_params(AVCodecContext *avctx, const HEVCParamSets *ps,
     avctx->profile             = sps->ptl.general_ptl.profile_idc;
     avctx->level               = sps->ptl.general_ptl.level_idc;
 
-    ff_set_sar(avctx, sps->vui.sar);
+    ff_set_sar_xij(avctx, sps->vui.sar);
 
     if (sps->vui.video_signal_type_present_flag)
         avctx->color_range = sps->vui.video_full_range_flag ? AVCOL_RANGE_JPEG
@@ -2671,7 +2671,7 @@ static int set_side_data(HEVCContext *s)
         (s->sei.display_orientation.anticlockwise_rotation ||
          s->sei.display_orientation.hflip || s->sei.display_orientation.vflip)) {
         double angle = s->sei.display_orientation.anticlockwise_rotation * 360 / (double) (1 << 16);
-        AVFrameSideData *rotation = av_frame_new_side_data(out,
+        AVFrameSideData *rotation = av_frame_new_side_data_xij(out,
                                                            AV_FRAME_DATA_DISPLAYMATRIX,
                                                            sizeof(int32_t) * 9);
         if (!rotation)
@@ -2753,7 +2753,7 @@ static int set_side_data(HEVCContext *s)
     }
 
     if (s->sei.a53_caption.a53_caption) {
-        AVFrameSideData* sd = av_frame_new_side_data(out,
+        AVFrameSideData* sd = av_frame_new_side_data_xij(out,
                                                      AV_FRAME_DATA_A53_CC,
                                                      s->sei.a53_caption.a53_caption_size);
         if (sd)
@@ -2814,7 +2814,7 @@ static int hevc_frame_start(HEVCContext *s)
     if (!IS_IRAP(s))
         ff_hevc_bump_frame(s);
 
-    av_frame_unref(s->output_frame);
+    av_frame_unref_xij(s->output_frame);
     ret = ff_hevc_output_frame(s, s->output_frame, 0);
     if (ret < 0)
         goto fail;
@@ -3180,7 +3180,7 @@ static int hevc_decode_frame(AVCodecContext *avctx, void *data, int *got_output,
         return 0;
     }
 
-    new_extradata = av_packet_get_side_data(avpkt, AV_PKT_DATA_NEW_EXTRADATA,
+    new_extradata = av_packet_get_side_data_xij(avpkt, AV_PKT_DATA_NEW_EXTRADATA,
                                             &new_extradata_size);
     if (new_extradata && new_extradata_size > 0) {
         ret = hevc_decode_extradata(s, new_extradata, new_extradata_size, 0);
@@ -3219,7 +3219,7 @@ static int hevc_decode_frame(AVCodecContext *avctx, void *data, int *got_output,
     }
 
     if (s->output_frame->buf[0]) {
-        av_frame_move_ref(data, s->output_frame);
+        av_frame_move_ref_xij(data, s->output_frame);
         *got_output = 1;
     }
 
@@ -3230,7 +3230,7 @@ static int hevc_ref_frame(HEVCContext *s, HEVCFrame *dst, HEVCFrame *src)
 {
     int ret;
 
-    ret = ff_thread_ref_frame(&dst->tf, &src->tf);
+    ret = ff_thread_ref_frame_xij(&dst->tf, &src->tf);
     if (ret < 0)
         return ret;
 
@@ -3281,11 +3281,11 @@ static av_cold int hevc_decode_free(AVCodecContext *avctx)
         av_freep(&s->sao_pixel_buffer_h[i]);
         av_freep(&s->sao_pixel_buffer_v[i]);
     }
-    av_frame_free(&s->output_frame);
+    av_frame_free_xij(&s->output_frame);
 
     for (i = 0; i < FF_ARRAY_ELEMS(s->DPB); i++) {
         ff_hevc_unref_frame(s, &s->DPB[i], ~0);
-        av_frame_free(&s->DPB[i].frame);
+        av_frame_free_xij(&s->DPB[i].frame);
     }
 
     ff_hevc_ps_uninit(&s->ps);
@@ -3383,7 +3383,7 @@ static int hevc_update_thread_context(AVCodecContext *dst,
     if (s->ps.sps != s0->ps.sps)
         s->ps.sps = NULL;
     for (i = 0; i < FF_ARRAY_ELEMS(s->ps.vps_list); i++) {
-        av_buffer_unref(&s->ps.vps_list[i]);
+        av_buffer_unref_xij(&s->ps.vps_list[i]);
         if (s0->ps.vps_list[i]) {
             s->ps.vps_list[i] = av_buffer_ref_ijk(s0->ps.vps_list[i]);
             if (!s->ps.vps_list[i])
@@ -3392,7 +3392,7 @@ static int hevc_update_thread_context(AVCodecContext *dst,
     }
 
     for (i = 0; i < FF_ARRAY_ELEMS(s->ps.sps_list); i++) {
-        av_buffer_unref(&s->ps.sps_list[i]);
+        av_buffer_unref_xij(&s->ps.sps_list[i]);
         if (s0->ps.sps_list[i]) {
             s->ps.sps_list[i] = av_buffer_ref_ijk(s0->ps.sps_list[i]);
             if (!s->ps.sps_list[i])
@@ -3401,7 +3401,7 @@ static int hevc_update_thread_context(AVCodecContext *dst,
     }
 
     for (i = 0; i < FF_ARRAY_ELEMS(s->ps.pps_list); i++) {
-        av_buffer_unref(&s->ps.pps_list[i]);
+        av_buffer_unref_xij(&s->ps.pps_list[i]);
         if (s0->ps.pps_list[i]) {
             s->ps.pps_list[i] = av_buffer_ref_ijk(s0->ps.pps_list[i]);
             if (!s->ps.pps_list[i])

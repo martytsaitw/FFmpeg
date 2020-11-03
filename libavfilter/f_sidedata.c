@@ -85,7 +85,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
     AVFrameSideData *sd = NULL;
 
     if (s->type != -1)
-       sd = av_frame_get_side_data(frame, s->type);
+       sd = av_frame_get_side_data_xij(frame, s->type);
 
     switch (s->mode) {
     case SIDEDATA_SELECT:
@@ -96,9 +96,9 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
     case SIDEDATA_DELETE:
         if (s->type == -1) {
             while (frame->nb_side_data)
-                av_frame_remove_side_data(frame, frame->side_data[0]->type);
+                av_frame_remove_side_data_xij(frame, frame->side_data[0]->type);
         } else if (sd) {
-            av_frame_remove_side_data(frame, s->type);
+            av_frame_remove_side_data_xij(frame, s->type);
         }
         return ff_filter_frame(outlink, frame);
         break;
@@ -106,7 +106,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
         av_assert0(0);
     };
 
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
 
     return 0;
 }

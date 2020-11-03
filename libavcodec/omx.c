@@ -311,7 +311,7 @@ static OMX_ERRORTYPE empty_buffer_done(OMX_HANDLETYPE component, OMX_PTR app_dat
             if (buffer->pOutputPortPrivate)
                 av_free(buffer->pAppPrivate);
             else
-                av_frame_free((AVFrame**)&buffer->pAppPrivate);
+                av_frame_free_xij((AVFrame**)&buffer->pAppPrivate);
             buffer->pAppPrivate = NULL;
         }
     }
@@ -761,7 +761,7 @@ static int omx_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
                 // If the input frame happens to have all planes stored contiguously,
                 // with the right strides, just clone the frame and set the OMX
                 // buffer header to point to it
-                AVFrame *local = av_frame_clone(frame);
+                AVFrame *local = av_frame_clone_xij(frame);
                 if (!local) {
                     // Return the buffer to the queue so it's not lost
                     append_buffer(&s->input_mutex, &s->input_cond, &s->num_free_in_buffers, s->free_in_buffers, buffer);

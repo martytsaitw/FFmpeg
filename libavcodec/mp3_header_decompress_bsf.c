@@ -36,7 +36,7 @@ static int mp3_header_decompress(AVBSFContext *ctx, AVPacket *out)
     uint8_t *buf;
     int buf_size;
 
-    ret = ff_bsf_get_packet(ctx, &in);
+    ret = ff_bsf_get_packet_xij(ctx, &in);
     if (ret < 0)
         return ret;
 
@@ -45,8 +45,8 @@ static int mp3_header_decompress(AVBSFContext *ctx, AVPacket *out)
 
     header = AV_RB32(buf);
     if(ff_mpa_check_header(header) >= 0){
-        av_packet_move_ref(out, in);
-        av_packet_free(&in);
+        av_packet_move_ref_xij(out, in);
+        av_packet_free_xij(&in);
 
         return 0;
     }
@@ -109,7 +109,7 @@ static int mp3_header_decompress(AVBSFContext *ctx, AVPacket *out)
     ret = 0;
 
 fail:
-    av_packet_free(&in);
+    av_packet_free_xij(&in);
     return ret;
 }
 

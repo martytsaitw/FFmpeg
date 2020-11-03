@@ -87,7 +87,7 @@ static int wsaud_read_header(AVFormatContext *s)
     unsigned char header[AUD_HEADER_SIZE];
     int sample_rate, channels, codec;
 
-    if (avio_read(pb, header, AUD_HEADER_SIZE) != AUD_HEADER_SIZE)
+    if (avio_read_xij(pb, header, AUD_HEADER_SIZE) != AUD_HEADER_SIZE)
         return AVERROR(EIO);
 
     sample_rate = AV_RL16(&header[0]);
@@ -135,7 +135,7 @@ static int wsaud_read_packet(AVFormatContext *s,
     int ret = 0;
     AVStream *st = s->streams[0];
 
-    if (avio_read(pb, preamble, AUD_CHUNK_PREAMBLE_SIZE) !=
+    if (avio_read_xij(pb, preamble, AUD_CHUNK_PREAMBLE_SIZE) !=
         AUD_CHUNK_PREAMBLE_SIZE)
         return AVERROR(EIO);
 
@@ -153,14 +153,14 @@ static int wsaud_read_packet(AVFormatContext *s,
         int out_size = AV_RL16(&preamble[2]);
         if ((ret = av_new_packet_ijk(pkt, chunk_size + 4)) < 0)
             return ret;
-        if ((ret = avio_read(pb, &pkt->data[4], chunk_size)) != chunk_size)
+        if ((ret = avio_read_xij(pb, &pkt->data[4], chunk_size)) != chunk_size)
             return ret < 0 ? ret : AVERROR(EIO);
         AV_WL16(&pkt->data[0], out_size);
         AV_WL16(&pkt->data[2], chunk_size);
 
         pkt->duration = out_size;
     } else {
-        ret = av_get_packet(pb, pkt, chunk_size);
+        ret = av_get_packet_xij(pb, pkt, chunk_size);
         if (ret != chunk_size)
             return AVERROR(EIO);
 

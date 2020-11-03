@@ -60,7 +60,7 @@ static int gsm_read_packet(AVFormatContext *s, AVPacket *pkt)
     pkt->pos = avio_tell(s->pb);
     pkt->stream_index = 0;
 
-    ret = av_get_packet(s->pb, pkt, size);
+    ret = av_get_packet_xij(s->pb, pkt, size);
     if (ret < GSM_BLOCK_SIZE) {
         av_packet_unref_ijk(pkt);
         return ret < 0 ? ret : AVERROR(EIO);

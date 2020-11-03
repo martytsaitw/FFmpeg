@@ -1730,7 +1730,7 @@ int ff_dca_lbr_filter_frame(DCALbrDecoder *s, AVFrame *frame)
     }
 
     frame->nb_samples = 1024 << s->freq_range;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     // Filter fullband channels
@@ -1761,7 +1761,7 @@ int ff_dca_lbr_filter_frame(DCALbrDecoder *s, AVFrame *frame)
                            s->lfe_history, 16 << s->freq_range);
     }
 
-    if ((ret = ff_side_data_update_matrix_encoding(frame, AV_MATRIX_ENCODING_NONE)) < 0)
+    if ((ret = ff_side_data_update_matrix_encoding_xij(frame, AV_MATRIX_ENCODING_NONE)) < 0)
         return ret;
 
     return 0;

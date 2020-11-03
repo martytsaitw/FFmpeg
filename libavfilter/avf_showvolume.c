@@ -328,10 +328,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
 
     if (!s->out || s->out->width  != outlink->w ||
                    s->out->height != outlink->h) {
-        av_frame_free(&s->out);
+        av_frame_free_xij(&s->out);
         s->out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!s->out) {
-            av_frame_free(&insamples);
+            av_frame_free_xij(&insamples);
             return AVERROR(ENOMEM);
         }
         clear_picture(s, outlink);
@@ -427,11 +427,11 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
         }
     }
 
-    av_frame_free(&insamples);
-    out = av_frame_clone(s->out);
+    av_frame_free_xij(&insamples);
+    out = av_frame_clone_xij(s->out);
     if (!out)
         return AVERROR(ENOMEM);
-    av_frame_make_writable(out);
+    av_frame_make_writable_xij(out);
 
     /* draw volume level */
     for (c = 0; c < inlink->channels && s->h >= 8 && s->draw_volume; c++) {
@@ -453,7 +453,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 {
     ShowVolumeContext *s = ctx->priv;
 
-    av_frame_free(&s->out);
+    av_frame_free_xij(&s->out);
     av_expr_free(s->c_expr);
     av_freep(&s->values);
     av_freep(&s->color_lut);

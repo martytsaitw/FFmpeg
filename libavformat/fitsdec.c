@@ -83,7 +83,7 @@ static int64_t is_image(AVFormatContext *s, FITSContext *fits, FITSHeader *heade
     int64_t buf_size = 0, size = 0, t;
 
     do {
-        ret = avio_read(s->pb, buf, FITS_BLOCK_SIZE);
+        ret = avio_read_xij(s->pb, buf, FITS_BLOCK_SIZE);
         if (ret < 0) {
             return ret;
         } else if (ret < FITS_BLOCK_SIZE) {
@@ -157,7 +157,7 @@ static int fits_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     av_bprint_init(&avbuf, FITS_BLOCK_SIZE, AV_BPRINT_SIZE_UNLIMITED);
     while ((ret = is_image(s, fits, &header, &avbuf, &size)) == 0) {
-        pos = avio_skip(s->pb, size);
+        pos = avio_skip_xij(s->pb, size);
         if (pos < 0)
             return pos;
 
@@ -190,7 +190,7 @@ static int fits_read_packet(AVFormatContext *s, AVPacket *pkt)
     memcpy(pkt->data, buf + 80, avbuf.len - 80);
     pkt->size = avbuf.len - 80;
     av_freep(&buf);
-    ret = avio_read(s->pb, pkt->data + pkt->size, size);
+    ret = avio_read_xij(s->pb, pkt->data + pkt->size, size);
     if (ret < 0) {
         av_packet_unref_ijk(pkt);
         return ret;

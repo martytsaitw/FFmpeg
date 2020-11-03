@@ -61,7 +61,7 @@ static int g729_parse(AVCodecParserContext *s1, AVCodecContext *avctx,
         s->remaining -= buf_size;
     }
 
-    if (ff_combine_frame(pc, next, &buf, &buf_size) < 0 || !buf_size) {
+    if (ff_combine_frame_xij(pc, next, &buf, &buf_size) < 0 || !buf_size) {
         *poutbuf      = NULL;
         *poutbuf_size = 0;
         return buf_size;
@@ -78,5 +78,5 @@ AVCodecParser ff_g729_parser = {
     .codec_ids      = { AV_CODEC_ID_G729 },
     .priv_data_size = sizeof(G729ParseContext),
     .parser_parse   = g729_parse,
-    .parser_close   = ff_parse_close,
+    .parser_close   = ff_parse_close_xij,
 };

@@ -758,7 +758,7 @@ static int qsv_retrieve_enc_params(AVCodecContext *avctx, QSVEncContext *q)
     avctx->extradata_size = extradata.SPSBufSize + need_pps * extradata.PPSBufSize;
     memset(avctx->extradata + avctx->extradata_size, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 
-    cpb_props = ff_add_cpb_side_data(avctx);
+    cpb_props = ff_add_cpb_side_data_xij(avctx);
     if (!cpb_props)
         return AVERROR(ENOMEM);
     cpb_props->max_bitrate = avctx->rc_max_rate;
@@ -779,7 +779,7 @@ static int qsv_init_opaque_alloc(AVCodecContext *avctx, QSVEncContext *q)
 
     nb_surfaces = qsv->nb_opaque_surfaces + q->req.NumFrameSuggested + q->async_depth;
 
-    q->opaque_alloc_buf = av_buffer_allocz(sizeof(*surfaces) * nb_surfaces);
+    q->opaque_alloc_buf = av_buffer_allocz_xij(sizeof(*surfaces) * nb_surfaces);
     if (!q->opaque_alloc_buf)
         return AVERROR(ENOMEM);
 
@@ -824,7 +824,7 @@ static int qsvenc_init_session(AVCodecContext *avctx, QSVEncContext *q)
                                          &q->frames_ctx, q->load_plugins,
                                          q->param.IOPattern == MFX_IOPATTERN_IN_OPAQUE_MEMORY);
         if (ret < 0) {
-            av_buffer_unref(&q->frames_ctx.hw_frames_ctx);
+            av_buffer_unref_xij(&q->frames_ctx.hw_frames_ctx);
             return ret;
         }
 
@@ -992,7 +992,7 @@ static void clear_unused_frames(QSVEncContext *q)
     while (cur) {
         if (cur->used && !cur->surface.Data.Locked) {
             free_encoder_ctrl_payloads(&cur->enc_ctrl);
-            av_frame_unref(cur->frame);
+            av_frame_unref_xij(cur->frame);
             cur->used = 0;
         }
         cur = cur->next;
@@ -1050,7 +1050,7 @@ static int submit_frame(QSVEncContext *q, const AVFrame *frame,
         return ret;
 
     if (frame->format == AV_PIX_FMT_QSV) {
-        ret = av_frame_ref(qf->frame, frame);
+        ret = av_frame_ref_xij(qf->frame, frame);
         if (ret < 0)
             return ret;
 
@@ -1069,19 +1069,19 @@ static int submit_frame(QSVEncContext *q, const AVFrame *frame,
             qf->frame->height = FFALIGN(frame->height, q->height_align);
             qf->frame->width  = FFALIGN(frame->width, q->width_align);
 
-            ret = ff_get_buffer(q->avctx, qf->frame, AV_GET_BUFFER_FLAG_REF);
+            ret = ff_get_buffer_xij(q->avctx, qf->frame, AV_GET_BUFFER_FLAG_REF);
             if (ret < 0)
                 return ret;
 
             qf->frame->height = frame->height;
             qf->frame->width  = frame->width;
-            ret = av_frame_copy(qf->frame, frame);
+            ret = av_frame_copy_xij(qf->frame, frame);
             if (ret < 0) {
-                av_frame_unref(qf->frame);
+                av_frame_unref_xij(qf->frame);
                 return ret;
             }
         } else {
-            ret = av_frame_ref(qf->frame, frame);
+            ret = av_frame_ref_xij(qf->frame, frame);
             if (ret < 0)
                 return ret;
         }
@@ -1285,13 +1285,13 @@ int ff_qsv_enc_close(AVCodecContext *avctx, QSVEncContext *q)
     q->session          = NULL;
     q->internal_session = NULL;
 
-    av_buffer_unref(&q->frames_ctx.hw_frames_ctx);
-    av_buffer_unref(&q->frames_ctx.mids_buf);
+    av_buffer_unref_xij(&q->frames_ctx.hw_frames_ctx);
+    av_buffer_unref_xij(&q->frames_ctx.mids_buf);
 
     cur = q->work_frames;
     while (cur) {
         q->work_frames = cur->next;
-        av_frame_free(&cur->frame);
+        av_frame_free_xij(&cur->frame);
         av_free(cur->enc_ctrl.Payload);
         av_freep(&cur);
         cur = q->work_frames;
@@ -1314,7 +1314,7 @@ int ff_qsv_enc_close(AVCodecContext *avctx, QSVEncContext *q)
     q->async_fifo = NULL;
 
     av_freep(&q->opaque_surfaces);
-    av_buffer_unref(&q->opaque_alloc_buf);
+    av_buffer_unref_xij(&q->opaque_alloc_buf);
 
     av_freep(&q->extparam);
 

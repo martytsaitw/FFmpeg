@@ -42,20 +42,20 @@ static int ilbc_write_header(AVFormatContext *s)
     }
 
     if (par->block_align == 50) {
-        avio_write(pb, mode30_header, sizeof(mode30_header) - 1);
+        avio_write_xij(pb, mode30_header, sizeof(mode30_header) - 1);
     } else if (par->block_align == 38) {
-        avio_write(pb, mode20_header, sizeof(mode20_header) - 1);
+        avio_write_xij(pb, mode20_header, sizeof(mode20_header) - 1);
     } else {
         av_log(s, AV_LOG_ERROR, "Unsupported mode\n");
         return AVERROR(EINVAL);
     }
-    avio_flush(pb);
+    avio_flush_xij(pb);
     return 0;
 }
 
 static int ilbc_write_packet(AVFormatContext *s, AVPacket *pkt)
 {
-    avio_write(s->pb, pkt->data, pkt->size);
+    avio_write_xij(s->pb, pkt->data, pkt->size);
     return 0;
 }
 
@@ -74,7 +74,7 @@ static int ilbc_read_header(AVFormatContext *s)
     AVStream *st;
     uint8_t header[9];
 
-    avio_read(pb, header, 9);
+    avio_read_xij(pb, header, 9);
 
     st = avformat_new_stream_ijk(s, NULL);
     if (!st)
@@ -111,7 +111,7 @@ static int ilbc_read_packet(AVFormatContext *s,
     pkt->stream_index = 0;
     pkt->pos = avio_tell(s->pb);
     pkt->duration = par->block_align == 38 ? 160 : 240;
-    if ((ret = avio_read(s->pb, pkt->data, par->block_align)) != par->block_align) {
+    if ((ret = avio_read_xij(s->pb, pkt->data, par->block_align)) != par->block_align) {
         av_packet_unref_ijk(pkt);
         return ret < 0 ? ret : AVERROR(EIO);
     }

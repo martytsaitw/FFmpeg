@@ -119,10 +119,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
     int len;
 
     if (!outsamples) {
-        av_frame_free(&insamples);
+        av_frame_free_xij(&insamples);
         return AVERROR(ENOMEM);
     }
-    av_frame_copy_props(outsamples, insamples);
+    av_frame_copy_props_xij(outsamples, insamples);
 
     taps  = ((EarwaxContext *)inlink->dst->priv)->taps;
     out   = (int16_t *)outsamples->data[0];
@@ -143,7 +143,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
     } else
         memmove(taps, taps + 2*insamples->nb_samples, NUMTAPS * sizeof(*taps));
 
-    av_frame_free(&insamples);
+    av_frame_free_xij(&insamples);
     return ff_filter_frame(outlink, outsamples);
 }
 

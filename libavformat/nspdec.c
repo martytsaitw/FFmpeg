@@ -40,16 +40,16 @@ static int nsp_read_header(AVFormatContext *s)
     AVStream *st;
     int64_t pos;
 
-    avio_skip(s->pb, 12);
+    avio_skip_xij(s->pb, 12);
     st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
 
-    while (!avio_feof(s->pb)) {
+    while (!avio_feof_xij(s->pb)) {
         char value[1024];
 
-        chunk = avio_rb32(s->pb);
-        size  = avio_rl32(s->pb);
+        chunk = avio_rb32_xij(s->pb);
+        size  = avio_rl32_xij(s->pb);
         pos   = avio_tell(s->pb);
 
         switch (chunk) {
@@ -57,14 +57,14 @@ static int nsp_read_header(AVFormatContext *s)
         case MKBETAG('H', 'D', 'R', '8'):
             if (size < 32)
                 return AVERROR_INVALIDDATA;
-            avio_skip(s->pb, 20);
-            rate = avio_rl32(s->pb);
-            avio_skip(s->pb, size - (avio_tell(s->pb) - pos));
+            avio_skip_xij(s->pb, 20);
+            rate = avio_rl32_xij(s->pb);
+            avio_skip_xij(s->pb, size - (avio_tell(s->pb) - pos));
             break;
         case MKBETAG('N', 'O', 'T', 'E'):
-            avio_get_str(s->pb, size, value, sizeof(value));
+            avio_get_str_xij(s->pb, size, value, sizeof(value));
             av_dict_set(&s->metadata, "Comment", value, 0);
-            avio_skip(s->pb, size & 1);
+            avio_skip_xij(s->pb, size & 1);
             break;
         case MKBETAG('S', 'D', 'A', 'B'):
             channels = 2;

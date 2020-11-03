@@ -163,9 +163,9 @@ static int denoise_depth(HQDN3DContext *s,
             case 16: ret = denoise_depth(__VA_ARGS__, 16); break;             \
         }                                                                     \
         if (ret < 0) {                                                        \
-            av_frame_free(&out);                                              \
+            av_frame_free_xij(&out);                                              \
             if (!direct)                                                      \
-                av_frame_free(&in);                                           \
+                av_frame_free_xij(&in);                                           \
             return ret;                                                       \
         }                                                                     \
     } while (0)
@@ -294,18 +294,18 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     AVFilterLink *outlink = ctx->outputs[0];
 
     AVFrame *out;
-    int c, direct = av_frame_is_writable(in) && !ctx->is_disabled;
+    int c, direct = av_frame_is_writable_xij(in) && !ctx->is_disabled;
 
     if (direct) {
         out = in;
     } else {
         out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out) {
-            av_frame_free(&in);
+            av_frame_free_xij(&in);
             return AVERROR(ENOMEM);
         }
 
-        av_frame_copy_props(out, in);
+        av_frame_copy_props_xij(out, in);
     }
 
     for (c = 0; c < 3; c++) {
@@ -319,12 +319,12 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     }
 
     if (ctx->is_disabled) {
-        av_frame_free(&out);
+        av_frame_free_xij(&out);
         return ff_filter_frame(outlink, in);
     }
 
     if (!direct)
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
 
     return ff_filter_frame(outlink, out);
 }

@@ -87,7 +87,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
     s->bg          = DEFAULT_BG_COLOR;
 
     if (!avctx->width || !avctx->height) {
-        int ret = ff_set_dimensions(avctx, 80 << 3, 25 << 4);
+        int ret = ff_set_dimensions_xij(avctx, 80 << 3, 25 << 4);
         if (ret < 0)
             return ret;
     } else if (avctx->width % FONT_WIDTH || avctx->height % s->font_height) {
@@ -253,11 +253,11 @@ static int execute_code(AVCodecContext * avctx, int c)
         s->x = av_clip(s->x, 0, width  - FONT_WIDTH);
         s->y = av_clip(s->y, 0, height - s->font_height);
         if (width != avctx->width || height != avctx->height) {
-            av_frame_unref(s->frame);
-            ret = ff_set_dimensions(avctx, width, height);
+            av_frame_unref_xij(s->frame);
+            ret = ff_set_dimensions_xij(avctx, width, height);
             if (ret < 0)
                 return ret;
-            if ((ret = ff_get_buffer(avctx, s->frame,
+            if ((ret = ff_get_buffer_xij(avctx, s->frame,
                                      AV_GET_BUFFER_FLAG_REF)) < 0)
                 return ret;
             s->frame->pict_type           = AV_PICTURE_TYPE_I;
@@ -362,7 +362,7 @@ static int decode_frame(AVCodecContext *avctx,
     const uint8_t *buf_end   = buf+buf_size;
     int ret, i, count;
 
-    if ((ret = ff_reget_buffer(avctx, s->frame)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, s->frame)) < 0)
         return ret;
     if (!avctx->frame_number) {
         for (i=0; i<avctx->height; i++)
@@ -460,7 +460,7 @@ static int decode_frame(AVCodecContext *avctx,
     }
 
     *got_frame = 1;
-    if ((ret = av_frame_ref(data, s->frame)) < 0)
+    if ((ret = av_frame_ref_xij(data, s->frame)) < 0)
         return ret;
     return buf_size;
 }
@@ -469,7 +469,7 @@ static av_cold int decode_close(AVCodecContext *avctx)
 {
     AnsiContext *s = avctx->priv_data;
 
-    av_frame_free(&s->frame);
+    av_frame_free_xij(&s->frame);
     return 0;
 }
 

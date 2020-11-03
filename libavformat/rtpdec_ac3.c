@@ -34,7 +34,7 @@ struct PayloadContext {
 
 static void ac3_close_context(PayloadContext *data)
 {
-    ffio_free_dyn_buf(&data->fragment);
+    ffio_free_dyn_buf_xij(&data->fragment);
 }
 
 static int ac3_handle_packet(AVFormatContext *ctx, PayloadContext *data,
@@ -73,15 +73,15 @@ static int ac3_handle_packet(AVFormatContext *ctx, PayloadContext *data,
 
     case 1:
     case 2: /* First fragment */
-        ffio_free_dyn_buf(&data->fragment);
+        ffio_free_dyn_buf_xij(&data->fragment);
 
         data->last_frame = 1;
         data->nr_frames = nr_frames;
-        err = avio_open_dyn_buf(&data->fragment);
+        err = avio_open_dyn_buf_xij(&data->fragment);
         if (err < 0)
             return err;
 
-        avio_write(data->fragment, buf, len);
+        avio_write_xij(data->fragment, buf, len);
         data->timestamp = *timestamp;
         return AVERROR(EAGAIN);
 
@@ -93,12 +93,12 @@ static int ac3_handle_packet(AVFormatContext *ctx, PayloadContext *data,
         }
         if (nr_frames != data->nr_frames ||
             data->timestamp != *timestamp) {
-            ffio_free_dyn_buf(&data->fragment);
+            ffio_free_dyn_buf_xij(&data->fragment);
             av_log(ctx, AV_LOG_ERROR, "Invalid packet received\n");
             return AVERROR_INVALIDDATA;
         }
 
-        avio_write(data->fragment, buf, len);
+        avio_write_xij(data->fragment, buf, len);
         data->last_frame++;
     }
 
@@ -106,7 +106,7 @@ static int ac3_handle_packet(AVFormatContext *ctx, PayloadContext *data,
         return AVERROR(EAGAIN);
 
     if (data->last_frame != data->nr_frames) {
-        ffio_free_dyn_buf(&data->fragment);
+        ffio_free_dyn_buf_xij(&data->fragment);
         av_log(ctx, AV_LOG_ERROR, "Missed %d packets\n",
                data->nr_frames - data->last_frame);
         return AVERROR_INVALIDDATA;

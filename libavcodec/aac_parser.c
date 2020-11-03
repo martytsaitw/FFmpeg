@@ -47,7 +47,7 @@ static int aac_sync(uint64_t state, AACAC3ParseContext *hdr_info,
     *need_next_header = 0;
     *new_frame_start  = 1;
     hdr_info->sample_rate = hdr.sample_rate;
-    hdr_info->channels    = ff_mpeg4audio_channels[hdr.chan_config];
+    hdr_info->channels    = ff_mpeg4audio_channels_xij[hdr.chan_config];
     hdr_info->samples     = hdr.samples;
     hdr_info->bit_rate    = hdr.bit_rate;
     return size;
@@ -67,5 +67,5 @@ AVCodecParser ff_aac_parser = {
     .priv_data_size = sizeof(AACAC3ParseContext),
     .parser_init    = aac_parse_init,
     .parser_parse   = ff_aac_ac3_parse,
-    .parser_close   = ff_parse_close,
+    .parser_close   = ff_parse_close_xij,
 };

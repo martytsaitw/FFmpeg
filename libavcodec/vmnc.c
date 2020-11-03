@@ -333,7 +333,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     uint8_t *outptr;
     int dx, dy, w, h, depth, enc, chunks, res, size_left, ret;
 
-    if ((ret = ff_reget_buffer(avctx, c->pic)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, c->pic)) < 0)
         return ret;
 
     bytestream2_init(gb, buf, buf_size);
@@ -514,7 +514,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         }
     }
     *got_frame = 1;
-    if ((ret = av_frame_ref(data, c->pic)) < 0)
+    if ((ret = av_frame_ref_xij(data, c->pic)) < 0)
         return ret;
 
     /* always report that the buffer was completely consumed */
@@ -561,7 +561,7 @@ static av_cold int decode_end(AVCodecContext *avctx)
 {
     VmncContext * const c = avctx->priv_data;
 
-    av_frame_free(&c->pic);
+    av_frame_free_xij(&c->pic);
 
     av_freep(&c->curbits);
     av_freep(&c->curmask);

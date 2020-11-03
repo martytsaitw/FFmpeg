@@ -72,7 +72,7 @@ static int tmv_read_header(AVFormatContext *s)
     AVRational fps;
     unsigned comp_method, char_cols, char_rows, features;
 
-    if (avio_rl32(pb) != TMV_TAG)
+    if (avio_rl32_xij(pb) != TMV_TAG)
         return -1;
 
     if (!(vst = avformat_new_stream_ijk(s, NULL)))
@@ -81,30 +81,30 @@ static int tmv_read_header(AVFormatContext *s)
     if (!(ast = avformat_new_stream_ijk(s, NULL)))
         return AVERROR(ENOMEM);
 
-    ast->codecpar->sample_rate = avio_rl16(pb);
+    ast->codecpar->sample_rate = avio_rl16_xij(pb);
     if (!ast->codecpar->sample_rate) {
         av_log(s, AV_LOG_ERROR, "invalid sample rate\n");
         return -1;
     }
 
-    tmv->audio_chunk_size   = avio_rl16(pb);
+    tmv->audio_chunk_size   = avio_rl16_xij(pb);
     if (!tmv->audio_chunk_size) {
         av_log(s, AV_LOG_ERROR, "invalid audio chunk size\n");
         return -1;
     }
 
-    comp_method             = avio_r8(pb);
+    comp_method             = avio_r8_xij(pb);
     if (comp_method) {
         av_log(s, AV_LOG_ERROR, "unsupported compression method %d\n",
                comp_method);
         return -1;
     }
 
-    char_cols = avio_r8(pb);
-    char_rows = avio_r8(pb);
+    char_cols = avio_r8_xij(pb);
+    char_rows = avio_r8_xij(pb);
     tmv->video_chunk_size = char_cols * char_rows * 2;
 
-    features  = avio_r8(pb);
+    features  = avio_r8_xij(pb);
     if (features & ~(TMV_PADDING | TMV_STEREO)) {
         av_log(s, AV_LOG_ERROR, "unsupported features 0x%02x\n",
                features & ~(TMV_PADDING | TMV_STEREO));
@@ -154,13 +154,13 @@ static int tmv_read_packet(AVFormatContext *s, AVPacket *pkt)
     int ret, pkt_size = tmv->stream_index ?
                         tmv->audio_chunk_size : tmv->video_chunk_size;
 
-    if (avio_feof(pb))
+    if (avio_feof_xij(pb))
         return AVERROR_EOF;
 
-    ret = av_get_packet(pb, pkt, pkt_size);
+    ret = av_get_packet_xij(pb, pkt, pkt_size);
 
     if (tmv->stream_index)
-        avio_skip(pb, tmv->padding);
+        avio_skip_xij(pb, tmv->padding);
 
     pkt->stream_index  = tmv->stream_index;
     tmv->stream_index ^= 1;
@@ -181,7 +181,7 @@ static int tmv_read_seek(AVFormatContext *s, int stream_index,
     pos = timestamp *
           (tmv->audio_chunk_size + tmv->video_chunk_size + tmv->padding);
 
-    if (avio_seek(s->pb, pos + TMV_HEADER_SIZE, SEEK_SET) < 0)
+    if (avio_seek_xij(s->pb, pos + TMV_HEADER_SIZE, SEEK_SET) < 0)
         return -1;
     tmv->stream_index = 0;
     return 0;

@@ -105,7 +105,7 @@ static int cyuv_decode_frame(AVCodecContext *avctx,
     /* pixel data starts 48 bytes in, after 3x16-byte tables */
     stream_ptr = 48;
 
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     y_plane = frame->data[0];

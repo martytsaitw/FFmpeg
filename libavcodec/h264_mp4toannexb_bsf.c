@@ -180,14 +180,14 @@ static int h264_mp4toannexb_filter(AVBSFContext *ctx, AVPacket *out)
     int            buf_size;
     int ret = 0, i;
 
-    ret = ff_bsf_get_packet(ctx, &in);
+    ret = ff_bsf_get_packet_xij(ctx, &in);
     if (ret < 0)
         return ret;
 
     /* nothing to filter */
     if (!s->extradata_parsed) {
-        av_packet_move_ref(out, in);
-        av_packet_free(&in);
+        av_packet_move_ref_xij(out, in);
+        av_packet_free_xij(&in);
         return 0;
     }
 
@@ -274,7 +274,7 @@ next_nal:
 fail:
     if (ret < 0)
         av_packet_unref_ijk(out);
-    av_packet_free(&in);
+    av_packet_free_xij(&in);
 
     return ret;
 }

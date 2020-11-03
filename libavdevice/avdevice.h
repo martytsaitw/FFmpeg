@@ -429,7 +429,7 @@ extern const AVOption av_device_capabilities[];
  * @param device_options An AVDictionary filled with device-private options.
  *                       On return this parameter will be destroyed and replaced with a dict
  *                       containing options that were not found. May be NULL.
- *                       The same options must be passed later to avformat_write_header() for output
+ *                       The same options must be passed later to avformat_write_header_xij() for output
  *                       devices or avformat_open_input_ijk() for input devices, or at any other place
  *                       that affects device-private options.
  *
@@ -495,7 +495,7 @@ void avdevice_free_list_devices(AVDeviceInfoList **device_list);
  * @param device           device format. May be NULL if device name is set.
  * @param device_name      device name. May be NULL if device format is set.
  * @param device_options   An AVDictionary filled with device-private options. May be NULL.
- *                         The same options must be passed later to avformat_write_header() for output
+ *                         The same options must be passed later to avformat_write_header_xij() for output
  *                         devices or avformat_open_input_ijk() for input devices, or at any other place
  *                         that affects device-private options.
  * @param[out] device_list list of autodetected devices

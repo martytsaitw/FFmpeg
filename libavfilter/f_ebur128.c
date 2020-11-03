@@ -295,7 +295,7 @@ static int config_video_output(AVFilterLink *outlink)
     av_assert0(ebur128->graph.h == ebur128->gauge.h);
 
     /* prepare the initial picref buffer */
-    av_frame_free(&ebur128->outpicref);
+    av_frame_free_xij(&ebur128->outpicref);
     ebur128->outpicref = outpicref =
         ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!outpicref)
@@ -422,7 +422,7 @@ static int config_audio_output(AVFilterLink *outlink)
         av_opt_set_int(ebur128->swr_ctx, "out_sample_rate",       192000, 0);
         av_opt_set_sample_fmt(ebur128->swr_ctx, "out_sample_fmt", outlink->format, 0);
 
-        ret = swr_init(ebur128->swr_ctx);
+        ret = swr_init_xij(ebur128->swr_ctx);
         if (ret < 0)
             return ret;
     }
@@ -552,7 +552,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
 #if CONFIG_SWRESAMPLE
     if (ebur128->peak_mode & PEAK_MODE_TRUE_PEAKS) {
         const double *swr_samples = ebur128->swr_buf;
-        int ret = swr_convert(ebur128->swr_ctx, (uint8_t**)&ebur128->swr_buf, 19200,
+        int ret = swr_convert_xij(ebur128->swr_ctx, (uint8_t**)&ebur128->swr_buf, 19200,
                               (const uint8_t **)insamples->data, nb_samples);
         if (ret < 0)
             return ret;
@@ -762,7 +762,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
 
                 /* set pts and push frame */
                 pic->pts = pts;
-                ret = ff_filter_frame(outlink, av_frame_clone(pic));
+                ret = ff_filter_frame(outlink, av_frame_clone_xij(pic));
                 if (ret < 0)
                     return ret;
             }
@@ -920,10 +920,10 @@ static av_cold void uninit(AVFilterContext *ctx)
     }
     for (i = 0; i < ctx->nb_outputs; i++)
         av_freep(&ctx->output_pads[i].name);
-    av_frame_free(&ebur128->outpicref);
+    av_frame_free_xij(&ebur128->outpicref);
 #if CONFIG_SWRESAMPLE
     av_freep(&ebur128->swr_buf);
-    swr_free(&ebur128->swr_ctx);
+    swr_free_xij(&ebur128->swr_ctx);
 #endif
 }
 

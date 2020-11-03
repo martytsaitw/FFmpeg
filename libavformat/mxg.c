@@ -119,7 +119,7 @@ static int mxg_update_cache(AVFormatContext *s, unsigned int cache_size)
     if (mxg->soi_ptr) mxg->soi_ptr = mxg->buffer + soi_pos;
 
     /* get data */
-    ret = avio_read(s->pb, mxg->buffer_ptr + mxg->cache_size,
+    ret = avio_read_xij(s->pb, mxg->buffer_ptr + mxg->cache_size,
                      cache_size - mxg->cache_size);
     if (ret < 0)
         return ret;
@@ -136,7 +136,7 @@ static int mxg_read_packet(AVFormatContext *s, AVPacket *pkt)
     uint8_t *startmarker_ptr, *end, *search_end, marker;
     MXGContext *mxg = s->priv_data;
 
-    while (!avio_feof(s->pb) && !s->pb->error){
+    while (!avio_feof_xij(s->pb) && !s->pb->error){
         if (mxg->cache_size <= OVERREAD_SIZE) {
             /* update internal buffer */
             ret = mxg_update_cache(s, DEFAULT_PACKET_SIZE + OVERREAD_SIZE);

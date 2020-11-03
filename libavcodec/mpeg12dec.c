@@ -1283,7 +1283,7 @@ static int mpeg_decode_postinit(AVCodecContext *avctx)
             s1->mpeg_enc_ctx_allocated = 0;
         }
 
-        ret = ff_set_dimensions(avctx, s->width, s->height);
+        ret = ff_set_dimensions_xij(avctx, s->width, s->height);
         if (ret < 0)
             return ret;
 
@@ -1618,7 +1618,7 @@ static int mpeg_field_start(MpegEncContext *s, const uint8_t *buf, int buf_size)
             }
         }
 
-        pan_scan = av_frame_new_side_data(s->current_picture_ptr->f,
+        pan_scan = av_frame_new_side_data_xij(s->current_picture_ptr->f,
                                           AV_FRAME_DATA_PANSCAN,
                                           sizeof(s1->pan_scan));
         if (!pan_scan)
@@ -1626,7 +1626,7 @@ static int mpeg_field_start(MpegEncContext *s, const uint8_t *buf, int buf_size)
         memcpy(pan_scan->data, &s1->pan_scan, sizeof(s1->pan_scan));
 
         if (s1->a53_caption) {
-            AVFrameSideData *sd = av_frame_new_side_data(
+            AVFrameSideData *sd = av_frame_new_side_data_xij(
                 s->current_picture_ptr->f, AV_FRAME_DATA_A53_CC,
                 s1->a53_caption_size);
             if (sd)
@@ -1645,7 +1645,7 @@ static int mpeg_field_start(MpegEncContext *s, const uint8_t *buf, int buf_size)
 
         if (s1->has_afd) {
             AVFrameSideData *sd =
-                av_frame_new_side_data(s->current_picture_ptr->f,
+                av_frame_new_side_data_xij(s->current_picture_ptr->f,
                                        AV_FRAME_DATA_AFD, 1);
             if (!sd)
                 return AVERROR(ENOMEM);
@@ -1760,7 +1760,7 @@ static int mpeg_decode_slice(MpegEncContext *s, int mb_y,
     if (avctx->hwaccel && avctx->hwaccel->decode_slice) {
         const uint8_t *buf_end, *buf_start = *buf - 4; /* include start_code */
         int start_code = -1;
-        buf_end = avpriv_find_start_code(buf_start + 2, *buf + buf_size, &start_code);
+        buf_end = avpriv_find_start_code_xij(buf_start + 2, *buf + buf_size, &start_code);
         if (buf_end < *buf + buf_size)
             buf_end -= 4;
         s->mb_y = mb_y;
@@ -2010,7 +2010,7 @@ static int slice_decode_thread(AVCodecContext *c, void *arg)
             return 0;
 
         start_code = -1;
-        buf        = avpriv_find_start_code(buf, s->gb.buffer_end, &start_code);
+        buf        = avpriv_find_start_code_xij(buf, s->gb.buffer_end, &start_code);
         mb_y       = start_code - SLICE_MIN_START_CODE;
         if (s->codec_id != AV_CODEC_ID_MPEG1VIDEO && s->mb_height > 2800/16)
             mb_y += (*buf&0xE0)<<2;
@@ -2052,7 +2052,7 @@ static int slice_end(AVCodecContext *avctx, AVFrame *pict)
         ff_mpv_frame_end(s);
 
         if (s->pict_type == AV_PICTURE_TYPE_B || s->low_delay) {
-            int ret = av_frame_ref(pict, s->current_picture_ptr->f);
+            int ret = av_frame_ref_xij(pict, s->current_picture_ptr->f);
             if (ret < 0)
                 return ret;
             ff_print_debug_info(s, s->current_picture_ptr, pict);
@@ -2063,7 +2063,7 @@ static int slice_end(AVCodecContext *avctx, AVFrame *pict)
             /* latency of 1 frame for I- and P-frames */
             /* XXX: use another variable than picture_number */
             if (s->last_picture_ptr) {
-                int ret = av_frame_ref(pict, s->last_picture_ptr->f);
+                int ret = av_frame_ref_xij(pict, s->last_picture_ptr->f);
                 if (ret < 0)
                     return ret;
                 ff_print_debug_info(s, s->last_picture_ptr, pict);
@@ -2462,7 +2462,7 @@ static int decode_chunks(AVCodecContext *avctx, AVFrame *picture,
     for (;;) {
         /* find next start code */
         uint32_t start_code = -1;
-        buf_ptr = avpriv_find_start_code(buf_ptr, buf_end, &start_code);
+        buf_ptr = avpriv_find_start_code_xij(buf_ptr, buf_end, &start_code);
         if (start_code > 0x1ff) {
             if (!skip_frame) {
                 if (HAVE_THREADS &&
@@ -2787,7 +2787,7 @@ static int mpeg_decode_frame(AVCodecContext *avctx, void *data,
     if (buf_size == 0 || (buf_size == 4 && AV_RB32(buf) == SEQ_END_CODE)) {
         /* special case for last picture */
         if (s2->low_delay == 0 && s2->next_picture_ptr) {
-            int ret = av_frame_ref(picture, s2->next_picture_ptr->f);
+            int ret = av_frame_ref_xij(picture, s2->next_picture_ptr->f);
             if (ret < 0)
                 return ret;
 
@@ -2802,12 +2802,12 @@ static int mpeg_decode_frame(AVCodecContext *avctx, void *data,
         int next = ff_mpeg1_find_frame_end(&s2->parse_context, buf,
                                            buf_size, NULL);
 
-        if (ff_combine_frame(&s2->parse_context, next,
+        if (ff_combine_frame_xij(&s2->parse_context, next,
                              (const uint8_t **) &buf, &buf_size) < 0)
             return buf_size;
     }
 
-    s2->codec_tag = avpriv_toupper4(avctx->codec_tag);
+    s2->codec_tag = avpriv_toupper4_xij(avctx->codec_tag);
     if (s->mpeg_enc_ctx_allocated == 0 && (   s2->codec_tag == AV_RL32("VCR2")
                                            || s2->codec_tag == AV_RL32("BW10")
                                           ))
@@ -2820,7 +2820,7 @@ static int mpeg_decode_frame(AVCodecContext *avctx, void *data,
                             avctx->extradata, avctx->extradata_size);
         if (*got_output) {
             av_log(avctx, AV_LOG_ERROR, "picture in extradata\n");
-            av_frame_unref(picture);
+            av_frame_unref_xij(picture);
             *got_output = 0;
         }
         s->extradata_decoded = 1;
@@ -2835,7 +2835,7 @@ static int mpeg_decode_frame(AVCodecContext *avctx, void *data,
         s2->current_picture_ptr = NULL;
 
         if (s2->timecode_frame_start != -1 && *got_output) {
-            AVFrameSideData *tcside = av_frame_new_side_data(picture,
+            AVFrameSideData *tcside = av_frame_new_side_data_xij(picture,
                                                              AV_FRAME_DATA_GOP_TIMECODE,
                                                              sizeof(int64_t));
             if (!tcside)

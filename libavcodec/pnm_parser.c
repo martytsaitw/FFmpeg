@@ -68,7 +68,7 @@ retry:
             next = END_NOT_FOUND;
     }
 
-    if (ff_combine_frame(pc, next, &buf, &buf_size) < 0) {
+    if (ff_combine_frame_xij(pc, next, &buf, &buf_size) < 0) {
         *poutbuf      = NULL;
         *poutbuf_size = 0;
         return buf_size;
@@ -83,5 +83,5 @@ AVCodecParser ff_pnm_parser = {
                         AV_CODEC_ID_PBM, AV_CODEC_ID_PAM },
     .priv_data_size = sizeof(ParseContext),
     .parser_parse   = pnm_parse,
-    .parser_close   = ff_parse_close,
+    .parser_close   = ff_parse_close_xij,
 };

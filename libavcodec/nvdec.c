@@ -151,7 +151,7 @@ static void nvdec_decoder_free(void *opaque, uint8_t *data)
     if (decoder->decoder)
         decoder->cvdl->cuvidDestroyDecoder(decoder->decoder);
 
-    av_buffer_unref(&decoder->hw_device_ref);
+    av_buffer_unref_xij(&decoder->hw_device_ref);
 
     cuvid_free_functions(&decoder->cvdl);
 
@@ -222,7 +222,7 @@ static int nvdec_decoder_create(AVBufferRef **out, AVBufferRef *hw_device_ref,
 
     return 0;
 fail:
-    av_buffer_unref(&decoder_ref);
+    av_buffer_unref_xij(&decoder_ref);
     return ret;
 }
 
@@ -255,8 +255,8 @@ int ff_nvdec_decode_uninit(AVCodecContext *avctx)
     ctx->nb_slices               = 0;
     ctx->slice_offsets_allocated = 0;
 
-    av_buffer_unref(&ctx->decoder_ref);
-    av_buffer_pool_uninit(&ctx->decoder_pool);
+    av_buffer_unref_xij(&ctx->decoder_ref);
+    av_buffer_pool_uninit_xij(&ctx->decoder_pool);
 
     return 0;
 }
@@ -291,7 +291,7 @@ int ff_nvdec_decode_init(AVCodecContext *avctx)
     }
 
     if (!avctx->hw_frames_ctx) {
-        ret = ff_decode_get_hw_frames_ctx(avctx, AV_HWDEVICE_TYPE_CUDA);
+        ret = ff_decode_get_hw_frames_ctx_xij(avctx, AV_HWDEVICE_TYPE_CUDA);
         if (ret < 0)
             return ret;
     }
@@ -328,7 +328,7 @@ int ff_nvdec_decode_init(AVCodecContext *avctx)
     }
     pool->dpb_size = frames_ctx->initial_pool_size;
 
-    ctx->decoder_pool = av_buffer_pool_init2(sizeof(int), pool,
+    ctx->decoder_pool = av_buffer_pool_init2_xij(sizeof(int), pool,
                                              nvdec_decoder_frame_alloc, av_free);
     if (!ctx->decoder_pool) {
         ret = AVERROR(ENOMEM);
@@ -348,8 +348,8 @@ static void nvdec_fdd_priv_free(void *priv)
     if (!cf)
         return;
 
-    av_buffer_unref(&cf->idx_ref);
-    av_buffer_unref(&cf->decoder_ref);
+    av_buffer_unref_xij(&cf->idx_ref);
+    av_buffer_unref_xij(&cf->decoder_ref);
 
     av_freep(&priv);
 }
@@ -438,7 +438,7 @@ int ff_nvdec_start_frame(AVCodecContext *avctx, AVFrame *frame)
         goto fail;
     }
 
-    cf->idx_ref = av_buffer_pool_get(ctx->decoder_pool);
+    cf->idx_ref = av_buffer_pool_get_xij(ctx->decoder_pool);
     if (!cf->idx_ref) {
         av_log(avctx, AV_LOG_ERROR, "No decoder surfaces left\n");
         ret = AVERROR(ENOMEM);

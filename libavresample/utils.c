@@ -620,7 +620,7 @@ int avresample_convert_frame(AVAudioResampleContext *avr,
     if (out) {
         if (!out->linesize[0]) {
             out->nb_samples = avresample_get_out_samples(avr, in->nb_samples);
-            if ((ret = av_frame_get_buffer(out, 0)) < 0) {
+            if ((ret = av_frame_get_buffer_xij(out, 0)) < 0) {
                 if (setup)
                     avresample_close(avr);
                 return ret;

@@ -270,7 +270,7 @@ int ff_h2645_packet_split(H2645Packet *pkt, const uint8_t *buf, int length,
     int64_t padding = small_padding ? 0 : MAX_MBPAIR_SIZE;
 
     bytestream2_init(&bc, buf, length);
-    av_fast_padded_malloc(&pkt->rbsp.rbsp_buffer, &pkt->rbsp.rbsp_buffer_alloc_size, length + padding);
+    av_fast_padded_malloc_xij(&pkt->rbsp.rbsp_buffer, &pkt->rbsp.rbsp_buffer_alloc_size, length + padding);
     if (!pkt->rbsp.rbsp_buffer)
         return AVERROR(ENOMEM);
 

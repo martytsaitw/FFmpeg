@@ -42,7 +42,7 @@ struct PayloadContext {
 
 static void h263_close_context(PayloadContext *data)
 {
-    ffio_free_dyn_buf(&data->buf);
+    ffio_free_dyn_buf_xij(&data->buf);
 }
 
 static int h263_handle_packet(AVFormatContext *ctx, PayloadContext *data,
@@ -60,7 +60,7 @@ static int h263_handle_packet(AVFormatContext *ctx, PayloadContext *data,
 
     if (data->buf && data->timestamp != *timestamp) {
         /* Dropping old buffered, unfinished data */
-        ffio_free_dyn_buf(&data->buf);
+        ffio_free_dyn_buf_xij(&data->buf);
         data->endbyte_bits = 0;
     }
 
@@ -122,7 +122,7 @@ static int h263_handle_packet(AVFormatContext *ctx, PayloadContext *data,
         /* Check the picture start code, only start buffering a new frame
          * if this is correct */
         if (len > 4 && AV_RB32(buf) >> 10 == 0x20) {
-            ret = avio_open_dyn_buf(&data->buf);
+            ret = avio_open_dyn_buf_xij(&data->buf);
             if (ret < 0)
                 return ret;
             data->timestamp = *timestamp;
@@ -138,7 +138,7 @@ static int h263_handle_packet(AVFormatContext *ctx, PayloadContext *data,
             data->endbyte_bits = 0;
             buf++;
             len--;
-            avio_w8(data->buf, data->endbyte);
+            avio_w8_xij(data->buf, data->endbyte);
         } else {
             /* Start/end skip bits not matching - missed packets? */
             GetBitContext gb;
@@ -146,10 +146,10 @@ static int h263_handle_packet(AVFormatContext *ctx, PayloadContext *data,
             skip_bits(&gb, sbit);
             if (data->endbyte_bits) {
                 data->endbyte |= get_bits(&gb, 8 - data->endbyte_bits);
-                avio_w8(data->buf, data->endbyte);
+                avio_w8_xij(data->buf, data->endbyte);
             }
             while (get_bits_left(&gb) >= 8)
-                avio_w8(data->buf, get_bits(&gb, 8));
+                avio_w8_xij(data->buf, get_bits(&gb, 8));
             data->endbyte_bits = get_bits_left(&gb);
             if (data->endbyte_bits)
                 data->endbyte = get_bits(&gb, data->endbyte_bits) <<
@@ -160,18 +160,18 @@ static int h263_handle_packet(AVFormatContext *ctx, PayloadContext *data,
     }
     if (ebit) {
         if (len > 0)
-            avio_write(data->buf, buf, len - 1);
+            avio_write_xij(data->buf, buf, len - 1);
         data->endbyte_bits = 8 - ebit;
         data->endbyte = buf[len - 1] & (0xff << ebit);
     } else {
-        avio_write(data->buf, buf, len);
+        avio_write_xij(data->buf, buf, len);
     }
 
     if (!(flags & RTP_FLAG_MARKER))
         return AVERROR(EAGAIN);
 
     if (data->endbyte_bits)
-        avio_w8(data->buf, data->endbyte);
+        avio_w8_xij(data->buf, data->endbyte);
     data->endbyte_bits = 0;
 
     ret = ff_rtp_finalize_packet(pkt, &data->buf, st->index);

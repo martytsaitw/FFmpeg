@@ -62,7 +62,7 @@ static int svq3_parse_packet (AVFormatContext *s, PayloadContext *sv,
         av_freep(&st->codecpar->extradata);
         st->codecpar->extradata_size = 0;
 
-        if (len < 2 || ff_alloc_extradata(st->codecpar, len + 8))
+        if (len < 2 || ff_alloc_extradata_xij(st->codecpar, len + 8))
             return AVERROR_INVALIDDATA;
 
         memcpy(st->codecpar->extradata, "SEQH", 4);
@@ -82,8 +82,8 @@ static int svq3_parse_packet (AVFormatContext *s, PayloadContext *sv,
     if (start_packet) {
         int res;
 
-        ffio_free_dyn_buf(&sv->pktbuf);
-        if ((res = avio_open_dyn_buf(&sv->pktbuf)) < 0)
+        ffio_free_dyn_buf_xij(&sv->pktbuf);
+        if ((res = avio_open_dyn_buf_xij(&sv->pktbuf)) < 0)
             return res;
         sv->timestamp   = *timestamp;
     }
@@ -91,7 +91,7 @@ static int svq3_parse_packet (AVFormatContext *s, PayloadContext *sv,
     if (!sv->pktbuf)
         return AVERROR_INVALIDDATA;
 
-    avio_write(sv->pktbuf, buf, len);
+    avio_write_xij(sv->pktbuf, buf, len);
 
     if (end_packet) {
         int ret = ff_rtp_finalize_packet(pkt, &sv->pktbuf, st->index);
@@ -107,7 +107,7 @@ static int svq3_parse_packet (AVFormatContext *s, PayloadContext *sv,
 
 static void svq3_close_context(PayloadContext *sv)
 {
-    ffio_free_dyn_buf(&sv->pktbuf);
+    ffio_free_dyn_buf_xij(&sv->pktbuf);
 }
 
 const RTPDynamicProtocolHandler ff_svq3_dynamic_handler = {

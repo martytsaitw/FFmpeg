@@ -165,7 +165,7 @@ static int program_opencl_run(AVFilterContext *avctx)
     }
 
     if (ctx->nb_inputs > 0) {
-        err = av_frame_copy_props(output, ctx->frames[0]);
+        err = av_frame_copy_props_xij(output, ctx->frames[0]);
         if (err < 0)
             goto fail;
     } else {
@@ -181,7 +181,7 @@ static int program_opencl_run(AVFilterContext *avctx)
 
 fail:
     clFinish(ctx->command_queue);
-    av_frame_free(&output);
+    av_frame_free_xij(&output);
     return err;
 }
 

@@ -41,16 +41,16 @@ static int ads_read_header(AVFormatContext *s)
     if (!st)
         return AVERROR(ENOMEM);
 
-    avio_skip(s->pb, 8);
+    avio_skip_xij(s->pb, 8);
     st->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
-    codec                  = avio_rl32(s->pb);
-    st->codecpar->sample_rate = avio_rl32(s->pb);
+    codec                  = avio_rl32_xij(s->pb);
+    st->codecpar->sample_rate = avio_rl32_xij(s->pb);
     if (st->codecpar->sample_rate <= 0)
         return AVERROR_INVALIDDATA;
-    st->codecpar->channels    = avio_rl32(s->pb);
+    st->codecpar->channels    = avio_rl32_xij(s->pb);
     if (st->codecpar->channels <= 0)
         return AVERROR_INVALIDDATA;
-    align                  = avio_rl32(s->pb);
+    align                  = avio_rl32_xij(s->pb);
     if (align <= 0 || align > INT_MAX / st->codecpar->channels)
         return AVERROR_INVALIDDATA;
 
@@ -60,8 +60,8 @@ static int ads_read_header(AVFormatContext *s)
         st->codecpar->codec_id = AV_CODEC_ID_ADPCM_PSX;
 
     st->codecpar->block_align = st->codecpar->channels * align;
-    avio_skip(s->pb, 12);
-    size = avio_rl32(s->pb);
+    avio_skip_xij(s->pb, 12);
+    size = avio_rl32_xij(s->pb);
     if (st->codecpar->codec_id == AV_CODEC_ID_ADPCM_PSX)
         st->duration = (size - 0x40) / 16 / st->codecpar->channels * 28;
     avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
@@ -74,7 +74,7 @@ static int ads_read_packet(AVFormatContext *s, AVPacket *pkt)
     AVCodecParameters *par = s->streams[0]->codecpar;
     int ret;
 
-    ret = av_get_packet(s->pb, pkt, par->block_align);
+    ret = av_get_packet_xij(s->pb, pkt, par->block_align);
     pkt->stream_index = 0;
     return ret;
 }

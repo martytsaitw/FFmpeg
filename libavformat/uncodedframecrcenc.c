@@ -139,7 +139,7 @@ static int write_frame(struct AVFormatContext *s, int stream_index,
     av_bprintf(&bp, "%d, %10"PRId64"",
                stream_index, (*frame)->pts);
     type = s->streams[stream_index]->codecpar->codec_type;
-    type_name = av_get_media_type_string(type);
+    type_name = av_get_media_type_string_xij(type);
     av_bprintf(&bp, ", %s", type_name ? type_name : "unknown");
     switch (type) {
         case AVMEDIA_TYPE_VIDEO:
@@ -152,7 +152,7 @@ static int write_frame(struct AVFormatContext *s, int stream_index,
 
     av_bprint_chars(&bp, '\n', 1);
     if (av_bprint_is_complete(&bp))
-        avio_write(s->pb, bp.str, bp.len);
+        avio_write_xij(s->pb, bp.str, bp.len);
     else
         ret = AVERROR(ENOMEM);
     av_bprint_finalize(&bp, NULL);

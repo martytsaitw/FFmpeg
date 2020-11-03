@@ -39,7 +39,7 @@
 static const AVClass rtsp_muxer_class = {
     .class_name = "RTSP muxer",
     .item_name  = av_default_item_name,
-    .option     = ff_rtsp_options,
+    .option     = ff_rtsp_options_xij,
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
@@ -147,7 +147,7 @@ int ff_rtsp_tcp_write_packet_ijk(AVFormatContext *s, RTSPStream *rtsp_st)
     int size;
     uint8_t *interleave_header, *interleaved_packet;
 
-    size = avio_close_dyn_buf(rtpctx->pb, &buf);
+    size = avio_close_dyn_buf_xij(rtpctx->pb, &buf);
     rtpctx->pb = NULL;
     ptr = buf;
     while (size > 4) {
@@ -155,7 +155,7 @@ int ff_rtsp_tcp_write_packet_ijk(AVFormatContext *s, RTSPStream *rtsp_st)
         int id;
         /* The interleaving header is exactly 4 bytes, which happens to be
          * the same size as the packet length header from
-         * ffio_open_dyn_packet_buf. So by writing the interleaving header
+         * ffio_open_dyn_packet_buf_xij. So by writing the interleaving header
          * over these bytes, we get a consecutive interleaved packet
          * that can be written in one call. */
         interleaved_packet = interleave_header = ptr;
@@ -175,7 +175,7 @@ int ff_rtsp_tcp_write_packet_ijk(AVFormatContext *s, RTSPStream *rtsp_st)
         size -= packet_len;
     }
     av_free(buf);
-    return ffio_open_dyn_packet_buf(&rtpctx->pb, RTSP_TCP_MAX_PACKET_SIZE);
+    return ffio_open_dyn_packet_buf_xij(&rtpctx->pb, RTSP_TCP_MAX_PACKET_SIZE);
 }
 
 static int rtsp_write_packet(AVFormatContext *s, AVPacket *pkt)
@@ -214,8 +214,8 @@ static int rtsp_write_packet(AVFormatContext *s, AVPacket *pkt)
     rtsp_st = rt->rtsp_streams[pkt->stream_index];
     rtpctx = rtsp_st->transport_priv;
 
-    ret = ff_write_chained(rtpctx, 0, pkt, s, 0);
-    /* ff_write_chained does all the RTP packetization. If using TCP as
+    ret = ff_write_chained_xij(rtpctx, 0, pkt, s, 0);
+    /* ff_write_chained_xij does all the RTP packetization. If using TCP as
      * transport, rtpctx->pb is only a dyn_packet_buf that queues up the
      * packets, so we need to send them out on the TCP connection separately.
      */
@@ -228,7 +228,7 @@ static int rtsp_write_close(AVFormatContext *s)
 {
     RTSPState *rt = s->priv_data;
 
-    // If we want to send RTCP_BYE packets, these are sent by av_write_trailer.
+    // If we want to send RTCP_BYE packets, these are sent by av_write_trailer_xij.
     // Thus call this on all streams before doing the teardown. This is
     // done within ff_rtsp_undo_setup_ijk.
     ff_rtsp_undo_setup_ijk(s, 1);

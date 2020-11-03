@@ -148,16 +148,16 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     av_assert0(in->channels == (s->nb_inputs * s->nb_handles));
 
     if (!s->nb_outputs ||
-        (av_frame_is_writable(in) && s->nb_inputs == s->nb_outputs &&
+        (av_frame_is_writable_xij(in) && s->nb_inputs == s->nb_outputs &&
         !(s->desc->Properties & LADSPA_PROPERTY_INPLACE_BROKEN))) {
         out = in;
     } else {
         out = ff_get_audio_buffer(ctx->outputs[0], in->nb_samples);
         if (!out) {
-            av_frame_free(&in);
+            av_frame_free_xij(&in);
             return AVERROR(ENOMEM);
         }
-        av_frame_copy_props(out, in);
+        av_frame_copy_props_xij(out, in);
     }
 
     av_assert0(!s->nb_outputs || out->channels == (s->nb_outputs * s->nb_handles));
@@ -182,7 +182,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         print_ctl_info(ctx, AV_LOG_VERBOSE, s, i, s->ocmap, s->octlv, 1);
 
     if (out != in)
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
 
     return ff_filter_frame(ctx->outputs[0], out);
 }

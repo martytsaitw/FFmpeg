@@ -184,7 +184,7 @@ static void print_file(AVFilterContext *ctx, const char *msg, ...)
     if (msg) {
         char buf[128];
         vsnprintf(buf, sizeof(buf), msg, argument_list);
-        avio_write(s->avio_context, buf, av_strnlen(buf, sizeof(buf)));
+        avio_write_xij(s->avio_context, buf, av_strnlen(buf, sizeof(buf)));
     }
     va_end(argument_list);
 }
@@ -249,9 +249,9 @@ static av_cold int init(AVFilterContext *ctx)
     s->avio_context = NULL;
     if (s->file_str) {
         if (!strcmp("-", s->file_str)) {
-            ret = avio_open(&s->avio_context, "pipe:1", AVIO_FLAG_WRITE);
+            ret = avio_open_xij(&s->avio_context, "pipe:1", AVIO_FLAG_WRITE);
         } else {
-            ret = avio_open(&s->avio_context, s->file_str, AVIO_FLAG_WRITE);
+            ret = avio_open_xij(&s->avio_context, s->file_str, AVIO_FLAG_WRITE);
         }
 
         if (ret < 0) {
@@ -271,7 +271,7 @@ static av_cold void uninit(AVFilterContext *ctx)
     MetadataContext *s = ctx->priv;
 
     if (s->avio_context) {
-        avio_closep(&s->avio_context);
+        avio_closep_xij(&s->avio_context);
     }
 }
 
@@ -339,7 +339,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
         av_assert0(0);
     };
 
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
 
     return 0;
 }

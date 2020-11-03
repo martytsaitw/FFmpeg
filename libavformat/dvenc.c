@@ -343,7 +343,7 @@ static DVMuxContext* dv_init_mux(AVFormatContext* s)
                 goto bail_out;
         }
     }
-    c->sys = av_dv_codec_profile2(vst->codecpar->width, vst->codecpar->height,
+    c->sys = av_dv_codec_profile2_xij(vst->codecpar->width, vst->codecpar->height,
                                   vst->codecpar->format, vst->time_base);
     if (!c->sys)
         goto bail_out;
@@ -364,7 +364,7 @@ static DVMuxContext* dv_init_mux(AVFormatContext* s)
     c->frames     = 0;
     c->has_audio  = 0;
     c->has_video  = 0;
-    ff_parse_creation_time_metadata(s, &c->start_time, 1);
+    ff_parse_creation_time_metadata_xij(s, &c->start_time, 1);
 
     for (i=0; i < c->n_ast; i++) {
         if (c->ast[i] && !(c->audio_data[i]=av_fifo_alloc_array(100, MAX_AUDIO_FRAME_SIZE))) {
@@ -425,7 +425,7 @@ static int dv_write_packet(struct AVFormatContext *s, AVPacket *pkt)
     fsize = dv_assemble_frame(s, s->priv_data, s->streams[pkt->stream_index],
                               pkt->data, pkt->size, &frame);
     if (fsize > 0) {
-        avio_write(s->pb, frame, fsize);
+        avio_write_xij(s->pb, frame, fsize);
     }
     return 0;
 }

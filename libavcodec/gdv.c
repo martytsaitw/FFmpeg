@@ -404,7 +404,7 @@ static int gdv_decode_frame(AVCodecContext *avctx, void *data,
     PutByteContext *pb = &gdv->pb;
     AVFrame *frame = data;
     int ret, i, pal_size;
-    const uint8_t *pal = av_packet_get_side_data(avpkt, AV_PKT_DATA_PALETTE, &pal_size);
+    const uint8_t *pal = av_packet_get_side_data_xij(avpkt, AV_PKT_DATA_PALETTE, &pal_size);
     int compression;
     unsigned flags;
     uint8_t *dst;
@@ -418,7 +418,7 @@ static int gdv_decode_frame(AVCodecContext *avctx, void *data,
     if (compression == 4 || compression == 7 || compression > 8)
         return AVERROR_INVALIDDATA;
 
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
     if (pal && pal_size == AVPALETTE_SIZE)
         memcpy(gdv->pal, pal, AVPALETTE_SIZE);

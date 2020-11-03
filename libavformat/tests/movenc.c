@@ -182,10 +182,10 @@ static void init_fps(int bf, int audio_preroll, int fps)
     ctx = avformat_alloc_context_ijk();
     if (!ctx)
         exit(1);
-    ctx->oformat = av_guess_format(format, NULL, NULL);
+    ctx->oformat = av_guess_format_xij(format, NULL, NULL);
     if (!ctx->oformat)
         exit(1);
-    ctx->pb = avio_alloc_context(iobuf, iobuf_size, AVIO_FLAG_WRITE, NULL, NULL, io_write, NULL);
+    ctx->pb = avio_alloc_context_xij(iobuf, iobuf_size, AVIO_FLAG_WRITE, NULL, NULL, io_write, NULL);
     if (!ctx->pb)
         exit(1);
     ctx->pb->write_data_type = io_write_data_type;
@@ -223,7 +223,7 @@ static void init_fps(int bf, int audio_preroll, int fps)
     memcpy(st->codecpar->extradata, aac_extradata, sizeof(aac_extradata));
     audio_st = st;
 
-    if (avformat_write_header(ctx, &opts) < 0)
+    if (avformat_write_header_xij(ctx, &opts) < 0)
         exit(1);
     av_dict_free(&opts);
 
@@ -307,9 +307,9 @@ static void mux_frames(int n, int c)
         }
 
         if (do_interleave)
-            av_interleaved_write_frame(ctx, &pkt);
+            av_interleaved_write_frame_xij(ctx, &pkt);
         else
-            av_write_frame(ctx, &pkt);
+            av_write_frame_xij(ctx, &pkt);
     }
 }
 
@@ -335,17 +335,17 @@ static void signal_init_ts(void)
     pkt.stream_index = 0;
     pkt.dts = video_dts;
     pkt.pts = 0;
-    av_write_frame(ctx, &pkt);
+    av_write_frame_xij(ctx, &pkt);
 
     pkt.stream_index = 1;
     pkt.dts = pkt.pts = audio_dts;
-    av_write_frame(ctx, &pkt);
+    av_write_frame_xij(ctx, &pkt);
 }
 
 static void finish(void)
 {
-    av_write_trailer(ctx);
-    avio_context_free(&ctx->pb);
+    av_write_trailer_xij(ctx);
+    avio_context_free_xij(&ctx->pb);
     avformat_free_context_ijk(ctx);
     ctx = NULL;
 }
@@ -502,11 +502,11 @@ int main(int argc, char **argv)
     av_dict_set(&opts, "movflags", "frag_custom+delay_moov", 0);
     init(0, 0);
     mux_gops(1);
-    av_write_frame(ctx, NULL); // Force writing the moov
+    av_write_frame_xij(ctx, NULL); // Force writing the moov
     check(out_size > 0, "No moov written");
-    av_write_frame(ctx, NULL);
+    av_write_frame_xij(ctx, NULL);
     mux_gops(1);
-    av_write_frame(ctx, NULL);
+    av_write_frame_xij(ctx, NULL);
     finish();
     close_out();
 
@@ -528,11 +528,11 @@ int main(int argc, char **argv)
     check(out_size > 0, "No automatic flush?");
     empty_moov_pos = prev_pos = out_size;
     // Manually flush the second fragment
-    av_write_frame(ctx, NULL);
+    av_write_frame_xij(ctx, NULL);
     check(out_size > prev_pos, "No second fragment flushed?");
     prev_pos = out_size;
     // Check that an extra flush doesn't output any more data
-    av_write_frame(ctx, NULL);
+    av_write_frame_xij(ctx, NULL);
     check(out_size == prev_pos, "More data written?");
     close_out();
     memcpy(content, hash, HASH_SIZE);
@@ -545,14 +545,14 @@ int main(int argc, char **argv)
     init(0, 0);
     check(out_size == 0, "Output written during init with delay_moov");
     mux_gops(1); // Write 1 second of content
-    av_write_frame(ctx, NULL); // Force writing the moov
+    av_write_frame_xij(ctx, NULL); // Force writing the moov
     close_out();
     check(!memcmp(hash, header, HASH_SIZE), "delay_moov header differs from empty_moov");
     init_out("delay-moov-content");
-    av_write_frame(ctx, NULL); // Flush the first fragment
+    av_write_frame_xij(ctx, NULL); // Flush the first fragment
     check(out_size == empty_moov_pos, "Manually flushed content differs from automatically flushed, %d vs %d", out_size, empty_moov_pos);
     mux_gops(1); // Write the rest of the content
-    av_write_frame(ctx, NULL); // Flush the second fragment
+    av_write_frame_xij(ctx, NULL); // Flush the second fragment
     close_out();
     check(!memcmp(hash, content, HASH_SIZE), "delay_moov content differs from empty_moov");
     finish();
@@ -564,10 +564,10 @@ int main(int argc, char **argv)
     av_dict_set(&opts, "movflags", "frag_custom+empty_moov+dash", 0);
     init(0, 0);
     mux_gops(1);
-    av_write_frame(ctx, NULL); // Output the first fragment
+    av_write_frame_xij(ctx, NULL); // Output the first fragment
     init_out("empty-moov-second-frag");
     mux_gops(1);
-    av_write_frame(ctx, NULL); // Output the second fragment
+    av_write_frame_xij(ctx, NULL); // Output the second fragment
     close_out();
     memcpy(content, hash, HASH_SIZE);
     finish();
@@ -582,7 +582,7 @@ int main(int argc, char **argv)
     skip_gops(1);
     init_out("empty-moov-second-frag-discont");
     mux_gops(1);
-    av_write_frame(ctx, NULL); // Output the second fragment
+    av_write_frame_xij(ctx, NULL); // Output the second fragment
     close_out();
     check(!memcmp(hash, content, HASH_SIZE), "discontinuously written fragment differs");
     finish();
@@ -594,9 +594,9 @@ int main(int argc, char **argv)
     init(0, 0);
     skip_gops(1);
     mux_gops(1);
-    av_write_frame(ctx, NULL); // Output the moov
+    av_write_frame_xij(ctx, NULL); // Output the moov
     init_out("delay-moov-second-frag-discont");
-    av_write_frame(ctx, NULL); // Output the second fragment
+    av_write_frame_xij(ctx, NULL); // Output the second fragment
     close_out();
     check(!memcmp(hash, content, HASH_SIZE), "discontinuously written fragment differs");
     finish();
@@ -609,13 +609,13 @@ int main(int argc, char **argv)
     init(1, 0);
     mux_gops(1);
     init_out("delay-moov-elst-init");
-    av_write_frame(ctx, NULL); // Output the moov
+    av_write_frame_xij(ctx, NULL); // Output the moov
     close_out();
     memcpy(header, hash, HASH_SIZE);
-    av_write_frame(ctx, NULL); // Output the first fragment
+    av_write_frame_xij(ctx, NULL); // Output the first fragment
     init_out("delay-moov-elst-second-frag");
     mux_gops(1);
-    av_write_frame(ctx, NULL); // Output the second fragment
+    av_write_frame_xij(ctx, NULL); // Output the second fragment
     close_out();
     memcpy(content, hash, HASH_SIZE);
     finish();
@@ -626,11 +626,11 @@ int main(int argc, char **argv)
     skip_gops(1);
     mux_gops(1); // Write the second fragment
     init_out("delay-moov-elst-init-discont");
-    av_write_frame(ctx, NULL); // Output the moov
+    av_write_frame_xij(ctx, NULL); // Output the moov
     close_out();
     check(!memcmp(hash, header, HASH_SIZE), "discontinuously written header differs");
     init_out("delay-moov-elst-second-frag-discont");
-    av_write_frame(ctx, NULL); // Output the second fragment
+    av_write_frame_xij(ctx, NULL); // Output the second fragment
     close_out();
     check(!memcmp(hash, content, HASH_SIZE), "discontinuously written fragment differs");
     finish();
@@ -642,13 +642,13 @@ int main(int argc, char **argv)
     init(1, 1);
     mux_gops(1);
     init_out("delay-moov-elst-signal-init");
-    av_write_frame(ctx, NULL); // Output the moov
+    av_write_frame_xij(ctx, NULL); // Output the moov
     close_out();
     memcpy(header, hash, HASH_SIZE);
-    av_write_frame(ctx, NULL); // Output the first fragment
+    av_write_frame_xij(ctx, NULL); // Output the first fragment
     init_out("delay-moov-elst-signal-second-frag");
     mux_gops(1);
-    av_write_frame(ctx, NULL); // Output the second fragment
+    av_write_frame_xij(ctx, NULL); // Output the second fragment
     close_out();
     memcpy(content, hash, HASH_SIZE);
     finish();
@@ -660,11 +660,11 @@ int main(int argc, char **argv)
     skip_gops(1);
     mux_gops(1); // Write the second fragment
     init_out("delay-moov-elst-signal-init-discont");
-    av_write_frame(ctx, NULL); // Output the moov
+    av_write_frame_xij(ctx, NULL); // Output the moov
     close_out();
     check(!memcmp(hash, header, HASH_SIZE), "discontinuously written header differs");
     init_out("delay-moov-elst-signal-second-frag-discont");
-    av_write_frame(ctx, NULL); // Output the second fragment
+    av_write_frame_xij(ctx, NULL); // Output the second fragment
     close_out();
     check(!memcmp(hash, content, HASH_SIZE), "discontinuously written fragment differs");
     finish();
@@ -678,10 +678,10 @@ int main(int argc, char **argv)
     skip_gops(1);
     mux_frames(gop_size, 1); // Write the second fragment
     init_out("delay-moov-elst-signal-init-discont-largets");
-    av_write_frame(ctx, NULL); // Output the moov
+    av_write_frame_xij(ctx, NULL); // Output the moov
     close_out();
     init_out("delay-moov-elst-signal-second-frag-discont-largets");
-    av_write_frame(ctx, NULL); // Output the second fragment
+    av_write_frame_xij(ctx, NULL); // Output the second fragment
     close_out();
     finish();
 
@@ -741,7 +741,7 @@ int main(int argc, char **argv)
     force_iobuf_size = 0;
 
     // Test VFR content with bframes with interleaving.
-    // Here, using av_interleaved_write_frame allows the muxer to get the
+    // Here, using av_interleaved_write_frame_xij allows the muxer to get the
     // fragment end durations right. We always set the packet duration to
     // the expected, but we simulate dropped frames at one point.
     do_interleave = 1;

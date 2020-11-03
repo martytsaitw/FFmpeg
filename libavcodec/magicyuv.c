@@ -641,7 +641,7 @@ static int magy_decode_frame(AVCodecContext *avctx, void *data,
 
     width  = bytestream2_get_le32(&gbyte);
     height = bytestream2_get_le32(&gbyte);
-    ret = ff_set_dimensions(avctx, width, height);
+    ret = ff_set_dimensions_xij(avctx, width, height);
     if (ret < 0)
         return ret;
 

@@ -661,7 +661,7 @@ int ff_dxva2_decode_init(AVCodecContext *avctx)
     // (avctx->pix_fmt is not updated yet at this point)
     sctx->pix_fmt = avctx->hwaccel->pix_fmt;
 
-    ret = ff_decode_get_hw_frames_ctx(avctx, dev_type);
+    ret = ff_decode_get_hw_frames_ctx_xij(avctx, dev_type);
     if (ret < 0)
         return ret;
 
@@ -726,7 +726,7 @@ int ff_dxva2_decode_uninit(AVCodecContext *avctx)
     FFDXVASharedContext *sctx = DXVA_SHARED_CONTEXT(avctx);
     int i;
 
-    av_buffer_unref(&sctx->decoder_ref);
+    av_buffer_unref_xij(&sctx->decoder_ref);
 
 #if CONFIG_D3D11VA
     for (i = 0; i < sctx->nb_d3d11_views; i++) {

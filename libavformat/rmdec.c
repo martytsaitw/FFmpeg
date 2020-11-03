@@ -70,15 +70,15 @@ static int rm_read_close(AVFormatContext *s);
 
 static inline void get_strl(AVIOContext *pb, char *buf, int buf_size, int len)
 {
-    int read = avio_get_str(pb, len, buf, buf_size);
+    int read = avio_get_str_xij(pb, len, buf, buf_size);
 
     if (read > 0)
-        avio_skip(pb, len - read);
+        avio_skip_xij(pb, len - read);
 }
 
 static void get_str8(AVIOContext *pb, char *buf, int buf_size)
 {
-    get_strl(pb, buf, buf_size, avio_r8(pb));
+    get_strl(pb, buf, buf_size, avio_r8_xij(pb));
 }
 
 static int rm_read_extradata(AVFormatContext *s, AVIOContext *pb, AVCodecParameters *par, unsigned size)
@@ -87,7 +87,7 @@ static int rm_read_extradata(AVFormatContext *s, AVIOContext *pb, AVCodecParamet
         av_log(s, AV_LOG_ERROR, "extradata size %u too large\n", size);
         return -1;
     }
-    if (ff_get_extradata(s, par, pb, size) < 0)
+    if (ff_get_extradata_xij(s, par, pb, size) < 0)
         return AVERROR(ENOMEM);
     return 0;
 }
@@ -98,7 +98,7 @@ static void rm_read_metadata(AVFormatContext *s, AVIOContext *pb, int wide)
     int i;
 
     for (i=0; i<FF_ARRAY_ELEMS(ff_rm_metadata); i++) {
-        int len = wide ? avio_rb16(pb) : avio_r8(pb);
+        int len = wide ? avio_rb16_xij(pb) : avio_r8_xij(pb);
         if (len > 0) {
             get_strl(pb, buf, sizeof(buf), len);
             av_dict_set(&s->metadata, ff_rm_metadata[i], buf, 0);
@@ -128,23 +128,23 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
     int ret;
 
     /* ra type header */
-    version = avio_rb16(pb); /* version */
+    version = avio_rb16_xij(pb); /* version */
     if (version == 3) {
         unsigned bytes_per_minute;
-        int header_size = avio_rb16(pb);
+        int header_size = avio_rb16_xij(pb);
         int64_t startpos = avio_tell(pb);
-        avio_skip(pb, 8);
-        bytes_per_minute = avio_rb16(pb);
-        avio_skip(pb, 4);
+        avio_skip_xij(pb, 8);
+        bytes_per_minute = avio_rb16_xij(pb);
+        avio_skip_xij(pb, 4);
         rm_read_metadata(s, pb, 0);
         if ((startpos + header_size) >= avio_tell(pb) + 2) {
             // fourcc (should always be "lpcJ")
-            avio_r8(pb);
+            avio_r8_xij(pb);
             get_str8(pb, buf, sizeof(buf));
         }
         // Skip extra header crap (this should never happen)
         if ((startpos + header_size) > avio_tell(pb))
-            avio_skip(pb, header_size + startpos - avio_tell(pb));
+            avio_skip_xij(pb, header_size + startpos - avio_tell(pb));
         if (bytes_per_minute)
             st->codecpar->bit_rate = 8LL * bytes_per_minute / 60;
         st->codecpar->sample_rate = 8000;
@@ -158,33 +158,33 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
         int codecdata_length;
         unsigned bytes_per_minute;
         /* old version (4) */
-        avio_skip(pb, 2); /* unused */
-        avio_rb32(pb); /* .ra4 */
-        avio_rb32(pb); /* data size */
-        avio_rb16(pb); /* version2 */
-        avio_rb32(pb); /* header size */
-        flavor= avio_rb16(pb); /* add codec info / flavor */
-        ast->coded_framesize = coded_framesize = avio_rb32(pb); /* coded frame size */
-        avio_rb32(pb); /* ??? */
-        bytes_per_minute = avio_rb32(pb);
+        avio_skip_xij(pb, 2); /* unused */
+        avio_rb32_xij(pb); /* .ra4 */
+        avio_rb32_xij(pb); /* data size */
+        avio_rb16_xij(pb); /* version2 */
+        avio_rb32_xij(pb); /* header size */
+        flavor= avio_rb16_xij(pb); /* add codec info / flavor */
+        ast->coded_framesize = coded_framesize = avio_rb32_xij(pb); /* coded frame size */
+        avio_rb32_xij(pb); /* ??? */
+        bytes_per_minute = avio_rb32_xij(pb);
         if (version == 4) {
             if (bytes_per_minute)
                 st->codecpar->bit_rate = 8LL * bytes_per_minute / 60;
         }
-        avio_rb32(pb); /* ??? */
-        ast->sub_packet_h = sub_packet_h = avio_rb16(pb); /* 1 */
-        st->codecpar->block_align= avio_rb16(pb); /* frame size */
-        ast->sub_packet_size = sub_packet_size = avio_rb16(pb); /* sub packet size */
-        avio_rb16(pb); /* ??? */
+        avio_rb32_xij(pb); /* ??? */
+        ast->sub_packet_h = sub_packet_h = avio_rb16_xij(pb); /* 1 */
+        st->codecpar->block_align= avio_rb16_xij(pb); /* frame size */
+        ast->sub_packet_size = sub_packet_size = avio_rb16_xij(pb); /* sub packet size */
+        avio_rb16_xij(pb); /* ??? */
         if (version == 5) {
-            avio_rb16(pb); avio_rb16(pb); avio_rb16(pb);
+            avio_rb16_xij(pb); avio_rb16_xij(pb); avio_rb16_xij(pb);
         }
-        st->codecpar->sample_rate = avio_rb16(pb);
-        avio_rb32(pb);
-        st->codecpar->channels = avio_rb16(pb);
+        st->codecpar->sample_rate = avio_rb16_xij(pb);
+        avio_rb32_xij(pb);
+        st->codecpar->channels = avio_rb16_xij(pb);
         if (version == 5) {
-            ast->deint_id = avio_rl32(pb);
-            avio_read(pb, buf, 4);
+            ast->deint_id = avio_rl32_xij(pb);
+            avio_read_xij(pb, buf, 4);
             buf[4] = 0;
         } else {
             AV_WL32(buf, 0);
@@ -194,7 +194,7 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
         }
         st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
         st->codecpar->codec_tag  = AV_RL32(buf);
-        st->codecpar->codec_id   = ff_codec_get_id(ff_rm_codec_tags,
+        st->codecpar->codec_id   = ff_codec_get_id_xij(ff_rm_codec_tags,
                                                    st->codecpar->codec_tag);
 
         switch (st->codecpar->codec_id) {
@@ -214,10 +214,10 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
             if (read_all) {
                 codecdata_length = 0;
             } else {
-                avio_rb16(pb); avio_r8(pb);
+                avio_rb16_xij(pb); avio_r8_xij(pb);
                 if (version == 5)
-                    avio_r8(pb);
-                codecdata_length = avio_rb32(pb);
+                    avio_r8_xij(pb);
+                codecdata_length = avio_rb32_xij(pb);
                 if(codecdata_length + AV_INPUT_BUFFER_PADDING_SIZE <= (unsigned)codecdata_length){
                     av_log(s, AV_LOG_ERROR, "codecdata_length too large\n");
                     return -1;
@@ -245,16 +245,16 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
 
             break;
         case AV_CODEC_ID_AAC:
-            avio_rb16(pb); avio_r8(pb);
+            avio_rb16_xij(pb); avio_r8_xij(pb);
             if (version == 5)
-                avio_r8(pb);
-            codecdata_length = avio_rb32(pb);
+                avio_r8_xij(pb);
+            codecdata_length = avio_rb32_xij(pb);
             if(codecdata_length + AV_INPUT_BUFFER_PADDING_SIZE <= (unsigned)codecdata_length){
                 av_log(s, AV_LOG_ERROR, "codecdata_length too large\n");
                 return -1;
             }
             if (codecdata_length >= 1) {
-                avio_r8(pb);
+                avio_r8_xij(pb);
                 if ((ret = rm_read_extradata(s, pb, st->codecpar, codecdata_length - 1)) < 0)
                     return ret;
             }
@@ -299,9 +299,9 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
         }
 
         if (read_all) {
-            avio_r8(pb);
-            avio_r8(pb);
-            avio_r8(pb);
+            avio_r8_xij(pb);
+            avio_r8_xij(pb);
+            avio_r8_xij(pb);
             rm_read_metadata(s, pb, 0);
         }
     }
@@ -324,69 +324,69 @@ int ff_rm_read_mdpr_codecdata(AVFormatContext *s, AVIOContext *pb,
 
     avpriv_set_pts_info_ijk(st, 64, 1, 1000);
     codec_pos = avio_tell(pb);
-    v = avio_rb32(pb);
+    v = avio_rb32_xij(pb);
 
     if (v == MKTAG(0xfd, 'a', 'r', '.')) {
         /* ra type header */
         if (rm_read_audio_stream_info(s, pb, st, rst, 0))
             return -1;
     } else if (v == MKBETAG('L', 'S', 'D', ':')) {
-        avio_seek(pb, -4, SEEK_CUR);
+        avio_seek_xij(pb, -4, SEEK_CUR);
         if ((ret = rm_read_extradata(s, pb, st->codecpar, codec_data_size)) < 0)
             return ret;
 
         st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
         st->codecpar->codec_tag  = AV_RL32(st->codecpar->extradata);
-        st->codecpar->codec_id   = ff_codec_get_id(ff_rm_codec_tags,
+        st->codecpar->codec_id   = ff_codec_get_id_xij(ff_rm_codec_tags,
                                                 st->codecpar->codec_tag);
     } else if(mime && !strcmp(mime, "logical-fileinfo")){
         int stream_count, rule_count, property_count, i;
         ff_free_stream_ijk(s, st);
-        if (avio_rb16(pb) != 0) {
+        if (avio_rb16_xij(pb) != 0) {
             av_log(s, AV_LOG_WARNING, "Unsupported version\n");
             goto skip;
         }
-        stream_count = avio_rb16(pb);
-        avio_skip(pb, 6*stream_count);
-        rule_count = avio_rb16(pb);
-        avio_skip(pb, 2*rule_count);
-        property_count = avio_rb16(pb);
+        stream_count = avio_rb16_xij(pb);
+        avio_skip_xij(pb, 6*stream_count);
+        rule_count = avio_rb16_xij(pb);
+        avio_skip_xij(pb, 2*rule_count);
+        property_count = avio_rb16_xij(pb);
         for(i=0; i<property_count; i++){
             uint8_t name[128], val[128];
-            avio_rb32(pb);
-            if (avio_rb16(pb) != 0) {
+            avio_rb32_xij(pb);
+            if (avio_rb16_xij(pb) != 0) {
                 av_log(s, AV_LOG_WARNING, "Unsupported Name value property version\n");
                 goto skip; //FIXME skip just this one
             }
             get_str8(pb, name, sizeof(name));
-            switch(avio_rb32(pb)) {
-            case 2: get_strl(pb, val, sizeof(val), avio_rb16(pb));
+            switch(avio_rb32_xij(pb)) {
+            case 2: get_strl(pb, val, sizeof(val), avio_rb16_xij(pb));
                 av_dict_set(&s->metadata, name, val, 0);
                 break;
-            default: avio_skip(pb, avio_rb16(pb));
+            default: avio_skip_xij(pb, avio_rb16_xij(pb));
             }
         }
     } else {
         int fps;
-        if (avio_rl32(pb) != MKTAG('V', 'I', 'D', 'O')) {
+        if (avio_rl32_xij(pb) != MKTAG('V', 'I', 'D', 'O')) {
         fail1:
             av_log(s, AV_LOG_WARNING, "Unsupported stream type %08x\n", v);
             goto skip;
         }
-        st->codecpar->codec_tag = avio_rl32(pb);
-        st->codecpar->codec_id  = ff_codec_get_id(ff_rm_codec_tags,
+        st->codecpar->codec_tag = avio_rl32_xij(pb);
+        st->codecpar->codec_id  = ff_codec_get_id_xij(ff_rm_codec_tags,
                                                   st->codecpar->codec_tag);
         av_log(s, AV_LOG_TRACE, "%"PRIX32" %X\n",
                st->codecpar->codec_tag, MKTAG('R', 'V', '2', '0'));
         if (st->codecpar->codec_id == AV_CODEC_ID_NONE)
             goto fail1;
-        st->codecpar->width  = avio_rb16(pb);
-        st->codecpar->height = avio_rb16(pb);
-        avio_skip(pb, 2); // looks like bits per sample
-        avio_skip(pb, 4); // always zero?
+        st->codecpar->width  = avio_rb16_xij(pb);
+        st->codecpar->height = avio_rb16_xij(pb);
+        avio_skip_xij(pb, 2); // looks like bits per sample
+        avio_skip_xij(pb, 4); // always zero?
         st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
         st->need_parsing = AVSTREAM_PARSE_TIMESTAMPS;
-        fps = avio_rb32(pb);
+        fps = avio_rb32_xij(pb);
 
         if ((ret = rm_read_extradata(s, pb, st->codecpar, codec_data_size - (avio_tell(pb) - codec_pos))) < 0)
             return ret;
@@ -407,7 +407,7 @@ skip:
     /* skip codec info */
     size = avio_tell(pb) - codec_pos;
     if (codec_data_size >= size) {
-        avio_skip(pb, codec_data_size - size);
+        avio_skip_xij(pb, codec_data_size - size);
     } else {
         av_log(s, AV_LOG_WARNING, "codec_data_size %u < size %d\n", codec_data_size, size);
     }
@@ -424,15 +424,15 @@ static int rm_read_index(AVFormatContext *s)
     AVStream *st;
 
     do {
-        if (avio_rl32(pb) != MKTAG('I','N','D','X'))
+        if (avio_rl32_xij(pb) != MKTAG('I','N','D','X'))
             return -1;
-        size     = avio_rb32(pb);
+        size     = avio_rb32_xij(pb);
         if (size < 20)
             return -1;
-        avio_skip(pb, 2);
-        n_pkts   = avio_rb32(pb);
-        str_id   = avio_rb16(pb);
-        next_off = avio_rb32(pb);
+        avio_skip_xij(pb, 2);
+        n_pkts   = avio_rb32_xij(pb);
+        str_id   = avio_rb16_xij(pb);
+        next_off = avio_rb32_xij(pb);
         for (n = 0; n < s->nb_streams; n++)
             if (s->streams[n]->id == str_id) {
                 st = s->streams[n];
@@ -443,27 +443,27 @@ static int rm_read_index(AVFormatContext *s)
                    "Invalid stream index %d for index at pos %"PRId64"\n",
                    str_id, avio_tell(pb));
             goto skip;
-        } else if ((avio_size(pb) - avio_tell(pb)) / 14 < n_pkts) {
+        } else if ((avio_size_xij(pb) - avio_tell(pb)) / 14 < n_pkts) {
             av_log(s, AV_LOG_ERROR,
                    "Nr. of packets in packet index for stream index %d "
                    "exceeds filesize (%"PRId64" at %"PRId64" = %"PRId64")\n",
-                   str_id, avio_size(pb), avio_tell(pb),
-                   (avio_size(pb) - avio_tell(pb)) / 14);
+                   str_id, avio_size_xij(pb), avio_tell(pb),
+                   (avio_size_xij(pb) - avio_tell(pb)) / 14);
             goto skip;
         }
 
         for (n = 0; n < n_pkts; n++) {
-            avio_skip(pb, 2);
-            pts = avio_rb32(pb);
-            pos = avio_rb32(pb);
-            avio_skip(pb, 4); /* packet no. */
+            avio_skip_xij(pb, 2);
+            pts = avio_rb32_xij(pb);
+            pos = avio_rb32_xij(pb);
+            avio_skip_xij(pb, 4); /* packet no. */
 
-            av_add_index_entry(st, pos, pts, 0, 0, AVINDEX_KEYFRAME);
+            av_add_index_entry_xij(st, pos, pts, 0, 0, AVINDEX_KEYFRAME);
         }
 
 skip:
         if (next_off && avio_tell(pb) < next_off &&
-            avio_seek(pb, next_off, SEEK_SET) < 0) {
+            avio_seek_xij(pb, next_off, SEEK_SET) < 0) {
             av_log(s, AV_LOG_ERROR,
                    "Non-linear index detected, not supported\n");
             return -1;
@@ -491,13 +491,13 @@ static int rm_read_header_old(AVFormatContext *s)
 static int rm_read_multi(AVFormatContext *s, AVIOContext *pb,
                          AVStream *st, char *mime)
 {
-    int number_of_streams = avio_rb16(pb);
+    int number_of_streams = avio_rb16_xij(pb);
     int number_of_mdpr;
     int i, ret;
     unsigned size2;
     for (i = 0; i<number_of_streams; i++)
-        avio_rb16(pb);
-    number_of_mdpr = avio_rb16(pb);
+        avio_rb16_xij(pb);
+    number_of_mdpr = avio_rb16_xij(pb);
     if (number_of_mdpr != 1) {
         avpriv_request_sample(s, "MLTI with multiple (%d) MDPR", number_of_mdpr);
     }
@@ -520,7 +520,7 @@ static int rm_read_multi(AVFormatContext *s, AVIOContext *pb,
         } else
             st2 = st;
 
-        size2 = avio_rb32(pb);
+        size2 = avio_rb32_xij(pb);
         ret = ff_rm_read_mdpr_codecdata(s, s->pb, st2, st2->priv_data,
                                         size2, mime);
         if (ret < 0)
@@ -544,7 +544,7 @@ static int rm_read_header(AVFormatContext *s)
     unsigned size, v;
     int64_t codec_pos;
 
-    tag = avio_rl32(pb);
+    tag = avio_rl32_xij(pb);
     if (tag == MKTAG('.', 'r', 'a', 0xfd)) {
         /* very old .ra format */
         return rm_read_header_old(s);
@@ -552,15 +552,15 @@ static int rm_read_header(AVFormatContext *s)
         return AVERROR(EIO);
     }
 
-    tag_size = avio_rb32(pb);
-    avio_skip(pb, tag_size - 8);
+    tag_size = avio_rb32_xij(pb);
+    avio_skip_xij(pb, tag_size - 8);
 
     for(;;) {
-        if (avio_feof(pb))
+        if (avio_feof_xij(pb))
             goto fail;
-        tag = avio_rl32(pb);
-        tag_size = avio_rb32(pb);
-        avio_rb16(pb);
+        tag = avio_rl32_xij(pb);
+        tag_size = avio_rb32_xij(pb);
+        avio_rb16_xij(pb);
         av_log(s, AV_LOG_TRACE, "tag=%s size=%d\n",
                av_fourcc2str(tag), tag_size);
         if (tag_size < 10 && tag != MKTAG('D', 'A', 'T', 'A'))
@@ -568,18 +568,18 @@ static int rm_read_header(AVFormatContext *s)
         switch(tag) {
         case MKTAG('P', 'R', 'O', 'P'):
             /* file header */
-            avio_rb32(pb); /* max bit rate */
-            avio_rb32(pb); /* avg bit rate */
-            avio_rb32(pb); /* max packet size */
-            avio_rb32(pb); /* avg packet size */
-            avio_rb32(pb); /* nb packets */
-            duration = avio_rb32(pb); /* duration */
+            avio_rb32_xij(pb); /* max bit rate */
+            avio_rb32_xij(pb); /* avg bit rate */
+            avio_rb32_xij(pb); /* max packet size */
+            avio_rb32_xij(pb); /* avg packet size */
+            avio_rb32_xij(pb); /* nb packets */
+            duration = avio_rb32_xij(pb); /* duration */
             s->duration = av_rescale(duration, AV_TIME_BASE, 1000);
-            avio_rb32(pb); /* preroll */
-            indx_off = avio_rb32(pb); /* index offset */
-            data_off = avio_rb32(pb); /* data offset */
-            avio_rb16(pb); /* nb streams */
-            flags = avio_rb16(pb); /* flags */
+            avio_rb32_xij(pb); /* preroll */
+            indx_off = avio_rb32_xij(pb); /* index offset */
+            data_off = avio_rb32_xij(pb); /* data offset */
+            avio_rb16_xij(pb); /* nb streams */
+            flags = avio_rb16_xij(pb); /* flags */
             break;
         case MKTAG('C', 'O', 'N', 'T'):
             rm_read_metadata(s, pb, 1);
@@ -590,14 +590,14 @@ static int rm_read_header(AVFormatContext *s)
                 ret = AVERROR(ENOMEM);
                 goto fail;
             }
-            st->id = avio_rb16(pb);
-            avio_rb32(pb); /* max bit rate */
-            st->codecpar->bit_rate = avio_rb32(pb); /* bit rate */
-            avio_rb32(pb); /* max packet size */
-            avio_rb32(pb); /* avg packet size */
-            start_time = avio_rb32(pb); /* start time */
-            avio_rb32(pb); /* preroll */
-            duration = avio_rb32(pb); /* duration */
+            st->id = avio_rb16_xij(pb);
+            avio_rb32_xij(pb); /* max bit rate */
+            st->codecpar->bit_rate = avio_rb32_xij(pb); /* bit rate */
+            avio_rb32_xij(pb); /* max packet size */
+            avio_rb32_xij(pb); /* avg packet size */
+            start_time = avio_rb32_xij(pb); /* start time */
+            avio_rb32_xij(pb); /* preroll */
+            duration = avio_rb32_xij(pb); /* duration */
             st->start_time = start_time;
             st->duration = duration;
             if(duration>0)
@@ -609,18 +609,18 @@ static int rm_read_header(AVFormatContext *s)
             if (!st->priv_data)
                 return AVERROR(ENOMEM);
 
-            size = avio_rb32(pb);
+            size = avio_rb32_xij(pb);
             codec_pos = avio_tell(pb);
 
-            ffio_ensure_seekback(pb, 4);
-            v = avio_rb32(pb);
+            ffio_ensure_seekback_xij(pb, 4);
+            v = avio_rb32_xij(pb);
             if (v == MKBETAG('M', 'L', 'T', 'I')) {
                 ret = rm_read_multi(s, s->pb, st, mime);
                 if (ret < 0)
                     goto fail;
-                avio_seek(pb, codec_pos + size, SEEK_SET);
+                avio_seek_xij(pb, codec_pos + size, SEEK_SET);
             } else {
-                avio_skip(pb, -4);
+                avio_skip_xij(pb, -4);
                 if (ff_rm_read_mdpr_codecdata(s, s->pb, st, st->priv_data,
                                               size, mime) < 0)
                     goto fail;
@@ -631,23 +631,23 @@ static int rm_read_header(AVFormatContext *s)
             goto header_end;
         default:
             /* unknown tag: skip it */
-            avio_skip(pb, tag_size - 10);
+            avio_skip_xij(pb, tag_size - 10);
             break;
         }
     }
  header_end:
-    rm->nb_packets = avio_rb32(pb); /* number of packets */
+    rm->nb_packets = avio_rb32_xij(pb); /* number of packets */
     if (!rm->nb_packets && (flags & 4))
         rm->nb_packets = 3600 * 25;
-    avio_rb32(pb); /* next data header */
+    avio_rb32_xij(pb); /* next data header */
 
     if (!data_off)
         data_off = avio_tell(pb) - 18;
     if (indx_off && (pb->seekable & AVIO_SEEKABLE_NORMAL) &&
         !(s->flags & AVFMT_FLAG_IGNIDX) &&
-        avio_seek(pb, indx_off, SEEK_SET) >= 0) {
+        avio_seek_xij(pb, indx_off, SEEK_SET) >= 0) {
         rm_read_index(s);
-        avio_seek(pb, data_off + 18, SEEK_SET);
+        avio_seek_xij(pb, data_off + 18, SEEK_SET);
     }
 
     return 0;
@@ -661,13 +661,13 @@ static int get_num(AVIOContext *pb, int *len)
 {
     int n, n1;
 
-    n = avio_rb16(pb);
+    n = avio_rb16_xij(pb);
     (*len)-=2;
     n &= 0x7FFF;
     if (n >= 0x4000) {
         return n - 0x4000;
     } else {
-        n1 = avio_rb16(pb);
+        n1 = avio_rb16_xij(pb);
         (*len)-=2;
         return (n << 16) | n1;
     }
@@ -682,7 +682,7 @@ static int rm_sync(AVFormatContext *s, int64_t *timestamp, int *flags, int *stre
     AVStream *st;
     uint32_t state=0xFFFFFFFF;
 
-    while(!avio_feof(pb)){
+    while(!avio_feof_xij(pb)){
         int len, num, i;
         int mlti_id;
         *pos= avio_tell(pb) - 3;
@@ -693,13 +693,13 @@ static int rm_sync(AVFormatContext *s, int64_t *timestamp, int *flags, int *stre
             *timestamp = AV_NOPTS_VALUE;
             *flags= 0;
         }else{
-            state= (state<<8) + avio_r8(pb);
+            state= (state<<8) + avio_r8_xij(pb);
 
             if(state == MKBETAG('I', 'N', 'D', 'X')){
                 int n_pkts, expected_len;
-                len = avio_rb32(pb);
-                avio_skip(pb, 2);
-                n_pkts = avio_rb32(pb);
+                len = avio_rb32_xij(pb);
+                avio_skip_xij(pb, 2);
+                n_pkts = avio_rb32_xij(pb);
                 expected_len = 20 + n_pkts * 14;
                 if (len == 20)
                     /* some files don't add index entries to chunk size... */
@@ -722,11 +722,11 @@ static int rm_sync(AVFormatContext *s, int64_t *timestamp, int *flags, int *stre
             len=state - 12;
             state= 0xFFFFFFFF;
 
-            num = avio_rb16(pb);
-            *timestamp = avio_rb32(pb);
-            mlti_id = (avio_r8(pb)>>1)-1<<16;
+            num = avio_rb16_xij(pb);
+            *timestamp = avio_rb32_xij(pb);
+            mlti_id = (avio_r8_xij(pb)>>1)-1<<16;
             mlti_id = FFMAX(mlti_id, 0);
-            *flags = avio_r8(pb); /* flags */
+            *flags = avio_r8_xij(pb); /* flags */
         }
         for(i=0;i<s->nb_streams;i++) {
             st = s->streams[i];
@@ -736,7 +736,7 @@ static int rm_sync(AVFormatContext *s, int64_t *timestamp, int *flags, int *stre
         if (i == s->nb_streams) {
 skip:
             /* skip packet if unknown number */
-            avio_skip(pb, len);
+            avio_skip_xij(pb, len);
             rm->remaining_len = 0;
             continue;
         }
@@ -757,16 +757,16 @@ static int rm_assemble_video_frame(AVFormatContext *s, AVIOContext *pb,
     int type;
     int ret;
 
-    hdr = avio_r8(pb); len--;
+    hdr = avio_r8_xij(pb); len--;
     type = hdr >> 6;
 
     if(type != 3){  // not frame as a part of packet
-        seq = avio_r8(pb); len--;
+        seq = avio_r8_xij(pb); len--;
     }
     if(type != 1){  // not whole frame
         len2 = get_num(pb, &len);
         pos  = get_num(pb, &len);
-        pic_num = avio_r8(pb); len--;
+        pic_num = avio_r8_xij(pb); len--;
     }
     if(len<0) {
         av_log(s, AV_LOG_ERROR, "Insufficient data\n");
@@ -788,7 +788,7 @@ static int rm_assemble_video_frame(AVFormatContext *s, AVIOContext *pb,
         pkt->data[0] = 0;
         AV_WL32(pkt->data + 1, 1);
         AV_WL32(pkt->data + 5, 0);
-        if ((ret = avio_read(pb, pkt->data + 9, len)) != len) {
+        if ((ret = avio_read_xij(pb, pkt->data + 9, len)) != len) {
             av_packet_unref_ijk(pkt);
             av_log(s, AV_LOG_ERROR, "Failed to read %d bytes\n", len);
             return ret < 0 ? ret : AVERROR(EIO);
@@ -799,7 +799,7 @@ static int rm_assemble_video_frame(AVFormatContext *s, AVIOContext *pb,
 
     *pseq = seq;
     if((seq & 0x7F) == 1 || vst->curpic_num != pic_num){
-        if (len2 > ffio_limit(pb, len2)) {
+        if (len2 > ffio_limit_xij(pb, len2)) {
             av_log(s, AV_LOG_ERROR, "Impossibly sized packet\n");
             return AVERROR_INVALIDDATA;
         }
@@ -829,7 +829,7 @@ static int rm_assemble_video_frame(AVFormatContext *s, AVIOContext *pb,
         av_log(s, AV_LOG_ERROR, "outside videobufsize\n");
         return 1;
     }
-    if (avio_read(pb, vst->pkt.data + vst->videobufpos, len) != len)
+    if (avio_read_xij(pb, vst->pkt.data + vst->videobufpos, len) != len)
         return AVERROR(EIO);
     vst->videobufpos += len;
     rm->remaining_len-= len;
@@ -869,7 +869,7 @@ rm_ac3_swap_bytes (AVStream *st, AVPacket *pkt)
 }
 
 static int readfull(AVFormatContext *s, AVIOContext *pb, uint8_t *dst, int n) {
-    int ret = avio_read(pb, dst, n);
+    int ret = avio_read_xij(pb, dst, n);
     if (ret != n) {
         if (ret >= 0) memset(dst + ret, 0, n - ret);
         else          memset(dst      , 0, n);
@@ -937,22 +937,22 @@ ff_rm_parse_packet (AVFormatContext *s, AVIOContext *pb,
                    (ast->deint_id == DEINT_ID_VBRS)) {
             int x;
             rm->audio_stream_num = st->index;
-            ast->sub_packet_cnt = (avio_rb16(pb) & 0xf0) >> 4;
+            ast->sub_packet_cnt = (avio_rb16_xij(pb) & 0xf0) >> 4;
             if (ast->sub_packet_cnt) {
                 for (x = 0; x < ast->sub_packet_cnt; x++)
-                    ast->sub_packet_lengths[x] = avio_rb16(pb);
+                    ast->sub_packet_lengths[x] = avio_rb16_xij(pb);
                 rm->audio_pkt_cnt = ast->sub_packet_cnt;
                 ast->audiotimestamp = timestamp;
             } else
                 return -1;
         } else {
-            ret = av_get_packet(pb, pkt, len);
+            ret = av_get_packet_xij(pb, pkt, len);
             if (ret < 0)
                 return ret;
             rm_ac3_swap_bytes(st, pkt);
         }
     } else {
-        ret = av_get_packet(pb, pkt, len);
+        ret = av_get_packet_xij(pb, pkt, len);
         if (ret < 0)
             return ret;
     }
@@ -977,7 +977,7 @@ ff_rm_retrieve_cache (AVFormatContext *s, AVIOContext *pb,
 
     if (ast->deint_id == DEINT_ID_VBRF ||
         ast->deint_id == DEINT_ID_VBRS) {
-        ret = av_get_packet(pb, pkt, ast->sub_packet_lengths[ast->sub_packet_cnt - rm->audio_pkt_cnt]);
+        ret = av_get_packet_xij(pb, pkt, ast->sub_packet_lengths[ast->sub_packet_cnt - rm->audio_pkt_cnt]);
         if (ret < 0)
             return ret;
     } else {
@@ -1032,7 +1032,7 @@ static int rm_read_packet(AVFormatContext *s, AVPacket *pkt)
                     st = s->streams[i];
             }
 
-            if (avio_feof(s->pb))
+            if (avio_feof_xij(s->pb))
                 return AVERROR_EOF;
             if (len <= 0)
                 return AVERROR(EIO);
@@ -1042,7 +1042,7 @@ static int rm_read_packet(AVFormatContext *s, AVPacket *pkt)
             if (res < -1)
                 return res;
             if((flags&2) && (seq&0x7F) == 1)
-                av_add_index_entry(st, pos, timestamp, 0, 0, AVINDEX_KEYFRAME);
+                av_add_index_entry_xij(st, pos, timestamp, 0, 0, AVINDEX_KEYFRAME);
             if (res)
                 continue;
         }
@@ -1092,7 +1092,7 @@ static int64_t rm_read_dts(AVFormatContext *s, int stream_index,
     if(rm->old_format)
         return AV_NOPTS_VALUE;
 
-    if (avio_seek(s->pb, pos, SEEK_SET) < 0)
+    if (avio_seek_xij(s->pb, pos, SEEK_SET) < 0)
         return AV_NOPTS_VALUE;
 
     rm->remaining_len=0;
@@ -1106,21 +1106,21 @@ static int64_t rm_read_dts(AVFormatContext *s, int stream_index,
 
         st = s->streams[stream_index2];
         if (st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
-            h= avio_r8(s->pb); len--;
+            h= avio_r8_xij(s->pb); len--;
             if(!(h & 0x40)){
-                seq = avio_r8(s->pb); len--;
+                seq = avio_r8_xij(s->pb); len--;
             }
         }
 
         if((flags&2) && (seq&0x7F) == 1){
             av_log(s, AV_LOG_TRACE, "%d %d-%d %"PRId64" %d\n",
                     flags, stream_index2, stream_index, dts, seq);
-            av_add_index_entry(st, pos, dts, 0, 0, AVINDEX_KEYFRAME);
+            av_add_index_entry_xij(st, pos, dts, 0, 0, AVINDEX_KEYFRAME);
             if(stream_index2 == stream_index)
                 break;
         }
 
-        avio_skip(s->pb, len);
+        avio_skip_xij(s->pb, len);
     }
     *ppos = pos;
     return dts;
@@ -1131,7 +1131,7 @@ static int rm_read_seek(AVFormatContext *s, int stream_index,
 {
     RMDemuxContext *rm = s->priv_data;
 
-    if (ff_seek_frame_binary(s, stream_index, pts, flags) < 0)
+    if (ff_seek_frame_binary_xij(s, stream_index, pts, flags) < 0)
         return -1;
     rm->audio_pkt_cnt = 0;
     return 0;
@@ -1177,65 +1177,65 @@ static int ivr_read_header(AVFormatContext *s)
     int64_t pos, offset, temp;
 
     pos = avio_tell(pb);
-    tag = avio_rl32(pb);
+    tag = avio_rl32_xij(pb);
     if (tag == MKTAG('.','R','1','M')) {
-        if (avio_rb16(pb) != 1)
+        if (avio_rb16_xij(pb) != 1)
             return AVERROR_INVALIDDATA;
-        if (avio_r8(pb) != 1)
+        if (avio_r8_xij(pb) != 1)
             return AVERROR_INVALIDDATA;
-        len = avio_rb32(pb);
-        avio_skip(pb, len);
-        avio_skip(pb, 5);
-        temp = avio_rb64(pb);
-        while (!avio_feof(pb) && temp) {
+        len = avio_rb32_xij(pb);
+        avio_skip_xij(pb, len);
+        avio_skip_xij(pb, 5);
+        temp = avio_rb64_xij(pb);
+        while (!avio_feof_xij(pb) && temp) {
             offset = temp;
-            temp = avio_rb64(pb);
+            temp = avio_rb64_xij(pb);
         }
-        avio_skip(pb, offset - avio_tell(pb));
-        if (avio_r8(pb) != 1)
+        avio_skip_xij(pb, offset - avio_tell(pb));
+        if (avio_r8_xij(pb) != 1)
             return AVERROR_INVALIDDATA;
-        len = avio_rb32(pb);
-        avio_skip(pb, len);
-        if (avio_r8(pb) != 2)
+        len = avio_rb32_xij(pb);
+        avio_skip_xij(pb, len);
+        if (avio_r8_xij(pb) != 2)
             return AVERROR_INVALIDDATA;
-        avio_skip(pb, 16);
+        avio_skip_xij(pb, 16);
         pos = avio_tell(pb);
-        tag = avio_rl32(pb);
+        tag = avio_rl32_xij(pb);
     }
 
     if (tag != MKTAG('.','R','E','C'))
         return AVERROR_INVALIDDATA;
 
-    if (avio_r8(pb) != 0)
+    if (avio_r8_xij(pb) != 0)
         return AVERROR_INVALIDDATA;
-    count = avio_rb32(pb);
+    count = avio_rb32_xij(pb);
     for (i = 0; i < count; i++) {
-        if (avio_feof(pb))
+        if (avio_feof_xij(pb))
             return AVERROR_INVALIDDATA;
 
-        type = avio_r8(pb);
-        tlen = avio_rb32(pb);
-        avio_get_str(pb, tlen, key, sizeof(key));
-        len = avio_rb32(pb);
+        type = avio_r8_xij(pb);
+        tlen = avio_rb32_xij(pb);
+        avio_get_str_xij(pb, tlen, key, sizeof(key));
+        len = avio_rb32_xij(pb);
         if (type == 5) {
-            avio_get_str(pb, len, val, sizeof(val));
+            avio_get_str_xij(pb, len, val, sizeof(val));
             av_log(s, AV_LOG_DEBUG, "%s = '%s'\n", key, val);
         } else if (type == 4) {
             av_log(s, AV_LOG_DEBUG, "%s = '0x", key);
             for (j = 0; j < len; j++) {
-                if (avio_feof(pb))
+                if (avio_feof_xij(pb))
                     return AVERROR_INVALIDDATA;
-                av_log(s, AV_LOG_DEBUG, "%X", avio_r8(pb));
+                av_log(s, AV_LOG_DEBUG, "%X", avio_r8_xij(pb));
             }
             av_log(s, AV_LOG_DEBUG, "'\n");
         } else if (len == 4 && type == 3 && !strncmp(key, "StreamCount", tlen)) {
-            nb_streams = value = avio_rb32(pb);
+            nb_streams = value = avio_rb32_xij(pb);
         } else if (len == 4 && type == 3) {
-            value = avio_rb32(pb);
+            value = avio_rb32_xij(pb);
             av_log(s, AV_LOG_DEBUG, "%s = %d\n", key, value);
         } else {
             av_log(s, AV_LOG_DEBUG, "Skipping unsupported key: %s\n", key);
-            avio_skip(pb, len);
+            avio_skip_xij(pb, len);
         }
     }
 
@@ -1247,29 +1247,29 @@ static int ivr_read_header(AVFormatContext *s)
         if (!st->priv_data)
             return AVERROR(ENOMEM);
 
-        if (avio_r8(pb) != 1)
+        if (avio_r8_xij(pb) != 1)
             return AVERROR_INVALIDDATA;
 
-        count = avio_rb32(pb);
+        count = avio_rb32_xij(pb);
         for (i = 0; i < count; i++) {
-            if (avio_feof(pb))
+            if (avio_feof_xij(pb))
                 return AVERROR_INVALIDDATA;
 
-            type = avio_r8(pb);
-            tlen  = avio_rb32(pb);
-            avio_get_str(pb, tlen, key, sizeof(key));
-            len  = avio_rb32(pb);
+            type = avio_r8_xij(pb);
+            tlen  = avio_rb32_xij(pb);
+            avio_get_str_xij(pb, tlen, key, sizeof(key));
+            len  = avio_rb32_xij(pb);
             if (type == 5) {
-                avio_get_str(pb, len, val, sizeof(val));
+                avio_get_str_xij(pb, len, val, sizeof(val));
                 av_log(s, AV_LOG_DEBUG, "%s = '%s'\n", key, val);
             } else if (type == 4 && !strncmp(key, "OpaqueData", tlen)) {
-                ret = ffio_ensure_seekback(pb, 4);
+                ret = ffio_ensure_seekback_xij(pb, 4);
                 if (ret < 0)
                     return ret;
-                if (avio_rb32(pb) == MKBETAG('M', 'L', 'T', 'I')) {
+                if (avio_rb32_xij(pb) == MKBETAG('M', 'L', 'T', 'I')) {
                     ret = rm_read_multi(s, pb, st, NULL);
                 } else {
-                    avio_seek(pb, -4, SEEK_CUR);
+                    avio_seek_xij(pb, -4, SEEK_CUR);
                     ret = ff_rm_read_mdpr_codecdata(s, pb, st, st->priv_data, len, NULL);
                 }
 
@@ -1280,27 +1280,27 @@ static int ivr_read_header(AVFormatContext *s)
 
                 av_log(s, AV_LOG_DEBUG, "%s = '0x", key);
                 for (j = 0; j < len; j++)
-                    av_log(s, AV_LOG_DEBUG, "%X", avio_r8(pb));
+                    av_log(s, AV_LOG_DEBUG, "%X", avio_r8_xij(pb));
                 av_log(s, AV_LOG_DEBUG, "'\n");
             } else if (len == 4 && type == 3 && !strncmp(key, "Duration", tlen)) {
-                st->duration = avio_rb32(pb);
+                st->duration = avio_rb32_xij(pb);
             } else if (len == 4 && type == 3) {
-                value = avio_rb32(pb);
+                value = avio_rb32_xij(pb);
                 av_log(s, AV_LOG_DEBUG, "%s = %d\n", key, value);
             } else {
                 av_log(s, AV_LOG_DEBUG, "Skipping unsupported key: %s\n", key);
-                avio_skip(pb, len);
+                avio_skip_xij(pb, len);
             }
         }
     }
 
-    if (avio_r8(pb) != 6)
+    if (avio_r8_xij(pb) != 6)
         return AVERROR_INVALIDDATA;
-    avio_skip(pb, 12);
-    avio_skip(pb, avio_rb64(pb) + pos - avio_tell(s->pb));
-    if (avio_r8(pb) != 8)
+    avio_skip_xij(pb, 12);
+    avio_skip_xij(pb, avio_rb64_xij(pb) + pos - avio_tell(s->pb));
+    if (avio_r8_xij(pb) != 8)
         return AVERROR_INVALIDDATA;
-    avio_skip(pb, 8);
+    avio_skip_xij(pb, 8);
 
     return 0;
 }
@@ -1313,7 +1313,7 @@ static int ivr_read_packet(AVFormatContext *s, AVPacket *pkt)
     unsigned size, index;
     int64_t pos, pts;
 
-    if (avio_feof(pb) || rm->data_end)
+    if (avio_feof_xij(pb) || rm->data_end)
         return AVERROR_EOF;
 
     pos = avio_tell(pb);
@@ -1330,26 +1330,26 @@ static int ivr_read_packet(AVFormatContext *s, AVPacket *pkt)
             }
         } else {
             if (rm->remaining_len) {
-                avio_skip(pb, rm->remaining_len);
+                avio_skip_xij(pb, rm->remaining_len);
                 rm->remaining_len = 0;
             }
 
-            if (avio_feof(pb))
+            if (avio_feof_xij(pb))
                 return AVERROR_EOF;
 
-            opcode = avio_r8(pb);
+            opcode = avio_r8_xij(pb);
             if (opcode == 2) {
                 AVStream *st;
                 int seq = 1;
 
-                pts = avio_rb32(pb);
-                index = avio_rb16(pb);
+                pts = avio_rb32_xij(pb);
+                index = avio_rb16_xij(pb);
                 if (index >= s->nb_streams)
                     return AVERROR_INVALIDDATA;
 
-                avio_skip(pb, 4);
-                size = avio_rb32(pb);
-                avio_skip(pb, 4);
+                avio_skip_xij(pb, 4);
+                size = avio_rb32_xij(pb);
+                avio_skip_xij(pb, 4);
 
                 if (size < 1 || size > INT_MAX/4) {
                     av_log(s, AV_LOG_ERROR, "size %u is invalid\n", size);
@@ -1369,7 +1369,7 @@ static int ivr_read_packet(AVFormatContext *s, AVPacket *pkt)
                 pkt->pts = pts;
                 pkt->stream_index = index;
             } else if (opcode == 7) {
-                pos = avio_rb64(pb);
+                pos = avio_rb64_xij(pb);
                 if (!pos) {
                     rm->data_end = 1;
                     return AVERROR_EOF;

@@ -62,12 +62,12 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
 
     while (!frame_complete) {
 
-        type  = avio_rb16(s->pb); // 257 or 258
-        size  = avio_rb16(s->pb);
-        flags = avio_rb16(s->pb); //some flags, 0x80 indicates end of frame
-                avio_rb16(s->pb); //packet number
-        pts   = avio_rb32(s->pb);
-                avio_rb32(s->pb); //6A 13 E3 88
+        type  = avio_rb16_xij(s->pb); // 257 or 258
+        size  = avio_rb16_xij(s->pb);
+        flags = avio_rb16_xij(s->pb); //some flags, 0x80 indicates end of frame
+                avio_rb16_xij(s->pb); //packet number
+        pts   = avio_rb32_xij(s->pb);
+                avio_rb32_xij(s->pb); //6A 13 E3 88
 
         frame_complete = flags & 0x80;
 
@@ -76,20 +76,20 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
             return -1;
 
         if (type == 258) {
-            avio_skip(s->pb, size);
+            avio_skip_xij(s->pb, size);
             frame_complete = 0;
             continue;
         }
 
         if (!first_pkt) {
-            ret = av_get_packet(s->pb, pkt, size);
+            ret = av_get_packet_xij(s->pb, pkt, size);
             if (ret < 0)
                 return ret;
             first_pkt = 1;
             pkt->pts  = pts;
             pkt->pos -= 16;
         } else {
-            ret = av_append_packet(s->pb, pkt, size);
+            ret = av_append_packet_xij(s->pb, pkt, size);
             if (ret < 0) {
                 av_log(s, AV_LOG_ERROR, "failed to grow packet\n");
                 av_packet_unref_ijk(pkt);

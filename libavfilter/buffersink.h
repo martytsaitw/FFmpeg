@@ -38,7 +38,7 @@
  *
  * @param ctx    pointer to a buffersink or abuffersink filter context.
  * @param frame  pointer to an allocated frame that will be filled with data.
- *               The data must be freed using av_frame_unref() / av_frame_free()
+ *               The data must be freed using av_frame_unref_xij() / av_frame_free_xij()
  * @param flags  a combination of AV_BUFFERSINK_FLAG_* flags
  *
  * @return  >= 0 in for success, a negative AVERROR code for failure.
@@ -128,7 +128,7 @@ AVBufferRef *    av_buffersink_get_hw_frames_ctx       (const AVFilterContext *c
  *
  * @param ctx pointer to a context of a buffersink or abuffersink AVFilter.
  * @param frame pointer to an allocated frame that will be filled with data.
- *              The data must be freed using av_frame_unref() / av_frame_free()
+ *              The data must be freed using av_frame_unref_xij() / av_frame_free_xij()
  *
  * @return
  *         - >= 0 if a frame was successfully returned.
@@ -146,7 +146,7 @@ int av_buffersink_get_frame(AVFilterContext *ctx, AVFrame *frame);
  *
  * @param ctx pointer to a context of the abuffersink AVFilter.
  * @param frame pointer to an allocated frame that will be filled with data.
- *              The data must be freed using av_frame_unref() / av_frame_free()
+ *              The data must be freed using av_frame_unref_xij() / av_frame_free_xij()
  *              frame will contain exactly nb_samples audio samples, except at
  *              the end of stream, when it can contain less than nb_samples.
  *

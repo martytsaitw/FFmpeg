@@ -225,7 +225,7 @@ static int graph_check_validity(AVFilterGraph *graph, AVClass *log_ctx)
                 pad = &filt->input_pads[j];
                 av_log(log_ctx, AV_LOG_ERROR,
                        "Input pad \"%s\" with type %s of the filter instance \"%s\" of %s not connected to any source\n",
-                       pad->name, av_get_media_type_string(pad->type), filt->name, filt->filter->name);
+                       pad->name, av_get_media_type_string_xij(pad->type), filt->name, filt->filter->name);
                 return AVERROR(EINVAL);
             }
         }
@@ -235,7 +235,7 @@ static int graph_check_validity(AVFilterGraph *graph, AVClass *log_ctx)
                 pad = &filt->output_pads[j];
                 av_log(log_ctx, AV_LOG_ERROR,
                        "Output pad \"%s\" with type %s of the filter instance \"%s\" of %s not connected to any destination\n",
-                       pad->name, av_get_media_type_string(pad->type), filt->name, filt->filter->name);
+                       pad->name, av_get_media_type_string_xij(pad->type), filt->name, filt->filter->name);
                 return AVERROR(EINVAL);
             }
         }

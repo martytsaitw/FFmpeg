@@ -44,7 +44,7 @@ int ff_alloc_packet2(AVCodecContext *avctx, AVPacket *avpkt, int64_t size, int64
     if (avctx && 2*min_size < size) { // FIXME The factor needs to be finetuned
         av_assert0(!avpkt->data || avpkt->data != avctx->internal->byte_buffer);
         if (!avpkt->data || avpkt->size < size) {
-            av_fast_padded_malloc(&avctx->internal->byte_buffer, &avctx->internal->byte_buffer_size, size);
+            av_fast_padded_malloc_xij(&avctx->internal->byte_buffer, &avctx->internal->byte_buffer_size, size);
             avpkt->data = avctx->internal->byte_buffer;
             avpkt->size = avctx->internal->byte_buffer_size;
         }
@@ -90,11 +90,11 @@ static int pad_last_frame(AVCodecContext *s, AVFrame **dst, const AVFrame *src)
     frame->channel_layout = src->channel_layout;
     frame->channels       = src->channels;
     frame->nb_samples     = s->frame_size;
-    ret = av_frame_get_buffer(frame, 32);
+    ret = av_frame_get_buffer_xij(frame, 32);
     if (ret < 0)
         goto fail;
 
-    ret = av_frame_copy_props(frame, src);
+    ret = av_frame_copy_props_xij(frame, src);
     if (ret < 0)
         goto fail;
 
@@ -111,7 +111,7 @@ static int pad_last_frame(AVCodecContext *s, AVFrame **dst, const AVFrame *src)
     return 0;
 
 fail:
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
     return ret;
 }
 
@@ -161,7 +161,7 @@ int attribute_align_arg avcodec_encode_audio2(AVCodecContext *avctx,
 
     /* extract audio service type metadata */
     if (frame) {
-        AVFrameSideData *sd = av_frame_get_side_data(frame, AV_FRAME_DATA_AUDIO_SERVICE_TYPE);
+        AVFrameSideData *sd = av_frame_get_side_data_xij(frame, AV_FRAME_DATA_AUDIO_SERVICE_TYPE);
         if (sd && sd->size >= sizeof(enum AVAudioServiceType))
             avctx->audio_service_type = *(enum AVAudioServiceType*)sd->data;
     }
@@ -223,7 +223,7 @@ int attribute_align_arg avcodec_encode_audio2(AVCodecContext *avctx,
             avpkt->buf      = user_pkt.buf;
             avpkt->data     = user_pkt.data;
         } else if (!avpkt->buf) {
-            ret = av_packet_make_refcounted(avpkt);
+            ret = av_packet_make_refcounted_xij(avpkt);
             if (ret < 0)
                 goto end;
         }
@@ -251,7 +251,7 @@ int attribute_align_arg avcodec_encode_audio2(AVCodecContext *avctx,
     avpkt->flags |= AV_PKT_FLAG_KEY;
 
 end:
-    av_frame_free(&padded_frame);
+    av_frame_free_xij(&padded_frame);
     av_free(extended_frame);
 
     return ret;
@@ -315,7 +315,7 @@ int attribute_align_arg avcodec_encode_video2(AVCodecContext *avctx,
             avpkt->buf      = user_pkt.buf;
             avpkt->data     = user_pkt.data;
         } else if (!avpkt->buf) {
-            ret = av_packet_make_refcounted(avpkt);
+            ret = av_packet_make_refcounted_xij(avpkt);
             if (ret < 0)
                 return ret;
         }
@@ -389,7 +389,7 @@ static int do_encode(AVCodecContext *avctx, const AVFrame *frame, int *got_packe
 
 int attribute_align_arg avcodec_send_frame(AVCodecContext *avctx, const AVFrame *frame)
 {
-    if (!avcodec_is_open(avctx) || !av_codec_is_encoder(avctx->codec))
+    if (!avcodec_is_open_xij(avctx) || !av_codec_is_encoder_xij(avctx->codec))
         return AVERROR(EINVAL);
 
     if (avctx->internal->draining)
@@ -421,7 +421,7 @@ int attribute_align_arg avcodec_receive_packet(AVCodecContext *avctx, AVPacket *
 {
     av_packet_unref_ijk(avpkt);
 
-    if (!avcodec_is_open(avctx) || !av_codec_is_encoder(avctx->codec))
+    if (!avcodec_is_open_xij(avctx) || !av_codec_is_encoder_xij(avctx->codec))
         return AVERROR(EINVAL);
 
     if (avctx->codec->receive_packet) {
@@ -444,7 +444,7 @@ int attribute_align_arg avcodec_receive_packet(AVCodecContext *avctx, AVPacket *
             return AVERROR_EOF;
     }
 
-    av_packet_move_ref(avpkt, avctx->internal->buffer_pkt);
+    av_packet_move_ref_xij(avpkt, avctx->internal->buffer_pkt);
     avctx->internal->buffer_pkt_valid = 0;
     return 0;
 }

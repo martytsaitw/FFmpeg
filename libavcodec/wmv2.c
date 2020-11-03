@@ -65,13 +65,13 @@ static void wmv2_add_block(Wmv2Context *w, int16_t *block1,
             w->wdsp.idct_add(dst, stride, block1);
             break;
         case 1:
-            ff_simple_idct84_add(dst, stride, block1);
-            ff_simple_idct84_add(dst + 4 * stride, stride, w->abt_block2[n]);
+            ff_simple_idct84_add_xij(dst, stride, block1);
+            ff_simple_idct84_add_xij(dst + 4 * stride, stride, w->abt_block2[n]);
             s->bdsp.clear_block(w->abt_block2[n]);
             break;
         case 2:
-            ff_simple_idct48_add(dst, stride, block1);
-            ff_simple_idct48_add(dst + 4, stride, w->abt_block2[n]);
+            ff_simple_idct48_add_xij(dst, stride, block1);
+            ff_simple_idct48_add_xij(dst + 4, stride, w->abt_block2[n]);
             s->bdsp.clear_block(w->abt_block2[n]);
             break;
         default:

@@ -412,7 +412,7 @@ static int hnm_decode_frame(AVCodecContext *avctx, void *data,
             av_log(avctx, AV_LOG_ERROR, "packet too small\n");
             return AVERROR_INVALIDDATA;
         }
-        if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+        if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
             return ret;
 
         unpack_intraframe(avctx, avpkt->data + 12, avpkt->size - 12);
@@ -427,7 +427,7 @@ static int hnm_decode_frame(AVCodecContext *avctx, void *data,
         memcpy(frame->data[1], hnm->palette, 256 * 4);
         *got_frame = 1;
     } else if (chunk_id == HNM4_CHUNK_ID_IU) {
-        if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+        if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
             return ret;
 
         if (hnm->version == 0x4a) {

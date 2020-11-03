@@ -143,7 +143,7 @@ static int codec_reinit(AVCodecContext *avctx, int width, int height,
             return AVERROR(ENOMEM);
         }
         ff_rtjpeg_decode_init(&c->rtj, c->width, c->height, c->lq, c->cq);
-        av_frame_unref(c->pic);
+        av_frame_unref_xij(c->pic);
         return 1;
     } else if (quality != c->quality)
         ff_rtjpeg_decode_init(&c->rtj, c->width, c->height, c->lq, c->cq);
@@ -264,11 +264,11 @@ retry:
     }
 
     if (size_change || keyframe) {
-        av_frame_unref(c->pic);
+        av_frame_unref_xij(c->pic);
         init_frame = 1;
     }
 
-    if ((result = ff_reget_buffer(avctx, c->pic)) < 0)
+    if ((result = ff_reget_buffer_xij(avctx, c->pic)) < 0)
         return result;
     if (init_frame) {
         memset(c->pic->data[0], 0,    avctx->height * c->pic->linesize[0]);
@@ -310,7 +310,7 @@ retry:
         return AVERROR_INVALIDDATA;
     }
 
-    if ((result = av_frame_ref(picture, c->pic)) < 0)
+    if ((result = av_frame_ref_xij(picture, c->pic)) < 0)
         return result;
 
     *got_frame = 1;
@@ -350,7 +350,7 @@ static av_cold int decode_end(AVCodecContext *avctx)
     NuvContext *c = avctx->priv_data;
 
     av_freep(&c->decomp_buf);
-    av_frame_free(&c->pic);
+    av_frame_free_xij(&c->pic);
 
     return 0;
 }

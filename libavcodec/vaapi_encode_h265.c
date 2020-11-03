@@ -76,7 +76,7 @@ static int vaapi_encode_h265_write_access_unit(AVCodecContext *avctx,
     VAAPIEncodeH265Context *priv = ctx->priv_data;
     int err;
 
-    err = ff_cbs_write_fragment_data(priv->cbc, au);
+    err = ff_cbs_write_fragment_data_xij(priv->cbc, au);
     if (err < 0) {
         av_log(avctx, AV_LOG_ERROR, "Failed to write packed header.\n");
         return err;
@@ -104,7 +104,7 @@ static int vaapi_encode_h265_add_nal(AVCodecContext *avctx,
     H265RawNALUnitHeader *header = nal_unit;
     int err;
 
-    err = ff_cbs_insert_unit_content(priv->cbc, au, -1,
+    err = ff_cbs_insert_unit_content_xij(priv->cbc, au, -1,
                                      header->nal_unit_type, nal_unit, NULL);
     if (err < 0) {
         av_log(avctx, AV_LOG_ERROR, "Failed to add NAL unit: "
@@ -830,7 +830,7 @@ static av_cold int vaapi_encode_h265_configure(AVCodecContext *avctx)
     VAAPIEncodeH265Options  *opt = ctx->codec_options;
     int err;
 
-    err = ff_cbs_init(&priv->cbc, AV_CODEC_ID_HEVC, avctx);
+    err = ff_cbs_init_xij(&priv->cbc, AV_CODEC_ID_HEVC, avctx);
     if (err < 0)
         return err;
 
@@ -957,7 +957,7 @@ static av_cold int vaapi_encode_h265_close(AVCodecContext *avctx)
     VAAPIEncodeH265Context *priv = ctx->priv_data;
 
     if (priv)
-        ff_cbs_close(&priv->cbc);
+        ff_cbs_close_xij(&priv->cbc);
 
     return ff_vaapi_encode_close(avctx);
 }

@@ -88,11 +88,11 @@ static int microdvd_read_header(AVFormatContext *s)
     if (!st)
         return AVERROR(ENOMEM);
 
-    while (!avio_feof(s->pb)) {
+    while (!avio_feof_xij(s->pb)) {
         char *p;
         AVPacket *sub;
         int64_t pos = avio_tell(s->pb);
-        int len = ff_get_line(s->pb, line_buf, sizeof(line_buf));
+        int len = ff_get_line_xij(s->pb, line_buf, sizeof(line_buf));
         char *line = line_buf;
 
         if (!strncmp(line, bom, 3))

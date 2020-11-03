@@ -206,19 +206,19 @@ typedef struct CodedBitstreamContext {
  *
  * Terminated by AV_CODEC_ID_NONE.
  */
-extern const enum AVCodecID ff_cbs_all_codec_ids[];
+extern const enum AVCodecID ff_cbs_all_codec_ids_xij[];
 
 
 /**
  * Create and initialise a new context for the given codec.
  */
-int ff_cbs_init(CodedBitstreamContext **ctx,
+int ff_cbs_init_xij(CodedBitstreamContext **ctx,
                 enum AVCodecID codec_id, void *log_ctx);
 
 /**
  * Close a context and free all internal state.
  */
-void ff_cbs_close(CodedBitstreamContext **ctx);
+void ff_cbs_close_xij(CodedBitstreamContext **ctx);
 
 
 /**
@@ -229,7 +229,7 @@ void ff_cbs_close(CodedBitstreamContext **ctx);
  * codecs with extradata to read parameter sets necessary for further
  * parsing even if the fragment itself is not desired.
  */
-int ff_cbs_read_extradata(CodedBitstreamContext *ctx,
+int ff_cbs_read_extradata_xij(CodedBitstreamContext *ctx,
                           CodedBitstreamFragment *frag,
                           const AVCodecParameters *par);
 
@@ -241,7 +241,7 @@ int ff_cbs_read_extradata(CodedBitstreamContext *ctx,
  * with any persistent data from the fragment which may be required to
  * read following fragments (e.g. parameter sets).
  */
-int ff_cbs_read_packet(CodedBitstreamContext *ctx,
+int ff_cbs_read_packet_xij(CodedBitstreamContext *ctx,
                        CodedBitstreamFragment *frag,
                        const AVPacket *pkt);
 
@@ -253,7 +253,7 @@ int ff_cbs_read_packet(CodedBitstreamContext *ctx,
  * with any persistent data from the fragment which may be required to
  * read following fragments (e.g. parameter sets).
  */
-int ff_cbs_read(CodedBitstreamContext *ctx,
+int ff_cbs_read_xij(CodedBitstreamContext *ctx,
                 CodedBitstreamFragment *frag,
                 const uint8_t *data, size_t size);
 
@@ -270,7 +270,7 @@ int ff_cbs_read(CodedBitstreamContext *ctx,
  * with any persistent data from the fragment which may be required to
  * write following fragments (e.g. parameter sets).
  */
-int ff_cbs_write_fragment_data(CodedBitstreamContext *ctx,
+int ff_cbs_write_fragment_data_xij(CodedBitstreamContext *ctx,
                                CodedBitstreamFragment *frag);
 
 /**
@@ -278,14 +278,14 @@ int ff_cbs_write_fragment_data(CodedBitstreamContext *ctx,
  *
  * This replaces any existing extradata in the structure.
  */
-int ff_cbs_write_extradata(CodedBitstreamContext *ctx,
+int ff_cbs_write_extradata_xij(CodedBitstreamContext *ctx,
                            AVCodecParameters *par,
                            CodedBitstreamFragment *frag);
 
 /**
  * Write the bitstream of a fragment to a packet.
  */
-int ff_cbs_write_packet(CodedBitstreamContext *ctx,
+int ff_cbs_write_packet_xij(CodedBitstreamContext *ctx,
                         AVPacket *pkt,
                         CodedBitstreamFragment *frag);
 
@@ -302,7 +302,7 @@ void ff_cbs_fragment_uninit(CodedBitstreamContext *ctx,
  *
  * The content will be zeroed.
  */
-int ff_cbs_alloc_unit_content(CodedBitstreamContext *ctx,
+int ff_cbs_alloc_unit_content_xij(CodedBitstreamContext *ctx,
                               CodedBitstreamUnit *unit,
                               size_t size,
                               void (*free)(void *unit, uint8_t *content));
@@ -312,7 +312,7 @@ int ff_cbs_alloc_unit_content(CodedBitstreamContext *ctx,
  *
  * The data buffer will have input padding.
  */
-int ff_cbs_alloc_unit_data(CodedBitstreamContext *ctx,
+int ff_cbs_alloc_unit_data_xij(CodedBitstreamContext *ctx,
                            CodedBitstreamUnit *unit,
                            size_t size);
 
@@ -322,7 +322,7 @@ int ff_cbs_alloc_unit_data(CodedBitstreamContext *ctx,
  * The content structure continues to be owned by the caller if
  * content_buf is not supplied.
  */
-int ff_cbs_insert_unit_content(CodedBitstreamContext *ctx,
+int ff_cbs_insert_unit_content_xij(CodedBitstreamContext *ctx,
                                CodedBitstreamFragment *frag,
                                int position,
                                CodedBitstreamUnitType type,
@@ -335,7 +335,7 @@ int ff_cbs_insert_unit_content(CodedBitstreamContext *ctx,
  * If data_buf is not supplied then data must have been allocated with
  * av_malloc() and will become owned by the unit after this call.
  */
-int ff_cbs_insert_unit_data(CodedBitstreamContext *ctx,
+int ff_cbs_insert_unit_data_xij(CodedBitstreamContext *ctx,
                             CodedBitstreamFragment *frag,
                             int position,
                             CodedBitstreamUnitType type,
@@ -345,7 +345,7 @@ int ff_cbs_insert_unit_data(CodedBitstreamContext *ctx,
 /**
  * Delete a unit from a fragment and free all memory it uses.
  */
-int ff_cbs_delete_unit(CodedBitstreamContext *ctx,
+int ff_cbs_delete_unit_xij(CodedBitstreamContext *ctx,
                        CodedBitstreamFragment *frag,
                        int position);
 

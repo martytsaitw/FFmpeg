@@ -222,14 +222,14 @@ static int tgq_decode_frame(AVCodecContext *avctx,
         s->height = bytestream2_get_le16u(&s->gb);
     }
 
-    ret = ff_set_dimensions(s->avctx, s->width, s->height);
+    ret = ff_set_dimensions_xij(s->avctx, s->width, s->height);
     if (ret < 0)
         return ret;
 
     tgq_calculate_qtable(s, bytestream2_get_byteu(&s->gb));
     bytestream2_skip(&s->gb, 3);
 
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
     frame->key_frame = 1;
     frame->pict_type = AV_PICTURE_TYPE_I;

@@ -150,7 +150,7 @@ static int CUDAAPI cuvid_handle_video_sequence(void *opaque, CUVIDEOFORMAT* form
     cuinfo.display_area.right = format->display_area.right - ctx->crop.right;
     cuinfo.display_area.bottom = format->display_area.bottom - ctx->crop.bottom;
 
-    // width and height need to be set before calling ff_get_format
+    // width and height need to be set before calling ff_get_format_xij
     if (ctx->resize_expr) {
         avctx->width = ctx->resize.width;
         avctx->height = ctx->resize.height;
@@ -193,9 +193,9 @@ static int CUDAAPI cuvid_handle_video_sequence(void *opaque, CUVIDEOFORMAT* form
         return 0;
     }
 
-    surface_fmt = ff_get_format(avctx, pix_fmts);
+    surface_fmt = ff_get_format_xij(avctx, pix_fmts);
     if (surface_fmt < 0) {
-        av_log(avctx, AV_LOG_ERROR, "ff_get_format failed: %d\n", surface_fmt);
+        av_log(avctx, AV_LOG_ERROR, "ff_get_format_xij failed: %d\n", surface_fmt);
         ctx->internal_error = AVERROR(EINVAL);
         return 0;
     }
@@ -209,7 +209,7 @@ static int CUDAAPI cuvid_handle_video_sequence(void *opaque, CUVIDEOFORMAT* form
 
     // Update our hwframe ctx, as the get_format callback might have refreshed it!
     if (avctx->hw_frames_ctx) {
-        av_buffer_unref(&ctx->hwframe);
+        av_buffer_unref_xij(&ctx->hwframe);
 
         ctx->hwframe = av_buffer_ref_ijk(avctx->hw_frames_ctx);
         if (!ctx->hwframe) {
@@ -220,7 +220,7 @@ static int CUDAAPI cuvid_handle_video_sequence(void *opaque, CUVIDEOFORMAT* form
         hwframe_ctx = (AVHWFramesContext*)ctx->hwframe->data;
     }
 
-    ff_set_sar(avctx, av_div_q(
+    ff_set_sar_xij(avctx, av_div_q(
         (AVRational){ format->display_aspect_ratio.x, format->display_aspect_ratio.y },
         (AVRational){ avctx->width, avctx->height }));
 
@@ -490,7 +490,7 @@ static int cuvid_output_frame(AVCodecContext *avctx, AVFrame *frame)
 
     if (!cuvid_is_buffer_full(avctx)) {
         AVPacket pkt = {0};
-        ret = ff_decode_get_packet(avctx, &pkt);
+        ret = ff_decode_get_packet_xij(avctx, &pkt);
         if (ret < 0 && ret != AVERROR_EOF)
             return ret;
         ret = cuvid_decode_packet(avctx, &pkt);
@@ -531,9 +531,9 @@ static int cuvid_output_frame(AVCodecContext *avctx, AVFrame *frame)
                 goto error;
             }
 
-            ret = ff_decode_frame_props(avctx, frame);
+            ret = ff_decode_frame_props_xij(avctx, frame);
             if (ret < 0) {
-                av_log(avctx, AV_LOG_ERROR, "ff_decode_frame_props failed\n");
+                av_log(avctx, AV_LOG_ERROR, "ff_decode_frame_props_xij failed\n");
                 goto error;
             }
 
@@ -575,20 +575,20 @@ static int cuvid_output_frame(AVCodecContext *avctx, AVFrame *frame)
             tmp_frame->width         = avctx->width;
             tmp_frame->height        = avctx->height;
 
-            ret = ff_get_buffer(avctx, frame, 0);
+            ret = ff_get_buffer_xij(avctx, frame, 0);
             if (ret < 0) {
-                av_log(avctx, AV_LOG_ERROR, "ff_get_buffer failed\n");
-                av_frame_free(&tmp_frame);
+                av_log(avctx, AV_LOG_ERROR, "ff_get_buffer_xij failed\n");
+                av_frame_free_xij(&tmp_frame);
                 goto error;
             }
 
             ret = av_hwframe_transfer_data(frame, tmp_frame, 0);
             if (ret) {
                 av_log(avctx, AV_LOG_ERROR, "av_hwframe_transfer_data failed\n");
-                av_frame_free(&tmp_frame);
+                av_frame_free_xij(&tmp_frame);
                 goto error;
             }
-            av_frame_free(&tmp_frame);
+            av_frame_free_xij(&tmp_frame);
         } else {
             ret = AVERROR_BUG;
             goto error;
@@ -685,7 +685,7 @@ static av_cold int cuvid_decode_end(AVCodecContext *avctx)
     av_fifo_freep(&ctx->frame_queue);
 
     if (ctx->bsf)
-        av_bsf_free(&ctx->bsf);
+        av_bsf_free_xij(&ctx->bsf);
 
     if (ctx->cuparser)
         ctx->cvdl->cuvidDestroyVideoParser(ctx->cuparser);
@@ -695,8 +695,8 @@ static av_cold int cuvid_decode_end(AVCodecContext *avctx)
 
     ctx->cudl = NULL;
 
-    av_buffer_unref(&ctx->hwframe);
-    av_buffer_unref(&ctx->hwdevice);
+    av_buffer_unref_xij(&ctx->hwframe);
+    av_buffer_unref_xij(&ctx->hwdevice);
 
     av_freep(&ctx->key_frame);
 
@@ -821,9 +821,9 @@ static av_cold int cuvid_decode_init(AVCodecContext *avctx)
     // pix_fmt be set to AV_PIX_FMT_CUDA early. The sw_pix_fmt, and the
     // pix_fmt for non-accelerated transcoding, do not need to be correct
     // but need to be set to something. We arbitrarily pick NV12.
-    ret = ff_get_format(avctx, pix_fmts);
+    ret = ff_get_format_xij(avctx, pix_fmts);
     if (ret < 0) {
-        av_log(avctx, AV_LOG_ERROR, "ff_get_format failed: %d\n", ret);
+        av_log(avctx, AV_LOG_ERROR, "ff_get_format_xij failed: %d\n", ret);
         return ret;
     }
     avctx->pix_fmt = ret;
@@ -969,7 +969,7 @@ static av_cold int cuvid_decode_init(AVCodecContext *avctx)
             goto error;
         }
         if (((ret = avcodec_parameters_from_context_ijk(ctx->bsf->par_in, avctx)) < 0) || ((ret = av_bsf_init_ijk(ctx->bsf)) < 0)) {
-            av_bsf_free(&ctx->bsf);
+            av_bsf_free_xij(&ctx->bsf);
             goto error;
         }
 

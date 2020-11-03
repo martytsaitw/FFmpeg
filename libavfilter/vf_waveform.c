@@ -2813,7 +2813,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out) {
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         return AVERROR(ENOMEM);
     }
     out->pts = in->pts;
@@ -2854,7 +2854,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     }
     s->graticulef(s, out);
 
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
     return ff_filter_frame(outlink, out);
 }
 

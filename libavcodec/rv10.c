@@ -393,7 +393,7 @@ static int rv20_decode_picture_header(RVDecContext *rv)
             if (new_w * s->height == 2 * new_h * s->width)
                 s->avctx->sample_aspect_ratio = av_mul_q(old_aspect, (AVRational){1, 2});
 
-            ret = ff_set_dimensions(s->avctx, new_w, new_h);
+            ret = ff_set_dimensions_xij(s->avctx, new_w, new_h);
             if (ret < 0)
                 return ret;
 
@@ -766,12 +766,12 @@ static int rv10_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         ff_mpv_frame_end(s);
 
         if (s->pict_type == AV_PICTURE_TYPE_B || s->low_delay) {
-            if ((ret = av_frame_ref(pict, s->current_picture_ptr->f)) < 0)
+            if ((ret = av_frame_ref_xij(pict, s->current_picture_ptr->f)) < 0)
                 return ret;
             ff_print_debug_info(s, s->current_picture_ptr, pict);
             ff_mpv_export_qp_table(s, pict, s->current_picture_ptr, FF_QSCALE_TYPE_MPEG1);
         } else if (s->last_picture_ptr) {
-            if ((ret = av_frame_ref(pict, s->last_picture_ptr->f)) < 0)
+            if ((ret = av_frame_ref_xij(pict, s->last_picture_ptr->f)) < 0)
                 return ret;
             ff_print_debug_info(s, s->last_picture_ptr, pict);
             ff_mpv_export_qp_table(s, pict,s->last_picture_ptr, FF_QSCALE_TYPE_MPEG1);

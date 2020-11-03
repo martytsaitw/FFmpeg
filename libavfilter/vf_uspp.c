@@ -361,7 +361,7 @@ static int config_input(AVFilterLink *inlink)
         avctx_enc->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
         avctx_enc->global_quality = 123;
         av_dict_set(&opts, "no_bitstream", "1", 0);
-        ret = avcodec_open2(avctx_enc, enc, &opts);
+        ret = avcodec_open2_xij(avctx_enc, enc, &opts);
         if (ret < 0)
             return ret;
         av_dict_free(&opts);
@@ -392,7 +392,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
      * need to save the qp table from the last non B-frame; this is what the
      * following code block does */
     if (!uspp->qp) {
-        qp_table = av_frame_get_qp_table(in, &qp_stride, &uspp->qscale_type);
+        qp_table = av_frame_get_qp_table_xij(in, &qp_stride, &uspp->qscale_type);
 
         if (qp_table && !uspp->use_bframe_qp && in->pict_type != AV_PICTURE_TYPE_B) {
             int w, h;
@@ -429,16 +429,16 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
             /* get a new frame if in-place is not possible or if the dimensions
              * are not multiple of 8 */
-            if (!av_frame_is_writable(in) || (inlink->w & 7) || (inlink->h & 7)) {
+            if (!av_frame_is_writable_xij(in) || (inlink->w & 7) || (inlink->h & 7)) {
                 const int aligned_w = FFALIGN(inlink->w, 8);
                 const int aligned_h = FFALIGN(inlink->h, 8);
 
                 out = ff_get_video_buffer(outlink, aligned_w, aligned_h);
                 if (!out) {
-                    av_frame_free(&in);
+                    av_frame_free_xij(&in);
                     return AVERROR(ENOMEM);
                 }
-                av_frame_copy_props(out, in);
+                av_frame_copy_props_xij(out, in);
                 out->width  = in->width;
                 out->height = in->height;
             }
@@ -453,7 +453,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
             av_image_copy_plane(out->data[3], out->linesize[3],
                                 in ->data[3], in ->linesize[3],
                                 inlink->w, inlink->h);
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
     }
     return ff_filter_frame(outlink, out);
 }
@@ -469,13 +469,13 @@ static av_cold void uninit(AVFilterContext *ctx)
     }
 
     for (i = 0; i < (1 << uspp->log2_count); i++) {
-        avcodec_close(uspp->avctx_enc[i]);
+        avcodec_close_xij(uspp->avctx_enc[i]);
         av_freep(&uspp->avctx_enc[i]);
     }
 
     av_freep(&uspp->non_b_qp_table);
     av_freep(&uspp->outbuf);
-    av_frame_free(&uspp->frame);
+    av_frame_free_xij(&uspp->frame);
 }
 
 static const AVFilterPad uspp_inputs[] = {

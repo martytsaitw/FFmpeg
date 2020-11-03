@@ -63,7 +63,7 @@ static int opus_header(AVFormatContext *avf, int idx)
         /*channel_map         = AV_RL8 (packet + 18);*/
 
         av_freep(&st->codecpar->extradata);
-        if (ff_alloc_extradata(st->codecpar, os->psize))
+        if (ff_alloc_extradata_xij(st->codecpar, os->psize))
             return AVERROR(ENOMEM);
 
         memcpy(st->codecpar->extradata, packet, os->psize);

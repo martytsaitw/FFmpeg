@@ -248,15 +248,15 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
     AVFrame *out;
     int comp, i;
 
-    if (av_frame_is_writable(inpicref)) {
+    if (av_frame_is_writable_xij(inpicref)) {
         out = inpicref;
     } else {
         out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out) {
-            av_frame_free(&inpicref);
+            av_frame_free_xij(&inpicref);
             return AVERROR(ENOMEM);
         }
-        av_frame_copy_props(out, inpicref);
+        av_frame_copy_props_xij(out, inpicref);
     }
 
     for (comp = 0; comp < 4; comp++) {
@@ -276,7 +276,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
     emms_c();
 
     if (inpicref != out)
-        av_frame_free(&inpicref);
+        av_frame_free_xij(&inpicref);
     return ff_filter_frame(outlink, out);
 }
 

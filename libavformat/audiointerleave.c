@@ -57,7 +57,7 @@ int ff_audio_interleave_init(AVFormatContext *s,
 
         if (st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
             aic->sample_size = (st->codecpar->channels *
-                                av_get_bits_per_sample(st->codecpar->codec_id)) / 8;
+                                av_get_bits_per_sample_xij(st->codecpar->codec_id)) / 8;
             if (!aic->sample_size) {
                 av_log(s, AV_LOG_ERROR, "could not compute sample size\n");
                 return AVERROR(EINVAL);
@@ -123,7 +123,7 @@ int ff_audio_rechunk_interleave(AVFormatContext *s, AVPacket *out, AVPacket *pkt
             // rewrite pts and dts to be decoded time line position
             pkt->pts = pkt->dts = aic->dts;
             aic->dts += pkt->duration;
-            if ((ret = ff_interleave_add_packet(s, pkt, compare_ts)) < 0)
+            if ((ret = ff_interleave_add_packet_xij(s, pkt, compare_ts)) < 0)
                 return ret;
         }
         pkt = NULL;
@@ -134,7 +134,7 @@ int ff_audio_rechunk_interleave(AVFormatContext *s, AVPacket *out, AVPacket *pkt
         if (st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
             AVPacket new_pkt = { 0 };
             while ((ret = interleave_new_audio_packet(s, &new_pkt, i, flush)) > 0) {
-                if ((ret = ff_interleave_add_packet(s, &new_pkt, compare_ts)) < 0)
+                if ((ret = ff_interleave_add_packet_xij(s, &new_pkt, compare_ts)) < 0)
                     return ret;
             }
             if (ret < 0)

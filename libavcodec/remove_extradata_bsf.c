@@ -44,7 +44,7 @@ static int remove_extradata(AVBSFContext *ctx, AVPacket *pkt)
 
     int ret;
 
-    ret = ff_bsf_get_packet_ref(ctx, pkt);
+    ret = ff_bsf_get_packet_ref_xij(ctx, pkt);
     if (ret < 0)
         return ret;
 
@@ -66,7 +66,7 @@ static int remove_extradata_init(AVBSFContext *ctx)
     RemoveExtradataContext *s = ctx->priv_data;
     int ret;
 
-    s->parser = av_parser_init(ctx->par_in->codec_id);
+    s->parser = av_parser_init_xij(ctx->par_in->codec_id);
 
     if (s->parser) {
         s->avctx = avcodec_alloc_context3_ijk(NULL);

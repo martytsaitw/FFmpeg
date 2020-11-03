@@ -34,9 +34,9 @@ const AVBitStreamFilter *av_bitstream_filter_next(const AVBitStreamFilter *f)
     void *opaque = NULL;
 
     while (filter != f)
-        filter = av_bsf_iterate(&opaque);
+        filter = av_bsf_iterate_xij(&opaque);
 
-    return av_bsf_iterate(&opaque);
+    return av_bsf_iterate_xij(&opaque);
 }
 
 void av_register_bitstream_filter(AVBitStreamFilter *bsf)
@@ -74,7 +74,7 @@ AVBitStreamFilterContext *av_bitstream_filter_init(const char *name)
 
 fail:
     if (priv)
-        av_bsf_free(&priv->ctx);
+        av_bsf_free_xij(&priv->ctx);
     av_freep(&priv);
     av_freep(&ctx);
     return NULL;
@@ -89,7 +89,7 @@ void av_bitstream_filter_close(AVBitStreamFilterContext *bsfc)
 
     priv = bsfc->priv_data;
 
-    av_bsf_free(&priv->ctx);
+    av_bsf_free_xij(&priv->ctx);
     av_freep(&bsfc->priv_data);
     av_free(bsfc);
 }

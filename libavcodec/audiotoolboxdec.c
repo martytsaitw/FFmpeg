@@ -430,7 +430,7 @@ static OSStatus ffat_decode_callback(AudioConverterRef converter, UInt32 *nb_pac
     }
 
     av_packet_unref_ijk(&at->in_pkt);
-    av_packet_move_ref(&at->in_pkt, &at->new_in_pkt);
+    av_packet_move_ref_xij(&at->in_pkt, &at->new_in_pkt);
 
     if (!at->in_pkt.data) {
         *nb_packets = 0;
@@ -485,7 +485,7 @@ static int ffat_decode(AVCodecContext *avctx, void *data,
             uint8_t *side_data;
             int side_data_size = 0;
 
-            side_data = av_packet_get_side_data(avpkt, AV_PKT_DATA_NEW_EXTRADATA,
+            side_data = av_packet_get_side_data_xij(avpkt, AV_PKT_DATA_NEW_EXTRADATA,
                                                 &side_data_size);
             if (side_data_size) {
                 at->extradata = av_mallocz(side_data_size + AV_INPUT_BUFFER_PADDING_SIZE);
@@ -533,7 +533,7 @@ static int ffat_decode(AVCodecContext *avctx, void *data,
     ret = AudioConverterFillComplexBuffer(at->converter, ffat_decode_callback, avctx,
                                           &frame->nb_samples, &out_buffers, NULL);
     if ((!ret || ret == 1) && frame->nb_samples) {
-        if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+        if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
             return ret;
         ffat_copy_samples(avctx, frame);
         *got_frame_ptr = 1;

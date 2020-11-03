@@ -159,7 +159,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
         return ret;
     }
 
-    av_frame_free(&s->prev);
+    av_frame_free_xij(&s->prev);
     s->prev = s->cur;
     s->cur  = s->next;
     s->next = frame;
@@ -168,7 +168,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
     s->mv_table[1] = memcpy(s->mv_table[1], s->mv_table[0], sizeof(*s->mv_table[0]) * s->b_count);
 
     if (!s->cur) {
-        s->cur = av_frame_clone(frame);
+        s->cur = av_frame_clone_xij(frame);
         if (!s->cur)
             return AVERROR(ENOMEM);
     }
@@ -176,13 +176,13 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
     if (!s->prev)
         return 0;
 
-    out = av_frame_clone(s->cur);
+    out = av_frame_clone_xij(s->cur);
     if (!out)
         return AVERROR(ENOMEM);
 
-    sd = av_frame_new_side_data(out, AV_FRAME_DATA_MOTION_VECTORS, 2 * s->b_count * sizeof(AVMotionVector));
+    sd = av_frame_new_side_data_xij(out, AV_FRAME_DATA_MOTION_VECTORS, 2 * s->b_count * sizeof(AVMotionVector));
     if (!sd) {
-        av_frame_free(&out);
+        av_frame_free_xij(&out);
         return AVERROR(ENOMEM);
     }
 
@@ -339,9 +339,9 @@ static av_cold void uninit(AVFilterContext *ctx)
     MEContext *s = ctx->priv;
     int i;
 
-    av_frame_free(&s->prev);
-    av_frame_free(&s->cur);
-    av_frame_free(&s->next);
+    av_frame_free_xij(&s->prev);
+    av_frame_free_xij(&s->cur);
+    av_frame_free_xij(&s->next);
 
     for (i = 0; i < 3; i++)
         av_freep(&s->mv_table[i]);

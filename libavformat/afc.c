@@ -40,14 +40,14 @@ static int afc_read_header(AVFormatContext *s)
     st->codecpar->channels   = 2;
     st->codecpar->channel_layout = AV_CH_LAYOUT_STEREO;
 
-    if (ff_alloc_extradata(st->codecpar, 1))
+    if (ff_alloc_extradata_xij(st->codecpar, 1))
         return AVERROR(ENOMEM);
     st->codecpar->extradata[0] = 8 * st->codecpar->channels;
 
-    c->data_end = avio_rb32(s->pb) + 32LL;
-    st->duration = avio_rb32(s->pb);
-    st->codecpar->sample_rate = avio_rb16(s->pb);
-    avio_skip(s->pb, 22);
+    c->data_end = avio_rb32_xij(s->pb) + 32LL;
+    st->duration = avio_rb32_xij(s->pb);
+    st->codecpar->sample_rate = avio_rb16_xij(s->pb);
+    avio_skip_xij(s->pb, 22);
     avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
@@ -63,7 +63,7 @@ static int afc_read_packet(AVFormatContext *s, AVPacket *pkt)
     if (size <= 0)
         return AVERROR_EOF;
 
-    ret = av_get_packet(s->pb, pkt, size);
+    ret = av_get_packet_xij(s->pb, pkt, size);
     pkt->stream_index = 0;
     return ret;
 }

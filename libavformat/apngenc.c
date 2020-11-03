@@ -67,15 +67,15 @@ static void apng_write_chunk(AVIOContext *io_context, uint32_t tag,
 
     av_assert0(crc_table);
 
-    avio_wb32(io_context, length);
+    avio_wb32_xij(io_context, length);
     AV_WB32(tagbuf, tag);
     crc = av_crc(crc_table, crc, tagbuf, 4);
-    avio_wb32(io_context, tag);
+    avio_wb32_xij(io_context, tag);
     if (length > 0) {
         crc = av_crc(crc_table, crc, buf, length);
-        avio_write(io_context, buf, length);
+        avio_write_xij(io_context, buf, length);
     }
-    avio_wb32(io_context, ~crc);
+    avio_wb32_xij(io_context, ~crc);
 }
 
 static int apng_write_header(AVFormatContext *format_context)
@@ -99,7 +99,7 @@ static int apng_write_header(AVFormatContext *format_context)
                apng->last_delay.num, apng->last_delay.den, (double)apng->last_delay.num / apng->last_delay.den);
     }
 
-    avio_wb64(format_context->pb, PNGSIG);
+    avio_wb64_xij(format_context->pb, PNGSIG);
     // Remaining headers are written when they are copied from the encoder
 
     if (par->extradata_size) {
@@ -123,7 +123,7 @@ static int flush_packet(AVFormatContext *format_context, AVPacket *packet)
 
     av_assert0(apng->prev_packet);
 
-    side_data = av_packet_get_side_data(apng->prev_packet, AV_PKT_DATA_NEW_EXTRADATA, &side_data_size);
+    side_data = av_packet_get_side_data_xij(apng->prev_packet, AV_PKT_DATA_NEW_EXTRADATA, &side_data_size);
 
     if (side_data_size) {
         av_freep(&apng->extra_data);
@@ -144,20 +144,20 @@ static int flush_packet(AVFormatContext *format_context, AVPacket *packet)
         existing_acTL_chunk = apng_find_chunk(MKBETAG('a', 'c', 'T', 'L'), apng->extra_data, apng->extra_data_size);
         if (existing_acTL_chunk) {
             uint8_t *chunk_after_acTL = existing_acTL_chunk + AV_RB32(existing_acTL_chunk) + 12;
-            avio_write(io_context, apng->extra_data, existing_acTL_chunk - apng->extra_data);
-            avio_write(io_context, chunk_after_acTL, apng->extra_data + apng->extra_data_size - chunk_after_acTL);
+            avio_write_xij(io_context, apng->extra_data, existing_acTL_chunk - apng->extra_data);
+            avio_write_xij(io_context, chunk_after_acTL, apng->extra_data + apng->extra_data_size - chunk_after_acTL);
         } else {
-            avio_write(io_context, apng->extra_data, apng->extra_data_size);
+            avio_write_xij(io_context, apng->extra_data, apng->extra_data_size);
         }
 
         // Write frame data without fcTL chunk
         existing_fcTL_chunk = apng_find_chunk(MKBETAG('f', 'c', 'T', 'L'), apng->prev_packet->data, apng->prev_packet->size);
         if (existing_fcTL_chunk) {
             uint8_t *chunk_after_fcTL = existing_fcTL_chunk + AV_RB32(existing_fcTL_chunk) + 12;
-            avio_write(io_context, apng->prev_packet->data, existing_fcTL_chunk - apng->prev_packet->data);
-            avio_write(io_context, chunk_after_fcTL, apng->prev_packet->data + apng->prev_packet->size - chunk_after_fcTL);
+            avio_write_xij(io_context, apng->prev_packet->data, existing_fcTL_chunk - apng->prev_packet->data);
+            avio_write_xij(io_context, chunk_after_fcTL, apng->prev_packet->data + apng->prev_packet->size - chunk_after_fcTL);
         } else {
-            avio_write(io_context, apng->prev_packet->data, apng->prev_packet->size);
+            avio_write_xij(io_context, apng->prev_packet->data, apng->prev_packet->size);
         }
     } else {
         uint8_t *existing_fcTL_chunk;
@@ -166,7 +166,7 @@ static int flush_packet(AVFormatContext *format_context, AVPacket *packet)
             uint8_t *existing_acTL_chunk;
 
             // Write normal PNG headers
-            avio_write(io_context, apng->extra_data, apng->extra_data_size);
+            avio_write_xij(io_context, apng->extra_data, apng->extra_data_size);
 
             existing_acTL_chunk = apng_find_chunk(MKBETAG('a', 'c', 'T', 'L'), apng->extra_data, apng->extra_data_size);
             if (!existing_acTL_chunk) {
@@ -212,7 +212,7 @@ static int flush_packet(AVFormatContext *format_context, AVPacket *packet)
         }
 
         // Write frame data
-        avio_write(io_context, apng->prev_packet->data, apng->prev_packet->size);
+        avio_write_xij(io_context, apng->prev_packet->data, apng->prev_packet->size);
     }
     ++apng->frame_number;
 
@@ -259,7 +259,7 @@ static int apng_write_trailer(AVFormatContext *format_context)
     apng_write_chunk(io_context, MKBETAG('I', 'E', 'N', 'D'), NULL, 0);
 
     if (apng->acTL_offset && (io_context->seekable & AVIO_SEEKABLE_NORMAL)) {
-        avio_seek(io_context, apng->acTL_offset, SEEK_SET);
+        avio_seek_xij(io_context, apng->acTL_offset, SEEK_SET);
 
         AV_WB32(buf, apng->frame_number);
         AV_WB32(buf + 4, apng->plays);

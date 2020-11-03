@@ -113,24 +113,24 @@ static int smacker_read_header(AVFormatContext *s)
     int tbase;
 
     /* read and check header */
-    smk->magic = avio_rl32(pb);
+    smk->magic = avio_rl32_xij(pb);
     if (smk->magic != MKTAG('S', 'M', 'K', '2') && smk->magic != MKTAG('S', 'M', 'K', '4'))
         return AVERROR_INVALIDDATA;
-    smk->width = avio_rl32(pb);
-    smk->height = avio_rl32(pb);
-    smk->frames = avio_rl32(pb);
-    smk->pts_inc = (int32_t)avio_rl32(pb);
+    smk->width = avio_rl32_xij(pb);
+    smk->height = avio_rl32_xij(pb);
+    smk->frames = avio_rl32_xij(pb);
+    smk->pts_inc = (int32_t)avio_rl32_xij(pb);
     if (smk->pts_inc > INT_MAX / 100) {
         av_log(s, AV_LOG_ERROR, "pts_inc %d is too large\n", smk->pts_inc);
         return AVERROR_INVALIDDATA;
     }
 
-    smk->flags = avio_rl32(pb);
+    smk->flags = avio_rl32_xij(pb);
     if(smk->flags & SMACKER_FLAG_RING_FRAME)
         smk->frames++;
     for(i = 0; i < 7; i++)
-        smk->audio[i] = avio_rl32(pb);
-    smk->treesize = avio_rl32(pb);
+        smk->audio[i] = avio_rl32_xij(pb);
+    smk->treesize = avio_rl32_xij(pb);
 
     if(smk->treesize >= UINT_MAX/4){ // smk->treesize + 16 must not overflow (this check is probably redundant)
         av_log(s, AV_LOG_ERROR, "treesize too large\n");
@@ -138,15 +138,15 @@ static int smacker_read_header(AVFormatContext *s)
     }
 
 //FIXME remove extradata "rebuilding"
-    smk->mmap_size = avio_rl32(pb);
-    smk->mclr_size = avio_rl32(pb);
-    smk->full_size = avio_rl32(pb);
-    smk->type_size = avio_rl32(pb);
+    smk->mmap_size = avio_rl32_xij(pb);
+    smk->mclr_size = avio_rl32_xij(pb);
+    smk->full_size = avio_rl32_xij(pb);
+    smk->type_size = avio_rl32_xij(pb);
     for(i = 0; i < 7; i++) {
-        smk->rates[i]  = avio_rl24(pb);
-        smk->aflags[i] = avio_r8(pb);
+        smk->rates[i]  = avio_rl24_xij(pb);
+        smk->aflags[i] = avio_r8_xij(pb);
     }
-    smk->pad = avio_rl32(pb);
+    smk->pad = avio_rl32_xij(pb);
     /* setup data */
     if(smk->frames > 0xFFFFFF) {
         av_log(s, AV_LOG_ERROR, "Too many frames: %"PRIu32"\n", smk->frames);
@@ -164,10 +164,10 @@ static int smacker_read_header(AVFormatContext *s)
 
     /* read frame info */
     for(i = 0; i < smk->frames; i++) {
-        smk->frm_size[i] = avio_rl32(pb);
+        smk->frm_size[i] = avio_rl32_xij(pb);
     }
     for(i = 0; i < smk->frames; i++) {
-        smk->frm_flags[i] = avio_r8(pb);
+        smk->frm_flags[i] = avio_r8_xij(pb);
     }
 
     /* init video codec */
@@ -227,7 +227,7 @@ static int smacker_read_header(AVFormatContext *s)
 
 
     /* load trees to extradata, they will be unpacked by decoder */
-    if(ff_alloc_extradata(st->codecpar, smk->treesize + 16)){
+    if(ff_alloc_extradata_xij(st->codecpar, smk->treesize + 16)){
         av_log(s, AV_LOG_ERROR,
                "Cannot allocate %"PRIu32" bytes of extradata\n",
                smk->treesize + 16);
@@ -235,7 +235,7 @@ static int smacker_read_header(AVFormatContext *s)
         av_freep(&smk->frm_flags);
         return AVERROR(ENOMEM);
     }
-    ret = avio_read(pb, st->codecpar->extradata + 16, st->codecpar->extradata_size - 16);
+    ret = avio_read_xij(pb, st->codecpar->extradata + 16, st->codecpar->extradata_size - 16);
     if(ret != st->codecpar->extradata_size - 16){
         av_freep(&smk->frm_size);
         av_freep(&smk->frm_flags);
@@ -262,12 +262,12 @@ static int smacker_read_packet(AVFormatContext *s, AVPacket *pkt)
     int frame_size = 0;
     int palchange = 0;
 
-    if (avio_feof(s->pb) || smk->cur_frame >= smk->frames)
+    if (avio_feof_xij(s->pb) || smk->cur_frame >= smk->frames)
         return AVERROR_EOF;
 
     /* if we demuxed all streams, pass another frame */
     if(smk->curstream < 0) {
-        avio_seek(s->pb, smk->nextpos, 0);
+        avio_seek_xij(s->pb, smk->nextpos, 0);
         frame_size = smk->frm_size[smk->cur_frame] & (~3);
         flags = smk->frm_flags[smk->cur_frame];
         /* handle palette change event */
@@ -277,7 +277,7 @@ static int smacker_read_packet(AVFormatContext *s, AVPacket *pkt)
             uint8_t oldpal[768];
 
             memcpy(oldpal, pal, 768);
-            size = avio_r8(s->pb);
+            size = avio_r8_xij(s->pb);
             size = size * 4 - 1;
             if(size + 1 > frame_size)
                 return AVERROR_INVALIDDATA;
@@ -286,12 +286,12 @@ static int smacker_read_packet(AVFormatContext *s, AVPacket *pkt)
             sz = 0;
             pos = avio_tell(s->pb) + size;
             while(sz < 256){
-                t = avio_r8(s->pb);
+                t = avio_r8_xij(s->pb);
                 if(t & 0x80){ /* skip palette entries */
                     sz += (t & 0x7F) + 1;
                     pal += ((t & 0x7F) + 1) * 3;
                 } else if(t & 0x40){ /* copy with offset */
-                    off = avio_r8(s->pb);
+                    off = avio_r8_xij(s->pb);
                     j = (t & 0x3F) + 1;
                     if (off + j > 0x100) {
                         av_log(s, AV_LOG_ERROR,
@@ -309,12 +309,12 @@ static int smacker_read_packet(AVFormatContext *s, AVPacket *pkt)
                     }
                 } else { /* new entries */
                     *pal++ = smk_pal[t];
-                    *pal++ = smk_pal[avio_r8(s->pb) & 0x3F];
-                    *pal++ = smk_pal[avio_r8(s->pb) & 0x3F];
+                    *pal++ = smk_pal[avio_r8_xij(s->pb) & 0x3F];
+                    *pal++ = smk_pal[avio_r8_xij(s->pb) & 0x3F];
                     sz++;
                 }
             }
-            avio_seek(s->pb, pos, 0);
+            avio_seek_xij(s->pb, pos, 0);
             palchange |= 1;
         }
         flags >>= 1;
@@ -325,7 +325,7 @@ static int smacker_read_packet(AVFormatContext *s, AVPacket *pkt)
                 uint32_t size;
                 int err;
 
-                size = avio_rl32(s->pb) - 4;
+                size = avio_rl32_xij(s->pb) - 4;
                 if (!size || size + 4LL > frame_size) {
                     av_log(s, AV_LOG_ERROR, "Invalid audio part size\n");
                     return AVERROR_INVALIDDATA;
@@ -338,7 +338,7 @@ static int smacker_read_packet(AVFormatContext *s, AVPacket *pkt)
                     return err;
                 }
                 smk->buf_sizes[smk->curstream] = size;
-                ret = avio_read(s->pb, smk->bufs[smk->curstream], size);
+                ret = avio_read_xij(s->pb, smk->bufs[smk->curstream], size);
                 if(ret != size)
                     return AVERROR(EIO);
                 smk->stream_id[smk->curstream] = smk->indexes[i];
@@ -353,7 +353,7 @@ static int smacker_read_packet(AVFormatContext *s, AVPacket *pkt)
             palchange |= 2;
         pkt->data[0] = palchange;
         memcpy(pkt->data + 1, smk->pal, 768);
-        ret = avio_read(s->pb, pkt->data + 769, frame_size);
+        ret = avio_read_xij(s->pb, pkt->data + 769, frame_size);
         if(ret != frame_size)
             return AVERROR(EIO);
         pkt->stream_index = smk->videoindex;

@@ -142,8 +142,8 @@ static void common_uninit(ShowCQTContext *s)
             s->axis_frame->data[k] = NULL;
     }
 
-    av_frame_free(&s->axis_frame);
-    av_frame_free(&s->sono_frame);
+    av_frame_free_xij(&s->axis_frame);
+    av_frame_free_xij(&s->sono_frame);
     av_fft_end(s->fft_ctx);
     s->fft_ctx = NULL;
     if (s->coeffs)
@@ -365,8 +365,8 @@ static AVFrame *alloc_frame_empty(enum AVPixelFormat format, int w, int h)
     out->format = format;
     out->width = w;
     out->height = h;
-    if (av_frame_get_buffer(out, 32) < 0) {
-        av_frame_free(&out);
+    if (av_frame_get_buffer_xij(out, 32) < 0) {
+        av_frame_free_xij(&out);
         return NULL;
     }
     if (format == AV_PIX_FMT_RGB24 || format == AV_PIX_FMT_RGBA) {
@@ -427,7 +427,7 @@ static int init_axis_from_file(ShowCQTContext *s)
     return 0;
 
 error:
-    av_frame_free(&s->axis_frame);
+    av_frame_free_xij(&s->axis_frame);
     av_freep(tmp_data);
     return ret;
 }
@@ -705,15 +705,15 @@ static int init_axis_from_font(ShowCQTContext *s)
                               width, height, AV_PIX_FMT_RGBA, s->ctx)) < 0)
         goto fail;
 
-    av_frame_free(&tmp);
+    av_frame_free_xij(&tmp);
     s->axis_frame->width = s->width;
     s->axis_frame->height = s->axis_h;
     s->axis_frame->format = convert_axis_pixel_format(s->format);
     return 0;
 
 fail:
-    av_frame_free(&tmp);
-    av_frame_free(&s->axis_frame);
+    av_frame_free_xij(&tmp);
+    av_frame_free_xij(&s->axis_frame);
     return ret;
 }
 
@@ -1519,7 +1519,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
             }
             ret = plot_cqt(ctx, &out);
             if (ret < 0) {
-                av_frame_free(&insamples);
+                av_frame_free_xij(&insamples);
                 return ret;
             }
             remaining -= s->remaining_fill;
@@ -1536,7 +1536,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
                 }
                 ret = ff_filter_frame(outlink, out);
                 if (ret < 0) {
-                    av_frame_free(&insamples);
+                    av_frame_free_xij(&insamples);
                     return ret;
                 }
                 out = NULL;
@@ -1555,7 +1555,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
             remaining = 0;
         }
     }
-    av_frame_free(&insamples);
+    av_frame_free_xij(&insamples);
     return 0;
 }
 

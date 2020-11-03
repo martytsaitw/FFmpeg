@@ -75,7 +75,7 @@ static int rawvideo_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     int ret;
 
-    ret = av_get_packet(s->pb, pkt, s->packet_size);
+    ret = av_get_packet_xij(s->pb, pkt, s->packet_size);
     pkt->pts = pkt->dts = pkt->pos / s->packet_size;
 
     pkt->stream_index = 0;

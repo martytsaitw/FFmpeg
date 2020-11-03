@@ -37,12 +37,12 @@ int ff_flac_parse_picture(AVFormatContext *s, uint8_t *buf, int buf_size)
     int len;
     unsigned int type;
 
-    pb = avio_alloc_context(buf, buf_size, 0, NULL, NULL, NULL, NULL);
+    pb = avio_alloc_context_xij(buf, buf_size, 0, NULL, NULL, NULL, NULL);
     if (!pb)
         return AVERROR(ENOMEM);
 
     /* read the picture type */
-    type = avio_rb32(pb);
+    type = avio_rb32_xij(pb);
     if (type >= FF_ARRAY_ELEMS(ff_id3v2_picture_types)) {
         av_log(s, AV_LOG_ERROR, "Invalid picture type: %d.\n", type);
         if (s->error_recognition & AV_EF_EXPLODE) {
@@ -52,9 +52,9 @@ int ff_flac_parse_picture(AVFormatContext *s, uint8_t *buf, int buf_size)
     }
 
     /* picture mimetype */
-    len = avio_rb32(pb);
+    len = avio_rb32_xij(pb);
     if (len <= 0 || len >= 64 ||
-        avio_read(pb, mimetype, FFMIN(len, sizeof(mimetype) - 1)) != len) {
+        avio_read_xij(pb, mimetype, FFMIN(len, sizeof(mimetype) - 1)) != len) {
         av_log(s, AV_LOG_ERROR, "Could not read mimetype from an attached "
                "picture.\n");
         if (s->error_recognition & AV_EF_EXPLODE)
@@ -80,13 +80,13 @@ int ff_flac_parse_picture(AVFormatContext *s, uint8_t *buf, int buf_size)
     }
 
     /* picture description */
-    len = avio_rb32(pb);
+    len = avio_rb32_xij(pb);
     if (len > 0) {
         if (!(desc = av_malloc(len + 1))) {
             RETURN_ERROR(AVERROR(ENOMEM));
         }
 
-        if (avio_read(pb, desc, len) != len) {
+        if (avio_read_xij(pb, desc, len) != len) {
             av_log(s, AV_LOG_ERROR, "Error reading attached picture description.\n");
             if (s->error_recognition & AV_EF_EXPLODE)
                 ret = AVERROR(EIO);
@@ -96,12 +96,12 @@ int ff_flac_parse_picture(AVFormatContext *s, uint8_t *buf, int buf_size)
     }
 
     /* picture metadata */
-    width  = avio_rb32(pb);
-    height = avio_rb32(pb);
-    avio_skip(pb, 8);
+    width  = avio_rb32_xij(pb);
+    height = avio_rb32_xij(pb);
+    avio_skip_xij(pb, 8);
 
     /* picture data */
-    len = avio_rb32(pb);
+    len = avio_rb32_xij(pb);
     if (len <= 0) {
         av_log(s, AV_LOG_ERROR, "Invalid attached picture size: %d.\n", len);
         if (s->error_recognition & AV_EF_EXPLODE)
@@ -112,7 +112,7 @@ int ff_flac_parse_picture(AVFormatContext *s, uint8_t *buf, int buf_size)
         RETURN_ERROR(AVERROR(ENOMEM));
     }
     memset(data->data + len, 0, AV_INPUT_BUFFER_PADDING_SIZE);
-    if (avio_read(pb, data->data, len) != len) {
+    if (avio_read_xij(pb, data->data, len) != len) {
         av_log(s, AV_LOG_ERROR, "Error reading attached picture data.\n");
         if (s->error_recognition & AV_EF_EXPLODE)
             ret = AVERROR(EIO);
@@ -140,14 +140,14 @@ int ff_flac_parse_picture(AVFormatContext *s, uint8_t *buf, int buf_size)
     if (desc)
         av_dict_set(&st->metadata, "title", desc, AV_DICT_DONT_STRDUP_VAL);
 
-    avio_context_free(&pb);
+    avio_context_free_xij(&pb);
 
     return 0;
 
 fail:
-    av_buffer_unref(&data);
+    av_buffer_unref_xij(&data);
     av_freep(&desc);
-    avio_context_free(&pb);
+    avio_context_free_xij(&pb);
 
     return ret;
 }

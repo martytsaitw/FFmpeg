@@ -272,7 +272,7 @@ static int blend_frame(AVFilterContext *ctx, AVFrame *mpic, AVFrame *opic)
          * 1. ff_qsvvpp_filter_frame will take control of the given frame
          * 2. We need to repeat the overlay frame when 2nd input goes into EOF
          */
-        opic_copy = av_frame_clone(opic);
+        opic_copy = av_frame_clone_xij(opic);
         if (!opic_copy)
             return AVERROR(ENOMEM);
 
@@ -325,7 +325,7 @@ static int request_frame(AVFilterLink *outlink)
     while (s->main->pts != AV_NOPTS_VALUE &&
            s->over_next->pts != AV_NOPTS_VALUE &&
            av_compare_ts(s->over_next->pts, tb_over, s->main->pts, tb_main) < 0) {
-        av_frame_free(&s->over_prev);
+        av_frame_free_xij(&s->over_prev);
         FFSWAP(AVFrame*, s->over_prev, s->over_next);
 
         ret = ff_request_frame(ctx->inputs[OVERLAY]);
@@ -339,12 +339,12 @@ static int request_frame(AVFilterLink *outlink)
         s->over_next->pts == AV_NOPTS_VALUE ||
         !av_compare_ts(s->over_next->pts, tb_over, s->main->pts, tb_main)) {
         ret = blend_frame(ctx, s->main, s->over_next);
-        av_frame_free(&s->over_prev);
+        av_frame_free_xij(&s->over_prev);
         FFSWAP(AVFrame*, s->over_prev, s->over_next);
     } else if (s->over_prev) {
         ret = blend_frame(ctx, s->main, s->over_prev);
     } else {
-        av_frame_free(&s->main);
+        av_frame_free_xij(&s->main);
         ret = AVERROR(EAGAIN);
     }
 
@@ -404,9 +404,9 @@ static void overlay_qsv_uninit(AVFilterContext *ctx)
 {
     QSVOverlayContext *vpp = ctx->priv;
 
-    av_frame_free(&vpp->main);
-    av_frame_free(&vpp->over_prev);
-    av_frame_free(&vpp->over_next);
+    av_frame_free_xij(&vpp->main);
+    av_frame_free_xij(&vpp->over_prev);
+    av_frame_free_xij(&vpp->over_next);
     ff_qsvvpp_free(&vpp->qsv);
     av_freep(&vpp->comp_conf.InputStream);
     av_freep(&vpp->qsv_param.ext_buf);

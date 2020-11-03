@@ -50,9 +50,9 @@ typedef struct ChromaprintMuxContext {
 static void cleanup(ChromaprintMuxContext *cpr)
 {
     if (cpr->ctx) {
-        ff_lock_avformat();
+        ff_lock_avformat_xij();
         chromaprint_free(cpr->ctx);
-        ff_unlock_avformat();
+        ff_unlock_avformat_xij();
     }
 }
 
@@ -61,9 +61,9 @@ static int write_header(AVFormatContext *s)
     ChromaprintMuxContext *cpr = s->priv_data;
     AVStream *st;
 
-    ff_lock_avformat();
+    ff_lock_avformat_xij();
     cpr->ctx = chromaprint_new(cpr->algorithm);
-    ff_unlock_avformat();
+    ff_unlock_avformat_xij();
 
     if (!cpr->ctx) {
         av_log(s, AV_LOG_ERROR, "Failed to create chromaprint context.\n");
@@ -136,7 +136,7 @@ static int write_trailer(AVFormatContext *s)
 
     switch (cpr->fp_format) {
     case FINGERPRINT_RAW:
-        avio_write(pb, fp, size);
+        avio_write_xij(pb, fp, size);
         break;
     case FINGERPRINT_COMPRESSED:
     case FINGERPRINT_BASE64:
@@ -145,7 +145,7 @@ static int write_trailer(AVFormatContext *s)
             av_log(s, AV_LOG_ERROR, "Failed to encode fingerprint\n");
             goto fail;
         }
-        avio_write(pb, enc_fp, enc_size);
+        avio_write_xij(pb, enc_fp, enc_size);
         break;
     }
 

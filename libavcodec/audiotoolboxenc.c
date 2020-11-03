@@ -482,8 +482,8 @@ static OSStatus ffat_encode_callback(AudioConverterRef converter, UInt32 *nb_pac
     if (*nb_packets > frame->nb_samples)
         *nb_packets = frame->nb_samples;
 
-    av_frame_unref(at->encoding_frame);
-    ret = av_frame_ref(at->encoding_frame, frame);
+    av_frame_unref_xij(at->encoding_frame);
+    ret = av_frame_ref_xij(at->encoding_frame, frame);
     if (ret < 0) {
         *nb_packets = 0;
         return ret;
@@ -527,7 +527,7 @@ static int ffat_encode(AVCodecContext *avctx, AVPacket *avpkt,
         if ((ret = ff_af_queue_add(&at->afq, frame)) < 0)
             return ret;
 
-        in_frame = av_frame_clone(frame);
+        in_frame = av_frame_clone_xij(frame);
         if (!in_frame)
             return AVERROR(ENOMEM);
 
@@ -579,7 +579,7 @@ static av_cold int ffat_close_encoder(AVCodecContext *avctx)
     ff_bufqueue_discard_all(&at->frame_queue);
     ff_bufqueue_discard_all(&at->used_frame_queue);
     ff_af_queue_close(&at->afq);
-    av_frame_free(&at->encoding_frame);
+    av_frame_free_xij(&at->encoding_frame);
     return 0;
 }
 

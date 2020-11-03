@@ -383,7 +383,7 @@ static av_cold int init_subtitles(AVFilterContext *ctx)
     dec = avcodec_find_decoder_ijk(st->codecpar->codec_id);
     if (!dec) {
         av_log(ctx, AV_LOG_ERROR, "Failed to find subtitle codec %s\n",
-               avcodec_get_name(st->codecpar->codec_id));
+               avcodec_get_name_xij(st->codecpar->codec_id));
         return AVERROR(EINVAL);
     }
     dec_desc = avcodec_descriptor_get(st->codecpar->codec_id);
@@ -415,7 +415,7 @@ static av_cold int init_subtitles(AVFilterContext *ctx)
      */
     dec_ctx->pkt_timebase = st->time_base;
 
-    ret = avcodec_open2(dec_ctx, NULL, &codec_opts);
+    ret = avcodec_open2_xij(dec_ctx, NULL, &codec_opts);
     if (ret < 0)
         goto end;
 
@@ -453,7 +453,7 @@ static av_cold int init_subtitles(AVFilterContext *ctx)
         AVSubtitle sub = {0};
 
         if (pkt.stream_index == sid) {
-            ret = avcodec_decode_subtitle2(dec_ctx, &sub, &got_subtitle, &pkt);
+            ret = avcodec_decode_subtitle2_xij(dec_ctx, &sub, &got_subtitle, &pkt);
             if (ret < 0) {
                 av_log(ctx, AV_LOG_WARNING, "Error decoding: %s (ignored)\n",
                        av_err2str(ret));
@@ -473,14 +473,14 @@ static av_cold int init_subtitles(AVFilterContext *ctx)
             }
         }
         av_packet_unref_ijk(&pkt);
-        avsubtitle_free(&sub);
+        avsubtitle_free_xij(&sub);
     }
 
 end:
     av_dict_free(&codec_opts);
-    avcodec_close(dec_ctx);
+    avcodec_close_xij(dec_ctx);
     avcodec_free_context_ijk(&dec_ctx);
-    avformat_close_input(&fmt);
+    avformat_close_input_xij(&fmt);
     return ret;
 }
 

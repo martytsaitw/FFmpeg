@@ -285,7 +285,7 @@ static int cdg_decode_frame(AVCodecContext *avctx,
 
     bytestream2_init(&gb, avpkt->data, avpkt->size);
 
-    if ((ret = ff_reget_buffer(avctx, cc->frame)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, cc->frame)) < 0)
         return ret;
     if (!avctx->frame_number) {
         memset(cc->frame->data[0], 0, cc->frame->linesize[0] * avctx->height);
@@ -337,12 +337,12 @@ static int cdg_decode_frame(AVCodecContext *avctx,
                 return AVERROR(EINVAL);
             }
 
-            if ((ret = ff_get_buffer(avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
+            if ((ret = ff_get_buffer_xij(avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
                 return ret;
 
             cdg_scroll(cc, cdg_data, frame, inst == CDG_INST_SCROLL_COPY);
-            av_frame_unref(cc->frame);
-            ret = av_frame_ref(cc->frame, frame);
+            av_frame_unref_xij(cc->frame);
+            ret = av_frame_ref_xij(cc->frame, frame);
             if (ret < 0)
                 return ret;
             break;
@@ -354,7 +354,7 @@ static int cdg_decode_frame(AVCodecContext *avctx,
         }
 
         if (!frame->data[0]) {
-            ret = av_frame_ref(frame, cc->frame);
+            ret = av_frame_ref_xij(frame, cc->frame);
             if (ret < 0)
                 return ret;
         }
@@ -370,7 +370,7 @@ static av_cold int cdg_decode_end(AVCodecContext *avctx)
 {
     CDGraphicsContext *cc = avctx->priv_data;
 
-    av_frame_free(&cc->frame);
+    av_frame_free_xij(&cc->frame);
 
     return 0;
 }

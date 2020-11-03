@@ -251,7 +251,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     const int cw = AV_CEIL_RSHIFT(inlink->w, s->hsub);
     const int ch = AV_CEIL_RSHIFT(inlink->h, s->vsub);
 
-    if (av_frame_is_writable(in)) {
+    if (av_frame_is_writable_xij(in)) {
         out = in;
 
         if (s->luma_strength > 0)
@@ -263,10 +263,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     } else {
         out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out) {
-            av_frame_free(&in);
+            av_frame_free_xij(&in);
             return AVERROR(ENOMEM);
         }
-        av_frame_copy_props(out, in);
+        av_frame_copy_props_xij(out, in);
 
         if (s->luma_strength > 0) {
             filter(s, out->data[0], out->linesize[0], in->data[0], in->linesize[0], inlink->w, inlink->h, s->luma_strength);
@@ -285,7 +285,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
             av_image_copy_plane(out->data[3], out->linesize[3],
                                 in ->data[3], in ->linesize[3],
                                 inlink->w, inlink->h);
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
     }
 
     return ff_filter_frame(outlink, out);

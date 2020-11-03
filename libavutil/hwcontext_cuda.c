@@ -151,7 +151,7 @@ static int cuda_frames_init(AVHWFramesContext *ctx)
             return AVERROR_BUG;
         }
 
-        ctx->internal->pool_internal = av_buffer_pool_init2(size, ctx, cuda_pool_alloc, NULL);
+        ctx->internal->pool_internal = av_buffer_pool_init2_xij(size, ctx, cuda_pool_alloc, NULL);
         if (!ctx->internal->pool_internal)
             return AVERROR(ENOMEM);
     }
@@ -171,7 +171,7 @@ static int cuda_get_buffer(AVHWFramesContext *ctx, AVFrame *frame)
     }
     aligned_width = FFALIGN(width_in_bytes, CUDA_FRAME_ALIGNMENT);
 
-    frame->buf[0] = av_buffer_pool_get(ctx->pool);
+    frame->buf[0] = av_buffer_pool_get_xij(ctx->pool);
     if (!frame->buf[0])
         return AVERROR(ENOMEM);
 
@@ -202,7 +202,7 @@ static int cuda_get_buffer(AVHWFramesContext *ctx, AVFrame *frame)
         frame->linesize[2] = aligned_width;
         break;
     default:
-        av_frame_unref(frame);
+        av_frame_unref_xij(frame);
         return AVERROR_BUG;
     }
 

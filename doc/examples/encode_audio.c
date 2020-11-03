@@ -168,7 +168,7 @@ int main(int argc, char **argv)
     c->channels       = av_get_channel_layout_nb_channels(c->channel_layout);
 
     /* open it */
-    if (avcodec_open2(c, codec, NULL) < 0) {
+    if (avcodec_open2_xij(c, codec, NULL) < 0) {
         fprintf(stderr, "Could not open codec\n");
         exit(1);
     }
@@ -198,7 +198,7 @@ int main(int argc, char **argv)
     frame->channel_layout = c->channel_layout;
 
     /* allocate the data buffers */
-    ret = av_frame_get_buffer(frame, 0);
+    ret = av_frame_get_buffer_xij(frame, 0);
     if (ret < 0) {
         fprintf(stderr, "Could not allocate audio data buffers\n");
         exit(1);
@@ -210,7 +210,7 @@ int main(int argc, char **argv)
     for (i = 0; i < 200; i++) {
         /* make sure the frame is writable -- makes a copy if the encoder
          * kept a reference internally */
-        ret = av_frame_make_writable(frame);
+        ret = av_frame_make_writable_xij(frame);
         if (ret < 0)
             exit(1);
         samples = (uint16_t*)frame->data[0];
@@ -230,8 +230,8 @@ int main(int argc, char **argv)
 
     fclose(f);
 
-    av_frame_free(&frame);
-    av_packet_free(&pkt);
+    av_frame_free_xij(&frame);
+    av_packet_free_xij(&pkt);
     avcodec_free_context_ijk(&c);
 
     return 0;

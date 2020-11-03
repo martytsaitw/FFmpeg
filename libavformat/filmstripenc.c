@@ -45,7 +45,7 @@ static int write_header(AVFormatContext *s)
 static int write_packet(AVFormatContext *s, AVPacket *pkt)
 {
     FilmstripMuxContext *film = s->priv_data;
-    avio_write(s->pb, pkt->data, pkt->size);
+    avio_write_xij(s->pb, pkt->data, pkt->size);
     film->nb_frames++;
     return 0;
 }
@@ -57,17 +57,17 @@ static int write_trailer(AVFormatContext *s)
     AVStream *st = s->streams[0];
     int i;
 
-    avio_wb32(pb, RAND_TAG);
-    avio_wb32(pb, film->nb_frames);
-    avio_wb16(pb, 0);  // packing method
-    avio_wb16(pb, 0);  // reserved
-    avio_wb16(pb, st->codecpar->width);
-    avio_wb16(pb, st->codecpar->height);
-    avio_wb16(pb, 0);  // leading
+    avio_wb32_xij(pb, RAND_TAG);
+    avio_wb32_xij(pb, film->nb_frames);
+    avio_wb16_xij(pb, 0);  // packing method
+    avio_wb16_xij(pb, 0);  // reserved
+    avio_wb16_xij(pb, st->codecpar->width);
+    avio_wb16_xij(pb, st->codecpar->height);
+    avio_wb16_xij(pb, 0);  // leading
     // TODO: should be avg_frame_rate
-    avio_wb16(pb, st->time_base.den / st->time_base.num);
+    avio_wb16_xij(pb, st->time_base.den / st->time_base.num);
     for (i = 0; i < 16; i++)
-        avio_w8(pb, 0x00);  // reserved
+        avio_w8_xij(pb, 0x00);  // reserved
 
     return 0;
 }

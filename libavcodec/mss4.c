@@ -553,14 +553,14 @@ static int mss4_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         return AVERROR_INVALIDDATA;
     }
 
-    if ((ret = ff_reget_buffer(avctx, c->pic)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, c->pic)) < 0)
         return ret;
     c->pic->key_frame = (frame_type == INTRA_FRAME);
     c->pic->pict_type = (frame_type == INTRA_FRAME) ? AV_PICTURE_TYPE_I
                                                    : AV_PICTURE_TYPE_P;
     if (frame_type == SKIP_FRAME) {
         *got_frame      = 1;
-        if ((ret = av_frame_ref(data, c->pic)) < 0)
+        if ((ret = av_frame_ref_xij(data, c->pic)) < 0)
             return ret;
 
         return buf_size;
@@ -618,7 +618,7 @@ static int mss4_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         dst[2] += c->pic->linesize[2] * 16;
     }
 
-    if ((ret = av_frame_ref(data, c->pic)) < 0)
+    if ((ret = av_frame_ref_xij(data, c->pic)) < 0)
         return ret;
 
     *got_frame      = 1;
@@ -631,7 +631,7 @@ static av_cold int mss4_decode_end(AVCodecContext *avctx)
     MSS4Context * const c = avctx->priv_data;
     int i;
 
-    av_frame_free(&c->pic);
+    av_frame_free_xij(&c->pic);
     for (i = 0; i < 3; i++)
         av_freep(&c->prev_dc[i]);
     mss4_free_vlcs(c);

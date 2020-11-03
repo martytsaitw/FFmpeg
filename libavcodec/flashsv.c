@@ -106,7 +106,7 @@ static av_cold int flashsv_decode_end(AVCodecContext *avctx)
     FlashSVContext *s = avctx->priv_data;
     inflateEnd(&s->zstream);
     /* release the frame if needed */
-    av_frame_free(&s->frame);
+    av_frame_free_xij(&s->frame);
 
     /* free the tmpblock */
     av_freep(&s->tmpblock);
@@ -340,7 +340,7 @@ static int flashsv_decode_frame(AVCodecContext *avctx, void *data,
 
     /* initialize the image size once */
     if (avctx->width == 0 && avctx->height == 0) {
-        if ((ret = ff_set_dimensions(avctx, s->image_width, s->image_height)) < 0)
+        if ((ret = ff_set_dimensions_xij(avctx, s->image_width, s->image_height)) < 0)
             return ret;
     }
 
@@ -369,7 +369,7 @@ static int flashsv_decode_frame(AVCodecContext *avctx, void *data,
             s->image_width, s->image_height, s->block_width, s->block_height,
             h_blocks, v_blocks, h_part, v_part);
 
-    if ((ret = ff_reget_buffer(avctx, s->frame)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, s->frame)) < 0)
         return ret;
 
     /* loop over all block columns */
@@ -394,7 +394,7 @@ static int flashsv_decode_frame(AVCodecContext *avctx, void *data,
             s->diff_height    = cur_blk_height;
 
             if (8 * size > get_bits_left(&gb)) {
-                av_frame_unref(s->frame);
+                av_frame_unref_xij(s->frame);
                 return AVERROR_INVALIDDATA;
             }
 
@@ -494,7 +494,7 @@ static int flashsv_decode_frame(AVCodecContext *avctx, void *data,
                s->frame->linesize[0] * avctx->height);
     }
 
-    if ((ret = av_frame_ref(data, s->frame)) < 0)
+    if ((ret = av_frame_ref_xij(data, s->frame)) < 0)
         return ret;
 
     *got_frame = 1;

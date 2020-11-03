@@ -368,7 +368,7 @@ static int filter_frame(AVFilterContext *ctx,
     AVFilterLink *outlink = ctx->outputs[0];
 
     if (ctx->is_disabled) {
-        *out = av_frame_clone(base);
+        *out = av_frame_clone_xij(base);
         if (!*out)
             return AVERROR(ENOMEM);
     } else {
@@ -377,7 +377,7 @@ static int filter_frame(AVFilterContext *ctx,
         *out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!*out)
             return AVERROR(ENOMEM);
-        av_frame_copy_props(*out, base);
+        av_frame_copy_props_xij(*out, base);
 
         full = base->color_range == AVCOL_RANGE_JPEG;
         limited = base->color_range == AVCOL_RANGE_MPEG;
@@ -608,7 +608,7 @@ static int activate(AVFilterContext *ctx)
 
         if ((ret = ff_inlink_consume_frame(ctx->inputs[0], &frame)) > 0) {
             ret = filter_frame(ctx, &out, frame, frame);
-            av_frame_free(&frame);
+            av_frame_free_xij(&frame);
             if (ret < 0)
                 return ret;
             ret = ff_filter_frame(ctx->outputs[0], out);

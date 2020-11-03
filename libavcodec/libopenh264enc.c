@@ -218,7 +218,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
         memcpy(avctx->extradata, fbi.sLayerInfo[0].pBsBuf, size);
     }
 
-    props = ff_add_cpb_side_data(avctx);
+    props = ff_add_cpb_side_data_xij(avctx);
     if (!props)
         return AVERROR(ENOMEM);
     props->max_bitrate = param.iMaxBitrate;

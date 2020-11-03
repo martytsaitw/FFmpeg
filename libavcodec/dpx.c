@@ -155,7 +155,7 @@ static int decode_frame(AVCodecContext *avctx,
     w = read32(&buf, endian);
     h = read32(&buf, endian);
 
-    if ((ret = ff_set_dimensions(avctx, w, h)) < 0)
+    if ((ret = ff_set_dimensions_xij(avctx, w, h)) < 0)
         return ret;
 
     // Need to end in 0x320 to read the descriptor
@@ -356,9 +356,9 @@ static int decode_frame(AVCodecContext *avctx,
         return AVERROR_PATCHWELCOME;
     }
 
-    ff_set_sar(avctx, avctx->sample_aspect_ratio);
+    ff_set_sar_xij(avctx, avctx->sample_aspect_ratio);
 
-    if ((ret = ff_get_buffer(avctx, p, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, p, 0)) < 0)
         return ret;
 
     // Move pointer to offset from start of file

@@ -841,9 +841,9 @@ av_cold int ff_cavs_end(AVCodecContext *avctx)
 {
     AVSContext *h = avctx->priv_data;
 
-    av_frame_free(&h->cur.f);
-    av_frame_free(&h->DPB[0].f);
-    av_frame_free(&h->DPB[1].f);
+    av_frame_free_xij(&h->cur.f);
+    av_frame_free_xij(&h->DPB[0].f);
+    av_frame_free_xij(&h->DPB[1].f);
 
     av_freep(&h->top_qp);
     av_freep(&h->top_mv[0]);

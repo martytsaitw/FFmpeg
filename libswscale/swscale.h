@@ -47,12 +47,12 @@ unsigned swscale_version_ijk(void);
 /**
  * Return the libswscale build-time configuration.
  */
-const char *swscale_configuration(void);
+const char *swscale_configuration_xij(void);
 
 /**
  * Return the libswscale license.
  */
-const char *swscale_license(void);
+const char *swscale_license_xij(void);
 
 /* values for the flags, the stuff on the command line is different */
 #define SWS_FAST_BILINEAR     1
@@ -97,7 +97,7 @@ const char *swscale_license(void);
 
 /**
  * Return a pointer to yuv<->rgb coefficients for the given colorspace
- * suitable for sws_setColorspaceDetails().
+ * suitable for sws_setColorspaceDetails_xij().
  *
  * @param colorspace One of the SWS_CS_* macros. If invalid,
  * SWS_CS_DEFAULT is used.
@@ -125,27 +125,27 @@ struct SwsContext;
  * Return a positive value if pix_fmt is a supported input format, 0
  * otherwise.
  */
-int sws_isSupportedInput(enum AVPixelFormat pix_fmt);
+int sws_isSupportedInput_xij(enum AVPixelFormat pix_fmt);
 
 /**
  * Return a positive value if pix_fmt is a supported output format, 0
  * otherwise.
  */
-int sws_isSupportedOutput(enum AVPixelFormat pix_fmt);
+int sws_isSupportedOutput_xij(enum AVPixelFormat pix_fmt);
 
 /**
  * @param[in]  pix_fmt the pixel format
  * @return a positive value if an endianness conversion for pix_fmt is
  * supported, 0 otherwise.
  */
-int sws_isSupportedEndiannessConversion(enum AVPixelFormat pix_fmt);
+int sws_isSupportedEndiannessConversion_xij(enum AVPixelFormat pix_fmt);
 
 /**
  * Allocate an empty SwsContext. This must be filled and passed to
- * sws_init_context(). For filling see AVOptions, options.c and
- * sws_setColorspaceDetails().
+ * sws_init_context_xij(). For filling see AVOptions, options.c and
+ * sws_setColorspaceDetails_xij().
  */
-struct SwsContext *sws_alloc_context(void);
+struct SwsContext *sws_alloc_context_xij(void);
 
 /**
  * Initialize the swscaler context sws_context.
@@ -154,13 +154,13 @@ struct SwsContext *sws_alloc_context(void);
  * error
  */
 av_warn_unused_result
-int sws_init_context(struct SwsContext *sws_context, SwsFilter *srcFilter, SwsFilter *dstFilter);
+int sws_init_context_xij(struct SwsContext *sws_context, SwsFilter *srcFilter, SwsFilter *dstFilter);
 
 /**
  * Free the swscaler context swsContext.
  * If swsContext is NULL, then does nothing.
  */
-void sws_freeContext(struct SwsContext *swsContext);
+void sws_freeContext_xij(struct SwsContext *swsContext);
 
 /**
  * Allocate and return an SwsContext. You need it to perform
@@ -183,7 +183,7 @@ void sws_freeContext(struct SwsContext *swsContext);
  * @note this function is to be removed after a saner alternative is
  *       written
  */
-struct SwsContext *sws_getContext(int srcW, int srcH, enum AVPixelFormat srcFormat,
+struct SwsContext *sws_getContext_xij(int srcW, int srcH, enum AVPixelFormat srcFormat,
                                   int dstW, int dstH, enum AVPixelFormat dstFormat,
                                   int flags, SwsFilter *srcFilter,
                                   SwsFilter *dstFilter, const double *param);
@@ -198,7 +198,7 @@ struct SwsContext *sws_getContext(int srcW, int srcH, enum AVPixelFormat srcForm
  * non-sequential order the behavior of the function is undefined.
  *
  * @param c         the scaling context previously created with
- *                  sws_getContext()
+ *                  sws_getContext_xij()
  * @param srcSlice  the array containing the pointers to the planes of
  *                  the source slice
  * @param srcStride the array containing the strides for each plane of
@@ -228,61 +228,61 @@ int sws_scale(struct SwsContext *c, const uint8_t *const srcSlice[],
  * @param saturation 16.16 fixed point saturation correction
  * @return -1 if not supported
  */
-int sws_setColorspaceDetails(struct SwsContext *c, const int inv_table[4],
+int sws_setColorspaceDetails_xij(struct SwsContext *c, const int inv_table[4],
                              int srcRange, const int table[4], int dstRange,
                              int brightness, int contrast, int saturation);
 
 /**
  * @return -1 if not supported
  */
-int sws_getColorspaceDetails(struct SwsContext *c, int **inv_table,
+int sws_getColorspaceDetails_xij(struct SwsContext *c, int **inv_table,
                              int *srcRange, int **table, int *dstRange,
                              int *brightness, int *contrast, int *saturation);
 
 /**
  * Allocate and return an uninitialized vector with length coefficients.
  */
-SwsVector *sws_allocVec(int length);
+SwsVector *sws_allocVec_xij(int length);
 
 /**
  * Return a normalized Gaussian curve used to filter stuff
  * quality = 3 is high quality, lower is lower quality.
  */
-SwsVector *sws_getGaussianVec(double variance, double quality);
+SwsVector *sws_getGaussianVec_xij(double variance, double quality);
 
 /**
  * Scale all the coefficients of a by the scalar value.
  */
-void sws_scaleVec(SwsVector *a, double scalar);
+void sws_scaleVec_xij(SwsVector *a, double scalar);
 
 /**
  * Scale all the coefficients of a so that their sum equals height.
  */
-void sws_normalizeVec(SwsVector *a, double height);
+void sws_normalizeVec_xij(SwsVector *a, double height);
 
 #if FF_API_SWS_VECTOR
-attribute_deprecated SwsVector *sws_getConstVec(double c, int length);
-attribute_deprecated SwsVector *sws_getIdentityVec(void);
-attribute_deprecated void sws_convVec(SwsVector *a, SwsVector *b);
-attribute_deprecated void sws_addVec(SwsVector *a, SwsVector *b);
-attribute_deprecated void sws_subVec(SwsVector *a, SwsVector *b);
-attribute_deprecated void sws_shiftVec(SwsVector *a, int shift);
-attribute_deprecated SwsVector *sws_cloneVec(SwsVector *a);
-attribute_deprecated void sws_printVec2(SwsVector *a, AVClass *log_ctx, int log_level);
+attribute_deprecated SwsVector *sws_getConstVec_xij(double c, int length);
+attribute_deprecated SwsVector *sws_getIdentityVec_xij(void);
+attribute_deprecated void sws_convVec_xij(SwsVector *a, SwsVector *b);
+attribute_deprecated void sws_addVec_xij(SwsVector *a, SwsVector *b);
+attribute_deprecated void sws_subVec_xij(SwsVector *a, SwsVector *b);
+attribute_deprecated void sws_shiftVec_xij(SwsVector *a, int shift);
+attribute_deprecated SwsVector *sws_cloneVec_xij(SwsVector *a);
+attribute_deprecated void sws_printVec2_xij(SwsVector *a, AVClass *log_ctx, int log_level);
 #endif
 
-void sws_freeVec(SwsVector *a);
+void sws_freeVec_xij(SwsVector *a);
 
-SwsFilter *sws_getDefaultFilter(float lumaGBlur, float chromaGBlur,
+SwsFilter *sws_getDefaultFilter_xij(float lumaGBlur, float chromaGBlur,
                                 float lumaSharpen, float chromaSharpen,
                                 float chromaHShift, float chromaVShift,
                                 int verbose);
-void sws_freeFilter(SwsFilter *filter);
+void sws_freeFilter_xij(SwsFilter *filter);
 
 /**
  * Check if context can be reused, otherwise reallocate a new one.
  *
- * If context is NULL, just calls sws_getContext() to get a new
+ * If context is NULL, just calls sws_getContext_xij() to get a new
  * context. Otherwise, checks if the parameters are the ones already
  * saved in context. If that is the case, returns the current
  * context. Otherwise, frees context and gets a new context with
@@ -291,7 +291,7 @@ void sws_freeFilter(SwsFilter *filter);
  * Be warned that srcFilter and dstFilter are not checked, they
  * are assumed to remain the same.
  */
-struct SwsContext *sws_getCachedContext(struct SwsContext *context,
+struct SwsContext *sws_getCachedContext_xij(struct SwsContext *context,
                                         int srcW, int srcH, enum AVPixelFormat srcFormat,
                                         int dstW, int dstH, enum AVPixelFormat dstFormat,
                                         int flags, SwsFilter *srcFilter,

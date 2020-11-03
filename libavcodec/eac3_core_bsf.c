@@ -29,7 +29,7 @@ static int eac3_core_filter(AVBSFContext *ctx, AVPacket *pkt)
     GetBitContext gbc;
     int ret;
 
-    ret = ff_bsf_get_packet_ref(ctx, pkt);
+    ret = ff_bsf_get_packet_ref_xij(ctx, pkt);
     if (ret < 0)
         return ret;
     ret = init_get_bits8(&gbc, pkt->data, pkt->size);

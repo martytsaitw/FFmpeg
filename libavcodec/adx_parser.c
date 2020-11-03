@@ -75,7 +75,7 @@ static int adx_parse(AVCodecParserContext *s1,
             s->remaining -= buf_size;
     }
 
-    if (ff_combine_frame(pc, next, &buf, &buf_size) < 0 || !buf_size) {
+    if (ff_combine_frame_xij(pc, next, &buf, &buf_size) < 0 || !buf_size) {
         *poutbuf      = NULL;
         *poutbuf_size = 0;
         return buf_size;
@@ -92,5 +92,5 @@ AVCodecParser ff_adx_parser = {
     .codec_ids      = { AV_CODEC_ID_ADPCM_ADX },
     .priv_data_size = sizeof(ADXParseContext),
     .parser_parse   = adx_parse,
-    .parser_close   = ff_parse_close,
+    .parser_close   = ff_parse_close_xij,
 };

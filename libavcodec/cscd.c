@@ -74,7 +74,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         return AVERROR_INVALIDDATA;
     }
 
-    if ((ret = ff_reget_buffer(avctx, c->pic)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, c->pic)) < 0)
         return ret;
 
     // decompress data
@@ -119,7 +119,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     }
 
     *got_frame = 1;
-    if ((ret = av_frame_ref(data, c->pic)) < 0)
+    if ((ret = av_frame_ref_xij(data, c->pic)) < 0)
         return ret;
 
     return buf_size;
@@ -157,7 +157,7 @@ static av_cold int decode_init(AVCodecContext *avctx) {
 static av_cold int decode_end(AVCodecContext *avctx) {
     CamStudioContext *c = avctx->priv_data;
     av_freep(&c->decomp_buf);
-    av_frame_free(&c->pic);
+    av_frame_free_xij(&c->pic);
     return 0;
 }
 

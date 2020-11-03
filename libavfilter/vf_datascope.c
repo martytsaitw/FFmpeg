@@ -296,7 +296,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out) {
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         return AVERROR(ENOMEM);
     }
     out->pts = in->pts;
@@ -344,7 +344,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     td.in = in; td.out = out, td.yoff = xmaxlen, td.xoff = ymaxlen;
     ctx->internal->execute(ctx, s->filter, &td, NULL, FFMIN(ff_filter_get_nb_threads(ctx), FFMAX(outlink->w / 20, 1)));
 
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
     return ff_filter_frame(outlink, out);
 }
 
@@ -533,11 +533,11 @@ static int pixscope_filter_frame(AVFilterLink *inlink, AVFrame *in)
     char text[128];
 
     if (!out) {
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         return AVERROR(ENOMEM);
     }
-    av_frame_copy_props(out, in);
-    av_frame_copy(out, in);
+    av_frame_copy_props_xij(out, in);
+    av_frame_copy_xij(out, in);
 
     w = s->ww / s->w;
     h = s->ww / s->h;
@@ -638,7 +638,7 @@ static int pixscope_filter_frame(AVFilterLink *inlink, AVFrame *in)
         draw_text(&s->draw, out, s->colors[i], X + 28, Y + s->ww + 20 * (i + 2), text, 0);
     }
 
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
     return ff_filter_frame(outlink, out);
 }
 

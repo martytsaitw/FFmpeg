@@ -96,11 +96,11 @@ static uint32_t read_arbitrary(AVIOContext *pb)
     int i;
     uint32_t word;
 
-    size = avio_r8(pb);
+    size = avio_r8_xij(pb);
 
     word = 0;
     for (i = 0; i < size; i++) {
-        byte   = avio_r8(pb);
+        byte   = avio_r8_xij(pb);
         word <<= 8;
         word  |= byte;
     }
@@ -119,18 +119,18 @@ static int process_audio_header_elements(AVFormatContext *s)
     ea->sample_rate  = -1;
     ea->num_channels = 1;
 
-    while (!avio_feof(pb) && in_header) {
+    while (!avio_feof_xij(pb) && in_header) {
         int in_subheader;
         uint8_t byte;
-        byte = avio_r8(pb);
+        byte = avio_r8_xij(pb);
 
         switch (byte) {
         case 0xFD:
             av_log(s, AV_LOG_DEBUG, "entered audio subheader\n");
             in_subheader = 1;
-            while (!avio_feof(pb) && in_subheader) {
+            while (!avio_feof_xij(pb) && in_subheader) {
                 uint8_t subbyte;
-                subbyte = avio_r8(pb);
+                subbyte = avio_r8_xij(pb);
 
                 switch (subbyte) {
                 case 0x80:
@@ -272,11 +272,11 @@ static void process_audio_header_eacs(AVFormatContext *s)
     AVIOContext *pb    = s->pb;
     int compression_type;
 
-    ea->sample_rate  = ea->big_endian ? avio_rb32(pb) : avio_rl32(pb);
-    ea->bytes        = avio_r8(pb);   /* 1=8-bit, 2=16-bit */
-    ea->num_channels = avio_r8(pb);
-    compression_type = avio_r8(pb);
-    avio_skip(pb, 13);
+    ea->sample_rate  = ea->big_endian ? avio_rb32_xij(pb) : avio_rl32_xij(pb);
+    ea->bytes        = avio_r8_xij(pb);   /* 1=8-bit, 2=16-bit */
+    ea->num_channels = avio_r8_xij(pb);
+    compression_type = avio_r8_xij(pb);
+    avio_skip_xij(pb, 13);
 
     switch (compression_type) {
     case 0:
@@ -308,18 +308,18 @@ static void process_audio_header_sead(AVFormatContext *s)
     EaDemuxContext *ea = s->priv_data;
     AVIOContext *pb    = s->pb;
 
-    ea->sample_rate  = avio_rl32(pb);
-    ea->bytes        = avio_rl32(pb);  /* 1=8-bit, 2=16-bit */
-    ea->num_channels = avio_rl32(pb);
+    ea->sample_rate  = avio_rl32_xij(pb);
+    ea->bytes        = avio_rl32_xij(pb);  /* 1=8-bit, 2=16-bit */
+    ea->num_channels = avio_rl32_xij(pb);
     ea->audio_codec  = AV_CODEC_ID_ADPCM_IMA_EA_SEAD;
 }
 
 static void process_video_header_mdec(AVFormatContext *s, VideoProperties *video)
 {
     AVIOContext *pb    = s->pb;
-    avio_skip(pb, 4);
-    video->width       = avio_rl16(pb);
-    video->height      = avio_rl16(pb);
+    avio_skip_xij(pb, 4);
+    video->width       = avio_rl16_xij(pb);
+    video->height      = avio_rl16_xij(pb);
     video->time_base   = (AVRational) { 1, 15 };
     video->codec = AV_CODEC_ID_MDEC;
 }
@@ -328,11 +328,11 @@ static int process_video_header_vp6(AVFormatContext *s, VideoProperties *video)
 {
     AVIOContext *pb = s->pb;
 
-    avio_skip(pb, 8);
-    video->nb_frames = avio_rl32(pb);
-    avio_skip(pb, 4);
-    video->time_base.den = avio_rl32(pb);
-    video->time_base.num = avio_rl32(pb);
+    avio_skip_xij(pb, 8);
+    video->nb_frames = avio_rl32_xij(pb);
+    avio_skip_xij(pb, 4);
+    video->time_base.den = avio_rl32_xij(pb);
+    video->time_base.num = avio_rl32_xij(pb);
     if (video->time_base.den <= 0 || video->time_base.num <= 0) {
         av_log(s, AV_LOG_ERROR, "Timebase is invalid\n");
         return AVERROR_INVALIDDATA;
@@ -346,8 +346,8 @@ static void process_video_header_cmv(AVFormatContext *s, VideoProperties *video)
 {
     int fps;
 
-    avio_skip(s->pb, 10);
-    fps = avio_rl16(s->pb);
+    avio_skip_xij(s->pb, 10);
+    fps = avio_rl16_xij(s->pb);
     if (fps)
         video->time_base = (AVRational) { 1, fps };
     video->codec = AV_CODEC_ID_CMV;
@@ -366,8 +366,8 @@ static int process_ea_header(AVFormatContext *s)
         uint64_t startpos     = avio_tell(pb);
         int err               = 0;
 
-        blockid = avio_rl32(pb);
-        size    = avio_rl32(pb);
+        blockid = avio_rl32_xij(pb);
+        size    = avio_rl32_xij(pb);
         if (i == 0)
             ea->big_endian = size > av_bswap32(size);
         if (ea->big_endian)
@@ -380,7 +380,7 @@ static int process_ea_header(AVFormatContext *s)
 
         switch (blockid) {
         case ISNh_TAG:
-            if (avio_rl32(pb) != EACS_TAG) {
+            if (avio_rl32_xij(pb) != EACS_TAG) {
                 avpriv_request_sample(s, "unknown 1SNh headerid");
                 return 0;
             }
@@ -389,11 +389,11 @@ static int process_ea_header(AVFormatContext *s)
 
         case SCHl_TAG:
         case SHEN_TAG:
-            blockid = avio_rl32(pb);
+            blockid = avio_rl32_xij(pb);
             if (blockid == GSTR_TAG) {
-                avio_skip(pb, 4);
+                avio_skip_xij(pb, 4);
             } else if ((blockid & 0xFF) != (PT00_TAG & 0xFF)) {
-                blockid = avio_rl32(pb);
+                blockid = avio_rl32_xij(pb);
             }
             ea->platform = (blockid >> 16) & 0xFF;
             err = process_audio_header_elements(s);
@@ -432,8 +432,8 @@ static int process_ea_header(AVFormatContext *s)
 
         case MADk_TAG:
             ea->video.codec = AV_CODEC_ID_MAD;
-            avio_skip(pb, 6);
-            ea->video.time_base = (AVRational) { avio_rl16(pb), 1000 };
+            avio_skip_xij(pb, 6);
+            ea->video.time_base = (AVRational) { avio_rl16_xij(pb), 1000 };
             break;
 
         case MVhd_TAG:
@@ -450,10 +450,10 @@ static int process_ea_header(AVFormatContext *s)
             return err;
         }
 
-        avio_seek(pb, startpos + size, SEEK_SET);
+        avio_seek_xij(pb, startpos + size, SEEK_SET);
     }
 
-    avio_seek(pb, 0, SEEK_SET);
+    avio_seek_xij(pb, 0, SEEK_SET);
 
     return 1;
 }
@@ -579,8 +579,8 @@ static int ea_read_packet(AVFormatContext *s, AVPacket *pkt)
     int av_uninit(num_samples);
 
     while (!packet_read || partial_packet) {
-        chunk_type = avio_rl32(pb);
-        chunk_size = ea->big_endian ? avio_rb32(pb) : avio_rl32(pb);
+        chunk_type = avio_rl32_xij(pb);
+        chunk_size = ea->big_endian ? avio_rb32_xij(pb) : avio_rl32_xij(pb);
         if (chunk_size < 8)
             return AVERROR_INVALIDDATA;
         chunk_size -= 8;
@@ -591,22 +591,22 @@ static int ea_read_packet(AVFormatContext *s, AVPacket *pkt)
             /* header chunk also contains data; skip over the header portion */
             if (chunk_size < 32)
                 return AVERROR_INVALIDDATA;
-            avio_skip(pb, 32);
+            avio_skip_xij(pb, 32);
             chunk_size -= 32;
         case ISNd_TAG:
         case SCDl_TAG:
         case SNDC_TAG:
         case SDEN_TAG:
             if (!ea->audio_codec) {
-                avio_skip(pb, chunk_size);
+                avio_skip_xij(pb, chunk_size);
                 break;
             } else if (ea->audio_codec == AV_CODEC_ID_PCM_S16LE_PLANAR ||
                        ea->audio_codec == AV_CODEC_ID_MP3) {
-                num_samples = avio_rl32(pb);
-                avio_skip(pb, 8);
+                num_samples = avio_rl32_xij(pb);
+                avio_skip_xij(pb, 8);
                 chunk_size -= 12;
             } else if (ea->audio_codec == AV_CODEC_ID_ADPCM_PSX) {
-                avio_skip(pb, 8);
+                avio_skip_xij(pb, 8);
                 chunk_size -= 8;
             }
 
@@ -619,7 +619,7 @@ static int ea_read_packet(AVFormatContext *s, AVPacket *pkt)
             if (!chunk_size)
                 continue;
 
-            ret = av_get_packet(pb, pkt, chunk_size);
+            ret = av_get_packet_xij(pb, pkt, chunk_size);
             if (ret < 0)
                 return ret;
             pkt->stream_index = ea->audio_stream_index;
@@ -663,18 +663,18 @@ static int ea_read_packet(AVFormatContext *s, AVPacket *pkt)
         case SCEl_TAG:
         case SEND_TAG:
         case SEEN_TAG:
-            while (!avio_feof(pb)) {
-                int tag = avio_rl32(pb);
+            while (!avio_feof_xij(pb)) {
+                int tag = avio_rl32_xij(pb);
 
                 if (tag == ISNh_TAG ||
                     tag == SCHl_TAG ||
                     tag == SEAD_TAG ||
                     tag == SHEN_TAG) {
-                    avio_skip(pb, -4);
+                    avio_skip_xij(pb, -4);
                     break;
                 }
             }
-            if (avio_feof(pb))
+            if (avio_feof_xij(pb))
                 ret = AVERROR_EOF;
             packet_read = 1;
             break;
@@ -689,7 +689,7 @@ static int ea_read_packet(AVFormatContext *s, AVPacket *pkt)
         case fVGT_TAG:
         case MADm_TAG:
         case MADe_TAG:
-            avio_seek(pb, -8, SEEK_CUR);    // include chunk preamble
+            avio_seek_xij(pb, -8, SEEK_CUR);    // include chunk preamble
             chunk_size += 8;
             goto get_video_packet;
 
@@ -697,7 +697,7 @@ static int ea_read_packet(AVFormatContext *s, AVPacket *pkt)
             if (chunk_size < 8)
                 return AVERROR_INVALIDDATA;
 
-            avio_skip(pb, 8);               // skip ea DCT header
+            avio_skip_xij(pb, 8);               // skip ea DCT header
             chunk_size -= 8;
             goto get_video_packet;
 
@@ -713,9 +713,9 @@ get_video_packet:
                 continue;
 
             if (partial_packet) {
-                ret = av_append_packet(pb, pkt, chunk_size);
+                ret = av_append_packet_xij(pb, pkt, chunk_size);
             } else
-                ret = av_get_packet(pb, pkt, chunk_size);
+                ret = av_get_packet_xij(pb, pkt, chunk_size);
             if (ret < 0) {
                 packet_read = 1;
                 break;
@@ -730,7 +730,7 @@ get_video_packet:
             break;
 
         default:
-            avio_skip(pb, chunk_size);
+            avio_skip_xij(pb, chunk_size);
             break;
         }
     }

@@ -103,7 +103,7 @@ static inline void idct4col_put(uint8_t *dest, ptrdiff_t line_size, const int16_
 /* XXX: I think a 1.0/sqrt(2) normalization should be needed to
    compensate the extra butterfly stage - I don't have the full DV
    specification */
-void ff_simple_idct248_put(uint8_t *dest, ptrdiff_t line_size, int16_t *block)
+void ff_simple_idct248_put_xij(uint8_t *dest, ptrdiff_t line_size, int16_t *block)
 {
     int i;
     int16_t *ptr;
@@ -124,7 +124,7 @@ void ff_simple_idct248_put(uint8_t *dest, ptrdiff_t line_size, int16_t *block)
 
     /* IDCT8 on each line */
     for(i=0; i<8; i++) {
-        idctRowCondDC_int16_8bit(block + i*8, 0);
+        idctRowCondDC_int16_8bit_xij(block + i*8, 0);
     }
 
     /* IDCT4 and store */
@@ -191,13 +191,13 @@ static inline void idct4row(int16_t *row)
     row[3]= (c0 - c1) >> R_SHIFT;
 }
 
-void ff_simple_idct84_add(uint8_t *dest, ptrdiff_t line_size, int16_t *block)
+void ff_simple_idct84_add_xij(uint8_t *dest, ptrdiff_t line_size, int16_t *block)
 {
     int i;
 
     /* IDCT8 on each line */
     for(i=0; i<4; i++) {
-        idctRowCondDC_int16_8bit(block + i*8, 0);
+        idctRowCondDC_int16_8bit_xij(block + i*8, 0);
     }
 
     /* IDCT4 and store */
@@ -206,7 +206,7 @@ void ff_simple_idct84_add(uint8_t *dest, ptrdiff_t line_size, int16_t *block)
     }
 }
 
-void ff_simple_idct48_add(uint8_t *dest, ptrdiff_t line_size, int16_t *block)
+void ff_simple_idct48_add_xij(uint8_t *dest, ptrdiff_t line_size, int16_t *block)
 {
     int i;
 
@@ -217,11 +217,11 @@ void ff_simple_idct48_add(uint8_t *dest, ptrdiff_t line_size, int16_t *block)
 
     /* IDCT8 and store */
     for(i=0; i<4; i++){
-        idctSparseColAdd_int16_8bit(dest + i, line_size, block + i);
+        idctSparseColAdd_int16_8bit_xij(dest + i, line_size, block + i);
     }
 }
 
-void ff_simple_idct44_add(uint8_t *dest, ptrdiff_t line_size, int16_t *block)
+void ff_simple_idct44_add_xij(uint8_t *dest, ptrdiff_t line_size, int16_t *block)
 {
     int i;
 

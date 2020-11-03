@@ -68,7 +68,7 @@ static int avui_decode_frame(AVCodecContext *avctx, void *data,
                   avpkt->size >= opaque_length * 2 + 4;
     srca = src + opaque_length + 5;
 
-    if ((ret = ff_get_buffer(avctx, pic, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, pic, 0)) < 0)
         return ret;
 
     pic->key_frame = 1;

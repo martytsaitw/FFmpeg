@@ -52,15 +52,15 @@ static int efi_read(AVFormatContext *avctx, uint64_t start_pos)
     char buf[37];
     int len;
 
-    avio_seek(pb, start_pos, SEEK_SET);
-    if (avio_r8(pb) != 0x1A)
+    avio_seek_xij(pb, start_pos, SEEK_SET);
+    if (avio_r8_xij(pb) != 0x1A)
         return -1;
 
 #define GET_EFI_META(name,size) \
-    len = avio_r8(pb); \
+    len = avio_r8_xij(pb); \
     if (len < 1 || len > size) \
         return -1; \
-    if (avio_read(pb, buf, size) == size) { \
+    if (avio_read_xij(pb, buf, size) == size) { \
         buf[len] = 0; \
         av_dict_set(&avctx->metadata, name, buf, 0); \
     }
@@ -95,13 +95,13 @@ static int read_header(AVFormatContext *avctx)
     s->chars_per_frame = FFMAX(av_q2d(st->time_base)*s->chars_per_frame, 1);
 
     if (avctx->pb->seekable & AVIO_SEEKABLE_NORMAL) {
-        s->fsize = avio_size(avctx->pb);
+        s->fsize = avio_size_xij(avctx->pb);
         st->duration = (s->fsize + s->chars_per_frame - 1) / s->chars_per_frame;
 
         if (ff_sauce_read(avctx, &s->fsize, 0, 0) < 0)
             efi_read(avctx, s->fsize - 51);
 
-        avio_seek(avctx->pb, 0, SEEK_SET);
+        avio_seek_xij(avctx->pb, 0, SEEK_SET);
     }
 
 fail:
@@ -113,7 +113,7 @@ static int read_packet(AVFormatContext *avctx, AVPacket *pkt)
     TtyDemuxContext *s = avctx->priv_data;
     int n;
 
-    if (avio_feof(avctx->pb))
+    if (avio_feof_xij(avctx->pb))
         return AVERROR_EOF;
 
     n = s->chars_per_frame;
@@ -126,7 +126,7 @@ static int read_packet(AVFormatContext *avctx, AVPacket *pkt)
             n = s->fsize - p;
     }
 
-    pkt->size = av_get_packet(avctx->pb, pkt, n);
+    pkt->size = av_get_packet_xij(avctx->pb, pkt, n);
     if (pkt->size < 0)
         return pkt->size;
     pkt->flags |= AV_PKT_FLAG_KEY;

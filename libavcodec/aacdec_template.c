@@ -172,12 +172,12 @@ static int frame_configure_elements(AVCodecContext *avctx)
     }
 
     /* get output buffer */
-    av_frame_unref(ac->frame);
+    av_frame_unref_xij(ac->frame);
     if (!avctx->channels)
         return 1;
 
     ac->frame->nb_samples = 2048;
-    if ((ret = ff_get_buffer(avctx, ac->frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, ac->frame, 0)) < 0)
         return ret;
 
     /* map output channel pointers to AVFrame data */
@@ -975,7 +975,7 @@ static int decode_audio_specific_config_gb(AACContext *ac,
     int i, ret;
     GetBitContext gbc = *gb;
 
-    if ((i = ff_mpeg4audio_get_config_gb(m4ac, &gbc, sync_extension)) < 0)
+    if ((i = ff_mpeg4audio_get_config_gb_xij(m4ac, &gbc, sync_extension)) < 0)
         return AVERROR_INVALIDDATA;
 
     if (m4ac->sampling_index > 12) {
@@ -1188,10 +1188,10 @@ static av_cold int aac_decode_init(AVCodecContext *avctx)
         ac->oc[1].m4ac.sbr = -1;
         ac->oc[1].m4ac.ps = -1;
 
-        for (i = 0; i < FF_ARRAY_ELEMS(ff_mpeg4audio_channels); i++)
-            if (ff_mpeg4audio_channels[i] == avctx->channels)
+        for (i = 0; i < FF_ARRAY_ELEMS(ff_mpeg4audio_channels_xij); i++)
+            if (ff_mpeg4audio_channels_xij[i] == avctx->channels)
                 break;
-        if (i == FF_ARRAY_ELEMS(ff_mpeg4audio_channels)) {
+        if (i == FF_ARRAY_ELEMS(ff_mpeg4audio_channels_xij)) {
             i = 0;
         }
         ac->oc[1].m4ac.chan_config = i;
@@ -3286,7 +3286,7 @@ static int aac_decode_frame_int(AVCodecContext *avctx, void *data,
         ac->frame->nb_samples = samples;
         ac->frame->sample_rate = avctx->sample_rate;
     } else
-        av_frame_unref(ac->frame);
+        av_frame_unref_xij(ac->frame);
     *got_frame_ptr = !!samples;
 
     /* for dual-mono audio (SCE + SCE) */
@@ -3316,11 +3316,11 @@ static int aac_decode_frame(AVCodecContext *avctx, void *data,
     int buf_offset;
     int err;
     int new_extradata_size;
-    const uint8_t *new_extradata = av_packet_get_side_data(avpkt,
+    const uint8_t *new_extradata = av_packet_get_side_data_xij(avpkt,
                                        AV_PKT_DATA_NEW_EXTRADATA,
                                        &new_extradata_size);
     int jp_dualmono_size;
-    const uint8_t *jp_dualmono   = av_packet_get_side_data(avpkt,
+    const uint8_t *jp_dualmono   = av_packet_get_side_data_xij(avpkt,
                                        AV_PKT_DATA_JP_DUALMONO,
                                        &jp_dualmono_size);
 

@@ -59,27 +59,27 @@ static int tta_read_header(AVFormatContext *s)
     start_offset = avio_tell(s->pb);
     if (start_offset < 0)
         return start_offset;
-    ffio_init_checksum(s->pb, ff_crcEDB88320_update, UINT32_MAX);
-    if (avio_rl32(s->pb) != AV_RL32("TTA1"))
+    ffio_init_checksum_xij(s->pb, ff_crcEDB88320_update_xij, UINT32_MAX);
+    if (avio_rl32_xij(s->pb) != AV_RL32("TTA1"))
         return AVERROR_INVALIDDATA;
 
-    avio_skip(s->pb, 2); // FIXME: flags
-    channels = avio_rl16(s->pb);
-    bps = avio_rl16(s->pb);
-    samplerate = avio_rl32(s->pb);
+    avio_skip_xij(s->pb, 2); // FIXME: flags
+    channels = avio_rl16_xij(s->pb);
+    bps = avio_rl16_xij(s->pb);
+    samplerate = avio_rl32_xij(s->pb);
     if(samplerate <= 0 || samplerate > 1000000){
         av_log(s, AV_LOG_ERROR, "nonsense samplerate\n");
         return AVERROR_INVALIDDATA;
     }
 
-    nb_samples = avio_rl32(s->pb);
+    nb_samples = avio_rl32_xij(s->pb);
     if (!nb_samples) {
         av_log(s, AV_LOG_ERROR, "invalid number of samples\n");
         return AVERROR_INVALIDDATA;
     }
 
-    crc = ffio_get_checksum(s->pb) ^ UINT32_MAX;
-    if (crc != avio_rl32(s->pb) && s->error_recognition & AV_EF_CRCCHECK) {
+    crc = ffio_get_checksum_xij(s->pb) ^ UINT32_MAX;
+    if (crc != avio_rl32_xij(s->pb) && s->error_recognition & AV_EF_CRCCHECK) {
         av_log(s, AV_LOG_ERROR, "Header CRC error\n");
         return AVERROR_INVALIDDATA;
     }
@@ -109,23 +109,23 @@ static int tta_read_header(AVFormatContext *s)
         return framepos;
     framepos += 4 * c->totalframes + 4;
 
-    if (ff_alloc_extradata(st->codecpar, avio_tell(s->pb) - start_offset))
+    if (ff_alloc_extradata_xij(st->codecpar, avio_tell(s->pb) - start_offset))
         return AVERROR(ENOMEM);
 
-    avio_seek(s->pb, start_offset, SEEK_SET);
-    avio_read(s->pb, st->codecpar->extradata, st->codecpar->extradata_size);
+    avio_seek_xij(s->pb, start_offset, SEEK_SET);
+    avio_read_xij(s->pb, st->codecpar->extradata, st->codecpar->extradata_size);
 
-    ffio_init_checksum(s->pb, ff_crcEDB88320_update, UINT32_MAX);
+    ffio_init_checksum_xij(s->pb, ff_crcEDB88320_update_xij, UINT32_MAX);
     for (i = 0; i < c->totalframes; i++) {
-        uint32_t size = avio_rl32(s->pb);
+        uint32_t size = avio_rl32_xij(s->pb);
         int r;
-        if ((r = av_add_index_entry(st, framepos, i * c->frame_size, size, 0,
+        if ((r = av_add_index_entry_xij(st, framepos, i * c->frame_size, size, 0,
                                     AVINDEX_KEYFRAME)) < 0)
             return r;
         framepos += size;
     }
-    crc = ffio_get_checksum(s->pb) ^ UINT32_MAX;
-    if (crc != avio_rl32(s->pb) && s->error_recognition & AV_EF_CRCCHECK) {
+    crc = ffio_get_checksum_xij(s->pb) ^ UINT32_MAX;
+    if (crc != avio_rl32_xij(s->pb) && s->error_recognition & AV_EF_CRCCHECK) {
         av_log(s, AV_LOG_ERROR, "Seek table CRC error\n");
         return AVERROR_INVALIDDATA;
     }
@@ -139,7 +139,7 @@ static int tta_read_header(AVFormatContext *s)
     if (s->pb->seekable & AVIO_SEEKABLE_NORMAL) {
         int64_t pos = avio_tell(s->pb);
         ff_ape_parse_tag(s);
-        avio_seek(s->pb, pos, SEEK_SET);
+        avio_seek_xij(s->pb, pos, SEEK_SET);
     }
 
     return 0;
@@ -162,7 +162,7 @@ static int tta_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     size = st->index_entries[c->currentframe].size;
 
-    ret = av_get_packet(s->pb, pkt, size);
+    ret = av_get_packet_xij(s->pb, pkt, size);
     pkt->dts = st->index_entries[c->currentframe++].timestamp;
     pkt->duration = c->currentframe == c->totalframes ? c->last_frame_size :
                                                         c->frame_size;
@@ -173,10 +173,10 @@ static int tta_read_seek(AVFormatContext *s, int stream_index, int64_t timestamp
 {
     TTAContext *c = s->priv_data;
     AVStream *st = s->streams[stream_index];
-    int index = av_index_search_timestamp(st, timestamp, flags);
+    int index = av_index_search_timestamp_xij(st, timestamp, flags);
     if (index < 0)
         return -1;
-    if (avio_seek(s->pb, st->index_entries[index].pos, SEEK_SET) < 0)
+    if (avio_seek_xij(s->pb, st->index_entries[index].pos, SEEK_SET) < 0)
         return -1;
 
     c->currentframe = index;

@@ -117,9 +117,9 @@ static av_cold void cudascale_uninit(AVFilterContext *ctx)
 {
     CUDAScaleContext *s = ctx->priv;
 
-    av_frame_free(&s->frame);
-    av_buffer_unref(&s->frames_ctx);
-    av_frame_free(&s->tmp_frame);
+    av_frame_free_xij(&s->frame);
+    av_buffer_unref_xij(&s->frames_ctx);
+    av_frame_free_xij(&s->tmp_frame);
 }
 
 static int cudascale_query_formats(AVFilterContext *ctx)
@@ -167,7 +167,7 @@ static av_cold int init_stage(CUDAScaleContext *s, AVBufferRef *device_ctx)
     if (ret < 0)
         goto fail;
 
-    av_frame_unref(s->frame);
+    av_frame_unref_xij(s->frame);
     ret = av_hwframe_get_buffer(out_ref, s->frame, 0);
     if (ret < 0)
         goto fail;
@@ -175,12 +175,12 @@ static av_cold int init_stage(CUDAScaleContext *s, AVBufferRef *device_ctx)
     s->frame->width  = s->planes_out[0].width;
     s->frame->height = s->planes_out[0].height;
 
-    av_buffer_unref(&s->frames_ctx);
+    av_buffer_unref_xij(&s->frames_ctx);
     s->frames_ctx = out_ref;
 
     return 0;
 fail:
-    av_buffer_unref(&out_ref);
+    av_buffer_unref_xij(&out_ref);
     return ret;
 }
 
@@ -451,10 +451,10 @@ static int cudascale_scale(AVFilterContext *ctx, AVFrame *out, AVFrame *in)
     if (ret < 0)
         return ret;
 
-    av_frame_move_ref(out, s->frame);
-    av_frame_move_ref(s->frame, s->tmp_frame);
+    av_frame_move_ref_xij(out, s->frame);
+    av_frame_move_ref_xij(s->frame, s->tmp_frame);
 
-    ret = av_frame_copy_props(out, in);
+    ret = av_frame_copy_props_xij(out, in);
     if (ret < 0)
         return ret;
 
@@ -497,11 +497,11 @@ static int cudascale_filter_frame(AVFilterLink *link, AVFrame *in)
               (int64_t)in->sample_aspect_ratio.den * outlink->w * link->h,
               INT_MAX);
 
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
     return ff_filter_frame(outlink, out);
 fail:
-    av_frame_free(&in);
-    av_frame_free(&out);
+    av_frame_free_xij(&in);
+    av_frame_free_xij(&out);
     return ret;
 }
 

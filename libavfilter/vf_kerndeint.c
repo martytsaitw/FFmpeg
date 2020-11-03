@@ -145,10 +145,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
 
     outpic = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!outpic) {
-        av_frame_free(&inpic);
+        av_frame_free_xij(&inpic);
         return AVERROR(ENOMEM);
     }
-    av_frame_copy_props(outpic, inpic);
+    av_frame_copy_props_xij(outpic, inpic);
     outpic->interlaced_frame = 0;
 
     for (plane = 0; plane < 4 && inpic->data[plane] && inpic->linesize[plane]; plane++) {
@@ -284,7 +284,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
         av_image_copy_plane(dstp, psrc_linesize, srcp, src_linesize, bwidth, h);
     }
 
-    av_frame_free(&inpic);
+    av_frame_free_xij(&inpic);
     return ff_filter_frame(outlink, outpic);
 }
 

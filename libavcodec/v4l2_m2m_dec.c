@@ -133,7 +133,7 @@ static int v4l2_receive_frame(AVCodecContext *avctx, AVFrame *frame)
     AVPacket avpkt = {0};
     int ret;
 
-    ret = ff_decode_get_packet(avctx, &avpkt);
+    ret = ff_decode_get_packet_xij(avctx, &avpkt);
     if (ret < 0 && ret != AVERROR_EOF)
         return ret;
 

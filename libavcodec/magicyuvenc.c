@@ -437,7 +437,7 @@ static int magy_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
 
     if (s->correlate) {
         uint8_t *r, *g, *b;
-        AVFrame *p = av_frame_clone(frame);
+        AVFrame *p = av_frame_clone_xij(frame);
 
         g = p->data[0];
         b = p->data[1];
@@ -461,7 +461,7 @@ static int magy_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
             }
         }
 
-        av_frame_free(&p);
+        av_frame_free_xij(&p);
     } else {
         for (i = 0; i < s->planes; i++) {
             for (slice = 0; slice < s->nb_slices; slice++) {

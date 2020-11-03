@@ -53,7 +53,7 @@ static int m101_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     int bits = avctx->extradata[2*4];
     AVFrame *frame = data;
 
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
     frame->pict_type = AV_PICTURE_TYPE_I;
     frame->key_frame = 1;

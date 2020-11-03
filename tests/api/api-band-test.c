@@ -123,7 +123,7 @@ static int video_decode(const char *input_filename)
     ctx->draw_horiz_band = draw_horiz_band;
     ctx->thread_count = 1;
 
-    result = avcodec_open2(ctx, codec, NULL);
+    result = avcodec_open2_xij(ctx, codec, NULL);
     if (result < 0) {
         av_log(ctx, AV_LOG_ERROR, "Can't open decoder\n");
         return result;
@@ -168,7 +168,7 @@ static int video_decode(const char *input_filename)
         }
         if (pkt.stream_index == video_stream || end_of_stream) {
             got_frame = 0;
-            result = avcodec_decode_video2(ctx, fr, &got_frame, &pkt);
+            result = avcodec_decode_video2_xij(ctx, fr, &got_frame, &pkt);
             if (result < 0) {
                 av_log(NULL, AV_LOG_ERROR, "Error decoding frame\n");
                 return result;
@@ -197,9 +197,9 @@ static int video_decode(const char *input_filename)
     } while (!end_of_stream || got_frame);
 
     av_packet_unref_ijk(&pkt);
-    av_frame_free(&fr);
-    avcodec_close(ctx);
-    avformat_close_input(&fmt_ctx);
+    av_frame_free_xij(&fr);
+    avcodec_close_xij(ctx);
+    avformat_close_input_xij(&fmt_ctx);
     avcodec_free_context_ijk(&ctx);
     av_freep(&byte_buffer);
     av_freep(&slice_byte_buffer);

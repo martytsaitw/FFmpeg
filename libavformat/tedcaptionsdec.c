@@ -70,7 +70,7 @@ static void av_bprint_utf8(AVBPrint *bp, unsigned c)
 static void next_byte(AVIOContext *pb, int *cur_byte)
 {
     uint8_t b;
-    int ret = avio_read(pb, &b, 1);
+    int ret = avio_read_xij(pb, &b, 1);
     *cur_byte = ret > 0 ? b : ret == 0 ? AVERROR_EOF : ret;
 }
 

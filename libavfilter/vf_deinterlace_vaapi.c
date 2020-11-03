@@ -70,7 +70,7 @@ static void deint_vaapi_pipeline_uninit(AVFilterContext *avctx)
     int i;
 
     for (i = 0; i < ctx->queue_count; i++)
-        av_frame_free(&ctx->frame_queue[i]);
+        av_frame_free_xij(&ctx->frame_queue[i]);
     ctx->queue_count = 0;
 
     ff_vaapi_vpp_pipeline_uninit(avctx);
@@ -201,7 +201,7 @@ static int deint_vaapi_filter_frame(AVFilterLink *inlink, AVFrame *input_frame)
             return 0;
         }
     } else {
-        av_frame_free(&ctx->frame_queue[0]);
+        av_frame_free_xij(&ctx->frame_queue[0]);
         for (i = 0; i + 1 < ctx->queue_count; i++)
             ctx->frame_queue[i] = ctx->frame_queue[i + 1];
         ctx->frame_queue[i] = input_frame;
@@ -304,7 +304,7 @@ static int deint_vaapi_filter_frame(AVFilterLink *inlink, AVFrame *input_frame)
         if (err < 0)
             goto fail;
 
-        err = av_frame_copy_props(output_frame, input_frame);
+        err = av_frame_copy_props_xij(output_frame, input_frame);
         if (err < 0)
             goto fail;
 
@@ -331,7 +331,7 @@ static int deint_vaapi_filter_frame(AVFilterLink *inlink, AVFrame *input_frame)
 fail:
     if (filter_params_addr)
         vaUnmapBuffer(vpp_ctx->hwctx->display, vpp_ctx->filter_buffers[0]);
-    av_frame_free(&output_frame);
+    av_frame_free_xij(&output_frame);
     return err;
 }
 

@@ -78,8 +78,8 @@ static av_cold int tdsc_close(AVCodecContext *avctx)
 {
     TDSCContext *ctx = avctx->priv_data;
 
-    av_frame_free(&ctx->refframe);
-    av_frame_free(&ctx->jpgframe);
+    av_frame_free_xij(&ctx->refframe);
+    av_frame_free_xij(&ctx->jpgframe);
     av_freep(&ctx->deflatebuffer);
     av_freep(&ctx->tilebuffer);
     av_freep(&ctx->cursor);
@@ -125,7 +125,7 @@ static av_cold int tdsc_init(AVCodecContext *avctx)
     ctx->jpeg_avctx->flags2 = avctx->flags2;
     ctx->jpeg_avctx->dct_algo = avctx->dct_algo;
     ctx->jpeg_avctx->idct_algo = avctx->idct_algo;
-    ret = ff_codec_open2_recursive(ctx->jpeg_avctx, codec, NULL);
+    ret = ff_codec_open2_recursive_xij(ctx->jpeg_avctx, codec, NULL);
     if (ret < 0)
         return ret;
 
@@ -350,13 +350,13 @@ static int tdsc_decode_jpeg_tile(AVCodecContext *avctx, int tile_size,
     jpkt.data = ctx->tilebuffer;
     jpkt.size = tile_size;
 
-    ret = avcodec_send_packet(ctx->jpeg_avctx, &jpkt);
+    ret = avcodec_send_packet_xij(ctx->jpeg_avctx, &jpkt);
     if (ret < 0) {
         av_log(avctx, AV_LOG_ERROR, "Error submitting a packet for decoding\n");
         return ret;
     }
 
-    ret = avcodec_receive_frame(ctx->jpeg_avctx, ctx->jpgframe);
+    ret = avcodec_receive_frame_xij(ctx->jpeg_avctx, ctx->jpgframe);
     if (ret < 0 || ctx->jpgframe->format != AV_PIX_FMT_YUVJ420P) {
         av_log(avctx, AV_LOG_ERROR,
                "JPEG decoding error (%d).\n", ret);
@@ -375,7 +375,7 @@ static int tdsc_decode_jpeg_tile(AVCodecContext *avctx, int tile_size,
               ctx->jpgframe->data[1], ctx->jpgframe->data[2],
               ctx->jpgframe->linesize[1], w, h);
 
-    av_frame_unref(ctx->jpgframe);
+    av_frame_unref_xij(ctx->jpgframe);
 
     return 0;
 }
@@ -474,7 +474,7 @@ static int tdsc_parse_tdsf(AVCodecContext *avctx, int number_tiles)
     if (avctx->width != w || avctx->height != h) {
         av_log(avctx, AV_LOG_DEBUG, "Size update %dx%d -> %d%d.\n",
                avctx->width, avctx->height, ctx->width, ctx->height);
-        ret = ff_set_dimensions(avctx, w, h);
+        ret = ff_set_dimensions_xij(avctx, w, h);
         if (ret < 0)
             return ret;
         init_refframe = 1;
@@ -484,7 +484,7 @@ static int tdsc_parse_tdsf(AVCodecContext *avctx, int number_tiles)
 
     /* Allocate the reference frame if not already done or on size change */
     if (init_refframe) {
-        ret = av_frame_get_buffer(ctx->refframe, 32);
+        ret = av_frame_get_buffer_xij(ctx->refframe, 32);
         if (ret < 0)
             return ret;
     }
@@ -592,11 +592,11 @@ static int tdsc_decode_frame(AVCodecContext *avctx, void *data,
     }
 
     /* Get the output frame and copy the reference frame */
-    ret = ff_get_buffer(avctx, frame, 0);
+    ret = ff_get_buffer_xij(avctx, frame, 0);
     if (ret < 0)
         return ret;
 
-    ret = av_frame_copy(frame, ctx->refframe);
+    ret = av_frame_copy_xij(frame, ctx->refframe);
     if (ret < 0)
         return ret;
 

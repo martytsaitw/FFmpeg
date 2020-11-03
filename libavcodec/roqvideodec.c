@@ -185,8 +185,8 @@ static av_cold int roq_decode_init(AVCodecContext *avctx)
     s->last_frame    = av_frame_alloc_ijk();
     s->current_frame = av_frame_alloc_ijk();
     if (!s->current_frame || !s->last_frame) {
-        av_frame_free(&s->current_frame);
-        av_frame_free(&s->last_frame);
+        av_frame_free_xij(&s->current_frame);
+        av_frame_free_xij(&s->last_frame);
         return AVERROR(ENOMEM);
     }
 
@@ -206,11 +206,11 @@ static int roq_decode_frame(AVCodecContext *avctx,
     int copy = !s->current_frame->data[0] && s->last_frame->data[0];
     int ret;
 
-    if ((ret = ff_reget_buffer(avctx, s->current_frame)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, s->current_frame)) < 0)
         return ret;
 
     if (copy) {
-        ret = av_frame_copy(s->current_frame, s->last_frame);
+        ret = av_frame_copy_xij(s->current_frame, s->last_frame);
         if (ret < 0)
             return ret;
     }
@@ -218,7 +218,7 @@ static int roq_decode_frame(AVCodecContext *avctx,
     bytestream2_init(&s->gb, buf, buf_size);
     roqvideo_decode_frame(s);
 
-    if ((ret = av_frame_ref(data, s->current_frame)) < 0)
+    if ((ret = av_frame_ref_xij(data, s->current_frame)) < 0)
         return ret;
     *got_frame      = 1;
 
@@ -232,8 +232,8 @@ static av_cold int roq_decode_end(AVCodecContext *avctx)
 {
     RoqContext *s = avctx->priv_data;
 
-    av_frame_free(&s->current_frame);
-    av_frame_free(&s->last_frame);
+    av_frame_free_xij(&s->current_frame);
+    av_frame_free_xij(&s->last_frame);
 
     return 0;
 }

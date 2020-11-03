@@ -59,13 +59,13 @@ AVFrame *ff_default_get_video_buffer(AVFilterLink *link, int w, int h)
 
         ret = av_hwframe_get_buffer(link->hw_frames_ctx, frame, 0);
         if (ret < 0)
-            av_frame_free(&frame);
+            av_frame_free_xij(&frame);
 
         return frame;
     }
 
     if (!link->frame_pool) {
-        link->frame_pool = ff_frame_pool_video_init(av_buffer_allocz, w, h,
+        link->frame_pool = ff_frame_pool_video_init(av_buffer_allocz_xij, w, h,
                                                     link->format, BUFFER_ALIGN);
         if (!link->frame_pool)
             return NULL;
@@ -80,7 +80,7 @@ AVFrame *ff_default_get_video_buffer(AVFilterLink *link, int w, int h)
             pool_format != link->format || pool_align != BUFFER_ALIGN) {
 
             ff_frame_pool_uninit((FFFramePool **)&link->frame_pool);
-            link->frame_pool = ff_frame_pool_video_init(av_buffer_allocz, w, h,
+            link->frame_pool = ff_frame_pool_video_init(av_buffer_allocz_xij, w, h,
                                                         link->format, BUFFER_ALIGN);
             if (!link->frame_pool)
                 return NULL;

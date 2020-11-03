@@ -43,7 +43,7 @@ AVFrame *ff_default_get_audio_buffer(AVFilterLink *link, int nb_samples)
     av_assert0(channels == av_get_channel_layout_nb_channels(link->channel_layout) || !av_get_channel_layout_nb_channels(link->channel_layout));
 
     if (!link->frame_pool) {
-        link->frame_pool = ff_frame_pool_audio_init(av_buffer_allocz, channels,
+        link->frame_pool = ff_frame_pool_audio_init(av_buffer_allocz_xij, channels,
                                                     nb_samples, link->format, BUFFER_ALIGN);
         if (!link->frame_pool)
             return NULL;
@@ -63,7 +63,7 @@ AVFrame *ff_default_get_audio_buffer(AVFilterLink *link, int nb_samples)
             pool_format != link->format || pool_align != BUFFER_ALIGN) {
 
             ff_frame_pool_uninit((FFFramePool **)&link->frame_pool);
-            link->frame_pool = ff_frame_pool_audio_init(av_buffer_allocz, channels,
+            link->frame_pool = ff_frame_pool_audio_init(av_buffer_allocz_xij, channels,
                                                         nb_samples, link->format, BUFFER_ALIGN);
             if (!link->frame_pool)
                 return NULL;

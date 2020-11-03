@@ -36,7 +36,7 @@ static int trace_headers_init(AVBSFContext *bsf)
     TraceHeadersContext *ctx = bsf->priv_data;
     int err;
 
-    err = ff_cbs_init(&ctx->cbc, bsf->par_in->codec_id, bsf);
+    err = ff_cbs_init_xij(&ctx->cbc, bsf->par_in->codec_id, bsf);
     if (err < 0)
         return err;
 
@@ -48,7 +48,7 @@ static int trace_headers_init(AVBSFContext *bsf)
 
         av_log(bsf, AV_LOG_INFO, "Extradata\n");
 
-        err = ff_cbs_read_extradata(ctx->cbc, &ps, bsf->par_in);
+        err = ff_cbs_read_extradata_xij(ctx->cbc, &ps, bsf->par_in);
         if (err < 0) {
             av_log(bsf, AV_LOG_ERROR, "Failed to read extradata.\n");
             return err;
@@ -64,7 +64,7 @@ static void trace_headers_close(AVBSFContext *bsf)
 {
     TraceHeadersContext *ctx = bsf->priv_data;
 
-    ff_cbs_close(&ctx->cbc);
+    ff_cbs_close_xij(&ctx->cbc);
 }
 
 static int trace_headers(AVBSFContext *bsf, AVPacket *pkt)
@@ -74,7 +74,7 @@ static int trace_headers(AVBSFContext *bsf, AVPacket *pkt)
     char tmp[256] = { 0 };
     int err;
 
-    err = ff_bsf_get_packet_ref(bsf, pkt);
+    err = ff_bsf_get_packet_ref_xij(bsf, pkt);
     if (err < 0)
         return err;
 
@@ -96,7 +96,7 @@ static int trace_headers(AVBSFContext *bsf, AVPacket *pkt)
 
     av_log(bsf, AV_LOG_INFO, "Packet: %d bytes%s.\n", pkt->size, tmp);
 
-    err = ff_cbs_read_packet(ctx->cbc, &au, pkt);
+    err = ff_cbs_read_packet_xij(ctx->cbc, &au, pkt);
     if (err < 0) {
         av_packet_unref_ijk(pkt);
         return err;
@@ -113,5 +113,5 @@ const AVBitStreamFilter ff_trace_headers_bsf = {
     .init           = &trace_headers_init,
     .close          = &trace_headers_close,
     .filter         = &trace_headers,
-    .codec_ids      = ff_cbs_all_codec_ids,
+    .codec_ids      = ff_cbs_all_codec_ids_xij,
 };

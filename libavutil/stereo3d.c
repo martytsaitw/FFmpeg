@@ -32,7 +32,7 @@ AVStereo3D *av_stereo3d_alloc(void)
 
 AVStereo3D *av_stereo3d_create_side_data(AVFrame *frame)
 {
-    AVFrameSideData *side_data = av_frame_new_side_data(frame,
+    AVFrameSideData *side_data = av_frame_new_side_data_xij(frame,
                                                         AV_FRAME_DATA_STEREO3D,
                                                         sizeof(AVStereo3D));
     if (!side_data)

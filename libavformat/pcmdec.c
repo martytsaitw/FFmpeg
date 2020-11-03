@@ -79,7 +79,7 @@ static int pcm_read_header(AVFormatContext *s)
     av_freep(&mime_type);
 
     st->codecpar->bits_per_coded_sample =
-        av_get_bits_per_sample(st->codecpar->codec_id);
+        av_get_bits_per_sample_xij(st->codecpar->codec_id);
 
     av_assert0(st->codecpar->bits_per_coded_sample > 0);
 

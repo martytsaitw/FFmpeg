@@ -890,12 +890,12 @@ static int allocate_buffers2(WavPackEncodeContext *s, int nterms)
     int i;
 
     for (i = 0; i < nterms + 2; i++) {
-        av_fast_padded_malloc(&s->sampleptrs[i][0], &s->sampleptrs_size[i][0],
+        av_fast_padded_malloc_xij(&s->sampleptrs[i][0], &s->sampleptrs_size[i][0],
                               s->block_samples * 4);
         if (!s->sampleptrs[i][0])
             return AVERROR(ENOMEM);
         if (!(s->flags & WV_MONO_DATA)) {
-            av_fast_padded_malloc(&s->sampleptrs[i][1], &s->sampleptrs_size[i][1],
+            av_fast_padded_malloc_xij(&s->sampleptrs[i][1], &s->sampleptrs_size[i][1],
                                   s->block_samples * 4);
             if (!s->sampleptrs[i][1])
                 return AVERROR(ENOMEM);
@@ -910,22 +910,22 @@ static int allocate_buffers(WavPackEncodeContext *s)
     int i;
 
     for (i = 0; i < 2; i++) {
-        av_fast_padded_malloc(&s->best_buffer[0], &s->best_buffer_size[0],
+        av_fast_padded_malloc_xij(&s->best_buffer[0], &s->best_buffer_size[0],
                               s->block_samples * 4);
         if (!s->best_buffer[0])
             return AVERROR(ENOMEM);
 
-        av_fast_padded_malloc(&s->temp_buffer[i][0], &s->temp_buffer_size[i][0],
+        av_fast_padded_malloc_xij(&s->temp_buffer[i][0], &s->temp_buffer_size[i][0],
                               s->block_samples * 4);
         if (!s->temp_buffer[i][0])
             return AVERROR(ENOMEM);
         if (!(s->flags & WV_MONO_DATA)) {
-            av_fast_padded_malloc(&s->best_buffer[1], &s->best_buffer_size[1],
+            av_fast_padded_malloc_xij(&s->best_buffer[1], &s->best_buffer_size[1],
                                   s->block_samples * 4);
             if (!s->best_buffer[1])
                 return AVERROR(ENOMEM);
 
-            av_fast_padded_malloc(&s->temp_buffer[i][1], &s->temp_buffer_size[i][1],
+            av_fast_padded_malloc_xij(&s->temp_buffer[i][1], &s->temp_buffer_size[i][1],
                                   s->block_samples * 4);
             if (!s->temp_buffer[i][1])
                 return AVERROR(ENOMEM);
@@ -1869,8 +1869,8 @@ static int wv_stereo(WavPackEncodeContext *s,
         while (1) {
             if (force_js || (wpds->joint_stereo && !force_ts)) {
                 if (!got_js) {
-                    av_fast_padded_malloc(&s->js_left,  &s->js_left_size,  buf_size);
-                    av_fast_padded_malloc(&s->js_right, &s->js_right_size, buf_size);
+                    av_fast_padded_malloc_xij(&s->js_left,  &s->js_left_size,  buf_size);
+                    av_fast_padded_malloc_xij(&s->js_right, &s->js_right_size, buf_size);
                     memcpy(s->js_left,  samples_l, buf_size);
                     memcpy(s->js_right, samples_r, buf_size);
 
@@ -2533,10 +2533,10 @@ static int wavpack_encode_block(WavPackEncodeContext *s,
     }
 
     if ((s->flags & WV_FLOAT_DATA) || (s->flags & MAG_MASK) >> MAG_LSB >= 24) {
-        av_fast_padded_malloc(&s->orig_l, &s->orig_l_size, sizeof(int32_t) * nb_samples);
+        av_fast_padded_malloc_xij(&s->orig_l, &s->orig_l_size, sizeof(int32_t) * nb_samples);
         memcpy(s->orig_l, samples_l, sizeof(int32_t) * nb_samples);
         if (!(s->flags & WV_MONO_DATA)) {
-            av_fast_padded_malloc(&s->orig_r, &s->orig_r_size, sizeof(int32_t) * nb_samples);
+            av_fast_padded_malloc_xij(&s->orig_r, &s->orig_r_size, sizeof(int32_t) * nb_samples);
             memcpy(s->orig_r, samples_r, sizeof(int32_t) * nb_samples);
         }
 
@@ -2870,12 +2870,12 @@ static int wavpack_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     uint8_t *buf;
 
     s->block_samples = frame->nb_samples;
-    av_fast_padded_malloc(&s->samples[0], &s->samples_size[0],
+    av_fast_padded_malloc_xij(&s->samples[0], &s->samples_size[0],
                           sizeof(int32_t) * s->block_samples);
     if (!s->samples[0])
         return AVERROR(ENOMEM);
     if (avctx->channels > 1) {
-        av_fast_padded_malloc(&s->samples[1], &s->samples_size[1],
+        av_fast_padded_malloc_xij(&s->samples[1], &s->samples_size[1],
                               sizeof(int32_t) * s->block_samples);
         if (!s->samples[1])
             return AVERROR(ENOMEM);

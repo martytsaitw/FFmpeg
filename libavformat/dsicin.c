@@ -76,16 +76,16 @@ static int cin_probe(AVProbeData *p)
 static int cin_read_file_header(CinDemuxContext *cin, AVIOContext *pb) {
     CinFileHeader *hdr = &cin->file_header;
 
-    if (avio_rl32(pb) != 0x55AA0000)
+    if (avio_rl32_xij(pb) != 0x55AA0000)
         return AVERROR_INVALIDDATA;
 
-    hdr->video_frame_size   = avio_rl32(pb);
-    hdr->video_frame_width  = avio_rl16(pb);
-    hdr->video_frame_height = avio_rl16(pb);
-    hdr->audio_frequency    = avio_rl32(pb);
-    hdr->audio_bits         = avio_r8(pb);
-    hdr->audio_stereo       = avio_r8(pb);
-    hdr->audio_frame_size   = avio_rl16(pb);
+    hdr->video_frame_size   = avio_rl32_xij(pb);
+    hdr->video_frame_width  = avio_rl16_xij(pb);
+    hdr->video_frame_height = avio_rl16_xij(pb);
+    hdr->audio_frequency    = avio_rl32_xij(pb);
+    hdr->audio_bits         = avio_r8_xij(pb);
+    hdr->audio_stereo       = avio_r8_xij(pb);
+    hdr->audio_frame_size   = avio_rl16_xij(pb);
 
     if (hdr->audio_frequency != 22050 || hdr->audio_bits != 16 || hdr->audio_stereo != 0)
         return AVERROR_INVALIDDATA;
@@ -144,16 +144,16 @@ static int cin_read_header(AVFormatContext *s)
 static int cin_read_frame_header(CinDemuxContext *cin, AVIOContext *pb) {
     CinFrameHeader *hdr = &cin->frame_header;
 
-    hdr->video_frame_type = avio_r8(pb);
-    hdr->audio_frame_type = avio_r8(pb);
-    hdr->pal_colors_count = avio_rl16(pb);
-    hdr->video_frame_size = avio_rl32(pb);
-    hdr->audio_frame_size = avio_rl32(pb);
+    hdr->video_frame_type = avio_r8_xij(pb);
+    hdr->audio_frame_type = avio_r8_xij(pb);
+    hdr->pal_colors_count = avio_rl16_xij(pb);
+    hdr->video_frame_size = avio_rl32_xij(pb);
+    hdr->audio_frame_size = avio_rl32_xij(pb);
 
-    if (avio_feof(pb) || pb->error)
+    if (avio_feof_xij(pb) || pb->error)
         return AVERROR(EIO);
 
-    if (avio_rl32(pb) != 0xAA55AA55)
+    if (avio_rl32_xij(pb) != 0xAA55AA55)
         return AVERROR_INVALIDDATA;
     if (hdr->video_frame_size < 0 || hdr->audio_frame_size < 0)
         return AVERROR_INVALIDDATA;
@@ -184,7 +184,7 @@ static int cin_read_packet(AVFormatContext *s, AVPacket *pkt)
         /* palette and video packet */
         pkt_size = (palette_type + 3) * hdr->pal_colors_count + hdr->video_frame_size;
 
-        pkt_size = ffio_limit(pb, pkt_size);
+        pkt_size = ffio_limit_xij(pb, pkt_size);
 
         ret = av_new_packet_ijk(pkt, 4 + pkt_size);
         if (ret < 0)
@@ -198,13 +198,13 @@ static int cin_read_packet(AVFormatContext *s, AVPacket *pkt)
         pkt->data[2] = hdr->pal_colors_count >> 8;
         pkt->data[3] = hdr->video_frame_type;
 
-        ret = avio_read(pb, &pkt->data[4], pkt_size);
+        ret = avio_read_xij(pb, &pkt->data[4], pkt_size);
         if (ret < 0) {
             av_packet_unref_ijk(pkt);
             return ret;
         }
         if (ret < pkt_size)
-            av_shrink_packet(pkt, 4 + ret);
+            av_shrink_packet_xij(pkt, 4 + ret);
 
         /* sound buffer will be processed on next read_packet() call */
         cin->audio_buffer_size = hdr->audio_frame_size;
@@ -212,7 +212,7 @@ static int cin_read_packet(AVFormatContext *s, AVPacket *pkt)
     }
 
     /* audio packet */
-    ret = av_get_packet(pb, pkt, cin->audio_buffer_size);
+    ret = av_get_packet_xij(pb, pkt, cin->audio_buffer_size);
     if (ret < 0)
         return ret;
 

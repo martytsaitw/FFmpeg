@@ -474,7 +474,7 @@ static inline CopyRet copy_frame(AVCodecContext *avctx,
     priv->need_second_field = interlaced && !priv->need_second_field;
 
     if (!frame->data[0]) {
-        if (ff_get_buffer(avctx, frame, 0) < 0)
+        if (ff_get_buffer_xij(avctx, frame, 0) < 0)
             return RET_ERROR;
     }
 
@@ -717,7 +717,7 @@ static int crystalhd_receive_frame(AVCodecContext *avctx, AVFrame *frame)
 
     av_log(avctx, AV_LOG_VERBOSE, "CrystalHD: receive_frame\n");
 
-    ret = ff_decode_get_packet(avctx, &pkt);
+    ret = ff_decode_get_packet_xij(avctx, &pkt);
     if (ret < 0 && ret != AVERROR_EOF) {
         return ret;
     }

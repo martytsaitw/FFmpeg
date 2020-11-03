@@ -84,10 +84,10 @@ static int subviewer_read_header(AVFormatContext *s)
 
     av_bprint_init(&header, 0, AV_BPRINT_SIZE_UNLIMITED);
 
-    while (!avio_feof(s->pb)) {
+    while (!avio_feof_xij(s->pb)) {
         char line[2048];
         int64_t pos = 0;
-        int len = ff_get_line(s->pb, line, sizeof(line));
+        int len = ff_get_line_xij(s->pb, line, sizeof(line));
 
         if (!len)
             break;
@@ -105,7 +105,7 @@ static int subviewer_read_header(AVFormatContext *s)
                 av_bprintf(&header, "%s\n", line);
                 if (!strncmp(line, "[END INFORMATION]", 17) || !strncmp(line, "[SUBTITLE]", 10)) {
                     /* end of header */
-                    res = ff_bprint_to_codecpar_extradata(st->codecpar, &header);
+                    res = ff_bprint_to_codecpar_extradata_xij(st->codecpar, &header);
                     if (res < 0)
                         goto end;
                 } else if (strncmp(line, "[INFORMATION]", 13)) {

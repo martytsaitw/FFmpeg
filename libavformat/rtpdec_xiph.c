@@ -52,7 +52,7 @@ struct PayloadContext {
 
 static void xiph_close_context(PayloadContext * data)
 {
-    ffio_free_dyn_buf(&data->fragment);
+    ffio_free_dyn_buf_xij(&data->fragment);
     av_freep(&data->split_buf);
 }
 
@@ -158,12 +158,12 @@ static int xiph_handle_packet(AVFormatContext *ctx, PayloadContext *data,
         int res;
 
         // end packet has been lost somewhere, so drop buffered data
-        ffio_free_dyn_buf(&data->fragment);
+        ffio_free_dyn_buf_xij(&data->fragment);
 
-        if((res = avio_open_dyn_buf(&data->fragment)) < 0)
+        if((res = avio_open_dyn_buf_xij(&data->fragment)) < 0)
             return res;
 
-        avio_write(data->fragment, buf, pkt_len);
+        avio_write_xij(data->fragment, buf, pkt_len);
         data->timestamp = *timestamp;
 
     } else {
@@ -171,7 +171,7 @@ static int xiph_handle_packet(AVFormatContext *ctx, PayloadContext *data,
         if (data->timestamp != *timestamp) {
             // skip if fragmented timestamp is incorrect;
             // a start packet has been lost somewhere
-            ffio_free_dyn_buf(&data->fragment);
+            ffio_free_dyn_buf_xij(&data->fragment);
             av_log(ctx, AV_LOG_ERROR, "RTP timestamps don't match!\n");
             return AVERROR_INVALIDDATA;
         }
@@ -182,7 +182,7 @@ static int xiph_handle_packet(AVFormatContext *ctx, PayloadContext *data,
         }
 
         // copy data to fragment buffer
-        avio_write(data->fragment, buf, pkt_len);
+        avio_write_xij(data->fragment, buf, pkt_len);
 
         if (fragmented == 3) {
             // end of xiph data packet
@@ -264,14 +264,14 @@ parse_packed_headers(AVFormatContext *s,
      * -- AV_INPUT_BUFFER_PADDING_SIZE required */
     extradata_alloc = length + length/255 + 3 + AV_INPUT_BUFFER_PADDING_SIZE;
 
-    if (ff_alloc_extradata(par, extradata_alloc)) {
+    if (ff_alloc_extradata_xij(par, extradata_alloc)) {
         av_log(s, AV_LOG_ERROR, "Out of memory\n");
         return AVERROR(ENOMEM);
     }
     ptr = par->extradata;
     *ptr++ = 2;
-    ptr += av_xiphlacing(ptr, length1);
-    ptr += av_xiphlacing(ptr, length2);
+    ptr += av_xiphlacing_xij(ptr, length1);
+    ptr += av_xiphlacing_xij(ptr, length2);
     memcpy(ptr, packed_headers, length);
     ptr += length;
     par->extradata_size = ptr - par->extradata;

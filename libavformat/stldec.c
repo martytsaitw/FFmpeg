@@ -80,11 +80,11 @@ static int stl_read_header(AVFormatContext *s)
     st->codecpar->codec_type = AVMEDIA_TYPE_SUBTITLE;
     st->codecpar->codec_id   = AV_CODEC_ID_STL;
 
-    while (!avio_feof(s->pb)) {
+    while (!avio_feof_xij(s->pb)) {
         char line[4096];
         char *p = line;
         const int64_t pos = avio_tell(s->pb);
-        int len = ff_get_line(s->pb, line, sizeof(line));
+        int len = ff_get_line_xij(s->pb, line, sizeof(line));
         int64_t pts_start;
         int duration;
 

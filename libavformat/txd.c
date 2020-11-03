@@ -59,11 +59,11 @@ static int txd_read_packet(AVFormatContext *s, AVPacket *pkt) {
     int ret;
 
 next_chunk:
-    id         = avio_rl32(pb);
-    chunk_size = avio_rl32(pb);
-    marker     = avio_rl32(pb);
+    id         = avio_rl32_xij(pb);
+    chunk_size = avio_rl32_xij(pb);
+    marker     = avio_rl32_xij(pb);
 
-    if (avio_feof(s->pb))
+    if (avio_feof_xij(s->pb))
         return AVERROR_EOF;
     if (marker != TXD_MARKER && marker != TXD_MARKER2) {
         av_log(s, AV_LOG_ERROR, "marker does not match\n");
@@ -75,7 +75,7 @@ next_chunk:
         if (chunk_size > 100)
             break;
     case TXD_EXTRA:
-        avio_skip(s->pb, chunk_size);
+        avio_skip_xij(s->pb, chunk_size);
     case TXD_FILE:
     case TXD_TEXTURE:
         goto next_chunk;
@@ -84,7 +84,7 @@ next_chunk:
         return AVERROR_INVALIDDATA;
     }
 
-    ret = av_get_packet(s->pb, pkt, chunk_size);
+    ret = av_get_packet_xij(s->pb, pkt, chunk_size);
     if (ret < 0)
         return ret;
     pkt->stream_index = 0;

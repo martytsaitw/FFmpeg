@@ -46,13 +46,13 @@
  * reference -- av_buffer_alloc_ijk() to just allocate a new buffer, and
  * av_buffer_create_ijk() to wrap an existing array in an AVBuffer. From an existing
  * reference, additional references may be created with av_buffer_ref_ijk().
- * Use av_buffer_unref() to free a reference (this will automatically free the
+ * Use av_buffer_unref_xij() to free a reference (this will automatically free the
  * data once all the references are freed).
  *
  * The convention throughout this API and the rest of FFmpeg is such that the
  * buffer is considered writable if there exists only one reference to it (and
- * it has not been marked as read-only). The av_buffer_is_writable() function is
- * provided to check whether this is true and av_buffer_make_writable() will
+ * it has not been marked as read-only). The av_buffer_is_writable_xij() function is
+ * provided to check whether this is true and av_buffer_make_writable_xij() will
  * automatically create a new writable buffer when necessary.
  * Of course nothing prevents the calling code from violating this convention,
  * however that is safe only when all the existing references are under its
@@ -84,7 +84,7 @@ typedef struct AVBufferRef {
     /**
      * The data buffer. It is considered writable if and only if
      * this is the only reference to the buffer, in which case
-     * av_buffer_is_writable() returns 1.
+     * av_buffer_is_writable_xij() returns 1.
      */
     uint8_t *data;
     /**
@@ -104,7 +104,7 @@ AVBufferRef *av_buffer_alloc_ijk(int size);
  * Same as av_buffer_alloc_ijk(), except the returned buffer will be initialized
  * to zero.
  */
-AVBufferRef *av_buffer_allocz(int size);
+AVBufferRef *av_buffer_allocz_xij(int size);
 
 /**
  * Always treat the buffer as read-only, even when it has only one
@@ -136,7 +136,7 @@ AVBufferRef *av_buffer_create_ijk(uint8_t *data, int size,
  * This function is meant to be passed to av_buffer_create_ijk(), not called
  * directly.
  */
-void av_buffer_default_free(void *opaque, uint8_t *data);
+void av_buffer_default_free_xij(void *opaque, uint8_t *data);
 
 /**
  * Create a new reference to an AVBuffer.
@@ -152,7 +152,7 @@ AVBufferRef *av_buffer_ref_ijk(AVBufferRef *buf);
  *
  * @param buf the reference to be freed. The pointer is set to NULL on return.
  */
-void av_buffer_unref(AVBufferRef **buf);
+void av_buffer_unref_xij(AVBufferRef **buf);
 
 /**
  * @return 1 if the caller may write to the data referred to by buf (which is
@@ -160,14 +160,14 @@ void av_buffer_unref(AVBufferRef **buf);
  * Return 0 otherwise.
  * A positive answer is valid until av_buffer_ref_ijk() is called on buf.
  */
-int av_buffer_is_writable(const AVBufferRef *buf);
+int av_buffer_is_writable_xij(const AVBufferRef *buf);
 
 /**
  * @return the opaque parameter set by av_buffer_create_ijk.
  */
-void *av_buffer_get_opaque(const AVBufferRef *buf);
+void *av_buffer_get_opaque_xij(const AVBufferRef *buf);
 
-int av_buffer_get_ref_count(const AVBufferRef *buf);
+int av_buffer_get_ref_count_xij(const AVBufferRef *buf);
 
 /**
  * Create a writable reference from a given buffer reference, avoiding data copy
@@ -178,7 +178,7 @@ int av_buffer_get_ref_count(const AVBufferRef *buf);
  *            written in its place. On failure, buf is left untouched.
  * @return 0 on success, a negative AVERROR on failure.
  */
-int av_buffer_make_writable(AVBufferRef **buf);
+int av_buffer_make_writable_xij(AVBufferRef **buf);
 
 /**
  * Reallocate a given buffer.
@@ -213,16 +213,16 @@ int av_buffer_realloc_ijk(AVBufferRef **buf, int size);
  * same size (the most obvious use case being buffers for raw video or audio
  * frames).
  *
- * At the beginning, the user must call av_buffer_pool_init() to create the
- * buffer pool. Then whenever a buffer is needed, call av_buffer_pool_get() to
+ * At the beginning, the user must call av_buffer_pool_init_xij() to create the
+ * buffer pool. Then whenever a buffer is needed, call av_buffer_pool_get_xij() to
  * get a reference to a new buffer, similar to av_buffer_alloc_ijk(). This new
  * reference works in all aspects the same way as the one created by
  * av_buffer_alloc_ijk(). However, when the last reference to this buffer is
  * unreferenced, it is returned to the pool instead of being freed and will be
- * reused for subsequent av_buffer_pool_get() calls.
+ * reused for subsequent av_buffer_pool_get_xij() calls.
  *
  * When the caller is done with the pool and no longer needs to allocate any new
- * buffers, av_buffer_pool_uninit() must be called to mark the pool as freeable.
+ * buffers, av_buffer_pool_uninit_xij() must be called to mark the pool as freeable.
  * Once all the buffers are released, it will automatically be freed.
  *
  * Allocating and releasing buffers with this API is thread-safe as long as
@@ -232,8 +232,8 @@ int av_buffer_realloc_ijk(AVBufferRef **buf, int size);
 
 /**
  * The buffer pool. This structure is opaque and not meant to be accessed
- * directly. It is allocated with av_buffer_pool_init() and freed with
- * av_buffer_pool_uninit().
+ * directly. It is allocated with av_buffer_pool_init_xij() and freed with
+ * av_buffer_pool_uninit_xij().
  */
 typedef struct AVBufferPool AVBufferPool;
 
@@ -246,7 +246,7 @@ typedef struct AVBufferPool AVBufferPool;
  * (av_buffer_alloc_ijk()).
  * @return newly created buffer pool on success, NULL on error.
  */
-AVBufferPool *av_buffer_pool_init(int size, AVBufferRef* (*alloc)(int size));
+AVBufferPool *av_buffer_pool_init_xij(int size, AVBufferRef* (*alloc)(int size));
 
 /**
  * Allocate and initialize a buffer pool with a more complex allocator.
@@ -256,13 +256,13 @@ AVBufferPool *av_buffer_pool_init(int size, AVBufferRef* (*alloc)(int size));
  * @param alloc a function that will be used to allocate new buffers when the
  *              pool is empty.
  * @param pool_free a function that will be called immediately before the pool
- *                  is freed. I.e. after av_buffer_pool_uninit() is called
+ *                  is freed. I.e. after av_buffer_pool_uninit_xij() is called
  *                  by the caller and all the frames are returned to the pool
  *                  and freed. It is intended to uninitialize the user opaque
  *                  data.
  * @return newly created buffer pool on success, NULL on error.
  */
-AVBufferPool *av_buffer_pool_init2(int size, void *opaque,
+AVBufferPool *av_buffer_pool_init2_xij(int size, void *opaque,
                                    AVBufferRef* (*alloc)(void *opaque, int size),
                                    void (*pool_free)(void *opaque));
 
@@ -274,7 +274,7 @@ AVBufferPool *av_buffer_pool_init2(int size, void *opaque,
  *
  * @param pool pointer to the pool to be freed. It will be set to NULL.
  */
-void av_buffer_pool_uninit(AVBufferPool **pool);
+void av_buffer_pool_uninit_xij(AVBufferPool **pool);
 
 /**
  * Allocate a new AVBuffer, reusing an old buffer from the pool when available.
@@ -282,7 +282,7 @@ void av_buffer_pool_uninit(AVBufferPool **pool);
  *
  * @return a reference to the new buffer on success, NULL on error.
  */
-AVBufferRef *av_buffer_pool_get(AVBufferPool *pool);
+AVBufferRef *av_buffer_pool_get_xij(AVBufferPool *pool);
 
 /**
  * @}

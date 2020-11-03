@@ -374,7 +374,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
 
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out) {
-        av_frame_free(&buf);
+        av_frame_free_xij(&buf);
         return AVERROR(ENOMEM);
     }
 
@@ -388,7 +388,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
                             s->planewidth[y] * (1 + (s->depth > 8)), s->planeheight[y]);
     }
 
-    av_frame_copy_props(out, in);
+    av_frame_copy_props_xij(out, in);
     metadata = &out->metadata;
     if (metadata) {
         uint8_t value[128];
@@ -404,7 +404,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
     }
 
     in = ff_bufqueue_get(&s->q);
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
     memmove(&s->luminance[0], &s->luminance[1], sizeof(*s->luminance) * (s->size - 1));
     s->luminance[s->available - 1] = s->calc_avgy(ctx, buf);
     ff_bufqueue_add(ctx, &s->q, buf);
@@ -420,7 +420,7 @@ static int request_frame(AVFilterLink *outlink)
 
     ret = ff_request_frame(ctx->inputs[0]);
     if (ret == AVERROR_EOF && s->available > 0) {
-        AVFrame *buf = av_frame_clone(ff_bufqueue_peek(&s->q, s->size - 1));
+        AVFrame *buf = av_frame_clone_xij(ff_bufqueue_peek(&s->q, s->size - 1));
         if (!buf)
             return AVERROR(ENOMEM);
 

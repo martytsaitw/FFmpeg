@@ -38,9 +38,9 @@ static void webvtt_write_time(AVIOContext *pb, int64_t millisec)
     min -= 60 * hour;
 
     if (hour > 0)
-        avio_printf(pb, "%"PRId64":", hour);
+        avio_printf_xij(pb, "%"PRId64":", hour);
 
-    avio_printf(pb, "%02"PRId64":%02"PRId64".%03"PRId64"", min, sec, millisec);
+    avio_printf_xij(pb, "%02"PRId64":%02"PRId64".%03"PRId64"", min, sec, millisec);
 }
 
 static int webvtt_write_header(AVFormatContext *ctx)
@@ -56,8 +56,8 @@ static int webvtt_write_header(AVFormatContext *ctx)
 
     avpriv_set_pts_info_ijk(s, 64, 1, 1000);
 
-    avio_printf(pb, "WEBVTT\n");
-    avio_flush(pb);
+    avio_printf_xij(pb, "WEBVTT\n");
+    avio_flush_xij(pb);
 
     return 0;
 }
@@ -68,28 +68,28 @@ static int webvtt_write_packet(AVFormatContext *ctx, AVPacket *pkt)
     int id_size, settings_size;
     uint8_t *id, *settings;
 
-    avio_printf(pb, "\n");
+    avio_printf_xij(pb, "\n");
 
-    id = av_packet_get_side_data(pkt, AV_PKT_DATA_WEBVTT_IDENTIFIER,
+    id = av_packet_get_side_data_xij(pkt, AV_PKT_DATA_WEBVTT_IDENTIFIER,
                                  &id_size);
 
     if (id && id_size > 0)
-        avio_printf(pb, "%.*s\n", id_size, id);
+        avio_printf_xij(pb, "%.*s\n", id_size, id);
 
     webvtt_write_time(pb, pkt->pts);
-    avio_printf(pb, " --> ");
+    avio_printf_xij(pb, " --> ");
     webvtt_write_time(pb, pkt->pts + pkt->duration);
 
-    settings = av_packet_get_side_data(pkt, AV_PKT_DATA_WEBVTT_SETTINGS,
+    settings = av_packet_get_side_data_xij(pkt, AV_PKT_DATA_WEBVTT_SETTINGS,
                                        &settings_size);
 
     if (settings && settings_size > 0)
-        avio_printf(pb, " %.*s", settings_size, settings);
+        avio_printf_xij(pb, " %.*s", settings_size, settings);
 
-    avio_printf(pb, "\n");
+    avio_printf_xij(pb, "\n");
 
-    avio_write(pb, pkt->data, pkt->size);
-    avio_printf(pb, "\n");
+    avio_write_xij(pb, pkt->data, pkt->size);
+    avio_printf_xij(pb, "\n");
 
     return 0;
 }

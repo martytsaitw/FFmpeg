@@ -22,7 +22,7 @@
 
 static int filter_frame(AVFilterLink *link, AVFrame *frame)
 {
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
     return 0;
 }
 

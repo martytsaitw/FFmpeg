@@ -336,7 +336,7 @@ static int output_frame(AVFilterLink *outlink)
 
     in_buf = ff_get_audio_buffer(outlink, nb_samples);
     if (!in_buf) {
-        av_frame_free(&out_buf);
+        av_frame_free_xij(&out_buf);
         return AVERROR(ENOMEM);
     }
 
@@ -367,7 +367,7 @@ static int output_frame(AVFilterLink *outlink)
             }
         }
     }
-    av_frame_free(&in_buf);
+    av_frame_free_xij(&in_buf);
 
     out_buf->pts = s->next_pts;
     if (s->next_pts != AV_NOPTS_VALUE)
@@ -434,7 +434,7 @@ static int activate(AVFilterContext *ctx)
                                            outlink->time_base);
                 ret = frame_list_add_frame(s->frame_list, buf->nb_samples, pts);
                 if (ret < 0) {
-                    av_frame_free(&buf);
+                    av_frame_free_xij(&buf);
                     return ret;
                 }
             }
@@ -442,11 +442,11 @@ static int activate(AVFilterContext *ctx)
             ret = av_audio_fifo_write(s->fifos[i], (void **)buf->extended_data,
                                       buf->nb_samples);
             if (ret < 0) {
-                av_frame_free(&buf);
+                av_frame_free_xij(&buf);
                 return ret;
             }
 
-            av_frame_free(&buf);
+            av_frame_free_xij(&buf);
 
             ret = output_frame(outlink);
             if (ret < 0)

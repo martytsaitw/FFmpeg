@@ -33,20 +33,20 @@ typedef struct MPJPEGContext {
 static int mpjpeg_write_header(AVFormatContext *s)
 {
     MPJPEGContext *mpj = s->priv_data;
-    avio_printf(s->pb, "--%s\r\n", mpj->boundary_tag);
-    avio_flush(s->pb);
+    avio_printf_xij(s->pb, "--%s\r\n", mpj->boundary_tag);
+    avio_flush_xij(s->pb);
     return 0;
 }
 
 static int mpjpeg_write_packet(AVFormatContext *s, AVPacket *pkt)
 {
     MPJPEGContext *mpj = s->priv_data;
-    avio_printf(s->pb, "Content-type: image/jpeg\r\n");
-    avio_printf(s->pb, "Content-length: %d\r\n\r\n",
+    avio_printf_xij(s->pb, "Content-type: image/jpeg\r\n");
+    avio_printf_xij(s->pb, "Content-length: %d\r\n\r\n",
                 pkt->size);
-    avio_write(s->pb, pkt->data, pkt->size);
+    avio_write_xij(s->pb, pkt->data, pkt->size);
 
-    avio_printf(s->pb, "\r\n--%s\r\n", mpj->boundary_tag);
+    avio_printf_xij(s->pb, "\r\n--%s\r\n", mpj->boundary_tag);
     return 0;
 }
 

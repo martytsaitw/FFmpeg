@@ -88,11 +88,11 @@ static void * attribute_align_arg worker(void *v){
 
         ret = avcodec_encode_video2(avctx, pkt, frame, &got_packet);
         pthread_mutex_lock(&c->buffer_mutex);
-        av_frame_unref(frame);
+        av_frame_unref_xij(frame);
         pthread_mutex_unlock(&c->buffer_mutex);
-        av_frame_free(&frame);
+        av_frame_free_xij(&frame);
         if(got_packet) {
-            int ret2 = av_packet_make_refcounted(pkt);
+            int ret2 = av_packet_make_refcounted_xij(pkt);
             if (ret >= 0 && ret2 < 0)
                 ret = ret2;
         } else {
@@ -108,7 +108,7 @@ static void * attribute_align_arg worker(void *v){
 end:
     av_free(pkt);
     pthread_mutex_lock(&c->buffer_mutex);
-    avcodec_close(avctx);
+    avcodec_close_xij(avctx);
     pthread_mutex_unlock(&c->buffer_mutex);
     av_freep(&avctx);
     return NULL;
@@ -216,7 +216,7 @@ int ff_frame_thread_encoder_init(AVCodecContext *avctx, AVDictionary *options){
 
         av_dict_copy(&tmp, options, 0);
         av_dict_set(&tmp, "threads", "1", 0);
-        if(avcodec_open2(thread_avctx, avctx->codec, &tmp) < 0) {
+        if(avcodec_open2_xij(thread_avctx, avctx->codec, &tmp) < 0) {
             av_dict_free(&tmp);
             goto fail;
         }
@@ -271,9 +271,9 @@ int ff_thread_video_encode_frame(AVCodecContext *avctx, AVPacket *pkt, const AVF
         AVFrame *new = av_frame_alloc_ijk();
         if(!new)
             return AVERROR(ENOMEM);
-        ret = av_frame_ref(new, frame);
+        ret = av_frame_ref_xij(new, frame);
         if(ret < 0) {
-            av_frame_free(&new);
+            av_frame_free_xij(&new);
             return ret;
         }
 

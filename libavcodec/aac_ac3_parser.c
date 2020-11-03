@@ -67,7 +67,7 @@ get_next:
         }
     }
 
-    if(ff_combine_frame(pc, i, &buf, &buf_size)<0){
+    if(ff_combine_frame_xij(pc, i, &buf, &buf_size)<0){
         s->remaining_size -= FFMIN(s->remaining_size, buf_size);
         *poutbuf = NULL;
         *poutbuf_size = 0;

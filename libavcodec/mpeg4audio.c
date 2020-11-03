@@ -59,12 +59,12 @@ static int parse_config_ALS(GetBitContext *gb, MPEG4AudioConfig *c)
 
 /* XXX: make sure to update the copies in the different encoders if you change
  * this table */
-const int avpriv_mpeg4audio_sample_rates[16] = {
+const int avpriv_mpeg4audio_sample_rates_xij[16] = {
     96000, 88200, 64000, 48000, 44100, 32000,
     24000, 22050, 16000, 12000, 11025, 8000, 7350
 };
 
-const uint8_t ff_mpeg4audio_channels[8] = {
+const uint8_t ff_mpeg4audio_channels_xij[8] = {
     0, 1, 2, 3, 4, 5, 6, 8
 };
 
@@ -80,10 +80,10 @@ static inline int get_sample_rate(GetBitContext *gb, int *index)
 {
     *index = get_bits(gb, 4);
     return *index == 0x0f ? get_bits(gb, 24) :
-        avpriv_mpeg4audio_sample_rates[*index];
+        avpriv_mpeg4audio_sample_rates_xij[*index];
 }
 
-int ff_mpeg4audio_get_config_gb(MPEG4AudioConfig *c, GetBitContext *gb,
+int ff_mpeg4audio_get_config_gb_xij(MPEG4AudioConfig *c, GetBitContext *gb,
                                 int sync_extension)
 {
     int specific_config_bitindex, ret;
@@ -91,8 +91,8 @@ int ff_mpeg4audio_get_config_gb(MPEG4AudioConfig *c, GetBitContext *gb,
     c->object_type = get_object_type(gb);
     c->sample_rate = get_sample_rate(gb, &c->sampling_index);
     c->chan_config = get_bits(gb, 4);
-    if (c->chan_config < FF_ARRAY_ELEMS(ff_mpeg4audio_channels))
-        c->channels = ff_mpeg4audio_channels[c->chan_config];
+    if (c->chan_config < FF_ARRAY_ELEMS(ff_mpeg4audio_channels_xij))
+        c->channels = ff_mpeg4audio_channels_xij[c->chan_config];
     c->sbr = -1;
     c->ps  = -1;
     if (c->object_type == AOT_SBR || (c->object_type == AOT_PS &&
@@ -152,7 +152,7 @@ int ff_mpeg4audio_get_config_gb(MPEG4AudioConfig *c, GetBitContext *gb,
     return specific_config_bitindex - start_bit_index;
 }
 
-int avpriv_mpeg4audio_get_config(MPEG4AudioConfig *c, const uint8_t *buf,
+int avpriv_mpeg4audio_get_config_xij(MPEG4AudioConfig *c, const uint8_t *buf,
                                  int bit_size, int sync_extension)
 {
     GetBitContext gb;
@@ -165,5 +165,5 @@ int avpriv_mpeg4audio_get_config(MPEG4AudioConfig *c, const uint8_t *buf,
     if (ret < 0)
         return ret;
 
-    return ff_mpeg4audio_get_config_gb(c, &gb, sync_extension);
+    return ff_mpeg4audio_get_config_gb_xij(c, &gb, sync_extension);
 }

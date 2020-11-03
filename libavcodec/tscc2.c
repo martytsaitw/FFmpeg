@@ -240,7 +240,7 @@ static int tscc2_decode_frame(AVCodecContext *avctx, void *data,
         return buf_size;
     }
 
-    if ((ret = ff_reget_buffer(avctx, c->pic)) < 0) {
+    if ((ret = ff_reget_buffer_xij(avctx, c->pic)) < 0) {
         return ret;
     }
 
@@ -323,7 +323,7 @@ static int tscc2_decode_frame(AVCodecContext *avctx, void *data,
     }
 
     *got_frame      = 1;
-    if ((ret = av_frame_ref(data, c->pic)) < 0)
+    if ((ret = av_frame_ref_xij(data, c->pic)) < 0)
         return ret;
 
     /* always report that the buffer was completely consumed */
@@ -334,7 +334,7 @@ static av_cold int tscc2_decode_end(AVCodecContext *avctx)
 {
     TSCC2Context * const c = avctx->priv_data;
 
-    av_frame_free(&c->pic);
+    av_frame_free_xij(&c->pic);
     av_freep(&c->slice_quants);
     free_vlcs(c);
 

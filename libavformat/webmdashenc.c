@@ -92,18 +92,18 @@ static int write_header(AVFormatContext *s)
 {
     WebMDashMuxContext *w = s->priv_data;
     double min_buffer_time = 1.0;
-    avio_printf(s->pb, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-    avio_printf(s->pb, "<MPD\n");
-    avio_printf(s->pb, "  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
-    avio_printf(s->pb, "  xmlns=\"urn:mpeg:DASH:schema:MPD:2011\"\n");
-    avio_printf(s->pb, "  xsi:schemaLocation=\"urn:mpeg:DASH:schema:MPD:2011\"\n");
-    avio_printf(s->pb, "  type=\"%s\"\n", w->is_live ? "dynamic" : "static");
+    avio_printf_xij(s->pb, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+    avio_printf_xij(s->pb, "<MPD\n");
+    avio_printf_xij(s->pb, "  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
+    avio_printf_xij(s->pb, "  xmlns=\"urn:mpeg:DASH:schema:MPD:2011\"\n");
+    avio_printf_xij(s->pb, "  xsi:schemaLocation=\"urn:mpeg:DASH:schema:MPD:2011\"\n");
+    avio_printf_xij(s->pb, "  type=\"%s\"\n", w->is_live ? "dynamic" : "static");
     if (!w->is_live) {
-        avio_printf(s->pb, "  mediaPresentationDuration=\"PT%gS\"\n",
+        avio_printf_xij(s->pb, "  mediaPresentationDuration=\"PT%gS\"\n",
                     get_duration(s));
     }
-    avio_printf(s->pb, "  minBufferTime=\"PT%gS\"\n", min_buffer_time);
-    avio_printf(s->pb, "  profiles=\"%s\"%s",
+    avio_printf_xij(s->pb, "  minBufferTime=\"PT%gS\"\n", min_buffer_time);
+    avio_printf_xij(s->pb, "  profiles=\"%s\"%s",
                 w->is_live ? "urn:mpeg:dash:profile:isoff-live:2011" : "urn:webm:dash:profile:webm-on-demand:2012",
                 w->is_live ? "\n" : ">\n");
     if (w->is_live) {
@@ -117,14 +117,14 @@ static int write_header(AVFormatContext *s)
         if (w->debug_mode) {
             av_strlcpy(gmt_iso, "", 1);
         }
-        avio_printf(s->pb, "  availabilityStartTime=\"%s\"\n", gmt_iso);
-        avio_printf(s->pb, "  timeShiftBufferDepth=\"PT%gS\"\n", w->time_shift_buffer_depth);
-        avio_printf(s->pb, "  minimumUpdatePeriod=\"PT%dS\"", w->minimum_update_period);
-        avio_printf(s->pb, ">\n");
+        avio_printf_xij(s->pb, "  availabilityStartTime=\"%s\"\n", gmt_iso);
+        avio_printf_xij(s->pb, "  timeShiftBufferDepth=\"PT%gS\"\n", w->time_shift_buffer_depth);
+        avio_printf_xij(s->pb, "  minimumUpdatePeriod=\"PT%dS\"", w->minimum_update_period);
+        avio_printf_xij(s->pb, ">\n");
         if (w->utc_timing_url) {
-            avio_printf(s->pb, "<UTCTiming\n");
-            avio_printf(s->pb, "  schemeIdUri=\"urn:mpeg:dash:utc:http-iso:2014\"\n");
-            avio_printf(s->pb, "  value=\"%s\"/>\n", w->utc_timing_url);
+            avio_printf_xij(s->pb, "<UTCTiming\n");
+            avio_printf_xij(s->pb, "  schemeIdUri=\"urn:mpeg:dash:utc:http-iso:2014\"\n");
+            avio_printf_xij(s->pb, "  value=\"%s\"/>\n", w->utc_timing_url);
         }
     }
     return 0;
@@ -132,7 +132,7 @@ static int write_header(AVFormatContext *s)
 
 static void write_footer(AVFormatContext *s)
 {
-    avio_printf(s->pb, "</MPD>\n");
+    avio_printf_xij(s->pb, "</MPD>\n");
 }
 
 static int subsegment_alignment(AVFormatContext *s, AdaptationSet *as) {
@@ -187,39 +187,39 @@ static int write_representation(AVFormatContext *s, AVStream *stream, char *id,
         (!w->is_live && (!irange || !cues_start || !cues_end || !filename || !bandwidth))) {
         return AVERROR_INVALIDDATA;
     }
-    avio_printf(s->pb, "<Representation id=\"%s\"", id);
+    avio_printf_xij(s->pb, "<Representation id=\"%s\"", id);
     // if bandwidth for live was not provided, use a default
     if (w->is_live && !bandwidth) {
         bandwidth_str = (stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) ? "128000" : "1000000";
     } else {
         bandwidth_str = bandwidth->value;
     }
-    avio_printf(s->pb, " bandwidth=\"%s\"", bandwidth_str);
+    avio_printf_xij(s->pb, " bandwidth=\"%s\"", bandwidth_str);
     if (stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO && output_width)
-        avio_printf(s->pb, " width=\"%d\"", stream->codecpar->width);
+        avio_printf_xij(s->pb, " width=\"%d\"", stream->codecpar->width);
     if (stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO && output_height)
-        avio_printf(s->pb, " height=\"%d\"", stream->codecpar->height);
+        avio_printf_xij(s->pb, " height=\"%d\"", stream->codecpar->height);
     if (stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO && output_sample_rate)
-        avio_printf(s->pb, " audioSamplingRate=\"%d\"", stream->codecpar->sample_rate);
+        avio_printf_xij(s->pb, " audioSamplingRate=\"%d\"", stream->codecpar->sample_rate);
     if (w->is_live) {
         // For live streams, Codec and Mime Type always go in the Representation tag.
-        avio_printf(s->pb, " codecs=\"%s\"", get_codec_name(stream->codecpar->codec_id));
-        avio_printf(s->pb, " mimeType=\"%s/webm\"",
+        avio_printf_xij(s->pb, " codecs=\"%s\"", get_codec_name(stream->codecpar->codec_id));
+        avio_printf_xij(s->pb, " mimeType=\"%s/webm\"",
                     stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO ? "video" : "audio");
         // For live streams, subsegments always start with key frames. So this
         // is always 1.
-        avio_printf(s->pb, " startsWithSAP=\"1\"");
-        avio_printf(s->pb, ">");
+        avio_printf_xij(s->pb, " startsWithSAP=\"1\"");
+        avio_printf_xij(s->pb, ">");
     } else {
-        avio_printf(s->pb, ">\n");
-        avio_printf(s->pb, "<BaseURL>%s</BaseURL>\n", filename->value);
-        avio_printf(s->pb, "<SegmentBase\n");
-        avio_printf(s->pb, "  indexRange=\"%s-%s\">\n", cues_start->value, cues_end->value);
-        avio_printf(s->pb, "<Initialization\n");
-        avio_printf(s->pb, "  range=\"0-%s\" />\n", irange->value);
-        avio_printf(s->pb, "</SegmentBase>\n");
+        avio_printf_xij(s->pb, ">\n");
+        avio_printf_xij(s->pb, "<BaseURL>%s</BaseURL>\n", filename->value);
+        avio_printf_xij(s->pb, "<SegmentBase\n");
+        avio_printf_xij(s->pb, "  indexRange=\"%s-%s\">\n", cues_start->value, cues_end->value);
+        avio_printf_xij(s->pb, "<Initialization\n");
+        avio_printf_xij(s->pb, "  range=\"0-%s\" />\n", irange->value);
+        avio_printf_xij(s->pb, "</SegmentBase>\n");
     }
-    avio_printf(s->pb, "</Representation>\n");
+    avio_printf_xij(s->pb, "</Representation>\n");
     return 0;
 }
 
@@ -364,24 +364,24 @@ static int write_adaptation_set(AVFormatContext *s, int as_index)
       sample_rate_in_as = !w->is_live && check_matching_sample_rate(s, as);
     }
 
-    avio_printf(s->pb, "<AdaptationSet id=\"%s\"", as->id);
-    avio_printf(s->pb, " mimeType=\"%s/webm\"",
+    avio_printf_xij(s->pb, "<AdaptationSet id=\"%s\"", as->id);
+    avio_printf_xij(s->pb, " mimeType=\"%s/webm\"",
                 par->codec_type == AVMEDIA_TYPE_VIDEO ? "video" : "audio");
-    avio_printf(s->pb, " codecs=\"%s\"", get_codec_name(par->codec_id));
+    avio_printf_xij(s->pb, " codecs=\"%s\"", get_codec_name(par->codec_id));
 
     lang = av_dict_get(s->streams[as->streams[0]]->metadata, "language", NULL, 0);
-    if (lang) avio_printf(s->pb, " lang=\"%s\"", lang->value);
+    if (lang) avio_printf_xij(s->pb, " lang=\"%s\"", lang->value);
 
     if (par->codec_type == AVMEDIA_TYPE_VIDEO && width_in_as)
-        avio_printf(s->pb, " width=\"%d\"", par->width);
+        avio_printf_xij(s->pb, " width=\"%d\"", par->width);
     if (par->codec_type == AVMEDIA_TYPE_VIDEO && height_in_as)
-        avio_printf(s->pb, " height=\"%d\"", par->height);
+        avio_printf_xij(s->pb, " height=\"%d\"", par->height);
     if (par->codec_type == AVMEDIA_TYPE_AUDIO && sample_rate_in_as)
-        avio_printf(s->pb, " audioSamplingRate=\"%d\"", par->sample_rate);
+        avio_printf_xij(s->pb, " audioSamplingRate=\"%d\"", par->sample_rate);
 
-    avio_printf(s->pb, " bitstreamSwitching=\"%s\"",
+    avio_printf_xij(s->pb, " bitstreamSwitching=\"%s\"",
                 boolean[bitstream_switching(s, as)]);
-    avio_printf(s->pb, " subsegmentAlignment=\"%s\"",
+    avio_printf_xij(s->pb, " subsegmentAlignment=\"%s\"",
                 boolean[w->is_live || subsegment_alignment(s, as)]);
 
     for (i = 0; i < as->nb_streams; i++) {
@@ -389,8 +389,8 @@ static int write_adaptation_set(AVFormatContext *s, int as_index)
                                             CLUSTER_KEYFRAME, NULL, 0);
         if (!w->is_live && (!kf || !strncmp(kf->value, "0", 1))) subsegmentStartsWithSAP = 0;
     }
-    avio_printf(s->pb, " subsegmentStartsWithSAP=\"%d\"", subsegmentStartsWithSAP);
-    avio_printf(s->pb, ">\n");
+    avio_printf_xij(s->pb, " subsegmentStartsWithSAP=\"%d\"", subsegmentStartsWithSAP);
+    avio_printf_xij(s->pb, ">\n");
 
     if (w->is_live) {
         AVDictionaryEntry *filename =
@@ -400,15 +400,15 @@ static int write_adaptation_set(AVFormatContext *s, int as_index)
         int ret = parse_filename(filename->value, NULL, &initialization_pattern,
                                  &media_pattern);
         if (ret) return ret;
-        avio_printf(s->pb, "<ContentComponent id=\"1\" type=\"%s\"/>\n",
+        avio_printf_xij(s->pb, "<ContentComponent id=\"1\" type=\"%s\"/>\n",
                     par->codec_type == AVMEDIA_TYPE_VIDEO ? "video" : "audio");
-        avio_printf(s->pb, "<SegmentTemplate");
-        avio_printf(s->pb, " timescale=\"1000\"");
-        avio_printf(s->pb, " duration=\"%d\"", w->chunk_duration);
-        avio_printf(s->pb, " media=\"%s\"", media_pattern);
-        avio_printf(s->pb, " startNumber=\"%d\"", w->chunk_start_index);
-        avio_printf(s->pb, " initialization=\"%s\"", initialization_pattern);
-        avio_printf(s->pb, "/>\n");
+        avio_printf_xij(s->pb, "<SegmentTemplate");
+        avio_printf_xij(s->pb, " timescale=\"1000\"");
+        avio_printf_xij(s->pb, " duration=\"%d\"", w->chunk_duration);
+        avio_printf_xij(s->pb, " media=\"%s\"", media_pattern);
+        avio_printf_xij(s->pb, " startNumber=\"%d\"", w->chunk_start_index);
+        avio_printf_xij(s->pb, " initialization=\"%s\"", initialization_pattern);
+        avio_printf_xij(s->pb, "/>\n");
         av_free(initialization_pattern);
         av_free(media_pattern);
     }
@@ -433,7 +433,7 @@ static int write_adaptation_set(AVFormatContext *s, int as_index)
         av_free(representation_id);
         if (ret) return ret;
     }
-    avio_printf(s->pb, "</AdaptationSet>\n");
+    avio_printf_xij(s->pb, "</AdaptationSet>\n");
     return 0;
 }
 
@@ -518,12 +518,12 @@ static int webm_dash_manifest_write_header(AVFormatContext *s)
     if (ret < 0) {
         goto fail;
     }
-    avio_printf(s->pb, "<Period id=\"0\"");
-    avio_printf(s->pb, " start=\"PT%gS\"", start);
+    avio_printf_xij(s->pb, "<Period id=\"0\"");
+    avio_printf_xij(s->pb, " start=\"PT%gS\"", start);
     if (!w->is_live) {
-        avio_printf(s->pb, " duration=\"PT%gS\"", get_duration(s));
+        avio_printf_xij(s->pb, " duration=\"PT%gS\"", get_duration(s));
     }
-    avio_printf(s->pb, " >\n");
+    avio_printf_xij(s->pb, " >\n");
 
     for (i = 0; i < w->nb_as; i++) {
         ret = write_adaptation_set(s, i);
@@ -532,7 +532,7 @@ static int webm_dash_manifest_write_header(AVFormatContext *s)
         }
     }
 
-    avio_printf(s->pb, "</Period>\n");
+    avio_printf_xij(s->pb, "</Period>\n");
     write_footer(s);
 fail:
     free_adaptation_sets(s);

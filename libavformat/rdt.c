@@ -117,7 +117,7 @@ ff_rdt_calc_response_and_checksum(char response[41], char chksum[9],
         buf[8 + i] ^= xor_table[i];
 
     av_md5_sum(zres, buf, 64);
-    ff_data_to_hex(response, zres, 16, 1);
+    ff_data_to_hex_xij(response, zres, 16, 1);
 
     /* add tail */
     strcpy (response + 32, "01d0a8e3");
@@ -151,30 +151,30 @@ rdt_load_mdpr (PayloadContext *rdt, AVStream *st, int rule_nr)
      */
     if (!rdt->mlti_data)
         return -1;
-    ffio_init_context(&pb, rdt->mlti_data, rdt->mlti_data_size, 0,
+    ffio_init_context_xij(&pb, rdt->mlti_data, rdt->mlti_data_size, 0,
                   NULL, NULL, NULL, NULL);
-    tag = avio_rl32(&pb);
+    tag = avio_rl32_xij(&pb);
     if (tag == MKTAG('M', 'L', 'T', 'I')) {
         int num, chunk_nr;
 
         /* read index of MDPR chunk numbers */
-        num = avio_rb16(&pb);
+        num = avio_rb16_xij(&pb);
         if (rule_nr < 0 || rule_nr >= num)
             return -1;
-        avio_skip(&pb, rule_nr * 2);
-        chunk_nr = avio_rb16(&pb);
-        avio_skip(&pb, (num - 1 - rule_nr) * 2);
+        avio_skip_xij(&pb, rule_nr * 2);
+        chunk_nr = avio_rb16_xij(&pb);
+        avio_skip_xij(&pb, (num - 1 - rule_nr) * 2);
 
         /* read MDPR chunks */
-        num = avio_rb16(&pb);
+        num = avio_rb16_xij(&pb);
         if (chunk_nr >= num)
             return -1;
         while (chunk_nr--)
-            avio_skip(&pb, avio_rb32(&pb));
-        size = avio_rb32(&pb);
+            avio_skip_xij(&pb, avio_rb32_xij(&pb));
+        size = avio_rb32_xij(&pb);
     } else {
         size = rdt->mlti_data_size;
-        avio_seek(&pb, 0, SEEK_SET);
+        avio_seek_xij(&pb, 0, SEEK_SET);
     }
     if (ff_rm_read_mdpr_codecdata(rdt->rmctx, &pb, st, rdt->rmst[st->index], size, NULL) < 0)
         return -1;
@@ -301,7 +301,7 @@ rdt_parse_packet (AVFormatContext *ctx, PayloadContext *rdt, AVStream *st,
     if (rdt->audio_pkt_cnt == 0) {
         int pos, rmflags;
 
-        ffio_init_context(&pb, (uint8_t *)buf, len, 0, NULL, NULL, NULL, NULL);
+        ffio_init_context_xij(&pb, (uint8_t *)buf, len, 0, NULL, NULL, NULL, NULL);
         rmflags = (flags & RTP_FLAG_KEY) ? 2 : 0;
         res = ff_rm_parse_packet (rdt->rmctx, &pb, st, rdt->rmst[st->index], len, pkt,
                                   &seq, rmflags, *timestamp);
@@ -311,7 +311,7 @@ rdt_parse_packet (AVFormatContext *ctx, PayloadContext *rdt, AVStream *st,
         if (res > 0) {
             if (st->codecpar->codec_id == AV_CODEC_ID_AAC) {
                 memcpy (rdt->buffer, buf + pos, len - pos);
-                rdt->rmctx->pb = avio_alloc_context (rdt->buffer, len - pos, 0,
+                rdt->rmctx->pb = avio_alloc_context_xij (rdt->buffer, len - pos, 0,
                                                     NULL, NULL, NULL, NULL);
             }
             goto get_cache;
@@ -323,7 +323,7 @@ get_cache:
                                   st, rdt->rmst[st->index], pkt);
         if (rdt->audio_pkt_cnt == 0 &&
             st->codecpar->codec_id == AV_CODEC_ID_AAC)
-            avio_context_free(&rdt->rmctx->pb);
+            avio_context_free_xij(&rdt->rmctx->pb);
     }
     pkt->stream_index = st->index;
     pkt->pts = *timestamp;
@@ -531,7 +531,7 @@ static av_cold int rdt_init(AVFormatContext *s, int st_index, PayloadContext *rd
     if (!rdt->rmctx)
         return AVERROR(ENOMEM);
 
-    if ((ret = ff_copy_whiteblacklists(rdt->rmctx, s)) < 0)
+    if ((ret = ff_copy_whiteblacklists_xij(rdt->rmctx, s)) < 0)
         return ret;
 
     return avformat_open_input_ijk(&rdt->rmctx, "", &ff_rdt_demuxer, NULL);
@@ -548,7 +548,7 @@ rdt_close_context (PayloadContext *rdt)
             av_freep(&rdt->rmst[i]);
         }
     if (rdt->rmctx)
-        avformat_close_input(&rdt->rmctx);
+        avformat_close_input_xij(&rdt->rmctx);
     av_freep(&rdt->mlti_data);
     av_freep(&rdt->rmst);
 }

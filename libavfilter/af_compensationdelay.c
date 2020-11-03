@@ -115,7 +115,7 @@ static int config_input(AVFilterLink *inlink)
     s->delay_frame->nb_samples     = new_size;
     s->delay_frame->channel_layout = inlink->channel_layout;
 
-    return av_frame_get_buffer(s->delay_frame, 32);
+    return av_frame_get_buffer_xij(s->delay_frame, 32);
 }
 
 static int filter_frame(AVFilterLink *inlink, AVFrame *in)
@@ -133,10 +133,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
     out = ff_get_audio_buffer(ctx->outputs[0], in->nb_samples);
     if (!out) {
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         return AVERROR(ENOMEM);
     }
-    av_frame_copy_props(out, in);
+    av_frame_copy_props_xij(out, in);
 
     for (ch = 0; ch < inlink->channels; ch++) {
         const double *src = (const double *)in->extended_data[ch];
@@ -157,7 +157,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     }
     s->w_ptr = w_ptr;
 
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
     return ff_filter_frame(ctx->outputs[0], out);
 }
 
@@ -165,7 +165,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 {
     CompensationDelayContext *s = ctx->priv;
 
-    av_frame_free(&s->delay_frame);
+    av_frame_free_xij(&s->delay_frame);
 }
 
 static const AVFilterPad compensationdelay_inputs[] = {

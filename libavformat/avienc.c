@@ -209,21 +209,21 @@ static int avi_write_counters(AVFormatContext *s, int riff_id)
 
         av_assert0(avist->frames_hdr_strm);
         par = s->streams[n]->codecpar;
-        avio_seek(pb, avist->frames_hdr_strm, SEEK_SET);
+        avio_seek_xij(pb, avist->frames_hdr_strm, SEEK_SET);
         ff_parse_specific_params(s->streams[n], &au_byterate, &au_ssize, &au_scale);
         if (au_ssize == 0)
-            avio_wl32(pb, avist->packet_count);
+            avio_wl32_xij(pb, avist->packet_count);
         else
-            avio_wl32(pb, avist->audio_strm_length / au_ssize);
+            avio_wl32_xij(pb, avist->audio_strm_length / au_ssize);
         if (par->codec_type == AVMEDIA_TYPE_VIDEO)
             nb_frames = FFMAX(nb_frames, avist->packet_count);
     }
     if (riff_id == 1) {
         av_assert0(avi->frames_hdr_all);
-        avio_seek(pb, avi->frames_hdr_all, SEEK_SET);
-        avio_wl32(pb, nb_frames);
+        avio_seek_xij(pb, avi->frames_hdr_all, SEEK_SET);
+        avio_wl32_xij(pb, nb_frames);
     }
-    avio_seek(pb, file_size, SEEK_SET);
+    avio_seek_xij(pb, file_size, SEEK_SET);
 
     return 0;
 }
@@ -243,16 +243,16 @@ static void write_odml_master(AVFormatContext *s, int stream_index)
         * like to get away without making AVI an OpenDML one
         * for compatibility reasons. */
     avist->indexes.indx_start = ff_start_tag(pb, "JUNK");
-    avio_wl16(pb, 4);   /* wLongsPerEntry */
-    avio_w8(pb, 0);     /* bIndexSubType (0 == frame index) */
-    avio_w8(pb, 0);     /* bIndexType (0 == AVI_INDEX_OF_INDEXES) */
-    avio_wl32(pb, 0);   /* nEntriesInUse (will fill out later on) */
+    avio_wl16_xij(pb, 4);   /* wLongsPerEntry */
+    avio_w8_xij(pb, 0);     /* bIndexSubType (0 == frame index) */
+    avio_w8_xij(pb, 0);     /* bIndexType (0 == AVI_INDEX_OF_INDEXES) */
+    avio_wl32_xij(pb, 0);   /* nEntriesInUse (will fill out later on) */
     ffio_wfourcc(pb, avi_stream2fourcc(tag, stream_index, par->codec_type));
                         /* dwChunkId */
-    avio_wl64(pb, 0);   /* dwReserved[3] */
-    avio_wl32(pb, 0);   /* Must be 0.    */
+    avio_wl64_xij(pb, 0);   /* dwReserved[3] */
+    avio_wl32_xij(pb, 0);   /* Must be 0.    */
     for (j = 0; j < avi->master_index_max_size * 2; j++)
-        avio_wl64(pb, 0);
+        avio_wl64_xij(pb, 0);
     ff_end_tag(pb, avist->indexes.indx_start);
 }
 
@@ -286,7 +286,7 @@ static int avi_write_header(AVFormatContext *s)
 
     /* avi header */
     ffio_wfourcc(pb, "avih");
-    avio_wl32(pb, 14 * 4);
+    avio_wl32_xij(pb, 14 * 4);
     bitrate = 0;
 
     video_par = NULL;
@@ -324,32 +324,32 @@ static int avi_write_header(AVFormatContext *s)
 
     // TODO: should be avg_frame_rate
     if (video_st)
-        avio_wl32(pb, (uint32_t) (INT64_C(1000000) * video_st->time_base.num /
+        avio_wl32_xij(pb, (uint32_t) (INT64_C(1000000) * video_st->time_base.num /
                                   video_st->time_base.den));
     else
-        avio_wl32(pb, 0);
-    avio_wl32(pb, bitrate / 8); /* XXX: not quite exact */
-    avio_wl32(pb, 0); /* padding */
+        avio_wl32_xij(pb, 0);
+    avio_wl32_xij(pb, bitrate / 8); /* XXX: not quite exact */
+    avio_wl32_xij(pb, 0); /* padding */
     if (!(pb->seekable & AVIO_SEEKABLE_NORMAL))
-        avio_wl32(pb, AVIF_TRUSTCKTYPE | AVIF_ISINTERLEAVED);  /* flags */
+        avio_wl32_xij(pb, AVIF_TRUSTCKTYPE | AVIF_ISINTERLEAVED);  /* flags */
     else
-        avio_wl32(pb, AVIF_TRUSTCKTYPE | AVIF_HASINDEX | AVIF_ISINTERLEAVED);  /* flags */
+        avio_wl32_xij(pb, AVIF_TRUSTCKTYPE | AVIF_HASINDEX | AVIF_ISINTERLEAVED);  /* flags */
     avi->frames_hdr_all = avio_tell(pb); /* remember this offset to fill later */
-    avio_wl32(pb, nb_frames); /* nb frames, filled later */
-    avio_wl32(pb, 0); /* initial frame */
-    avio_wl32(pb, s->nb_streams); /* nb streams */
-    avio_wl32(pb, 1024 * 1024); /* suggested buffer size */
+    avio_wl32_xij(pb, nb_frames); /* nb frames, filled later */
+    avio_wl32_xij(pb, 0); /* initial frame */
+    avio_wl32_xij(pb, s->nb_streams); /* nb streams */
+    avio_wl32_xij(pb, 1024 * 1024); /* suggested buffer size */
     if (video_par) {
-        avio_wl32(pb, video_par->width);
-        avio_wl32(pb, video_par->height);
+        avio_wl32_xij(pb, video_par->width);
+        avio_wl32_xij(pb, video_par->height);
     } else {
-        avio_wl32(pb, 0);
-        avio_wl32(pb, 0);
+        avio_wl32_xij(pb, 0);
+        avio_wl32_xij(pb, 0);
     }
-    avio_wl32(pb, 0); /* reserved */
-    avio_wl32(pb, 0); /* reserved */
-    avio_wl32(pb, 0); /* reserved */
-    avio_wl32(pb, 0); /* reserved */
+    avio_wl32_xij(pb, 0); /* reserved */
+    avio_wl32_xij(pb, 0); /* reserved */
+    avio_wl32_xij(pb, 0); /* reserved */
+    avio_wl32_xij(pb, 0); /* reserved */
 
     /* stream list */
     for (i = 0; i < n; i++) {
@@ -384,14 +384,14 @@ static int avi_write_header(AVFormatContext *s)
         }
         if (par->codec_type == AVMEDIA_TYPE_VIDEO ||
             par->codec_id == AV_CODEC_ID_XSUB)
-            avio_wl32(pb, par->codec_tag);
+            avio_wl32_xij(pb, par->codec_tag);
         else
-            avio_wl32(pb, 1);
+            avio_wl32_xij(pb, 1);
         avist->strh_flags_offset = avio_tell(pb);
-        avio_wl32(pb, 0); /* flags */
-        avio_wl16(pb, 0); /* priority */
-        avio_wl16(pb, 0); /* language */
-        avio_wl32(pb, 0); /* initial frame */
+        avio_wl32_xij(pb, 0); /* flags */
+        avio_wl16_xij(pb, 0); /* priority */
+        avio_wl16_xij(pb, 0); /* language */
+        avio_wl32_xij(pb, 0); /* initial frame */
 
         ff_parse_specific_params(st, &au_byterate, &au_ssize, &au_scale);
 
@@ -405,30 +405,30 @@ static int avi_write_header(AVFormatContext *s)
         if (par->codec_id == AV_CODEC_ID_XSUB)
             au_scale = au_byterate = 0;
 
-        avio_wl32(pb, au_scale); /* scale */
-        avio_wl32(pb, au_byterate); /* rate */
+        avio_wl32_xij(pb, au_scale); /* scale */
+        avio_wl32_xij(pb, au_byterate); /* rate */
 
-        avio_wl32(pb, 0); /* start */
+        avio_wl32_xij(pb, 0); /* start */
         /* remember this offset to fill later */
         avist->frames_hdr_strm = avio_tell(pb);
         if (!(pb->seekable & AVIO_SEEKABLE_NORMAL))
             /* FIXME: this may be broken, but who cares */
-            avio_wl32(pb, AVI_MAX_RIFF_SIZE);
+            avio_wl32_xij(pb, AVI_MAX_RIFF_SIZE);
         else
-            avio_wl32(pb, 0);  /* length, XXX: filled later */
+            avio_wl32_xij(pb, 0);  /* length, XXX: filled later */
 
         /* suggested buffer size, is set to largest chunk size in avi_write_trailer */
         if (par->codec_type == AVMEDIA_TYPE_VIDEO)
-            avio_wl32(pb, 1024 * 1024);
+            avio_wl32_xij(pb, 1024 * 1024);
         else if (par->codec_type == AVMEDIA_TYPE_AUDIO)
-            avio_wl32(pb, 12 * 1024);
+            avio_wl32_xij(pb, 12 * 1024);
         else
-            avio_wl32(pb, 0);
-        avio_wl32(pb, -1); /* quality */
-        avio_wl32(pb, au_ssize); /* sample size */
-        avio_wl32(pb, 0);
-        avio_wl16(pb, par->width);
-        avio_wl16(pb, par->height);
+            avio_wl32_xij(pb, 0);
+        avio_wl32_xij(pb, -1); /* quality */
+        avio_wl32_xij(pb, au_ssize); /* sample size */
+        avio_wl32_xij(pb, 0);
+        avio_wl16_xij(pb, par->width);
+        avio_wl16_xij(pb, par->height);
         ff_end_tag(pb, strh);
 
         if (par->codec_type != AVMEDIA_TYPE_DATA) {
@@ -451,7 +451,7 @@ static int avi_write_header(AVFormatContext *s)
                     par->bits_per_coded_sample = 16;
                 avist->pal_offset = avio_tell(pb) + 40;
                 ff_put_bmp_header(pb, par, 0, 0);
-                pix_fmt = avpriv_find_pix_fmt(avpriv_pix_fmt_bps_avi,
+                pix_fmt = avpriv_find_pix_fmt_xij(avpriv_pix_fmt_bps_avi,
                                               par->bits_per_coded_sample);
                 if (   !par->codec_tag
                     && par->codec_id == AV_CODEC_ID_RAWVIDEO
@@ -468,7 +468,7 @@ static int avi_write_header(AVFormatContext *s)
             default:
                 av_log(s, AV_LOG_ERROR,
                     "Invalid or not supported codec type '%s' found in the input\n",
-                    (char *)av_x_if_null(av_get_media_type_string(par->codec_type), "?"));
+                    (char *)av_x_if_null(av_get_media_type_string_xij(par->codec_type), "?"));
                 return AVERROR(EINVAL);
             }
             ff_end_tag(pb, strf);
@@ -510,17 +510,17 @@ static int avi_write_header(AVFormatContext *s)
                 fields = 1; // progressive
             }
 
-            avio_wl32(pb, 0); // video format   = unknown
-            avio_wl32(pb, 0); // video standard = unknown
+            avio_wl32_xij(pb, 0); // video format   = unknown
+            avio_wl32_xij(pb, 0); // video standard = unknown
             // TODO: should be avg_frame_rate
-            avio_wl32(pb, (2LL*st->time_base.den + st->time_base.num - 1) / (2LL * st->time_base.num));
-            avio_wl32(pb, par->width);
-            avio_wl32(pb, par->height);
-            avio_wl16(pb, den);
-            avio_wl16(pb, num);
-            avio_wl32(pb, par->width);
-            avio_wl32(pb, par->height);
-            avio_wl32(pb, fields); // fields per frame
+            avio_wl32_xij(pb, (2LL*st->time_base.den + st->time_base.num - 1) / (2LL * st->time_base.num));
+            avio_wl32_xij(pb, par->width);
+            avio_wl32_xij(pb, par->height);
+            avio_wl16_xij(pb, den);
+            avio_wl16_xij(pb, num);
+            avio_wl32_xij(pb, par->width);
+            avio_wl32_xij(pb, par->height);
+            avio_wl32_xij(pb, fields); // fields per frame
 
             for (i = 0; i < fields; i++) {
                 int start_line;
@@ -535,14 +535,14 @@ static int avi_write_header(AVFormatContext *s)
                     start_line = 0;
                 }
 
-                avio_wl32(pb, par->height / fields); // compressed bitmap height
-                avio_wl32(pb, par->width);           // compressed bitmap width
-                avio_wl32(pb, par->height / fields); // valid bitmap height
-                avio_wl32(pb, par->width);           // valid bitmap width
-                avio_wl32(pb, 0);                    // valid bitmap X offset
-                avio_wl32(pb, 0);                    // valid bitmap Y offset
-                avio_wl32(pb, 0);                    // valid X offset in T
-                avio_wl32(pb, start_line);           // valid Y start line
+                avio_wl32_xij(pb, par->height / fields); // compressed bitmap height
+                avio_wl32_xij(pb, par->width);           // compressed bitmap width
+                avio_wl32_xij(pb, par->height / fields); // valid bitmap height
+                avio_wl32_xij(pb, par->width);           // valid bitmap width
+                avio_wl32_xij(pb, 0);                    // valid bitmap X offset
+                avio_wl32_xij(pb, 0);                    // valid bitmap Y offset
+                avio_wl32_xij(pb, 0);                    // valid X offset in T
+                avio_wl32_xij(pb, start_line);           // valid Y start line
             }
             ff_end_tag(pb, vprp);
         }
@@ -555,9 +555,9 @@ static int avi_write_header(AVFormatContext *s)
         avi->odml_list = ff_start_tag(pb, "JUNK");
         ffio_wfourcc(pb, "odml");
         ffio_wfourcc(pb, "dmlh");
-        avio_wl32(pb, 248);
+        avio_wl32_xij(pb, 248);
         for (i = 0; i < 248; i += 4)
-            avio_wl32(pb, 0);
+            avio_wl32_xij(pb, 0);
         ff_end_tag(pb, avi->odml_list);
     }
 
@@ -574,14 +574,14 @@ static int avi_write_header(AVFormatContext *s)
     if (padding) {
         list2 = ff_start_tag(pb, "JUNK");
         for (i = padding; i > 0; i -= 4)
-            avio_wl32(pb, 0);
+            avio_wl32_xij(pb, 0);
         ff_end_tag(pb, list2);
     }
 
     avi->movi_list = ff_start_tag(pb, "LIST");
     ffio_wfourcc(pb, "movi");
 
-    avio_flush(pb);
+    avio_flush_xij(pb);
 
     return 0;
 }
@@ -594,17 +594,17 @@ static void update_odml_entry(AVFormatContext *s, int stream_index, int64_t ix, 
     int64_t pos;
     int au_byterate, au_ssize, au_scale;
 
-    avio_flush(pb);
+    avio_flush_xij(pb);
     pos = avio_tell(pb);
 
     /* Updating one entry in the AVI OpenDML master index */
-    avio_seek(pb, avist->indexes.indx_start - 8, SEEK_SET);
+    avio_seek_xij(pb, avist->indexes.indx_start - 8, SEEK_SET);
     ffio_wfourcc(pb, "indx");             /* enabling this entry */
-    avio_skip(pb, 8);
-    avio_wl32(pb, avi->riff_id - avist->indexes.master_odml_riff_id_base);          /* nEntriesInUse */
-    avio_skip(pb, 16 * (avi->riff_id - avist->indexes.master_odml_riff_id_base));
-    avio_wl64(pb, ix);                    /* qwOffset */
-    avio_wl32(pb, size);                  /* dwSize */
+    avio_skip_xij(pb, 8);
+    avio_wl32_xij(pb, avi->riff_id - avist->indexes.master_odml_riff_id_base);          /* nEntriesInUse */
+    avio_skip_xij(pb, 16 * (avi->riff_id - avist->indexes.master_odml_riff_id_base));
+    avio_wl64_xij(pb, ix);                    /* qwOffset */
+    avio_wl32_xij(pb, size);                  /* dwSize */
     ff_parse_specific_params(s->streams[stream_index], &au_byterate, &au_ssize, &au_scale);
     if (s->streams[stream_index]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO && au_ssize > 0) {
         uint32_t audio_segm_size = (avist->audio_strm_length - avist->indexes.audio_strm_offset);
@@ -612,11 +612,11 @@ static void update_odml_entry(AVFormatContext *s, int stream_index, int64_t ix, 
             avpriv_request_sample(s, "OpenDML index duration for audio packets with partial frames");
             avist->sample_requested = 1;
         }
-        avio_wl32(pb, audio_segm_size / au_ssize);  /* dwDuration (sample count) */
+        avio_wl32_xij(pb, audio_segm_size / au_ssize);  /* dwDuration (sample count) */
     } else
-        avio_wl32(pb, avist->indexes.entry);  /* dwDuration (packet count) */
+        avio_wl32_xij(pb, avist->indexes.entry);  /* dwDuration (packet count) */
 
-    avio_seek(pb, pos, SEEK_SET);
+    avio_seek_xij(pb, pos, SEEK_SET);
 }
 
 static int avi_write_ix(AVFormatContext *s)
@@ -654,21 +654,21 @@ static int avi_write_ix(AVFormatContext *s)
         /* Writing AVI OpenDML leaf index chunk */
         ix = avio_tell(pb);
         ffio_wfourcc(pb, ix_tag);      /* ix?? */
-        avio_wl32(pb, avist->indexes.entry * 8 + 24);
+        avio_wl32_xij(pb, avist->indexes.entry * 8 + 24);
         /* chunk size */
-        avio_wl16(pb, 2);           /* wLongsPerEntry */
-        avio_w8(pb, 0);             /* bIndexSubType (0 == frame index) */
-        avio_w8(pb, 1);             /* bIndexType (1 == AVI_INDEX_OF_CHUNKS) */
-        avio_wl32(pb, avist->indexes.entry);
+        avio_wl16_xij(pb, 2);           /* wLongsPerEntry */
+        avio_w8_xij(pb, 0);             /* bIndexSubType (0 == frame index) */
+        avio_w8_xij(pb, 1);             /* bIndexType (1 == AVI_INDEX_OF_CHUNKS) */
+        avio_wl32_xij(pb, avist->indexes.entry);
         /* nEntriesInUse */
         ffio_wfourcc(pb, tag);         /* dwChunkId */
-        avio_wl64(pb, avi->movi_list); /* qwBaseOffset */
-        avio_wl32(pb, 0);              /* dwReserved_3 (must be 0) */
+        avio_wl64_xij(pb, avi->movi_list); /* qwBaseOffset */
+        avio_wl32_xij(pb, 0);              /* dwReserved_3 (must be 0) */
 
         for (j = 0; j < avist->indexes.entry; j++) {
             AVIIentry *ie = avi_get_ientry(&avist->indexes, j);
-            avio_wl32(pb, ie->pos + 8);
-            avio_wl32(pb, ((uint32_t) ie->len & ~0x80000000) |
+            avio_wl32_xij(pb, ie->pos + 8);
+            avio_wl32_xij(pb, ((uint32_t) ie->len & ~0x80000000) |
                           (ie->flags & 0x10 ? 0 : 0x80000000));
         }
 
@@ -719,9 +719,9 @@ static int avi_write_idx1(AVFormatContext *s)
                                   s->streams[stream_id]->codecpar->codec_type);
                     ffio_wfourcc(pb, tag);
                 }
-                avio_wl32(pb, ie->flags);
-                avio_wl32(pb, ie->pos);
-                avio_wl32(pb, ie->len);
+                avio_wl32_xij(pb, ie->flags);
+                avio_wl32_xij(pb, ie->pos);
+                avio_wl32_xij(pb, ie->len);
                 avist->entry++;
             }
         } while (!empty);
@@ -790,7 +790,7 @@ static int avi_write_packet(AVFormatContext *s, AVPacket *pkt)
         } else
             reshuffle_ret = 0;
         if (par->format == AV_PIX_FMT_PAL8) {
-            ret = ff_get_packet_palette(s, opkt, reshuffle_ret, avist->palette);
+            ret = ff_get_packet_palette_xij(s, opkt, reshuffle_ret, avist->palette);
             if (ret < 0)
                 goto fail;
             if (ret) {
@@ -801,12 +801,12 @@ static int avi_write_packet(AVFormatContext *s, AVPacket *pkt)
 
                 if ((pb->seekable & AVIO_SEEKABLE_NORMAL) && avist->pal_offset) {
                     int64_t cur_offset = avio_tell(pb);
-                    avio_seek(pb, avist->pal_offset, SEEK_SET);
+                    avio_seek_xij(pb, avist->pal_offset, SEEK_SET);
                     for (i = 0; i < pal_size; i++) {
                         uint32_t v = avist->palette[i];
-                        avio_wl32(pb, v & 0xffffff);
+                        avio_wl32_xij(pb, v & 0xffffff);
                     }
-                    avio_seek(pb, cur_offset, SEEK_SET);
+                    avio_seek_xij(pb, cur_offset, SEEK_SET);
                     memcpy(avist->old_palette, avist->palette, pal_size * 4);
                     avist->pal_offset = 0;
                 }
@@ -817,9 +817,9 @@ static int avi_write_packet(AVFormatContext *s, AVPacket *pkt)
                     if (s->pb->seekable & AVIO_SEEKABLE_NORMAL) {
                         if (avist->strh_flags_offset) {
                             int64_t cur_offset = avio_tell(pb);
-                            avio_seek(pb, avist->strh_flags_offset, SEEK_SET);
-                            avio_wl32(pb, AVISF_VIDEO_PALCHANGES);
-                            avio_seek(pb, cur_offset, SEEK_SET);
+                            avio_seek_xij(pb, avist->strh_flags_offset, SEEK_SET);
+                            avio_wl32_xij(pb, AVISF_VIDEO_PALCHANGES);
+                            avio_seek_xij(pb, cur_offset, SEEK_SET);
                             avist->strh_flags_offset = 0;
                         }
                         ret = avi_add_ientry(s, stream_index, tag, AVIIF_NO_TIME,
@@ -828,12 +828,12 @@ static int avi_write_packet(AVFormatContext *s, AVPacket *pkt)
                             goto fail;
                     }
                     pc_tag = ff_start_tag(pb, tag);
-                    avio_w8(pb, 0);
-                    avio_w8(pb, pal_size & 0xFF);
-                    avio_wl16(pb, 0); // reserved
+                    avio_w8_xij(pb, 0);
+                    avio_w8_xij(pb, pal_size & 0xFF);
+                    avio_wl16_xij(pb, 0); // reserved
                     for (i = 0; i < pal_size; i++) {
                         uint32_t v = avist->palette[i];
-                        avio_wb32(pb, v<<8);
+                        avio_wb32_xij(pb, v<<8);
                     }
                     ff_end_tag(pb, pc_tag);
                     memcpy(avist->old_palette, avist->palette, pal_size * 4);
@@ -845,7 +845,7 @@ static int avi_write_packet(AVFormatContext *s, AVPacket *pkt)
 
 fail:
             if (reshuffle_ret)
-                av_packet_free(&pkt);
+                av_packet_free_xij(&pkt);
             return ret;
         }
     }
@@ -895,11 +895,11 @@ static int avi_write_packet_internal(AVFormatContext *s, AVPacket *pkt)
             return ret;
     }
 
-    avio_write(pb, tag, 4);
-    avio_wl32(pb, size);
-    avio_write(pb, pkt->data, size);
+    avio_write_xij(pb, tag, 4);
+    avio_wl32_xij(pb, size);
+    avio_write_xij(pb, pkt->data, size);
     if (size & 1)
-        avio_w8(pb, 0);
+        avio_w8_xij(pb, 0);
 
     return 0;
 }
@@ -928,9 +928,9 @@ static int avi_write_trailer(AVFormatContext *s)
             ff_end_tag(pb, avi->riff_start);
 
             file_size = avio_tell(pb);
-            avio_seek(pb, avi->odml_list - 8, SEEK_SET);
+            avio_seek_xij(pb, avi->odml_list - 8, SEEK_SET);
             ffio_wfourcc(pb, "LIST"); /* Making this AVI OpenDML one */
-            avio_skip(pb, 16);
+            avio_skip_xij(pb, 16);
 
             for (n = nb_frames = 0; n < s->nb_streams; n++) {
                 AVCodecParameters *par = s->streams[n]->codecpar;
@@ -945,8 +945,8 @@ static int avi_write_trailer(AVFormatContext *s)
                         nb_frames += avist->packet_count;
                 }
             }
-            avio_wl32(pb, nb_frames);
-            avio_seek(pb, file_size, SEEK_SET);
+            avio_wl32_xij(pb, nb_frames);
+            avio_seek_xij(pb, file_size, SEEK_SET);
 
             avi_write_counters(s, avi->riff_id);
         }
@@ -967,8 +967,8 @@ static int avi_write_trailer(AVFormatContext *s)
         av_freep(&avist->indexes.cluster);
         avist->indexes.ents_allocated = avist->indexes.entry = 0;
         if (pb->seekable & AVIO_SEEKABLE_NORMAL) {
-            avio_seek(pb, avist->frames_hdr_strm + 4, SEEK_SET);
-            avio_wl32(pb, avist->max_size);
+            avio_seek_xij(pb, avist->frames_hdr_strm + 4, SEEK_SET);
+            avio_wl32_xij(pb, avist->max_size);
         }
     }
 

@@ -145,7 +145,7 @@ typedef struct AVCodecInternal {
      * If the codec does not need to call the progress functions (there are no
      * dependencies between the frames), it should leave this at 0. Then it can
      * decode straight to the user-provided frames (which the user will then
-     * free with av_frame_unref()), there is no need to call
+     * free with av_frame_unref_xij()), there is no need to call
      * ff_thread_release_buffer().
      */
     int allocate_progress;
@@ -237,11 +237,11 @@ extern const uint8_t ff_log2_run[41];
  * Return the index into tab at which {a,b} match elements {[0],[1]} of tab.
  * If there is no such matching pair then size is returned.
  */
-int ff_match_2uint16(const uint16_t (*tab)[2], int size, int a, int b);
+int ff_match_2uint16_xij(const uint16_t (*tab)[2], int size, int a, int b);
 
-unsigned int avpriv_toupper4(unsigned int x);
+unsigned int avpriv_toupper4_xij(unsigned int x);
 
-void ff_color_frame(AVFrame *frame, const int color[4]);
+void ff_color_frame_xij(AVFrame *frame, const int color[4]);
 
 /**
  * Maximum size in bytes of extradata.
@@ -316,52 +316,52 @@ static av_always_inline float ff_exp2fi(int x) {
  * AVCodecContext.get_buffer() and should be used instead calling get_buffer()
  * directly.
  */
-int ff_get_buffer(AVCodecContext *avctx, AVFrame *frame, int flags);
+int ff_get_buffer_xij(AVCodecContext *avctx, AVFrame *frame, int flags);
 
 /**
- * Identical in function to av_frame_make_writable(), except it uses
- * ff_get_buffer() to allocate the buffer when needed.
+ * Identical in function to av_frame_make_writable_xij(), except it uses
+ * ff_get_buffer_xij() to allocate the buffer when needed.
  */
-int ff_reget_buffer(AVCodecContext *avctx, AVFrame *frame);
+int ff_reget_buffer_xij(AVCodecContext *avctx, AVFrame *frame);
 
 int ff_thread_can_start_frame(AVCodecContext *avctx);
 
 int avpriv_h264_has_num_reorder_frames(AVCodecContext *avctx);
 
 /**
- * Call avcodec_open2 recursively by decrementing counter, unlocking mutex,
+ * Call avcodec_open2_xij recursively by decrementing counter, unlocking mutex,
  * calling the function and then restoring again. Assumes the mutex is
  * already locked
  */
-int ff_codec_open2_recursive(AVCodecContext *avctx, const AVCodec *codec, AVDictionary **options);
+int ff_codec_open2_recursive_xij(AVCodecContext *avctx, const AVCodec *codec, AVDictionary **options);
 
 /**
  * Finalize buf into extradata and set its size appropriately.
  */
-int avpriv_bprint_to_extradata(AVCodecContext *avctx, struct AVBPrint *buf);
+int avpriv_bprint_to_extradata_xij(AVCodecContext *avctx, struct AVBPrint *buf);
 
-const uint8_t *avpriv_find_start_code(const uint8_t *p,
+const uint8_t *avpriv_find_start_code_xij(const uint8_t *p,
                                       const uint8_t *end,
                                       uint32_t *state);
 
-int avpriv_codec_get_cap_skip_frame_fill_param(const AVCodec *codec);
+int avpriv_codec_get_cap_skip_frame_fill_param_xij(const AVCodec *codec);
 
 /**
  * Check that the provided frame dimensions are valid and set them on the codec
  * context.
  */
-int ff_set_dimensions(AVCodecContext *s, int width, int height);
+int ff_set_dimensions_xij(AVCodecContext *s, int width, int height);
 
 /**
  * Check that the provided sample aspect ratio is valid and set it on the codec
  * context.
  */
-int ff_set_sar(AVCodecContext *avctx, AVRational sar);
+int ff_set_sar_xij(AVCodecContext *avctx, AVRational sar);
 
 /**
  * Add or update AV_FRAME_DATA_MATRIXENCODING side data.
  */
-int ff_side_data_update_matrix_encoding(AVFrame *frame,
+int ff_side_data_update_matrix_encoding_xij(AVFrame *frame,
                                         enum AVMatrixEncoding matrix_encoding);
 
 /**
@@ -375,19 +375,19 @@ int ff_side_data_update_matrix_encoding(AVFrame *frame,
  * If it is not possible to decode to software, AVCodecContext.sw_pix_fmt
  * must be set before calling this function.
  */
-int ff_get_format(AVCodecContext *avctx, const enum AVPixelFormat *fmt);
+int ff_get_format_xij(AVCodecContext *avctx, const enum AVPixelFormat *fmt);
 
 /**
  * Set various frame properties from the codec context / packet data.
  */
-int ff_decode_frame_props(AVCodecContext *avctx, AVFrame *frame);
+int ff_decode_frame_props_xij(AVCodecContext *avctx, AVFrame *frame);
 
 /**
  * Add a CPB properties side data to an encoding context.
  */
-AVCPBProperties *ff_add_cpb_side_data(AVCodecContext *avctx);
+AVCPBProperties *ff_add_cpb_side_data_xij(AVCodecContext *avctx);
 
-int ff_side_data_set_encoder_stats(AVPacket *pkt, int quality, int64_t *error, int error_count, int pict_type);
+int ff_side_data_set_encoder_stats_xij(AVPacket *pkt, int quality, int64_t *error, int error_count, int pict_type);
 
 /**
  * Check AVFrame for A53 side data and allocate and fill SEI message with A53 info
@@ -401,14 +401,14 @@ int ff_side_data_set_encoder_stats(AVPacket *pkt, int quality, int64_t *error, i
  * @param sei_size   Pointer to a variable to store generated SEI message length
  * @return           Zero on success, negative error code on failure
  */
-int ff_alloc_a53_sei(const AVFrame *frame, size_t prefix_len,
+int ff_alloc_a53_sei_xij(const AVFrame *frame, size_t prefix_len,
                      void **data, size_t *sei_size);
 
 /**
  * Get an estimated video bitrate based on frame size, frame rate and coded
  * bits per pixel.
  */
-int64_t ff_guess_coded_bitrate(AVCodecContext *avctx);
+int64_t ff_guess_coded_bitrate_xij(AVCodecContext *avctx);
 
 #if defined(_WIN32) && CONFIG_SHARED && !defined(BUILDING_avcodec)
 #    define av_export_avcodec __declspec(dllimport)

@@ -1250,7 +1250,7 @@ Create fragments that are @var{duration} microseconds long.
 Create fragments that contain up to @var{size} bytes of payload data.
 @item -movflags frag_custom
 Allow the caller to manually choose when to cut fragments, by
-calling @code{av_write_frame(ctx, NULL)} to write a fragment with
+calling @code{av_write_frame_xij(ctx, NULL)} to write a fragment with
 the packets written so far. (This is only useful with other
 applications integrating libavformat, not from @command{ffmpeg}.)
 @item -min_frag_duration @var{duration}

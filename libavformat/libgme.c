@@ -82,7 +82,7 @@ static int read_header_gme(AVFormatContext *s)
     AVStream *st;
     AVIOContext *pb = s->pb;
     GMEContext *gme = s->priv_data;
-    int64_t sz = avio_size(pb);
+    int64_t sz = avio_size_xij(pb);
     char *buf;
     char dummy;
 
@@ -96,10 +96,10 @@ static int read_header_gme(AVFormatContext *s)
     buf = av_malloc(sz);
     if (!buf)
         return AVERROR(ENOMEM);
-    sz = avio_read(pb, buf, sz);
+    sz = avio_read_xij(pb, buf, sz);
 
     // Data left means our buffer (the max_size option) is too small
-    if (avio_read(pb, &dummy, 1) == 1) {
+    if (avio_read_xij(pb, &dummy, 1) == 1) {
         av_log(s, AV_LOG_ERROR, "File size is larger than max_size option "
                "value %"PRIi64", consider increasing the max_size option\n",
                gme->max_size);

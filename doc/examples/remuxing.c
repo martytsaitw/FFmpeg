@@ -124,14 +124,14 @@ int main(int argc, char **argv)
     av_dump_format_ijk(ofmt_ctx, 0, out_filename, 1);
 
     if (!(ofmt->flags & AVFMT_NOFILE)) {
-        ret = avio_open(&ofmt_ctx->pb, out_filename, AVIO_FLAG_WRITE);
+        ret = avio_open_xij(&ofmt_ctx->pb, out_filename, AVIO_FLAG_WRITE);
         if (ret < 0) {
             fprintf(stderr, "Could not open output file '%s'", out_filename);
             goto end;
         }
     }
 
-    ret = avformat_write_header(ofmt_ctx, NULL);
+    ret = avformat_write_header_xij(ofmt_ctx, NULL);
     if (ret < 0) {
         fprintf(stderr, "Error occurred when opening output file\n");
         goto end;
@@ -162,7 +162,7 @@ int main(int argc, char **argv)
         pkt.pos = -1;
         log_packet(ofmt_ctx, &pkt, "out");
 
-        ret = av_interleaved_write_frame(ofmt_ctx, &pkt);
+        ret = av_interleaved_write_frame_xij(ofmt_ctx, &pkt);
         if (ret < 0) {
             fprintf(stderr, "Error muxing packet\n");
             break;
@@ -170,14 +170,14 @@ int main(int argc, char **argv)
         av_packet_unref_ijk(&pkt);
     }
 
-    av_write_trailer(ofmt_ctx);
+    av_write_trailer_xij(ofmt_ctx);
 end:
 
-    avformat_close_input(&ifmt_ctx);
+    avformat_close_input_xij(&ifmt_ctx);
 
     /* close output */
     if (ofmt_ctx && !(ofmt->flags & AVFMT_NOFILE))
-        avio_closep(&ofmt_ctx->pb);
+        avio_closep_xij(&ofmt_ctx->pb);
     avformat_free_context_ijk(ofmt_ctx);
 
     av_freep(&stream_mapping);

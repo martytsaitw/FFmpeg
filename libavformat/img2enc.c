@@ -101,11 +101,11 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
                 return AVERROR(EINVAL);
             }
         } else if (img->frame_pts) {
-            if (av_get_frame_filename2(filename, sizeof(filename), img->path, pkt->pts, AV_FRAME_FILENAME_FLAGS_MULTIPLE) < 0) {
+            if (av_get_frame_filename2_xij(filename, sizeof(filename), img->path, pkt->pts, AV_FRAME_FILENAME_FLAGS_MULTIPLE) < 0) {
                 av_log(s, AV_LOG_ERROR, "Cannot write filename by pts of the frames.");
                 return AVERROR(EINVAL);
             }
-        } else if (av_get_frame_filename2(filename, sizeof(filename), img->path,
+        } else if (av_get_frame_filename2_xij(filename, sizeof(filename), img->path,
                                           img->img_number,
                                           AV_FRAME_FILENAME_FLAGS_MULTIPLE) < 0 &&
                    img->img_number > 1) {
@@ -139,14 +139,14 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
             ysize *= 2;
             usize *= 2;
         }
-        avio_write(pb[0], pkt->data                , ysize);
-        avio_write(pb[1], pkt->data + ysize        , usize);
-        avio_write(pb[2], pkt->data + ysize + usize, usize);
-        ff_format_io_close(s, &pb[1]);
-        ff_format_io_close(s, &pb[2]);
+        avio_write_xij(pb[0], pkt->data                , ysize);
+        avio_write_xij(pb[1], pkt->data + ysize        , usize);
+        avio_write_xij(pb[2], pkt->data + ysize + usize, usize);
+        ff_format_io_close_xij(s, &pb[1]);
+        ff_format_io_close_xij(s, &pb[2]);
         if (desc->nb_components > 3) {
-            avio_write(pb[3], pkt->data + ysize + 2*usize, ysize);
-            ff_format_io_close(s, &pb[3]);
+            avio_write_xij(pb[3], pkt->data + ysize + 2*usize, ysize);
+            ff_format_io_close_xij(s, &pb[3]);
         }
     } else if (img->muxer) {
         int ret;
@@ -169,9 +169,9 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
         fmt->pb = pb[0];
         if ((ret = av_packet_ref_ijk(&pkt2, pkt))                             < 0 ||
             (ret = avcodec_parameters_copy_ijk(st->codecpar, s->streams[0]->codecpar)) < 0 ||
-            (ret = avformat_write_header(fmt, NULL))                      < 0 ||
-            (ret = av_interleaved_write_frame(fmt, &pkt2))                < 0 ||
-            (ret = av_write_trailer(fmt))                                 < 0) {
+            (ret = avformat_write_header_xij(fmt, NULL))                      < 0 ||
+            (ret = av_interleaved_write_frame_xij(fmt, &pkt2))                < 0 ||
+            (ret = av_write_trailer_xij(fmt))                                 < 0) {
             av_packet_unref_ijk(&pkt2);
             avformat_free_context_ijk(fmt);
             return ret;
@@ -179,11 +179,11 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
         av_packet_unref_ijk(&pkt2);
         avformat_free_context_ijk(fmt);
     } else {
-        avio_write(pb[0], pkt->data, pkt->size);
+        avio_write_xij(pb[0], pkt->data, pkt->size);
     }
-    avio_flush(pb[0]);
+    avio_flush_xij(pb[0]);
     if (!img->is_pipe) {
-        ff_format_io_close(s, &pb[0]);
+        ff_format_io_close_xij(s, &pb[0]);
         for (i = 0; i < nb_renames; i++) {
             int ret = ff_rename(img->tmp[i], img->target[i], s);
             if (ret < 0)

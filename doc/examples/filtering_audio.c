@@ -77,7 +77,7 @@ static int open_input_file(const char *filename)
     av_opt_set_int(dec_ctx, "refcounted_frames", 1, 0);
 
     /* init the audio decoder */
-    if ((ret = avcodec_open2(dec_ctx, dec, NULL)) < 0) {
+    if ((ret = avcodec_open2_xij(dec_ctx, dec, NULL)) < 0) {
         av_log(NULL, AV_LOG_ERROR, "Cannot open audio decoder\n");
         return ret;
     }
@@ -239,14 +239,14 @@ int main(int argc, char **argv)
             break;
 
         if (packet.stream_index == audio_stream_index) {
-            ret = avcodec_send_packet(dec_ctx, &packet);
+            ret = avcodec_send_packet_xij(dec_ctx, &packet);
             if (ret < 0) {
                 av_log(NULL, AV_LOG_ERROR, "Error while sending a packet to the decoder\n");
                 break;
             }
 
             while (ret >= 0) {
-                ret = avcodec_receive_frame(dec_ctx, frame);
+                ret = avcodec_receive_frame_xij(dec_ctx, frame);
                 if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
                     break;
                 } else if (ret < 0) {
@@ -269,9 +269,9 @@ int main(int argc, char **argv)
                         if (ret < 0)
                             goto end;
                         print_frame(filt_frame);
-                        av_frame_unref(filt_frame);
+                        av_frame_unref_xij(filt_frame);
                     }
-                    av_frame_unref(frame);
+                    av_frame_unref_xij(frame);
                 }
             }
         }
@@ -280,9 +280,9 @@ int main(int argc, char **argv)
 end:
     avfilter_graph_free(&filter_graph);
     avcodec_free_context_ijk(&dec_ctx);
-    avformat_close_input(&fmt_ctx);
-    av_frame_free(&frame);
-    av_frame_free(&filt_frame);
+    avformat_close_input_xij(&fmt_ctx);
+    av_frame_free_xij(&frame);
+    av_frame_free_xij(&filt_frame);
 
     if (ret < 0 && ret != AVERROR_EOF) {
         fprintf(stderr, "Error occurred: %s\n", av_err2str(ret));

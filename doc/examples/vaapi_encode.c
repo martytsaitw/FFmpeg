@@ -58,14 +58,14 @@ static int set_hwframe_ctx(AVCodecContext *ctx, AVBufferRef *hw_device_ctx)
     if ((err = av_hwframe_ctx_init(hw_frames_ref)) < 0) {
         fprintf(stderr, "Failed to initialize VAAPI frame context."
                 "Error code: %s\n",av_err2str(err));
-        av_buffer_unref(&hw_frames_ref);
+        av_buffer_unref_xij(&hw_frames_ref);
         return err;
     }
     ctx->hw_frames_ctx = av_buffer_ref_ijk(hw_frames_ref);
     if (!ctx->hw_frames_ctx)
         err = AVERROR(ENOMEM);
 
-    av_buffer_unref(&hw_frames_ref);
+    av_buffer_unref_xij(&hw_frames_ref);
     return err;
 }
 
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
         goto close;
     }
 
-    if (!(codec = avcodec_find_encoder_by_name(enc_name))) {
+    if (!(codec = avcodec_find_encoder_by_name_xij(enc_name))) {
         fprintf(stderr, "Could not find encoder.\n");
         err = -1;
         goto close;
@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
         goto close;
     }
 
-    if ((err = avcodec_open2(avctx, codec, NULL)) < 0) {
+    if ((err = avcodec_open2_xij(avctx, codec, NULL)) < 0) {
         fprintf(stderr, "Cannot open video encoder codec. Error code: %s\n", av_err2str(err));
         goto close;
     }
@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
         sw_frame->width  = width;
         sw_frame->height = height;
         sw_frame->format = AV_PIX_FMT_NV12;
-        if ((err = av_frame_get_buffer(sw_frame, 32)) < 0)
+        if ((err = av_frame_get_buffer_xij(sw_frame, 32)) < 0)
             goto close;
         if ((err = fread((uint8_t*)(sw_frame->data[0]), size, 1, fin)) <= 0)
             break;
@@ -199,8 +199,8 @@ int main(int argc, char *argv[])
             fprintf(stderr, "Failed to encode.\n");
             goto close;
         }
-        av_frame_free(&hw_frame);
-        av_frame_free(&sw_frame);
+        av_frame_free_xij(&hw_frame);
+        av_frame_free_xij(&sw_frame);
     }
 
     /* flush encoder */
@@ -213,10 +213,10 @@ close:
         fclose(fin);
     if (fout)
         fclose(fout);
-    av_frame_free(&sw_frame);
-    av_frame_free(&hw_frame);
+    av_frame_free_xij(&sw_frame);
+    av_frame_free_xij(&hw_frame);
     avcodec_free_context_ijk(&avctx);
-    av_buffer_unref(&hw_device_ctx);
+    av_buffer_unref_xij(&hw_device_ctx);
 
     return err;
 }

@@ -68,7 +68,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     if (w != avctx->width || h != avctx->height) {
         av_freep(&c->frame_buffer);
         av_freep(&c->last_frame_buffer);
-        if ((res = ff_set_dimensions(avctx, w, h)) < 0)
+        if ((res = ff_set_dimensions_xij(avctx, w, h)) < 0)
             return res;
     }
 
@@ -83,7 +83,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
 
     maxcnt = w * h;
 
-    if ((res = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((res = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return res;
     out  = (uint8_t*)c->frame_buffer;
     prev = (uint8_t*)c->last_frame_buffer;

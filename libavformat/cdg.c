@@ -45,7 +45,7 @@ static int read_header(AVFormatContext *s)
     /// 75 sectors/sec * 4 packets/sector = 300 packets/sec
     avpriv_set_pts_info_ijk(vst, 32, 1, 300);
 
-    ret = avio_size(s->pb);
+    ret = avio_size_xij(s->pb);
     if (ret < 0) {
         av_log(s, AV_LOG_WARNING, "Cannot calculate duration as file size cannot be determined\n");
     } else
@@ -60,7 +60,7 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
     int ret;
 
     while (1) {
-        ret = av_get_packet(s->pb, pkt, CDG_PACKET_SIZE);
+        ret = av_get_packet_xij(s->pb, pkt, CDG_PACKET_SIZE);
         if (ret < 1 || (pkt->data[0] & CDG_MASK) == CDG_COMMAND)
             break;
         av_packet_unref_ijk(pkt);

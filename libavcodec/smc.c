@@ -436,7 +436,7 @@ static int smc_decode_frame(AVCodecContext *avctx,
     int buf_size = avpkt->size;
     SmcContext *s = avctx->priv_data;
     int pal_size;
-    const uint8_t *pal = av_packet_get_side_data(avpkt, AV_PKT_DATA_PALETTE, &pal_size);
+    const uint8_t *pal = av_packet_get_side_data_xij(avpkt, AV_PKT_DATA_PALETTE, &pal_size);
     int ret;
     int total_blocks = ((s->avctx->width + 3) / 4) * ((s->avctx->height + 3) / 4);
 
@@ -445,7 +445,7 @@ static int smc_decode_frame(AVCodecContext *avctx,
 
     bytestream2_init(&s->gb, buf, buf_size);
 
-    if ((ret = ff_reget_buffer(avctx, s->frame)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, s->frame)) < 0)
         return ret;
 
     if (pal && pal_size == AVPALETTE_SIZE) {
@@ -458,7 +458,7 @@ static int smc_decode_frame(AVCodecContext *avctx,
     smc_decode_stream(s);
 
     *got_frame      = 1;
-    if ((ret = av_frame_ref(data, s->frame)) < 0)
+    if ((ret = av_frame_ref_xij(data, s->frame)) < 0)
         return ret;
 
     /* always report that the buffer was completely consumed */
@@ -469,7 +469,7 @@ static av_cold int smc_decode_end(AVCodecContext *avctx)
 {
     SmcContext *s = avctx->priv_data;
 
-    av_frame_free(&s->frame);
+    av_frame_free_xij(&s->frame);
 
     return 0;
 }

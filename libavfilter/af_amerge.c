@@ -250,12 +250,12 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
             break;
     av_assert1(input_number < s->nb_inputs);
     if (ff_bufqueue_is_full(&s->in[input_number].queue)) {
-        av_frame_free(&insamples);
+        av_frame_free_xij(&insamples);
         return AVERROR(ENOMEM);
     }
-    ff_bufqueue_add(ctx, &s->in[input_number].queue, av_frame_clone(insamples));
+    ff_bufqueue_add(ctx, &s->in[input_number].queue, av_frame_clone_xij(insamples));
     s->in[input_number].nb_samples += insamples->nb_samples;
-    av_frame_free(&insamples);
+    av_frame_free_xij(&insamples);
     nb_samples = s->in[0].nb_samples;
     for (i = 1; i < s->nb_inputs; i++)
         nb_samples = FFMIN(nb_samples, s->in[i].nb_samples);
@@ -271,7 +271,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
         ins[i] = inbuf[i]->data[0] +
                  s->in[i].pos * s->in[i].nb_ch * s->bps;
     }
-    av_frame_copy_props(outbuf, inbuf[0]);
+    av_frame_copy_props_xij(outbuf, inbuf[0]);
     outbuf->pts = inbuf[0]->pts == AV_NOPTS_VALUE ? AV_NOPTS_VALUE :
                   inbuf[0]->pts +
                   av_rescale_q(s->in[0].pos,
@@ -309,7 +309,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
             s->in[i].pos += ns;
             if (s->in[i].pos == inbuf[i]->nb_samples) {
                 s->in[i].pos = 0;
-                av_frame_free(&inbuf[i]);
+                av_frame_free_xij(&inbuf[i]);
                 ff_bufqueue_get(&s->in[i].queue);
                 inbuf[i] = ff_bufqueue_peek(&s->in[i].queue, 0);
                 ins[i] = inbuf[i] ? inbuf[i]->data[0] : NULL;

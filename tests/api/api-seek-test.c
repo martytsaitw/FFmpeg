@@ -92,13 +92,13 @@ static int compute_crc_of_packets(AVFormatContext *fmt_ctx, int video_stream,
     }
 
     if (!no_seeking) {
-        result = av_seek_frame(fmt_ctx, video_stream, ts_start, AVSEEK_FLAG_ANY);
+        result = av_seek_frame_xij(fmt_ctx, video_stream, ts_start, AVSEEK_FLAG_ANY);
         printf("Seeking to %"PRId64", computing crc for frames with pts < %"PRId64"\n", ts_start, ts_end);
         if (result < 0) {
             av_log(NULL, AV_LOG_ERROR, "Error in seeking\n");
             return result;
         }
-        avcodec_flush_buffers(ctx);
+        avcodec_flush_buffers_xij(ctx);
     }
 
     av_init_packet_ijk(&pkt);
@@ -116,7 +116,7 @@ static int compute_crc_of_packets(AVFormatContext *fmt_ctx, int video_stream,
                 av_log(NULL, AV_LOG_ERROR, "Error: frames doesn't have pts values\n");
                 return -1;
             }
-            result = avcodec_decode_video2(ctx, fr, &got_frame, &pkt);
+            result = avcodec_decode_video2_xij(ctx, fr, &got_frame, &pkt);
             if (result < 0) {
                 av_log(NULL, AV_LOG_ERROR, "Error decoding frame\n");
                 return result;
@@ -237,7 +237,7 @@ static int seek_test(const char *input_filename, const char *start, const char *
         goto end;
     }
 
-    result = avcodec_open2(ctx, codec, NULL);
+    result = avcodec_open2_xij(ctx, codec, NULL);
     if (result < 0) {
         av_log(ctx, AV_LOG_ERROR, "Can't open decoder\n");
         goto end;
@@ -265,9 +265,9 @@ static int seek_test(const char *input_filename, const char *start, const char *
 end:
     av_freep(&crc_array);
     av_freep(&pts_array);
-    av_frame_free(&fr);
-    avcodec_close(ctx);
-    avformat_close_input(&fmt_ctx);
+    av_frame_free_xij(&fr);
+    avcodec_close_xij(ctx);
+    avformat_close_input_xij(&fmt_ctx);
     avcodec_free_context_ijk(&ctx);
     return result;
 }

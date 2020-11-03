@@ -46,7 +46,7 @@ static void decode(AVCodecContext *dec_ctx, AVPacket *pkt, AVFrame *frame,
     int ret, data_size;
 
     /* send the packet with the compressed data to the decoder */
-    ret = avcodec_send_packet(dec_ctx, pkt);
+    ret = avcodec_send_packet_xij(dec_ctx, pkt);
     if (ret < 0) {
         fprintf(stderr, "Error submitting the packet to the decoder\n");
         exit(1);
@@ -54,7 +54,7 @@ static void decode(AVCodecContext *dec_ctx, AVPacket *pkt, AVFrame *frame,
 
     /* read all the output frames (in general there may be any number of them */
     while (ret >= 0) {
-        ret = avcodec_receive_frame(dec_ctx, frame);
+        ret = avcodec_receive_frame_xij(dec_ctx, frame);
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
             return;
         else if (ret < 0) {
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    parser = av_parser_init(codec->id);
+    parser = av_parser_init_xij(codec->id);
     if (!parser) {
         fprintf(stderr, "Parser not found\n");
         exit(1);
@@ -116,7 +116,7 @@ int main(int argc, char **argv)
     }
 
     /* open it */
-    if (avcodec_open2(c, codec, NULL) < 0) {
+    if (avcodec_open2_xij(c, codec, NULL) < 0) {
         fprintf(stderr, "Could not open codec\n");
         exit(1);
     }
@@ -144,7 +144,7 @@ int main(int argc, char **argv)
             }
         }
 
-        ret = av_parser_parse2(parser, c, &pkt->data, &pkt->size,
+        ret = av_parser_parse2_xij(parser, c, &pkt->data, &pkt->size,
                                data, data_size,
                                AV_NOPTS_VALUE, AV_NOPTS_VALUE, 0);
         if (ret < 0) {
@@ -177,8 +177,8 @@ int main(int argc, char **argv)
 
     avcodec_free_context_ijk(&c);
     av_parser_close_ijk(parser);
-    av_frame_free(&decoded_frame);
-    av_packet_free(&pkt);
+    av_frame_free_xij(&decoded_frame);
+    av_packet_free_xij(&pkt);
 
     return 0;
 }

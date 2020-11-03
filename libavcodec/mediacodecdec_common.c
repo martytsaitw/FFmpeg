@@ -259,7 +259,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     return 0;
 fail:
     av_freep(buffer);
-    av_buffer_unref(&frame->buf[0]);
+    av_buffer_unref_xij(&frame->buf[0]);
     status = ff_AMediaCodec_releaseOutputBuffer(s->codec, index, 0);
     if (status < 0) {
         av_log(avctx, AV_LOG_ERROR, "Failed to release output buffer\n");
@@ -287,12 +287,12 @@ static int mediacodec_wrap_sw_buffer(AVCodecContext *avctx,
     /* MediaCodec buffers needs to be copied to our own refcounted buffers
      * because the flush command invalidates all input and output buffers.
      */
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0) {
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0) {
         av_log(avctx, AV_LOG_ERROR, "Could not allocate buffer\n");
         goto done;
     }
 
-    /* Override frame->pkt_pts as ff_get_buffer will override its value based
+    /* Override frame->pkt_pts as ff_get_buffer_xij will override its value based
      * on the last avpacket received which is not in sync with the frame:
      *   * N avpackets can be pushed before 1 frame is actually returned
      *   * 0-sized avpackets are pushed to flush remaining frames at EOS */
@@ -422,7 +422,7 @@ static int mediacodec_dec_parse_format(AVCodecContext *avctx, MediaCodecDecConte
         AVRational sar = av_div_q(
             (AVRational){ s->display_width, s->display_height },
             (AVRational){ width, height });
-        ff_set_sar(avctx, sar);
+        ff_set_sar_xij(avctx, sar);
     }
 
     av_log(avctx, AV_LOG_INFO,
@@ -432,7 +432,7 @@ static int mediacodec_dec_parse_format(AVCodecContext *avctx, MediaCodecDecConte
         width, height);
 
     av_freep(&format);
-    return ff_set_dimensions(avctx, width, height);
+    return ff_set_dimensions_xij(avctx, width, height);
 fail:
     av_freep(&format);
     return ret;
@@ -478,7 +478,7 @@ int ff_mediacodec_dec_init(AVCodecContext *avctx, MediaCodecDecContext *s,
     atomic_init(&s->hw_buffer_count, 0);
     atomic_init(&s->serial, 1);
 
-    pix_fmt = ff_get_format(avctx, pix_fmts);
+    pix_fmt = ff_get_format_xij(avctx, pix_fmts);
     if (pix_fmt == AV_PIX_FMT_MEDIACODEC) {
         AVMediaCodecContext *user_ctx = avctx->hwaccel_context;
 

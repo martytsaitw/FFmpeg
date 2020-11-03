@@ -187,7 +187,7 @@ av_cold int ff_alsa_open(AVFormatContext *ctx, snd_pcm_stream_t mode,
         av_log(ctx, AV_LOG_ERROR, "sample format 0x%04x is not supported\n", *codec_id);
         return AVERROR(ENOSYS);
     }
-    s->frame_size = av_get_bits_per_sample(*codec_id) / 8 * channels;
+    s->frame_size = av_get_bits_per_sample_xij(*codec_id) / 8 * channels;
 
     if (ctx->flags & AVFMT_FLAG_NONBLOCK) {
         flags = SND_PCM_NONBLOCK;

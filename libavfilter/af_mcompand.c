@@ -106,9 +106,9 @@ static av_cold void uninit(AVFilterContext *ctx)
     MCompandContext *s = ctx->priv;
     int i;
 
-    av_frame_free(&s->band_buf1);
-    av_frame_free(&s->band_buf2);
-    av_frame_free(&s->band_buf3);
+    av_frame_free_xij(&s->band_buf1);
+    av_frame_free_xij(&s->band_buf2);
+    av_frame_free_xij(&s->band_buf3);
 
     if (s->bands) {
         for (i = 0; i < s->nb_bands; i++) {
@@ -117,7 +117,7 @@ static av_cold void uninit(AVFilterContext *ctx)
             av_freep(&s->bands[i].volume);
             av_freep(&s->bands[i].transfer_fn.segments);
             av_freep(&s->bands[i].filter.previous);
-            av_frame_free(&s->bands[i].delay_buf);
+            av_frame_free_xij(&s->bands[i].delay_buf);
         }
     }
     av_freep(&s->bands);
@@ -600,14 +600,14 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
     out = ff_get_audio_buffer(outlink, in->nb_samples);
     if (!out) {
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         return AVERROR(ENOMEM);
     }
 
     if (s->band_samples < in->nb_samples) {
-        av_frame_free(&s->band_buf1);
-        av_frame_free(&s->band_buf2);
-        av_frame_free(&s->band_buf3);
+        av_frame_free_xij(&s->band_buf1);
+        av_frame_free_xij(&s->band_buf2);
+        av_frame_free_xij(&s->band_buf3);
 
         s->band_buf1 = ff_get_audio_buffer(outlink, in->nb_samples);
         s->band_buf2 = ff_get_audio_buffer(outlink, in->nb_samples);
@@ -642,7 +642,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     }
 
     out->pts = in->pts;
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
     return ff_filter_frame(outlink, out);
 }
 

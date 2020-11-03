@@ -134,15 +134,15 @@ static struct codec_string {
 static int dashenc_io_open(AVFormatContext *s, AVIOContext **pb, char *filename,
                            AVDictionary **options) {
     DASHContext *c = s->priv_data;
-    int http_base_proto = filename ? ff_is_http_proto(filename) : 0;
+    int http_base_proto = filename ? ff_is_http_proto_xij(filename) : 0;
     int err = AVERROR_MUXER_NOT_FOUND;
     if (!*pb || !http_base_proto || !c->http_persistent) {
         err = s->io_open(s, pb, filename, AVIO_FLAG_WRITE, options);
 #if CONFIG_HTTP_PROTOCOL
     } else {
-        URLContext *http_url_context = ffio_geturlcontext(*pb);
+        URLContext *http_url_context = ffio_geturlcontext_xij(*pb);
         av_assert0(http_url_context);
-        err = ff_http_do_new_request(http_url_context, filename);
+        err = ff_http_do_new_request_xij(http_url_context, filename);
 #endif
     }
     return err;
@@ -150,15 +150,15 @@ static int dashenc_io_open(AVFormatContext *s, AVIOContext **pb, char *filename,
 
 static void dashenc_io_close(AVFormatContext *s, AVIOContext **pb, char *filename) {
     DASHContext *c = s->priv_data;
-    int http_base_proto = filename ? ff_is_http_proto(filename) : 0;
+    int http_base_proto = filename ? ff_is_http_proto_xij(filename) : 0;
 
     if (!http_base_proto || !c->http_persistent) {
-        ff_format_io_close(s, pb);
+        ff_format_io_close_xij(s, pb);
 #if CONFIG_HTTP_PROTOCOL
     } else {
-        URLContext *http_url_context = ffio_geturlcontext(*pb);
+        URLContext *http_url_context = ffio_geturlcontext_xij(*pb);
         av_assert0(http_url_context);
-        avio_flush(*pb);
+        avio_flush_xij(*pb);
         ffurl_shutdown(http_url_context, AVIO_FLAG_WRITE);
 #endif
     }
@@ -180,13 +180,13 @@ static void set_codec_str(AVFormatContext *s, AVCodecParameters *par,
 
     // for codecs part of RFC 6381
     if (par->codec_type == AVMEDIA_TYPE_VIDEO)
-        tags[0] = ff_codec_movvideo_tags;
+        tags[0] = ff_codec_movvideo_tags_xij;
     else if (par->codec_type == AVMEDIA_TYPE_AUDIO)
-        tags[0] = ff_codec_movaudio_tags;
+        tags[0] = ff_codec_movaudio_tags_xij;
     else
         return;
 
-    tag = av_codec_get_tag(tags, par->codec_id);
+    tag = av_codec_get_tag_xij(tags, par->codec_id);
     if (!tag)
         return;
     if (size < 5)
@@ -196,8 +196,8 @@ static void set_codec_str(AVFormatContext *s, AVCodecParameters *par,
     str[4] = '\0';
     if (!strcmp(str, "mp4a") || !strcmp(str, "mp4v")) {
         uint32_t oti;
-        tags[0] = ff_mp4_obj_type;
-        oti = av_codec_get_tag(tags, par->codec_id);
+        tags[0] = ff_mp4_obj_type_xij;
+        oti = av_codec_get_tag_xij(tags, par->codec_id);
         if (oti)
             av_strlcatf(str, size, ".%02"PRIx32, oti);
         else
@@ -222,13 +222,13 @@ static void set_codec_str(AVFormatContext *s, AVCodecParameters *par,
             return;
         if (extradata[0] != 1) {
             AVIOContext *pb;
-            if (avio_open_dyn_buf(&pb) < 0)
+            if (avio_open_dyn_buf_xij(&pb) < 0)
                 return;
             if (ff_isom_write_avcc(pb, extradata, extradata_size) < 0) {
-                ffio_free_dyn_buf(&pb);
+                ffio_free_dyn_buf_xij(&pb);
                 return;
             }
-            extradata_size = avio_close_dyn_buf(pb, &extradata);
+            extradata_size = avio_close_dyn_buf_xij(pb, &extradata);
             tmpbuf = extradata;
         }
 
@@ -248,18 +248,18 @@ static int flush_dynbuf(OutputStream *os, int *range_length)
     }
 
     // flush
-    av_write_frame(os->ctx, NULL);
-    avio_flush(os->ctx->pb);
+    av_write_frame_xij(os->ctx, NULL);
+    avio_flush_xij(os->ctx->pb);
 
     // write out to file
-    *range_length = avio_close_dyn_buf(os->ctx->pb, &buffer);
+    *range_length = avio_close_dyn_buf_xij(os->ctx->pb, &buffer);
     os->ctx->pb = NULL;
-    avio_write(os->out, buffer + os->written_len, *range_length - os->written_len);
+    avio_write_xij(os->out, buffer + os->written_len, *range_length - os->written_len);
     os->written_len = 0;
     av_free(buffer);
 
     // re-open buffer
-    return avio_open_dyn_buf(&os->ctx->pb);
+    return avio_open_dyn_buf_xij(&os->ctx->pb);
 }
 
 static void set_http_options(AVDictionary **options, DASHContext *c)
@@ -293,7 +293,7 @@ static int flush_init_segment(AVFormatContext *s, OutputStream *os)
 
     os->pos = os->init_range_length = range_length;
     if (!c->single_file)
-        ff_format_io_close(s, &os->out);
+        ff_format_io_close_xij(s, &os->out);
     return 0;
 }
 
@@ -314,10 +314,10 @@ static void dash_free(AVFormatContext *s)
     for (i = 0; i < s->nb_streams; i++) {
         OutputStream *os = &c->streams[i];
         if (os->ctx && os->ctx_inited)
-            av_write_trailer(os->ctx);
+            av_write_trailer_xij(os->ctx);
         if (os->ctx && os->ctx->pb)
-            ffio_free_dyn_buf(&os->ctx->pb);
-        ff_format_io_close(s, &os->out);
+            ffio_free_dyn_buf_xij(&os->ctx->pb);
+        ff_format_io_close_xij(s, &os->out);
         if (os->ctx)
             avformat_free_context_ijk(os->ctx);
         for (j = 0; j < os->nb_segments; j++)
@@ -326,8 +326,8 @@ static void dash_free(AVFormatContext *s)
     }
     av_freep(&c->streams);
 
-    ff_format_io_close(s, &c->mpd_out);
-    ff_format_io_close(s, &c->m3u8_out);
+    ff_format_io_close_xij(s, &c->mpd_out);
+    ff_format_io_close_xij(s, &c->m3u8_out);
 }
 
 static void output_segment_list(OutputStream *os, AVIOContext *out, AVFormatContext *s,
@@ -342,55 +342,55 @@ static void output_segment_list(OutputStream *os, AVIOContext *out, AVFormatCont
 
     if (c->use_template) {
         int timescale = c->use_timeline ? os->ctx->streams[0]->time_base.den : AV_TIME_BASE;
-        avio_printf(out, "\t\t\t\t<SegmentTemplate timescale=\"%d\" ", timescale);
+        avio_printf_xij(out, "\t\t\t\t<SegmentTemplate timescale=\"%d\" ", timescale);
         if (!c->use_timeline)
-            avio_printf(out, "duration=\"%"PRId64"\" ", c->last_duration);
-        avio_printf(out, "initialization=\"%s\" media=\"%s\" startNumber=\"%d\">\n", c->init_seg_name, c->media_seg_name, c->use_timeline ? start_number : 1);
+            avio_printf_xij(out, "duration=\"%"PRId64"\" ", c->last_duration);
+        avio_printf_xij(out, "initialization=\"%s\" media=\"%s\" startNumber=\"%d\">\n", c->init_seg_name, c->media_seg_name, c->use_timeline ? start_number : 1);
         if (c->use_timeline) {
             int64_t cur_time = 0;
-            avio_printf(out, "\t\t\t\t\t<SegmentTimeline>\n");
+            avio_printf_xij(out, "\t\t\t\t\t<SegmentTimeline>\n");
             for (i = start_index; i < os->nb_segments; ) {
                 Segment *seg = os->segments[i];
                 int repeat = 0;
-                avio_printf(out, "\t\t\t\t\t\t<S ");
+                avio_printf_xij(out, "\t\t\t\t\t\t<S ");
                 if (i == start_index || seg->time != cur_time) {
                     cur_time = seg->time;
-                    avio_printf(out, "t=\"%"PRId64"\" ", seg->time);
+                    avio_printf_xij(out, "t=\"%"PRId64"\" ", seg->time);
                 }
-                avio_printf(out, "d=\"%d\" ", seg->duration);
+                avio_printf_xij(out, "d=\"%d\" ", seg->duration);
                 while (i + repeat + 1 < os->nb_segments &&
                        os->segments[i + repeat + 1]->duration == seg->duration &&
                        os->segments[i + repeat + 1]->time == os->segments[i + repeat]->time + os->segments[i + repeat]->duration)
                     repeat++;
                 if (repeat > 0)
-                    avio_printf(out, "r=\"%d\" ", repeat);
-                avio_printf(out, "/>\n");
+                    avio_printf_xij(out, "r=\"%d\" ", repeat);
+                avio_printf_xij(out, "/>\n");
                 i += 1 + repeat;
                 cur_time += (1 + repeat) * seg->duration;
             }
-            avio_printf(out, "\t\t\t\t\t</SegmentTimeline>\n");
+            avio_printf_xij(out, "\t\t\t\t\t</SegmentTimeline>\n");
         }
-        avio_printf(out, "\t\t\t\t</SegmentTemplate>\n");
+        avio_printf_xij(out, "\t\t\t\t</SegmentTemplate>\n");
     } else if (c->single_file) {
-        avio_printf(out, "\t\t\t\t<BaseURL>%s</BaseURL>\n", os->initfile);
-        avio_printf(out, "\t\t\t\t<SegmentList timescale=\"%d\" duration=\"%"PRId64"\" startNumber=\"%d\">\n", AV_TIME_BASE, c->last_duration, start_number);
-        avio_printf(out, "\t\t\t\t\t<Initialization range=\"%"PRId64"-%"PRId64"\" />\n", os->init_start_pos, os->init_start_pos + os->init_range_length - 1);
+        avio_printf_xij(out, "\t\t\t\t<BaseURL>%s</BaseURL>\n", os->initfile);
+        avio_printf_xij(out, "\t\t\t\t<SegmentList timescale=\"%d\" duration=\"%"PRId64"\" startNumber=\"%d\">\n", AV_TIME_BASE, c->last_duration, start_number);
+        avio_printf_xij(out, "\t\t\t\t\t<Initialization range=\"%"PRId64"-%"PRId64"\" />\n", os->init_start_pos, os->init_start_pos + os->init_range_length - 1);
         for (i = start_index; i < os->nb_segments; i++) {
             Segment *seg = os->segments[i];
-            avio_printf(out, "\t\t\t\t\t<SegmentURL mediaRange=\"%"PRId64"-%"PRId64"\" ", seg->start_pos, seg->start_pos + seg->range_length - 1);
+            avio_printf_xij(out, "\t\t\t\t\t<SegmentURL mediaRange=\"%"PRId64"-%"PRId64"\" ", seg->start_pos, seg->start_pos + seg->range_length - 1);
             if (seg->index_length)
-                avio_printf(out, "indexRange=\"%"PRId64"-%"PRId64"\" ", seg->start_pos, seg->start_pos + seg->index_length - 1);
-            avio_printf(out, "/>\n");
+                avio_printf_xij(out, "indexRange=\"%"PRId64"-%"PRId64"\" ", seg->start_pos, seg->start_pos + seg->index_length - 1);
+            avio_printf_xij(out, "/>\n");
         }
-        avio_printf(out, "\t\t\t\t</SegmentList>\n");
+        avio_printf_xij(out, "\t\t\t\t</SegmentList>\n");
     } else {
-        avio_printf(out, "\t\t\t\t<SegmentList timescale=\"%d\" duration=\"%"PRId64"\" startNumber=\"%d\">\n", AV_TIME_BASE, c->last_duration, start_number);
-        avio_printf(out, "\t\t\t\t\t<Initialization sourceURL=\"%s\" />\n", os->initfile);
+        avio_printf_xij(out, "\t\t\t\t<SegmentList timescale=\"%d\" duration=\"%"PRId64"\" startNumber=\"%d\">\n", AV_TIME_BASE, c->last_duration, start_number);
+        avio_printf_xij(out, "\t\t\t\t\t<Initialization sourceURL=\"%s\" />\n", os->initfile);
         for (i = start_index; i < os->nb_segments; i++) {
             Segment *seg = os->segments[i];
-            avio_printf(out, "\t\t\t\t\t<SegmentURL media=\"%s\" />\n", seg->file);
+            avio_printf_xij(out, "\t\t\t\t\t<SegmentURL media=\"%s\" />\n", seg->file);
         }
-        avio_printf(out, "\t\t\t\t</SegmentList>\n");
+        avio_printf_xij(out, "\t\t\t\t</SegmentList>\n");
     }
     if (c->hls_playlist && start_index < os->nb_segments)
     {
@@ -497,12 +497,12 @@ static void write_time(AVIOContext *out, int64_t time)
     int hours = minutes / 60;
     seconds %= 60;
     minutes %= 60;
-    avio_printf(out, "PT");
+    avio_printf_xij(out, "PT");
     if (hours)
-        avio_printf(out, "%dH", hours);
+        avio_printf_xij(out, "%dH", hours);
     if (hours || minutes)
-        avio_printf(out, "%dM", minutes);
-    avio_printf(out, "%d.%dS", seconds, fractions / (AV_TIME_BASE / 10));
+        avio_printf_xij(out, "%dM", minutes);
+    avio_printf_xij(out, "%d.%dS", seconds, fractions / (AV_TIME_BASE / 10));
 }
 
 static void format_date_now(char *buf, int size)
@@ -524,18 +524,18 @@ static int write_adaptation_set(AVFormatContext *s, AVIOContext *out, int as_ind
     AVDictionaryEntry *lang, *role;
     int i;
 
-    avio_printf(out, "\t\t<AdaptationSet id=\"%s\" contentType=\"%s\" segmentAlignment=\"true\" bitstreamSwitching=\"true\"",
+    avio_printf_xij(out, "\t\t<AdaptationSet id=\"%s\" contentType=\"%s\" segmentAlignment=\"true\" bitstreamSwitching=\"true\"",
                 as->id, as->media_type == AVMEDIA_TYPE_VIDEO ? "video" : "audio");
     if (as->media_type == AVMEDIA_TYPE_VIDEO && as->max_frame_rate.num && !as->ambiguous_frame_rate && av_cmp_q(as->min_frame_rate, as->max_frame_rate) < 0)
-        avio_printf(out, " maxFrameRate=\"%d/%d\"", as->max_frame_rate.num, as->max_frame_rate.den);
+        avio_printf_xij(out, " maxFrameRate=\"%d/%d\"", as->max_frame_rate.num, as->max_frame_rate.den);
     lang = av_dict_get(as->metadata, "language", NULL, 0);
     if (lang)
-        avio_printf(out, " lang=\"%s\"", lang->value);
-    avio_printf(out, ">\n");
+        avio_printf_xij(out, " lang=\"%s\"", lang->value);
+    avio_printf_xij(out, ">\n");
 
     role = av_dict_get(as->metadata, "role", NULL, 0);
     if (role)
-        avio_printf(out, "\t\t\t<Role schemeIdUri=\"urn:mpeg:dash:role:2011\" value=\"%s\"/>\n", role->value);
+        avio_printf_xij(out, "\t\t\t<Role schemeIdUri=\"urn:mpeg:dash:role:2011\" value=\"%s\"/>\n", role->value);
 
     for (i = 0; i < s->nb_streams; i++) {
         OutputStream *os = &c->streams[i];
@@ -545,21 +545,21 @@ static int write_adaptation_set(AVFormatContext *s, AVIOContext *out, int as_ind
 
         if (as->media_type == AVMEDIA_TYPE_VIDEO) {
             AVStream *st = s->streams[i];
-            avio_printf(out, "\t\t\t<Representation id=\"%d\" mimeType=\"video/%s\" codecs=\"%s\"%s width=\"%d\" height=\"%d\"",
+            avio_printf_xij(out, "\t\t\t<Representation id=\"%d\" mimeType=\"video/%s\" codecs=\"%s\"%s width=\"%d\" height=\"%d\"",
                 i, os->format_name, os->codec_str, os->bandwidth_str, s->streams[i]->codecpar->width, s->streams[i]->codecpar->height);
             if (st->avg_frame_rate.num)
-                avio_printf(out, " frameRate=\"%d/%d\"", st->avg_frame_rate.num, st->avg_frame_rate.den);
-            avio_printf(out, ">\n");
+                avio_printf_xij(out, " frameRate=\"%d/%d\"", st->avg_frame_rate.num, st->avg_frame_rate.den);
+            avio_printf_xij(out, ">\n");
         } else {
-            avio_printf(out, "\t\t\t<Representation id=\"%d\" mimeType=\"audio/%s\" codecs=\"%s\"%s audioSamplingRate=\"%d\">\n",
+            avio_printf_xij(out, "\t\t\t<Representation id=\"%d\" mimeType=\"audio/%s\" codecs=\"%s\"%s audioSamplingRate=\"%d\">\n",
                 i, os->format_name, os->codec_str, os->bandwidth_str, s->streams[i]->codecpar->sample_rate);
-            avio_printf(out, "\t\t\t\t<AudioChannelConfiguration schemeIdUri=\"urn:mpeg:dash:23003:3:audio_channel_configuration:2011\" value=\"%d\" />\n",
+            avio_printf_xij(out, "\t\t\t\t<AudioChannelConfiguration schemeIdUri=\"urn:mpeg:dash:23003:3:audio_channel_configuration:2011\" value=\"%d\" />\n",
                 s->streams[i]->codecpar->channels);
         }
         output_segment_list(os, out, s, i, final);
-        avio_printf(out, "\t\t\t</Representation>\n");
+        avio_printf_xij(out, "\t\t\t</Representation>\n");
     }
-    avio_printf(out, "\t\t</AdaptationSet>\n");
+    avio_printf_xij(out, "\t\t</AdaptationSet>\n");
 
     return 0;
 }
@@ -722,71 +722,71 @@ static int write_manifest(AVFormatContext *s, int final)
     }
     out = c->mpd_out;
     av_dict_free(&opts);
-    avio_printf(out, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
-    avio_printf(out, "<MPD xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+    avio_printf_xij(out, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+    avio_printf_xij(out, "<MPD xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
                 "\txmlns=\"urn:mpeg:dash:schema:mpd:2011\"\n"
                 "\txmlns:xlink=\"http://www.w3.org/1999/xlink\"\n"
                 "\txsi:schemaLocation=\"urn:mpeg:DASH:schema:MPD:2011 http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-DASH_schema_files/DASH-MPD.xsd\"\n"
                 "\tprofiles=\"urn:mpeg:dash:profile:isoff-live:2011\"\n"
                 "\ttype=\"%s\"\n", final ? "static" : "dynamic");
     if (final) {
-        avio_printf(out, "\tmediaPresentationDuration=\"");
+        avio_printf_xij(out, "\tmediaPresentationDuration=\"");
         write_time(out, c->total_duration);
-        avio_printf(out, "\"\n");
+        avio_printf_xij(out, "\"\n");
     } else {
         int64_t update_period = c->last_duration / AV_TIME_BASE;
         char now_str[100];
         if (c->use_template && !c->use_timeline)
             update_period = 500;
-        avio_printf(out, "\tminimumUpdatePeriod=\"PT%"PRId64"S\"\n", update_period);
-        avio_printf(out, "\tsuggestedPresentationDelay=\"PT%"PRId64"S\"\n", c->last_duration / AV_TIME_BASE);
+        avio_printf_xij(out, "\tminimumUpdatePeriod=\"PT%"PRId64"S\"\n", update_period);
+        avio_printf_xij(out, "\tsuggestedPresentationDelay=\"PT%"PRId64"S\"\n", c->last_duration / AV_TIME_BASE);
         if (!c->availability_start_time[0] && s->nb_streams > 0 && c->streams[0].nb_segments > 0) {
             format_date_now(c->availability_start_time, sizeof(c->availability_start_time));
         }
         if (c->availability_start_time[0])
-            avio_printf(out, "\tavailabilityStartTime=\"%s\"\n", c->availability_start_time);
+            avio_printf_xij(out, "\tavailabilityStartTime=\"%s\"\n", c->availability_start_time);
         format_date_now(now_str, sizeof(now_str));
         if (now_str[0])
-            avio_printf(out, "\tpublishTime=\"%s\"\n", now_str);
+            avio_printf_xij(out, "\tpublishTime=\"%s\"\n", now_str);
         if (c->window_size && c->use_template) {
-            avio_printf(out, "\ttimeShiftBufferDepth=\"");
+            avio_printf_xij(out, "\ttimeShiftBufferDepth=\"");
             write_time(out, c->last_duration * c->window_size);
-            avio_printf(out, "\"\n");
+            avio_printf_xij(out, "\"\n");
         }
     }
-    avio_printf(out, "\tminBufferTime=\"");
+    avio_printf_xij(out, "\tminBufferTime=\"");
     write_time(out, c->last_duration * 2);
-    avio_printf(out, "\">\n");
-    avio_printf(out, "\t<ProgramInformation>\n");
+    avio_printf_xij(out, "\">\n");
+    avio_printf_xij(out, "\t<ProgramInformation>\n");
     if (title) {
         char *escaped = xmlescape(title->value);
-        avio_printf(out, "\t\t<Title>%s</Title>\n", escaped);
+        avio_printf_xij(out, "\t\t<Title>%s</Title>\n", escaped);
         av_free(escaped);
     }
-    avio_printf(out, "\t</ProgramInformation>\n");
+    avio_printf_xij(out, "\t</ProgramInformation>\n");
 
     if (c->window_size && s->nb_streams > 0 && c->streams[0].nb_segments > 0 && !c->use_template) {
         OutputStream *os = &c->streams[0];
         int start_index = FFMAX(os->nb_segments - c->window_size, 0);
         int64_t start_time = av_rescale_q(os->segments[start_index]->time, s->streams[0]->time_base, AV_TIME_BASE_Q);
-        avio_printf(out, "\t<Period id=\"0\" start=\"");
+        avio_printf_xij(out, "\t<Period id=\"0\" start=\"");
         write_time(out, start_time);
-        avio_printf(out, "\">\n");
+        avio_printf_xij(out, "\">\n");
     } else {
-        avio_printf(out, "\t<Period id=\"0\" start=\"PT0.0S\">\n");
+        avio_printf_xij(out, "\t<Period id=\"0\" start=\"PT0.0S\">\n");
     }
 
     for (i = 0; i < c->nb_as; i++) {
         if ((ret = write_adaptation_set(s, out, i, final)) < 0)
             return ret;
     }
-    avio_printf(out, "\t</Period>\n");
+    avio_printf_xij(out, "\t</Period>\n");
 
     if (c->utc_timing_url)
-        avio_printf(out, "\t<UTCTiming schemeIdUri=\"urn:mpeg:dash:utc:http-xsdate:2014\" value=\"%s\"/>\n", c->utc_timing_url);
+        avio_printf_xij(out, "\t<UTCTiming schemeIdUri=\"urn:mpeg:dash:utc:http-xsdate:2014\" value=\"%s\"/>\n", c->utc_timing_url);
 
-    avio_printf(out, "</MPD>\n");
-    avio_flush(out);
+    avio_printf_xij(out, "</MPD>\n");
+    avio_flush_xij(out);
     dashenc_io_close(s, &c->mpd_out, temp_filename);
 
     if (use_rename) {
@@ -808,7 +808,7 @@ static int write_manifest(AVFormatContext *s, int final)
         snprintf(temp_filename, sizeof(temp_filename), use_rename ? "%s.tmp" : "%s", filename_hls);
 
         set_http_options(&opts, c);
-        ret = avio_open2(&out, temp_filename, AVIO_FLAG_WRITE, NULL, &opts);
+        ret = avio_open2_xij(&out, temp_filename, AVIO_FLAG_WRITE, NULL, &opts);
         if (ret < 0) {
             av_log(s, AV_LOG_ERROR, "Unable to open %s for writing\n", temp_filename);
             return ret;
@@ -841,7 +841,7 @@ static int write_manifest(AVFormatContext *s, int final)
             get_hls_playlist_name(playlist_file, sizeof(playlist_file), NULL, i);
             ff_hls_write_stream_info(st, out, stream_bitrate, playlist_file, agroup, NULL, NULL);
         }
-        avio_close(out);
+        avio_close_xij(out);
         if (use_rename)
             if ((ret = avpriv_io_move(temp_filename, filename_hls)) < 0)
                 return ret;
@@ -931,7 +931,7 @@ static int dash_init(AVFormatContext *s)
         } else {
             snprintf(os->format_name, sizeof(os->format_name), "mp4");
         }
-        ctx->oformat = av_guess_format(os->format_name, NULL, NULL);
+        ctx->oformat = av_guess_format_xij(os->format_name, NULL, NULL);
         if (!ctx->oformat)
             return AVERROR_MUXER_NOT_FOUND;
         os->ctx = ctx;
@@ -949,7 +949,7 @@ static int dash_init(AVFormatContext *s)
         ctx->avoid_negative_ts = s->avoid_negative_ts;
         ctx->flags = s->flags;
 
-        if ((ret = avio_open_dyn_buf(&ctx->pb)) < 0)
+        if ((ret = avio_open_dyn_buf_xij(&ctx->pb)) < 0)
             return ret;
 
         if (c->single_file) {
@@ -980,10 +980,10 @@ static int dash_init(AVFormatContext *s)
             av_dict_set_int(&opts, "dash_track_number", i + 1, 0);
             av_dict_set_int(&opts, "live", 1, 0);
         }
-        if ((ret = avformat_init_output(ctx, &opts)) < 0)
+        if ((ret = avformat_init_output_xij(ctx, &opts)) < 0)
             return ret;
         os->ctx_inited = 1;
-        avio_flush(ctx->pb);
+        avio_flush_xij(ctx->pb);
         av_dict_free(&opts);
 
         av_log(s, AV_LOG_VERBOSE, "Representation %d init segment will be written to: %s\n", i, filename);
@@ -1033,7 +1033,7 @@ static int dash_write_header(AVFormatContext *s)
     int i, ret;
     for (i = 0; i < s->nb_streams; i++) {
         OutputStream *os = &c->streams[i];
-        if ((ret = avformat_write_header(os->ctx, NULL)) < 0)
+        if ((ret = avformat_write_header_xij(os->ctx, NULL)) < 0)
             return ret;
     }
     ret = write_manifest(s, 0);
@@ -1078,10 +1078,10 @@ static int add_segment(OutputStream *os, const char *file,
 
 static void write_styp(AVIOContext *pb)
 {
-    avio_wb32(pb, 24);
+    avio_wb32_xij(pb, 24);
     ffio_wfourcc(pb, "styp");
     ffio_wfourcc(pb, "msdh");
-    avio_wb32(pb, 0); /* minor */
+    avio_wb32_xij(pb, 0); /* minor */
     ffio_wfourcc(pb, "msdh");
     ffio_wfourcc(pb, "msix");
 }
@@ -1096,12 +1096,12 @@ static void find_index_range(AVFormatContext *s, const char *full_path,
     ret = s->io_open(s, &pb, full_path, AVIO_FLAG_READ, NULL);
     if (ret < 0)
         return;
-    if (avio_seek(pb, pos, SEEK_SET) != pos) {
-        ff_format_io_close(s, &pb);
+    if (avio_seek_xij(pb, pos, SEEK_SET) != pos) {
+        ff_format_io_close_xij(s, &pb);
         return;
     }
-    ret = avio_read(pb, buf, 8);
-    ff_format_io_close(s, &pb);
+    ret = avio_read_xij(pb, buf, 8);
+    ff_format_io_close_xij(s, &pb);
     if (ret < 8)
         return;
     if (AV_RL32(&buf[4]) != MKTAG('s', 'i', 'd', 'x'))
@@ -1134,7 +1134,7 @@ static int update_stream_extradata(AVFormatContext *s, OutputStream *os,
 
 static void dashenc_delete_file(AVFormatContext *s, char *filename) {
     DASHContext *c = s->priv_data;
-    int http_base_proto = ff_is_http_proto(filename);
+    int http_base_proto = ff_is_http_proto_xij(filename);
 
     if (http_base_proto) {
         AVIOContext *out = NULL;
@@ -1324,7 +1324,7 @@ static int dash_write_packet(AVFormatContext *s, AVPacket *pkt)
     else
         os->max_pts = FFMAX(os->max_pts, pkt->pts + pkt->duration);
     os->packets_written++;
-    if ((ret = ff_write_chained(os->ctx, 0, pkt, s, 0)) < 0)
+    if ((ret = ff_write_chained_xij(os->ctx, 0, pkt, s, 0)) < 0)
         return ret;
 
     if (!os->init_range_length)
@@ -1356,11 +1356,11 @@ static int dash_write_packet(AVFormatContext *s, AVPacket *pkt)
         uint8_t *buf = NULL;
         if (!os->written_len)
             write_styp(os->ctx->pb);
-        avio_flush(os->ctx->pb);
-        len = avio_get_dyn_buf (os->ctx->pb, &buf);
-        avio_write(os->out, buf + os->written_len, len - os->written_len);
+        avio_flush_xij(os->ctx->pb);
+        len = avio_get_dyn_buf_xij (os->ctx->pb, &buf);
+        avio_write_xij(os->out, buf + os->written_len, len - os->written_len);
         os->written_len = len;
-        avio_flush(os->out);
+        avio_flush_xij(os->out);
     }
 
     return ret;

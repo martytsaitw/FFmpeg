@@ -31,7 +31,7 @@ static av_cold int y41p_encode_init(AVCodecContext *avctx)
     }
 
     avctx->bits_per_coded_sample = 12;
-    avctx->bit_rate = ff_guess_coded_bitrate(avctx);
+    avctx->bit_rate = ff_guess_coded_bitrate_xij(avctx);
 
     return 0;
 }

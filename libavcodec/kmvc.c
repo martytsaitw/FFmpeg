@@ -269,11 +269,11 @@ static int decode_frame(AVCodecContext * avctx, void *data, int *got_frame,
     int header;
     int blocksize;
     int pal_size;
-    const uint8_t *pal = av_packet_get_side_data(avpkt, AV_PKT_DATA_PALETTE, &pal_size);
+    const uint8_t *pal = av_packet_get_side_data_xij(avpkt, AV_PKT_DATA_PALETTE, &pal_size);
 
     bytestream2_init(&ctx->g, avpkt->data, avpkt->size);
 
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     header = bytestream2_get_byte(&ctx->g);

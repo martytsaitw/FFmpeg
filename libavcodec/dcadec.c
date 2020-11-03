@@ -159,7 +159,7 @@ static int dcadec_decode_frame(AVCodecContext *avctx, void *data,
     // Convert input to BE format
     mrk = AV_RB32(input);
     if (mrk != DCA_SYNCWORD_CORE_BE && mrk != DCA_SYNCWORD_SUBSTREAM) {
-        av_fast_padded_malloc(&s->buffer, &s->buffer_size, input_size);
+        av_fast_padded_malloc_xij(&s->buffer, &s->buffer_size, input_size);
         if (!s->buffer)
             return AVERROR(ENOMEM);
 

@@ -102,10 +102,10 @@ static const AVClass flavor ## _muxer_class = {\
 static void ogg_update_checksum(AVFormatContext *s, AVIOContext *pb, int64_t crc_offset)
 {
     int64_t pos = avio_tell(pb);
-    uint32_t checksum = ffio_get_checksum(pb);
-    avio_seek(pb, crc_offset, SEEK_SET);
-    avio_wb32(pb, checksum);
-    avio_seek(pb, pos, SEEK_SET);
+    uint32_t checksum = ffio_get_checksum_xij(pb);
+    avio_seek_xij(pb, crc_offset, SEEK_SET);
+    avio_wb32_xij(pb, checksum);
+    avio_seek_xij(pb, pos, SEEK_SET);
 }
 
 static int ogg_write_page(AVFormatContext *s, OGGPage *page, int extra_flags)
@@ -116,31 +116,31 @@ static int ogg_write_page(AVFormatContext *s, OGGPage *page, int extra_flags)
     int ret, size;
     uint8_t *buf;
 
-    ret = avio_open_dyn_buf(&pb);
+    ret = avio_open_dyn_buf_xij(&pb);
     if (ret < 0)
         return ret;
-    ffio_init_checksum(pb, ff_crc04C11DB7_update, 0);
+    ffio_init_checksum_xij(pb, ff_crc04C11DB7_update_xij, 0);
     ffio_wfourcc(pb, "OggS");
-    avio_w8(pb, 0);
-    avio_w8(pb, page->flags | extra_flags);
-    avio_wl64(pb, page->granule);
-    avio_wl32(pb, oggstream->serial_num);
-    avio_wl32(pb, oggstream->page_counter++);
+    avio_w8_xij(pb, 0);
+    avio_w8_xij(pb, page->flags | extra_flags);
+    avio_wl64_xij(pb, page->granule);
+    avio_wl32_xij(pb, oggstream->serial_num);
+    avio_wl32_xij(pb, oggstream->page_counter++);
     crc_offset = avio_tell(pb);
-    avio_wl32(pb, 0); // crc
-    avio_w8(pb, page->segments_count);
-    avio_write(pb, page->segments, page->segments_count);
-    avio_write(pb, page->data, page->size);
+    avio_wl32_xij(pb, 0); // crc
+    avio_w8_xij(pb, page->segments_count);
+    avio_write_xij(pb, page->segments, page->segments_count);
+    avio_write_xij(pb, page->data, page->size);
 
     ogg_update_checksum(s, pb, crc_offset);
-    avio_flush(pb);
+    avio_flush_xij(pb);
 
-    size = avio_close_dyn_buf(pb, &buf);
+    size = avio_close_dyn_buf_xij(pb, &buf);
     if (size < 0)
         return size;
 
-    avio_write(s->pb, buf, size);
-    avio_flush(s->pb);
+    avio_write_xij(s->pb, buf, size);
+    avio_flush_xij(s->pb);
     av_free(buf);
     oggstream->page_count--;
     return 0;

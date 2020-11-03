@@ -582,7 +582,7 @@ static int libopenjpeg_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     case AV_PIX_FMT_GBRP12:
     case AV_PIX_FMT_GBRP14:
     case AV_PIX_FMT_GBRP16:
-        gbrframe = av_frame_clone(frame);
+        gbrframe = av_frame_clone_xij(frame);
         if (!gbrframe) {
             ret = AVERROR(ENOMEM);
             goto done;
@@ -598,7 +598,7 @@ static int libopenjpeg_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         } else {
             cpyresult = libopenjpeg_copy_unpacked16(avctx, gbrframe, image);
         }
-        av_frame_free(&gbrframe);
+        av_frame_free_xij(&gbrframe);
         break;
     case AV_PIX_FMT_GRAY8:
     case AV_PIX_FMT_YUV410P:
@@ -701,7 +701,7 @@ static int libopenjpeg_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         goto done;
     }
 
-    av_shrink_packet(pkt, writer.pos);
+    av_shrink_packet_xij(pkt, writer.pos);
 
     pkt->flags |= AV_PKT_FLAG_KEY;
     *got_packet = 1;

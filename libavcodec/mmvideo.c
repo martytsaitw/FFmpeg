@@ -201,7 +201,7 @@ static int mm_decode_frame(AVCodecContext *avctx,
     buf_size -= MM_PREAMBLE_SIZE;
     bytestream2_init(&s->gb, buf, buf_size);
 
-    if ((res = ff_reget_buffer(avctx, s->frame)) < 0)
+    if ((res = ff_reget_buffer_xij(avctx, s->frame)) < 0)
         return res;
 
     switch(type) {
@@ -221,7 +221,7 @@ static int mm_decode_frame(AVCodecContext *avctx,
 
     memcpy(s->frame->data[1], s->palette, AVPALETTE_SIZE);
 
-    if ((res = av_frame_ref(data, s->frame)) < 0)
+    if ((res = av_frame_ref_xij(data, s->frame)) < 0)
         return res;
 
     *got_frame      = 1;
@@ -233,7 +233,7 @@ static av_cold int mm_decode_end(AVCodecContext *avctx)
 {
     MmContext *s = avctx->priv_data;
 
-    av_frame_free(&s->frame);
+    av_frame_free_xij(&s->frame);
 
     return 0;
 }

@@ -158,7 +158,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
 
     outpicref = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!outpicref) {
-        av_frame_free(&insamples);
+        av_frame_free_xij(&insamples);
         return AVERROR(ENOMEM);
     }
 
@@ -217,7 +217,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
         break;
     }
 
-    av_frame_free(&insamples);
+    av_frame_free_xij(&insamples);
 
     return ff_filter_frame(outlink, outpicref);
 }

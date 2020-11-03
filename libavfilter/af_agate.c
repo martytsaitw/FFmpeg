@@ -211,15 +211,15 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     AVFrame *out;
     double *dst;
 
-    if (av_frame_is_writable(in)) {
+    if (av_frame_is_writable_xij(in)) {
         out = in;
     } else {
         out = ff_get_audio_buffer(outlink, in->nb_samples);
         if (!out) {
-            av_frame_free(&in);
+            av_frame_free_xij(&in);
             return AVERROR(ENOMEM);
         }
-        av_frame_copy_props(out, in);
+        av_frame_copy_props_xij(out, in);
     }
     dst = (double *)out->data[0];
 
@@ -227,7 +227,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
          s->level_in, s->level_in, inlink, inlink);
 
     if (out != in)
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
     return ff_filter_frame(outlink, out);
 }
 
@@ -277,14 +277,14 @@ static int activate(AVFilterContext *ctx)
     if ((ret = ff_inlink_consume_frame(ctx->inputs[0], &in[0])) > 0) {
         av_audio_fifo_write(s->fifo[0], (void **)in[0]->extended_data,
                             in[0]->nb_samples);
-        av_frame_free(&in[0]);
+        av_frame_free_xij(&in[0]);
     }
     if (ret < 0)
         return ret;
     if ((ret = ff_inlink_consume_frame(ctx->inputs[1], &in[1])) > 0) {
         av_audio_fifo_write(s->fifo[1], (void **)in[1]->extended_data,
                             in[1]->nb_samples);
-        av_frame_free(&in[1]);
+        av_frame_free_xij(&in[1]);
     }
     if (ret < 0)
         return ret;
@@ -297,9 +297,9 @@ static int activate(AVFilterContext *ctx)
         for (i = 0; i < 2; i++) {
             in[i] = ff_get_audio_buffer(ctx->inputs[i], nb_samples);
             if (!in[i]) {
-                av_frame_free(&in[0]);
-                av_frame_free(&in[1]);
-                av_frame_free(&out);
+                av_frame_free_xij(&in[0]);
+                av_frame_free_xij(&in[1]);
+                av_frame_free_xij(&out);
                 return AVERROR(ENOMEM);
             }
             av_audio_fifo_read(s->fifo[i], (void **)in[i]->data, nb_samples);
@@ -314,8 +314,8 @@ static int activate(AVFilterContext *ctx)
              s->level_in, s->level_sc,
              ctx->inputs[0], ctx->inputs[1]);
 
-        av_frame_free(&in[0]);
-        av_frame_free(&in[1]);
+        av_frame_free_xij(&in[0]);
+        av_frame_free_xij(&in[1]);
 
         ret = ff_filter_frame(ctx->outputs[0], out);
         if (ret < 0)

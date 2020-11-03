@@ -100,7 +100,7 @@ static int cpia_decode_frame(AVCodecContext *avctx,
     }
 
     // Get buffer filled with previous frame
-    if ((ret = ff_reget_buffer(avctx, frame)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, frame)) < 0)
         return ret;
 
 
@@ -183,7 +183,7 @@ static int cpia_decode_frame(AVCodecContext *avctx,
     }
 
     *got_frame = 1;
-    if ((ret = av_frame_ref(data, cpia->frame)) < 0)
+    if ((ret = av_frame_ref_xij(data, cpia->frame)) < 0)
         return ret;
 
     return avpkt->size;
@@ -215,7 +215,7 @@ static av_cold int cpia_decode_end(AVCodecContext *avctx)
 {
     CpiaContext *s = avctx->priv_data;
 
-    av_frame_free(&s->frame);
+    av_frame_free_xij(&s->frame);
 
     return 0;
 }

@@ -1123,13 +1123,13 @@ static int decode_block(AVCodecContext *avctx, void *tdata,
     }
 
     if (data_size < uncompressed_size || s->is_tile) { /* td->tmp is use for tile reorganization */
-        av_fast_padded_malloc(&td->tmp, &td->tmp_size, uncompressed_size);
+        av_fast_padded_malloc_xij(&td->tmp, &td->tmp_size, uncompressed_size);
         if (!td->tmp)
             return AVERROR(ENOMEM);
     }
 
     if (data_size < uncompressed_size) {
-        av_fast_padded_malloc(&td->uncompressed_data,
+        av_fast_padded_malloc_xij(&td->uncompressed_data,
                               &td->uncompressed_size, uncompressed_size + 64);/* Force 64 padding for AVX2 reorder_pixels dst */
 
         if (!td->uncompressed_data)
@@ -1626,7 +1626,7 @@ static int decode_header(EXRContext *s, AVFrame *frame)
         bytestream2_skip(&s->gb, bytestream2_get_le32(&s->gb));
     }
 
-    ff_set_sar(s->avctx, av_d2q(av_int2float(sar), 255));
+    ff_set_sar_xij(s->avctx, av_d2q(av_int2float(sar), 255));
 
     if (s->compression == EXR_UNKN) {
         av_log(s->avctx, AV_LOG_ERROR, "Missing compression attribute.\n");
@@ -1735,7 +1735,7 @@ static int decode_frame(AVCodecContext *avctx, void *data,
         return AVERROR_INVALIDDATA;
     }
 
-    if ((ret = ff_set_dimensions(avctx, s->w, s->h)) < 0)
+    if ((ret = ff_set_dimensions_xij(avctx, s->w, s->h)) < 0)
         return ret;
 
     s->desc          = av_pix_fmt_desc_get(avctx->pix_fmt);

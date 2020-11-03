@@ -39,7 +39,7 @@ static int imx_dump_header(AVBSFContext *ctx, AVPacket *out)
     int ret = 0;
     uint8_t *out_buf;
 
-    ret = ff_bsf_get_packet(ctx, &in);
+    ret = ff_bsf_get_packet_xij(ctx, &in);
     if (ret < 0)
         return ret;
 
@@ -61,7 +61,7 @@ static int imx_dump_header(AVBSFContext *ctx, AVPacket *out)
 fail:
     if (ret < 0)
         av_packet_unref_ijk(out);
-    av_packet_free(&in);
+    av_packet_free_xij(&in);
     return ret;
 }
 

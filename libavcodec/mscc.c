@@ -129,7 +129,7 @@ static int decode_frame(AVCodecContext *avctx,
 
     if (avpkt->size < 3)
         return AVERROR_INVALIDDATA;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     if (avctx->codec_id == AV_CODEC_ID_MSCC) {

@@ -49,7 +49,7 @@ static const uint64_t dsf_channel_layout[] = {
 static void read_id3(AVFormatContext *s, uint64_t id3pos)
 {
     ID3v2ExtraMeta *id3v2_extra_meta = NULL;
-    if (avio_seek(s->pb, id3pos, SEEK_SET) < 0)
+    if (avio_seek_xij(s->pb, id3pos, SEEK_SET) < 0)
         return;
 
     ff_id3v2_read(s, ID3v2_DEFAULT_MAGIC, &id3v2_extra_meta, 0);
@@ -68,8 +68,8 @@ static int dsf_read_header(AVFormatContext *s)
     uint64_t id3pos;
     unsigned int channel_type;
 
-    avio_skip(pb, 4);
-    if (avio_rl64(pb) != 28)
+    avio_skip_xij(pb, 4);
+    if (avio_rl64_xij(pb) != 28)
         return AVERROR_INVALIDDATA;
 
     /* create primary stream before any id3 coverart streams */
@@ -77,42 +77,42 @@ static int dsf_read_header(AVFormatContext *s)
     if (!st)
         return AVERROR(ENOMEM);
 
-    avio_skip(pb, 8);
-    id3pos = avio_rl64(pb);
+    avio_skip_xij(pb, 8);
+    id3pos = avio_rl64_xij(pb);
     if (pb->seekable & AVIO_SEEKABLE_NORMAL) {
         read_id3(s, id3pos);
-        avio_seek(pb, 28, SEEK_SET);
+        avio_seek_xij(pb, 28, SEEK_SET);
     }
 
     /* fmt chunk */
 
-    if (avio_rl32(pb) != MKTAG('f', 'm', 't', ' ') || avio_rl64(pb) != 52)
+    if (avio_rl32_xij(pb) != MKTAG('f', 'm', 't', ' ') || avio_rl64_xij(pb) != 52)
         return AVERROR_INVALIDDATA;
 
-    if (avio_rl32(pb) != 1) {
+    if (avio_rl32_xij(pb) != 1) {
         avpriv_request_sample(s, "unknown format version");
         return AVERROR_INVALIDDATA;
     }
 
-    if (avio_rl32(pb)) {
+    if (avio_rl32_xij(pb)) {
         avpriv_request_sample(s, "unknown format id");
         return AVERROR_INVALIDDATA;
     }
 
-    channel_type = avio_rl32(pb);
+    channel_type = avio_rl32_xij(pb);
     if (channel_type < FF_ARRAY_ELEMS(dsf_channel_layout))
         st->codecpar->channel_layout = dsf_channel_layout[channel_type];
     if (!st->codecpar->channel_layout)
         avpriv_request_sample(s, "channel type %i", channel_type);
 
     st->codecpar->codec_type   = AVMEDIA_TYPE_AUDIO;
-    st->codecpar->channels     = avio_rl32(pb);
-    st->codecpar->sample_rate  = avio_rl32(pb) / 8;
+    st->codecpar->channels     = avio_rl32_xij(pb);
+    st->codecpar->sample_rate  = avio_rl32_xij(pb) / 8;
 
     if (st->codecpar->channels <= 0)
         return AVERROR_INVALIDDATA;
 
-    switch(avio_rl32(pb)) {
+    switch(avio_rl32_xij(pb)) {
     case 1: st->codecpar->codec_id = AV_CODEC_ID_DSD_LSBF_PLANAR; break;
     case 8: st->codecpar->codec_id = AV_CODEC_ID_DSD_MSBF_PLANAR; break;
     default:
@@ -120,22 +120,22 @@ static int dsf_read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
     }
 
-    avio_skip(pb, 8);
-    st->codecpar->block_align = avio_rl32(pb);
+    avio_skip_xij(pb, 8);
+    st->codecpar->block_align = avio_rl32_xij(pb);
     if (st->codecpar->block_align > INT_MAX / st->codecpar->channels) {
         avpriv_request_sample(s, "block_align overflow");
         return AVERROR_INVALIDDATA;
     }
     st->codecpar->block_align *= st->codecpar->channels;
     st->codecpar->bit_rate = st->codecpar->channels * st->codecpar->sample_rate * 8LL;
-    avio_skip(pb, 4);
+    avio_skip_xij(pb, 4);
 
     /* data chunk */
 
     dsf->data_end = avio_tell(pb);
-    if (avio_rl32(pb) != MKTAG('d', 'a', 't', 'a'))
+    if (avio_rl32_xij(pb) != MKTAG('d', 'a', 't', 'a'))
         return AVERROR_INVALIDDATA;
-    dsf->data_end += avio_rl64(pb);
+    dsf->data_end += avio_rl64_xij(pb);
 
     return 0;
 }
@@ -151,7 +151,7 @@ static int dsf_read_packet(AVFormatContext *s, AVPacket *pkt)
         return AVERROR_EOF;
 
     pkt->stream_index = 0;
-    return av_get_packet(pb, pkt, FFMIN(dsf->data_end - pos, st->codecpar->block_align));
+    return av_get_packet_xij(pb, pkt, FFMIN(dsf->data_end - pos, st->codecpar->block_align));
 }
 
 AVInputFormat ff_dsf_demuxer = {

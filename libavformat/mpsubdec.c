@@ -63,10 +63,10 @@ static int mpsub_read_header(AVFormatContext *s)
 
     av_bprint_init(&buf, 0, AV_BPRINT_SIZE_UNLIMITED);
 
-    while (!avio_feof(s->pb)) {
+    while (!avio_feof_xij(s->pb)) {
         char line[1024];
         double start, duration;
-        int fps, len = ff_get_line(s->pb, line, sizeof(line));
+        int fps, len = ff_get_line_xij(s->pb, line, sizeof(line));
 
         if (!len)
             break;

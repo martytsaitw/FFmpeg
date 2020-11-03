@@ -51,7 +51,7 @@ static int crc_write_trailer(struct AVFormatContext *s)
     char buf[64];
 
     snprintf(buf, sizeof(buf), "CRC=0x%08"PRIx32"\n", crc->crcval);
-    avio_write(s->pb, buf, strlen(buf));
+    avio_write_xij(s->pb, buf, strlen(buf));
 
     return 0;
 }

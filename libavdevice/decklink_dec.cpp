@@ -471,7 +471,7 @@ static int avpacket_queue_put(AVPacketQueue *q, AVPacket *pkt)
         return -1;
     }
     /* ensure the packet is reference counted */
-    if (av_packet_make_refcounted(pkt) < 0) {
+    if (av_packet_make_refcounted_xij(pkt) < 0) {
         return -1;
     }
 
@@ -479,7 +479,7 @@ static int avpacket_queue_put(AVPacketQueue *q, AVPacket *pkt)
     if (!pkt1) {
         return -1;
     }
-    av_packet_move_ref(&pkt1->pkt, pkt);
+    av_packet_move_ref_xij(&pkt1->pkt, pkt);
     pkt1->next = NULL;
 
     pthread_mutex_lock(&q->mutex);

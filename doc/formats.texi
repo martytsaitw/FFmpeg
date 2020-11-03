@@ -246,7 +246,7 @@ Matches the stream by a format-specific ID.
 @end table
 
 The exact semantics of stream specifiers is defined by the
-@code{avformat_match_stream_specifier()} function declared in the
+@code{avformat_match_stream_specifier_xij()} function declared in the
 @file{libavformat/avformat.h} header.
 
 @ifclear config-writeonly

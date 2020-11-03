@@ -96,7 +96,7 @@ FFFramePool *ff_frame_pool_video_init(AVBufferRef* (*alloc)(int size),
         if (i == 1 || i == 2)
             h = AV_CEIL_RSHIFT(h, desc->log2_chroma_h);
 
-        pool->pools[i] = av_buffer_pool_init(pool->linesize[i] * h + 16 + 16 - 1,
+        pool->pools[i] = av_buffer_pool_init_xij(pool->linesize[i] * h + 16 + 16 - 1,
                                              alloc);
         if (!pool->pools[i])
             goto fail;
@@ -104,7 +104,7 @@ FFFramePool *ff_frame_pool_video_init(AVBufferRef* (*alloc)(int size),
 
     if (desc->flags & AV_PIX_FMT_FLAG_PAL ||
         desc->flags & FF_PSEUDOPAL) {
-        pool->pools[1] = av_buffer_pool_init(AVPALETTE_SIZE, alloc);
+        pool->pools[1] = av_buffer_pool_init_xij(AVPALETTE_SIZE, alloc);
         if (!pool->pools[1])
             goto fail;
     }
@@ -143,7 +143,7 @@ FFFramePool *ff_frame_pool_audio_init(AVBufferRef* (*alloc)(int size),
     if (ret < 0)
         goto fail;
 
-    pool->pools[0] = av_buffer_pool_init(pool->linesize[0], NULL);
+    pool->pools[0] = av_buffer_pool_init_xij(pool->linesize[0], NULL);
     if (!pool->pools[0])
         goto fail;
 
@@ -219,7 +219,7 @@ AVFrame *ff_frame_pool_get(FFFramePool *pool)
             if (!pool->pools[i])
                 break;
 
-            frame->buf[i] = av_buffer_pool_get(pool->pools[i]);
+            frame->buf[i] = av_buffer_pool_get_xij(pool->pools[i]);
             if (!frame->buf[i])
                 goto fail;
 
@@ -258,13 +258,13 @@ AVFrame *ff_frame_pool_get(FFFramePool *pool)
         }
 
         for (i = 0; i < FFMIN(pool->planes, AV_NUM_DATA_POINTERS); i++) {
-            frame->buf[i] = av_buffer_pool_get(pool->pools[0]);
+            frame->buf[i] = av_buffer_pool_get_xij(pool->pools[0]);
             if (!frame->buf[i])
                 goto fail;
             frame->extended_data[i] = frame->data[i] = frame->buf[i]->data;
         }
         for (i = 0; i < frame->nb_extended_buf; i++) {
-            frame->extended_buf[i] = av_buffer_pool_get(pool->pools[0]);
+            frame->extended_buf[i] = av_buffer_pool_get_xij(pool->pools[0]);
             if (!frame->extended_buf[i])
                 goto fail;
             frame->extended_data[i + AV_NUM_DATA_POINTERS] = frame->extended_buf[i]->data;
@@ -277,7 +277,7 @@ AVFrame *ff_frame_pool_get(FFFramePool *pool)
 
     return frame;
 fail:
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
     return NULL;
 }
 
@@ -289,7 +289,7 @@ void ff_frame_pool_uninit(FFFramePool **pool)
         return;
 
     for (i = 0; i < 4; i++) {
-        av_buffer_pool_uninit(&(*pool)->pools[i]);
+        av_buffer_pool_uninit_xij(&(*pool)->pools[i]);
     }
 
     av_freep(pool);

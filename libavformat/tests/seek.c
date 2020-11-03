@@ -152,7 +152,7 @@ int main(int argc, char **argv)
         printf("ret:%-10s st:%2d flags:%d  ts:%s\n", ret_str(ret), stream_id, i&1, ts_buf);
     }
 
-    avformat_close_input(&ic);
+    avformat_close_input_xij(&ic);
 
     return 0;
 }

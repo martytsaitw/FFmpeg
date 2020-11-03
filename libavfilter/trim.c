@@ -129,7 +129,7 @@ static int trim_filter_frame(AVFilterLink *inlink, AVFrame *frame)
 
     /* drop everything if EOF has already been returned */
     if (s->eof) {
-        av_frame_free(&frame);
+        av_frame_free_xij(&frame);
         return 0;
     }
 
@@ -172,7 +172,7 @@ static int trim_filter_frame(AVFilterLink *inlink, AVFrame *frame)
 
 drop:
     s->nb_frames++;
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
     return 0;
 }
 
@@ -229,7 +229,7 @@ static int atrim_filter_frame(AVFilterLink *inlink, AVFrame *frame)
 
     /* drop everything if EOF has already been returned */
     if (s->eof) {
-        av_frame_free(&frame);
+        av_frame_free_xij(&frame);
         return 0;
     }
 
@@ -305,11 +305,11 @@ static int atrim_filter_frame(AVFilterLink *inlink, AVFrame *frame)
     if (start_sample) {
         AVFrame *out = ff_get_audio_buffer(ctx->outputs[0], end_sample - start_sample);
         if (!out) {
-            av_frame_free(&frame);
+            av_frame_free_xij(&frame);
             return AVERROR(ENOMEM);
         }
 
-        av_frame_copy_props(out, frame);
+        av_frame_copy_props_xij(out, frame);
         av_samples_copy(out->extended_data, frame->extended_data, 0, start_sample,
                         out->nb_samples, inlink->channels,
                         frame->format);
@@ -317,7 +317,7 @@ static int atrim_filter_frame(AVFilterLink *inlink, AVFrame *frame)
             out->pts += av_rescale_q(start_sample, (AVRational){ 1, out->sample_rate },
                                      inlink->time_base);
 
-        av_frame_free(&frame);
+        av_frame_free_xij(&frame);
         frame = out;
     } else
         frame->nb_samples = end_sample;
@@ -326,7 +326,7 @@ static int atrim_filter_frame(AVFilterLink *inlink, AVFrame *frame)
 
 drop:
     s->nb_samples += frame->nb_samples;
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
     return 0;
 }
 

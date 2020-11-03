@@ -55,10 +55,10 @@ static int ptx_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
 
     buf += offset;
 
-    if ((ret = ff_set_dimensions(avctx, w, h)) < 0)
+    if ((ret = ff_set_dimensions_xij(avctx, w, h)) < 0)
         return ret;
 
-    if ((ret = ff_get_buffer(avctx, p, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, p, 0)) < 0)
         return ret;
 
     p->pict_type = AV_PICTURE_TYPE_I;

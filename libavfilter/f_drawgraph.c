@@ -187,17 +187,17 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     if (s->slide != 4 || s->nb_values == 0) {
         if (!s->out || s->out->width  != outlink->w ||
                        s->out->height != outlink->h) {
-            av_frame_free(&s->out);
+            av_frame_free_xij(&s->out);
             s->out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
             out = s->out;
             if (!s->out) {
-                av_frame_free(&in);
+                av_frame_free_xij(&in);
                 return AVERROR(ENOMEM);
             }
 
             clear_image(s, out, outlink);
         }
-        av_frame_copy_props(out, in);
+        av_frame_copy_props_xij(out, in);
     }
 
     metadata = in->metadata;
@@ -308,12 +308,12 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     s->nb_values++;
     s->x++;
 
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
 
     if (s->slide == 4)
         return 0;
 
-    return ff_filter_frame(outlink, av_frame_clone(s->out));
+    return ff_filter_frame(outlink, av_frame_clone_xij(s->out));
 }
 
 static int request_frame(AVFilterLink *outlink)
@@ -418,7 +418,7 @@ static av_cold void uninit(AVFilterContext *ctx)
         av_expr_free(s->fg_expr[i]);
 
     if (s->slide != 4)
-        av_frame_free(&s->out);
+        av_frame_free_xij(&s->out);
 
     av_freep(&s->values[0]);
     av_freep(&s->values[1]);

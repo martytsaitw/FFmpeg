@@ -250,11 +250,11 @@ static int decode_frame(AVCodecContext *avctx,
         return AVERROR_INVALIDDATA;
     }
 
-    ret = ff_set_dimensions(avctx, s->width, s->height);
+    ret = ff_set_dimensions_xij(avctx, s->width, s->height);
     if (ret < 0)
         return ret;
 
-    if ((ret = ff_get_buffer(avctx, p, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, p, 0)) < 0)
         return ret;
 
     p->pict_type = AV_PICTURE_TYPE_I;

@@ -88,7 +88,7 @@ static int hwupload_query_formats(AVFilterContext *avctx)
     return 0;
 
 fail:
-    av_buffer_unref(&ctx->hwdevice_ref);
+    av_buffer_unref_xij(&ctx->hwdevice_ref);
     av_hwframe_constraints_free(&constraints);
     return err;
 }
@@ -100,7 +100,7 @@ static int hwupload_config_output(AVFilterLink *outlink)
     HWUploadContext   *ctx = avctx->priv;
     int err;
 
-    av_buffer_unref(&ctx->hwframes_ref);
+    av_buffer_unref_xij(&ctx->hwframes_ref);
 
     if (inlink->format == outlink->format) {
         // The input is already a hardware format, so we just want to
@@ -147,7 +147,7 @@ static int hwupload_config_output(AVFilterLink *outlink)
     return 0;
 
 fail:
-    av_buffer_unref(&ctx->hwframes_ref);
+    av_buffer_unref_xij(&ctx->hwframes_ref);
     return err;
 }
 
@@ -178,17 +178,17 @@ static int hwupload_filter_frame(AVFilterLink *link, AVFrame *input)
         goto fail;
     }
 
-    err = av_frame_copy_props(output, input);
+    err = av_frame_copy_props_xij(output, input);
     if (err < 0)
         goto fail;
 
-    av_frame_free(&input);
+    av_frame_free_xij(&input);
 
     return ff_filter_frame(outlink, output);
 
 fail:
-    av_frame_free(&input);
-    av_frame_free(&output);
+    av_frame_free_xij(&input);
+    av_frame_free_xij(&output);
     return err;
 }
 
@@ -196,8 +196,8 @@ static av_cold void hwupload_uninit(AVFilterContext *avctx)
 {
     HWUploadContext *ctx = avctx->priv;
 
-    av_buffer_unref(&ctx->hwframes_ref);
-    av_buffer_unref(&ctx->hwdevice_ref);
+    av_buffer_unref_xij(&ctx->hwframes_ref);
+    av_buffer_unref_xij(&ctx->hwdevice_ref);
 }
 
 static const AVClass hwupload_class = {

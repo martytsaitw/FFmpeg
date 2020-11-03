@@ -1377,7 +1377,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
 #else
         if (!s->flushed) {
 #endif
-            uint8_t *side_data = av_packet_new_side_data(avpkt, AV_PKT_DATA_NEW_EXTRADATA,
+            uint8_t *side_data = av_packet_new_side_data_xij(avpkt, AV_PKT_DATA_NEW_EXTRADATA,
                                                          avctx->extradata_size);
             if (!side_data)
                 return AVERROR(ENOMEM);

@@ -104,7 +104,7 @@ int ff_inlink_consume_samples(AVFilterLink *link, unsigned min, unsigned max,
 
 /**
  * Make sure a frame is writable.
- * This is similar to av_frame_make_writable() except it uses the link's
+ * This is similar to av_frame_make_writable_xij() except it uses the link's
  * buffer allocation callback, and therefore allows direct rendering.
  */
 int ff_inlink_make_frame_writable(AVFilterLink *link, AVFrame **rframe);

@@ -46,7 +46,7 @@ static int vp9_superframe_split_filter(AVBSFContext *ctx, AVPacket *out)
     int is_superframe = !!s->buffer_pkt.data;
 
     if (!s->buffer_pkt.data) {
-        ret = ff_bsf_get_packet_ref(ctx, &s->buffer_pkt);
+        ret = ff_bsf_get_packet_ref_xij(ctx, &s->buffer_pkt);
         if (ret < 0)
             return ret;
         in = &s->buffer_pkt;
@@ -121,7 +121,7 @@ static int vp9_superframe_split_filter(AVBSFContext *ctx, AVPacket *out)
             out->pts = AV_NOPTS_VALUE;
 
     } else {
-        av_packet_move_ref(out, &s->buffer_pkt);
+        av_packet_move_ref_xij(out, &s->buffer_pkt);
     }
 
     return 0;

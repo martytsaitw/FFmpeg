@@ -39,17 +39,17 @@ void ff_hevc_unref_frame(HEVCContext *s, HEVCFrame *frame, int flags)
     if (!frame->flags) {
         ff_thread_release_buffer(s->avctx, &frame->tf);
 
-        av_buffer_unref(&frame->tab_mvf_buf);
+        av_buffer_unref_xij(&frame->tab_mvf_buf);
         frame->tab_mvf = NULL;
 
-        av_buffer_unref(&frame->rpl_buf);
-        av_buffer_unref(&frame->rpl_tab_buf);
+        av_buffer_unref_xij(&frame->rpl_buf);
+        av_buffer_unref_xij(&frame->rpl_tab_buf);
         frame->rpl_tab    = NULL;
         frame->refPicList = NULL;
 
         frame->collocated_ref = NULL;
 
-        av_buffer_unref(&frame->hwaccel_priv_buf);
+        av_buffer_unref_xij(&frame->hwaccel_priv_buf);
         frame->hwaccel_picture_private = NULL;
     }
 }
@@ -92,16 +92,16 @@ static HEVCFrame *alloc_frame(HEVCContext *s)
         if (ret < 0)
             return NULL;
 
-        frame->rpl_buf = av_buffer_allocz(s->pkt.nb_nals * sizeof(RefPicListTab));
+        frame->rpl_buf = av_buffer_allocz_xij(s->pkt.nb_nals * sizeof(RefPicListTab));
         if (!frame->rpl_buf)
             goto fail;
 
-        frame->tab_mvf_buf = av_buffer_pool_get(s->tab_mvf_pool);
+        frame->tab_mvf_buf = av_buffer_pool_get_xij(s->tab_mvf_pool);
         if (!frame->tab_mvf_buf)
             goto fail;
         frame->tab_mvf = (MvField *)frame->tab_mvf_buf->data;
 
-        frame->rpl_tab_buf = av_buffer_pool_get(s->rpl_tab_pool);
+        frame->rpl_tab_buf = av_buffer_pool_get_xij(s->rpl_tab_pool);
         if (!frame->rpl_tab_buf)
             goto fail;
         frame->rpl_tab   = (RefPicListTab **)frame->rpl_tab_buf->data;
@@ -116,7 +116,7 @@ static HEVCFrame *alloc_frame(HEVCContext *s)
             const AVHWAccel *hwaccel = s->avctx->hwaccel;
             av_assert0(!frame->hwaccel_picture_private);
             if (hwaccel->frame_priv_data_size) {
-                frame->hwaccel_priv_buf = av_buffer_allocz(hwaccel->frame_priv_data_size);
+                frame->hwaccel_priv_buf = av_buffer_allocz_xij(hwaccel->frame_priv_data_size);
                 if (!frame->hwaccel_priv_buf)
                     goto fail;
                 frame->hwaccel_picture_private = frame->hwaccel_priv_buf->data;
@@ -211,7 +211,7 @@ int ff_hevc_output_frame(HEVCContext *s, AVFrame *out, int flush)
             if (frame->frame->format == AV_PIX_FMT_VIDEOTOOLBOX && frame->frame->buf[0]->size == 1)
                 return 0;
 
-            ret = av_frame_ref(out, frame->frame);
+            ret = av_frame_ref_xij(out, frame->frame);
             if (frame->flags & HEVC_FRAME_FLAG_BUMPING)
                 ff_hevc_unref_frame(s, frame, HEVC_FRAME_FLAG_OUTPUT | HEVC_FRAME_FLAG_BUMPING);
             else

@@ -484,7 +484,7 @@ static int libopus_encode(AVCodecContext *avctx, AVPacket *avpkt,
         return ff_opus_error_to_averror(ret);
     }
 
-    av_shrink_packet(avpkt, ret);
+    av_shrink_packet_xij(avpkt, ret);
 
     ff_af_queue_remove(&opus->afq, opus->opts.packet_size,
                        &avpkt->pts, &avpkt->duration);
@@ -497,7 +497,7 @@ static int libopus_encode(AVCodecContext *avctx, AVPacket *avpkt,
         return AVERROR(EINVAL);
     }
     if (discard_padding > 0) {
-        uint8_t* side_data = av_packet_new_side_data(avpkt,
+        uint8_t* side_data = av_packet_new_side_data_xij(avpkt,
                                                      AV_PKT_DATA_SKIP_SAMPLES,
                                                      10);
         if(!side_data) {

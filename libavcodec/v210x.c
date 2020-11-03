@@ -55,7 +55,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         avpriv_request_sample(avctx, "(Probably) padded data");
     }
 
-    if ((ret = ff_get_buffer(avctx, pic, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, pic, 0)) < 0)
         return ret;
 
     ydst = (uint16_t *)pic->data[0];

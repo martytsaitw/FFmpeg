@@ -292,7 +292,7 @@ static int filter_frame(AVFilterLink *link, AVFrame *frame)
     const int h = frame->height;
     int ret;
 
-    if (ret = av_frame_make_writable(frame))
+    if (ret = av_frame_make_writable_xij(frame))
         return ret;
 
     if (is_inside(s->x, s->y, w, h)) {

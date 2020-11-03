@@ -396,7 +396,7 @@ static int libopenjpeg_decode_frame(AVCodecContext *avctx,
     width  = image->x1 - image->x0;
     height = image->y1 - image->y0;
 
-    ret = ff_set_dimensions(avctx, width, height);
+    ret = ff_set_dimensions_xij(avctx, width, height);
     if (ret < 0)
         goto done;
 

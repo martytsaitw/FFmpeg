@@ -32,15 +32,15 @@ int ff_get_qtpalette(int codec_id, AVIOContext *pb, uint32_t *palette)
 {
     int tmp, bit_depth, color_table_id, greyscale, i;
 
-    avio_seek(pb, 82, SEEK_CUR);
+    avio_seek_xij(pb, 82, SEEK_CUR);
 
     /* Get the bit depth and greyscale state */
-    tmp = avio_rb16(pb);
+    tmp = avio_rb16_xij(pb);
     bit_depth = tmp & 0x1F;
     greyscale = tmp & 0x20;
 
     /* Get the color table ID */
-    color_table_id = avio_rb16(pb);
+    color_table_id = avio_rb16_xij(pb);
 
     /* Do not create a greyscale palette for Cinepak */
     if (greyscale && codec_id == AV_CODEC_ID_CINEPAK)
@@ -89,21 +89,21 @@ int ff_get_qtpalette(int codec_id, AVIOContext *pb, uint32_t *palette)
         } else {
             /* The color table ID is 0; the color table is in the sample
              * description */
-            color_start = avio_rb32(pb);
-            avio_rb16(pb); /* color table flags */
-            color_end = avio_rb16(pb);
+            color_start = avio_rb32_xij(pb);
+            avio_rb16_xij(pb); /* color table flags */
+            color_end = avio_rb16_xij(pb);
             if ((color_start <= 255) && (color_end <= 255)) {
                 for (i = color_start; i <= color_end; i++) {
                     /* each A, R, G, or B component is 16 bits;
                      * only use the top 8 bits */
-                    a = avio_r8(pb);
-                    avio_r8(pb);
-                    r = avio_r8(pb);
-                    avio_r8(pb);
-                    g = avio_r8(pb);
-                    avio_r8(pb);
-                    b = avio_r8(pb);
-                    avio_r8(pb);
+                    a = avio_r8_xij(pb);
+                    avio_r8_xij(pb);
+                    r = avio_r8_xij(pb);
+                    avio_r8_xij(pb);
+                    g = avio_r8_xij(pb);
+                    avio_r8_xij(pb);
+                    b = avio_r8_xij(pb);
+                    avio_r8_xij(pb);
                     palette[i] = (a << 24 ) | (r << 16) | (g << 8) | (b);
                 }
             }

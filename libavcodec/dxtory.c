@@ -46,7 +46,7 @@ static int dxtory_decode_v1_rgb(AVCodecContext *avctx, AVFrame *pic,
     }
 
     avctx->pix_fmt = id;
-    if ((ret = ff_get_buffer(avctx, pic, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, pic, 0)) < 0)
         return ret;
 
     dst = pic->data[0];
@@ -72,7 +72,7 @@ static int dxtory_decode_v1_410(AVCodecContext *avctx, AVFrame *pic,
     }
 
     avctx->pix_fmt = AV_PIX_FMT_YUV410P;
-    if ((ret = ff_get_buffer(avctx, pic, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, pic, 0)) < 0)
         return ret;
 
     Y1 = pic->data[0];
@@ -115,7 +115,7 @@ static int dxtory_decode_v1_420(AVCodecContext *avctx, AVFrame *pic,
     }
 
     avctx->pix_fmt = AV_PIX_FMT_YUV420P;
-    if ((ret = ff_get_buffer(avctx, pic, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, pic, 0)) < 0)
         return ret;
 
     Y1 = pic->data[0];
@@ -152,7 +152,7 @@ static int dxtory_decode_v1_444(AVCodecContext *avctx, AVFrame *pic,
     }
 
     avctx->pix_fmt = AV_PIX_FMT_YUV444P;
-    if ((ret = ff_get_buffer(avctx, pic, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, pic, 0)) < 0)
         return ret;
 
     Y = pic->data[0];
@@ -284,7 +284,7 @@ static int dxtory_decode_v2(AVCodecContext *avctx, AVFrame *pic,
         return ret;
 
     avctx->pix_fmt = fmt;
-    if ((ret = ff_get_buffer(avctx, pic, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, pic, 0)) < 0)
         return ret;
 
     for (slice = 0; slice < nslices; slice++) {

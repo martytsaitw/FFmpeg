@@ -718,7 +718,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         ret = AVERROR(ENOMEM);
         goto end;
     }
-    av_frame_copy_props(out, in);
+    av_frame_copy_props_xij(out, in);
 
     av_image_copy(out->data, out->linesize,
                   (const uint8_t**)f->buffer->planes, s->planewidth,
@@ -727,7 +727,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     ret = ff_filter_frame(outlink, out);
     pullup_release_frame(f);
 end:
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
     return ret;
 }
 

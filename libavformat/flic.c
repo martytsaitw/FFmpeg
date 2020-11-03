@@ -96,7 +96,7 @@ static int flic_read_header(AVFormatContext *s)
     flic->frame_number = 0;
 
     /* load the whole header and pull out the width and height */
-    if (avio_read(pb, header, FLIC_HEADER_SIZE) != FLIC_HEADER_SIZE)
+    if (avio_read_xij(pb, header, FLIC_HEADER_SIZE) != FLIC_HEADER_SIZE)
         return AVERROR(EIO);
 
     magic_number = AV_RL16(&header[4]);
@@ -125,17 +125,17 @@ static int flic_read_header(AVFormatContext *s)
     }
 
     /* send over the whole 128-byte FLIC header */
-    if (ff_alloc_extradata(st->codecpar, FLIC_HEADER_SIZE))
+    if (ff_alloc_extradata_xij(st->codecpar, FLIC_HEADER_SIZE))
         return AVERROR(ENOMEM);
     memcpy(st->codecpar->extradata, header, FLIC_HEADER_SIZE);
 
     /* peek at the preamble to detect TFTD videos - they seem to always start with an audio chunk */
-    if (avio_read(pb, preamble, FLIC_PREAMBLE_SIZE) != FLIC_PREAMBLE_SIZE) {
+    if (avio_read_xij(pb, preamble, FLIC_PREAMBLE_SIZE) != FLIC_PREAMBLE_SIZE) {
         av_log(s, AV_LOG_ERROR, "Failed to peek at preamble\n");
         return AVERROR(EIO);
     }
 
-    avio_seek(pb, -FLIC_PREAMBLE_SIZE, SEEK_CUR);
+    avio_seek_xij(pb, -FLIC_PREAMBLE_SIZE, SEEK_CUR);
 
     /* Time to figure out the framerate:
      * If the first preamble's magic number is 0xAAAA then this file is from
@@ -172,11 +172,11 @@ static int flic_read_header(AVFormatContext *s)
         avpriv_set_pts_info_ijk(st, 64, FLIC_MC_SPEED, 70);
 
         /* rewind the stream since the first chunk is at offset 12 */
-        avio_seek(pb, 12, SEEK_SET);
+        avio_seek_xij(pb, 12, SEEK_SET);
 
         /* send over abbreviated FLIC header chunk */
         av_freep(&st->codecpar->extradata);
-        if (ff_alloc_extradata(st->codecpar, 12))
+        if (ff_alloc_extradata_xij(st->codecpar, 12))
             return AVERROR(ENOMEM);
         memcpy(st->codecpar->extradata, header, 12);
 
@@ -204,9 +204,9 @@ static int flic_read_packet(AVFormatContext *s,
     int ret = 0;
     unsigned char preamble[FLIC_PREAMBLE_SIZE];
 
-    while (!packet_read && !avio_feof(pb)) {
+    while (!packet_read && !avio_feof_xij(pb)) {
 
-        if ((ret = avio_read(pb, preamble, FLIC_PREAMBLE_SIZE)) !=
+        if ((ret = avio_read_xij(pb, preamble, FLIC_PREAMBLE_SIZE)) !=
             FLIC_PREAMBLE_SIZE) {
             ret = AVERROR(EIO);
             break;
@@ -224,7 +224,7 @@ static int flic_read_packet(AVFormatContext *s,
             pkt->pts = flic->frame_number++;
             pkt->pos = avio_tell(pb);
             memcpy(pkt->data, preamble, FLIC_PREAMBLE_SIZE);
-            ret = avio_read(pb, pkt->data + FLIC_PREAMBLE_SIZE,
+            ret = avio_read_xij(pb, pkt->data + FLIC_PREAMBLE_SIZE,
                 size - FLIC_PREAMBLE_SIZE);
             if (ret != size - FLIC_PREAMBLE_SIZE) {
                 av_packet_unref_ijk(pkt);
@@ -238,11 +238,11 @@ static int flic_read_packet(AVFormatContext *s,
             }
 
             /* skip useless 10B sub-header (yes, it's not accounted for in the chunk header) */
-            avio_skip(pb, 10);
+            avio_skip_xij(pb, 10);
 
             pkt->stream_index = flic->audio_stream_index;
             pkt->pos = avio_tell(pb);
-            ret = avio_read(pb, pkt->data, size);
+            ret = avio_read_xij(pb, pkt->data, size);
 
             if (ret != size) {
                 av_packet_unref_ijk(pkt);
@@ -252,11 +252,11 @@ static int flic_read_packet(AVFormatContext *s,
             packet_read = 1;
         } else {
             /* not interested in this chunk */
-            avio_skip(pb, size - 6);
+            avio_skip_xij(pb, size - 6);
         }
     }
 
-    return avio_feof(pb) ? AVERROR_EOF : ret;
+    return avio_feof_xij(pb) ? AVERROR_EOF : ret;
 }
 
 AVInputFormat ff_flic_demuxer = {

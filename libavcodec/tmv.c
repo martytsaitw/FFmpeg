@@ -46,7 +46,7 @@ static int tmv_decode_frame(AVCodecContext *avctx, void *data,
     unsigned x, y, fg, bg, c;
     int ret;
 
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     if (avpkt->size < 2*char_rows*char_cols) {

@@ -280,7 +280,7 @@ static int deinvert_buffer(TiffContext *s, const uint8_t *src, int size)
 {
     int i;
 
-    av_fast_padded_malloc(&s->deinvert_buf, &s->deinvert_buf_size, size);
+    av_fast_padded_malloc_xij(&s->deinvert_buf, &s->deinvert_buf_size, size);
     if (!s->deinvert_buf)
         return AVERROR(ENOMEM);
     for (i = 0; i < size; i++)
@@ -456,7 +456,7 @@ static int tiff_unpack_fax(TiffContext *s, uint8_t *dst, int stride,
     int line;
     uint8_t *src2;
 
-    av_fast_padded_malloc(&s->fax_buffer, &s->fax_buffer_size, size);
+    av_fast_padded_malloc_xij(&s->fax_buffer, &s->fax_buffer_size, size);
     src2 = s->fax_buffer;
 
     if (!src2) {
@@ -503,7 +503,7 @@ static int tiff_unpack_strip(TiffContext *s, AVFrame *p, uint8_t *dst, int strid
     if (is_yuv) {
         int bytes_per_row = (((s->width - 1) / s->subsampling[0] + 1) * s->bpp *
                             s->subsampling[0] * s->subsampling[1] + 7) >> 3;
-        av_fast_padded_malloc(&s->yuv_line, &s->yuv_line_size, bytes_per_row);
+        av_fast_padded_malloc_xij(&s->yuv_line, &s->yuv_line_size, bytes_per_row);
         if (s->yuv_line == NULL) {
             av_log(s->avctx, AV_LOG_ERROR, "Not enough memory\n");
             return AVERROR(ENOMEM);
@@ -750,7 +750,7 @@ static int init_image(TiffContext *s, ThreadFrame *frame)
     }
 
     if (s->width != s->avctx->width || s->height != s->avctx->height) {
-        ret = ff_set_dimensions(s->avctx, s->width, s->height);
+        ret = ff_set_dimensions_xij(s->avctx, s->width, s->height);
         if (ret < 0)
             return ret;
     }

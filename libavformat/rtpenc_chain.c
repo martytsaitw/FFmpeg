@@ -31,7 +31,7 @@ int ff_rtp_chain_mux_open(AVFormatContext **out, AVFormatContext *s,
 {
     AVFormatContext *rtpctx = NULL;
     int ret;
-    AVOutputFormat *rtp_format = av_guess_format("rtp", NULL, NULL);
+    AVOutputFormat *rtp_format = av_guess_format_xij("rtp", NULL, NULL);
     uint8_t *rtpflags;
     AVDictionary *opts = NULL;
 
@@ -78,20 +78,20 @@ int ff_rtp_chain_mux_open(AVFormatContext **out, AVFormatContext *s,
     rtpctx->streams[0]->time_base = st->time_base;
 
     if (handle) {
-        ret = ffio_fdopen(&rtpctx->pb, handle);
+        ret = ffio_fdopen_xij(&rtpctx->pb, handle);
         if (ret < 0)
             ffurl_close(handle);
     } else
-        ret = ffio_open_dyn_packet_buf(&rtpctx->pb, packet_size);
+        ret = ffio_open_dyn_packet_buf_xij(&rtpctx->pb, packet_size);
     if (!ret)
-        ret = avformat_write_header(rtpctx, &opts);
+        ret = avformat_write_header_xij(rtpctx, &opts);
     av_dict_free(&opts);
 
     if (ret) {
         if (handle && rtpctx->pb) {
-            avio_closep(&rtpctx->pb);
+            avio_closep_xij(&rtpctx->pb);
         } else if (rtpctx->pb) {
-            ffio_free_dyn_buf(&rtpctx->pb);
+            ffio_free_dyn_buf_xij(&rtpctx->pb);
         }
         avformat_free_context_ijk(rtpctx);
         return ret;

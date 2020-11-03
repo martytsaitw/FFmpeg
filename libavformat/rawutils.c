@@ -61,7 +61,7 @@ int ff_reshuffle_raw_rgb(AVFormatContext *s, AVPacket **ppkt, AVCodecParameters 
     *ppkt = new_pkt;
     return 1 + contains_pal;
 fail:
-    av_packet_free(&new_pkt);
+    av_packet_free_xij(&new_pkt);
 
     return ret;
 }

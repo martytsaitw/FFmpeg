@@ -103,15 +103,15 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         goto fail;
     }
 
-    out = av_frame_clone(in);
+    out = av_frame_clone_xij(in);
     if (!out) {
-        av_buffer_unref(&out_qp_table_buf);
+        av_buffer_unref_xij(&out_qp_table_buf);
         ret = AVERROR(ENOMEM);
         goto fail;
     }
 
-    in_qp_table = av_frame_get_qp_table(in, &stride, &type);
-    av_frame_set_qp_table(out, out_qp_table_buf, s->qstride, type);
+    in_qp_table = av_frame_get_qp_table_xij(in, &stride, &type);
+    av_frame_set_qp_table_xij(out, out_qp_table_buf, s->qstride, type);
 
 
     if (s->evaluate_per_mb) {
@@ -149,8 +149,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     ret = ff_filter_frame(outlink, out);
     out = NULL;
 fail:
-    av_frame_free(&in);
-    av_frame_free(&out);
+    av_frame_free_xij(&in);
+    av_frame_free_xij(&out);
     return ret;
 }
 

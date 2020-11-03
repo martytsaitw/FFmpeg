@@ -77,7 +77,7 @@ static av_cold int escape124_decode_close(AVCodecContext *avctx)
     for (i = 0; i < 3; i++)
         av_freep(&s->codebooks[i].blocks);
 
-    av_frame_free(&s->frame);
+    av_frame_free_xij(&s->frame);
 
     return 0;
 }
@@ -236,7 +236,7 @@ static int escape124_decode_frame(AVCodecContext *avctx,
         av_log(avctx, AV_LOG_DEBUG, "Skipping frame\n");
 
         *got_frame = 1;
-        if ((ret = av_frame_ref(frame, s->frame)) < 0)
+        if ((ret = av_frame_ref_xij(frame, s->frame)) < 0)
             return ret;
 
         return frame_size;
@@ -279,7 +279,7 @@ static int escape124_decode_frame(AVCodecContext *avctx,
         }
     }
 
-    if ((ret = ff_get_buffer(avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
         return ret;
 
     new_frame_data = (uint16_t*)frame->data[0];
@@ -362,8 +362,8 @@ static int escape124_decode_frame(AVCodecContext *avctx,
            "Escape sizes: %i, %i, %i\n",
            frame_size, buf_size, get_bits_count(&gb) / 8);
 
-    av_frame_unref(s->frame);
-    if ((ret = av_frame_ref(s->frame, frame)) < 0)
+    av_frame_unref_xij(s->frame);
+    if ((ret = av_frame_ref_xij(s->frame, frame)) < 0)
         return ret;
 
     *got_frame = 1;

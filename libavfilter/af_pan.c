@@ -308,7 +308,7 @@ static int config_props(AVFilterLink *link)
     }
 
     // init libswresample context
-    pan->swr = swr_alloc_set_opts(pan->swr,
+    pan->swr = swr_alloc_set_opts_xij(pan->swr,
                                   pan->out_channel_layout, link->format, link->sample_rate,
                                   link->channel_layout,    link->format, link->sample_rate,
                                   0, ctx);
@@ -340,7 +340,7 @@ static int config_props(AVFilterLink *link)
 
         av_opt_set_int(pan->swr, "icl", pan->out_channel_layout, 0);
         av_opt_set_int(pan->swr, "uch", pan->nb_output_channels, 0);
-        swr_set_channel_mapping(pan->swr, pan->channel_map);
+        swr_set_channel_mapping_xij(pan->swr, pan->channel_map);
     } else {
         // renormalize
         for (i = 0; i < pan->nb_output_channels; i++) {
@@ -364,7 +364,7 @@ static int config_props(AVFilterLink *link)
         swr_set_matrix(pan->swr, pan->gain[0], pan->gain[1] - pan->gain[0]);
     }
 
-    r = swr_init(pan->swr);
+    r = swr_init_xij(pan->swr);
     if (r < 0)
         return r;
 
@@ -401,24 +401,24 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
     PanContext *pan = inlink->dst->priv;
 
     if (!outsamples) {
-        av_frame_free(&insamples);
+        av_frame_free_xij(&insamples);
         return AVERROR(ENOMEM);
     }
-    swr_convert(pan->swr, outsamples->extended_data, n,
+    swr_convert_xij(pan->swr, outsamples->extended_data, n,
                 (void *)insamples->extended_data, n);
-    av_frame_copy_props(outsamples, insamples);
+    av_frame_copy_props_xij(outsamples, insamples);
     outsamples->channel_layout = outlink->channel_layout;
     outsamples->channels = outlink->channels;
 
     ret = ff_filter_frame(outlink, outsamples);
-    av_frame_free(&insamples);
+    av_frame_free_xij(&insamples);
     return ret;
 }
 
 static av_cold void uninit(AVFilterContext *ctx)
 {
     PanContext *pan = ctx->priv;
-    swr_free(&pan->swr);
+    swr_free_xij(&pan->swr);
 }
 
 #define OFFSET(x) offsetof(PanContext, x)

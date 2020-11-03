@@ -51,24 +51,24 @@ static int smjpeg_read_header(AVFormatContext *s)
     uint32_t version, htype, hlength, duration;
     char *comment;
 
-    avio_skip(pb, 8); // magic
-    version = avio_rb32(pb);
+    avio_skip_xij(pb, 8); // magic
+    version = avio_rb32_xij(pb);
     if (version)
         avpriv_request_sample(s, "Unknown version %"PRIu32, version);
 
-    duration = avio_rb32(pb); // in msec
+    duration = avio_rb32_xij(pb); // in msec
 
-    while (!avio_feof(pb)) {
-        htype = avio_rl32(pb);
+    while (!avio_feof_xij(pb)) {
+        htype = avio_rl32_xij(pb);
         switch (htype) {
         case SMJPEG_TXT:
-            hlength = avio_rb32(pb);
+            hlength = avio_rb32_xij(pb);
             if (!hlength || hlength > 512)
                 return AVERROR_INVALIDDATA;
             comment = av_malloc(hlength + 1);
             if (!comment)
                 return AVERROR(ENOMEM);
-            if (avio_read(pb, comment, hlength) != hlength) {
+            if (avio_read_xij(pb, comment, hlength) != hlength) {
                 av_freep(&comment);
                 av_log(s, AV_LOG_ERROR, "error when reading comment\n");
                 return AVERROR_INVALIDDATA;
@@ -82,46 +82,46 @@ static int smjpeg_read_header(AVFormatContext *s)
                 avpriv_request_sample(s, "Multiple audio streams");
                 return AVERROR_PATCHWELCOME;
             }
-            hlength = avio_rb32(pb);
+            hlength = avio_rb32_xij(pb);
             if (hlength < 8)
                 return AVERROR_INVALIDDATA;
             ast = avformat_new_stream_ijk(s, 0);
             if (!ast)
                 return AVERROR(ENOMEM);
             ast->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
-            ast->codecpar->sample_rate = avio_rb16(pb);
-            ast->codecpar->bits_per_coded_sample = avio_r8(pb);
-            ast->codecpar->channels    = avio_r8(pb);
-            ast->codecpar->codec_tag   = avio_rl32(pb);
-            ast->codecpar->codec_id    = ff_codec_get_id(ff_codec_smjpeg_audio_tags,
+            ast->codecpar->sample_rate = avio_rb16_xij(pb);
+            ast->codecpar->bits_per_coded_sample = avio_r8_xij(pb);
+            ast->codecpar->channels    = avio_r8_xij(pb);
+            ast->codecpar->codec_tag   = avio_rl32_xij(pb);
+            ast->codecpar->codec_id    = ff_codec_get_id_xij(ff_codec_smjpeg_audio_tags,
                                                          ast->codecpar->codec_tag);
             ast->duration           = duration;
             sc->audio_stream_index  = ast->index;
             avpriv_set_pts_info_ijk(ast, 32, 1, 1000);
-            avio_skip(pb, hlength - 8);
+            avio_skip_xij(pb, hlength - 8);
             break;
         case SMJPEG_VID:
             if (vst) {
                 avpriv_request_sample(s, "Multiple video streams");
                 return AVERROR_INVALIDDATA;
             }
-            hlength = avio_rb32(pb);
+            hlength = avio_rb32_xij(pb);
             if (hlength < 12)
                 return AVERROR_INVALIDDATA;
             vst = avformat_new_stream_ijk(s, 0);
             if (!vst)
                 return AVERROR(ENOMEM);
-            vst->nb_frames            = avio_rb32(pb);
+            vst->nb_frames            = avio_rb32_xij(pb);
             vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
-            vst->codecpar->width      = avio_rb16(pb);
-            vst->codecpar->height     = avio_rb16(pb);
-            vst->codecpar->codec_tag  = avio_rl32(pb);
-            vst->codecpar->codec_id   = ff_codec_get_id(ff_codec_smjpeg_video_tags,
+            vst->codecpar->width      = avio_rb16_xij(pb);
+            vst->codecpar->height     = avio_rb16_xij(pb);
+            vst->codecpar->codec_tag  = avio_rl32_xij(pb);
+            vst->codecpar->codec_id   = ff_codec_get_id_xij(ff_codec_smjpeg_video_tags,
                                                         vst->codecpar->codec_tag);
             vst->duration          = duration;
             sc->video_stream_index = vst->index;
             avpriv_set_pts_info_ijk(vst, 32, 1, 1000);
-            avio_skip(pb, hlength - 12);
+            avio_skip_xij(pb, hlength - 12);
             break;
         case SMJPEG_HEND:
             return 0;
@@ -141,23 +141,23 @@ static int smjpeg_read_packet(AVFormatContext *s, AVPacket *pkt)
     int64_t pos;
     int ret;
 
-    if (avio_feof(s->pb))
+    if (avio_feof_xij(s->pb))
         return AVERROR_EOF;
     pos   = avio_tell(s->pb);
-    dtype = avio_rl32(s->pb);
+    dtype = avio_rl32_xij(s->pb);
     switch (dtype) {
     case SMJPEG_SNDD:
-        timestamp = avio_rb32(s->pb);
-        size = avio_rb32(s->pb);
-        ret = av_get_packet(s->pb, pkt, size);
+        timestamp = avio_rb32_xij(s->pb);
+        size = avio_rb32_xij(s->pb);
+        ret = av_get_packet_xij(s->pb, pkt, size);
         pkt->stream_index = sc->audio_stream_index;
         pkt->pts = timestamp;
         pkt->pos = pos;
         break;
     case SMJPEG_VIDD:
-        timestamp = avio_rb32(s->pb);
-        size = avio_rb32(s->pb);
-        ret = av_get_packet(s->pb, pkt, size);
+        timestamp = avio_rb32_xij(s->pb);
+        size = avio_rb32_xij(s->pb);
+        ret = av_get_packet_xij(s->pb, pkt, size);
         pkt->stream_index = sc->video_stream_index;
         pkt->pts = timestamp;
         pkt->pos = pos;

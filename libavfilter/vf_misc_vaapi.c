@@ -184,10 +184,10 @@ static int misc_vaapi_filter_frame(AVFilterLink *inlink, AVFrame *input_frame)
     if (err < 0)
         goto fail;
 
-    err = av_frame_copy_props(output_frame, input_frame);
+    err = av_frame_copy_props_xij(output_frame, input_frame);
     if (err < 0)
         goto fail;
-    av_frame_free(&input_frame);
+    av_frame_free_xij(&input_frame);
 
     av_log(avctx, AV_LOG_DEBUG, "Filter output: %s, %ux%u (%"PRId64").\n",
            av_get_pix_fmt_name(output_frame->format),
@@ -196,8 +196,8 @@ static int misc_vaapi_filter_frame(AVFilterLink *inlink, AVFrame *input_frame)
     return ff_filter_frame(outlink, output_frame);
 
 fail:
-    av_frame_free(&input_frame);
-    av_frame_free(&output_frame);
+    av_frame_free_xij(&input_frame);
+    av_frame_free_xij(&output_frame);
     return err;
 }
 

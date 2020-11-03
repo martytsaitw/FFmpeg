@@ -167,8 +167,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     VSFrame frame;
     int plane;
 
-    if (s->conf.show > 0 && !av_frame_is_writable(in))
-        av_frame_make_writable(in);
+    if (s->conf.show > 0 && !av_frame_is_writable_xij(in))
+        av_frame_make_writable_xij(in);
 
     for (plane = 0; plane < md->fi.planes; plane++) {
         frame.data[plane] = in->data[plane];

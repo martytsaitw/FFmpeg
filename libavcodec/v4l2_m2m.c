@@ -160,7 +160,7 @@ static int v4l2_configure_contexts(V4L2m2mContext* s)
     }
 
     /* decoder's buffers need to be updated at a later stage */
-    if (!av_codec_is_decoder(s->avctx->codec)) {
+    if (!av_codec_is_decoder_xij(s->avctx->codec)) {
         ret = ff_v4l2_context_init(&s->capture);
         if (ret) {
             av_log(log_ctx, AV_LOG_ERROR, "no v4l2 capture context's buffers\n");
@@ -290,7 +290,7 @@ int ff_v4l2_m2m_codec_full_reinit(V4L2m2mContext *s)
     }
 
     /* decoder's buffers need to be updated at a later stage */
-    if (!av_codec_is_decoder(s->avctx->codec)) {
+    if (!av_codec_is_decoder_xij(s->avctx->codec)) {
         ret = ff_v4l2_context_init(&s->capture);
         if (ret) {
             av_log(log_ctx, AV_LOG_ERROR, "no v4l2 capture context's buffers\n");
@@ -333,7 +333,7 @@ int ff_v4l2_m2m_codec_end(AVCodecContext *avctx)
     ff_v4l2_context_release(&s->output);
 
     s->self_ref = NULL;
-    av_buffer_unref(&priv->context_ref);
+    av_buffer_unref_xij(&priv->context_ref);
 
     return 0;
 }

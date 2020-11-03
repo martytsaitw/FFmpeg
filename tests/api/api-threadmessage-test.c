@@ -56,7 +56,7 @@ static void free_frame(void *arg)
 {
     struct message *msg = arg;
     av_assert0(msg->magic == MAGIC);
-    av_frame_free(&msg->frame);
+    av_frame_free_xij(&msg->frame);
 }
 
 static void *sender_thread(void *arg)
@@ -86,13 +86,13 @@ static void *sender_thread(void *arg)
             val = av_asprintf("frame %d/%d from sender %d",
                               i + 1, wd->workload, wd->id);
             if (!val) {
-                av_frame_free(&msg.frame);
+                av_frame_free_xij(&msg.frame);
                 ret = AVERROR(ENOMEM);
                 break;
             }
             ret = av_dict_set(&meta, "sig", val, AV_DICT_DONT_STRDUP_VAL);
             if (ret < 0) {
-                av_frame_free(&msg.frame);
+                av_frame_free_xij(&msg.frame);
                 break;
             }
             msg.frame->metadata = meta;
@@ -101,9 +101,9 @@ static void *sender_thread(void *arg)
             msg.frame->format = AV_PIX_FMT_RGBA;
             msg.frame->width  = 320;
             msg.frame->height = 240;
-            ret = av_frame_get_buffer(msg.frame, 32);
+            ret = av_frame_get_buffer_xij(msg.frame, 32);
             if (ret < 0) {
-                av_frame_free(&msg.frame);
+                av_frame_free_xij(&msg.frame);
                 break;
             }
 
@@ -112,7 +112,7 @@ static void *sender_thread(void *arg)
                    wd->id, i + 1, wd->workload, msg.frame);
             ret = av_thread_message_queue_send(wd->queue, &msg, 0);
             if (ret < 0) {
-                av_frame_free(&msg.frame);
+                av_frame_free_xij(&msg.frame);
                 break;
             }
         }
@@ -144,7 +144,7 @@ static void *receiver_thread(void *arg)
             meta = msg.frame->metadata;
             e = av_dict_get(meta, "sig", NULL, 0);
             av_log(NULL, AV_LOG_INFO, "got \"%s\" (%p)\n", e->value, msg.frame);
-            av_frame_free(&msg.frame);
+            av_frame_free_xij(&msg.frame);
         }
     }
 

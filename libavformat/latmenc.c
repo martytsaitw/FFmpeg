@@ -61,12 +61,12 @@ static int latm_decode_extradata(LATMContext *ctx, uint8_t *buf, int size)
         av_log(ctx, AV_LOG_ERROR, "Extradata is larger than currently supported.\n");
         return AVERROR_INVALIDDATA;
     }
-    ctx->off = avpriv_mpeg4audio_get_config(&m4ac, buf, size * 8, 1);
+    ctx->off = avpriv_mpeg4audio_get_config_xij(&m4ac, buf, size * 8, 1);
     if (ctx->off < 0)
         return ctx->off;
 
     if (ctx->object_type == AOT_ALS && (ctx->off & 7)) {
-        // as long as avpriv_mpeg4audio_get_config works correctly this is impossible
+        // as long as avpriv_mpeg4audio_get_config_xij works correctly this is impossible
         av_log(ctx, AV_LOG_ERROR, "BUG: ALS offset is not byte-aligned\n");
         return AVERROR_INVALIDDATA;
     }
@@ -163,12 +163,12 @@ static int latm_write_packet(AVFormatContext *s, AVPacket *pkt)
             uint8_t *side_data;
             int side_data_size = 0, ret;
 
-            side_data = av_packet_get_side_data(pkt, AV_PKT_DATA_NEW_EXTRADATA,
+            side_data = av_packet_get_side_data_xij(pkt, AV_PKT_DATA_NEW_EXTRADATA,
                                                 &side_data_size);
             if (side_data_size) {
                 if (latm_decode_extradata(ctx, side_data, side_data_size) < 0)
                     return AVERROR_INVALIDDATA;
-                ret = ff_alloc_extradata(par, side_data_size);
+                ret = ff_alloc_extradata_xij(par, side_data_size);
                 if (ret < 0)
                     return ret;
                 memcpy(par->extradata, side_data, side_data_size);
@@ -217,8 +217,8 @@ static int latm_write_packet(AVFormatContext *s, AVPacket *pkt)
     loas_header[1] |= (len >> 8) & 0x1f;
     loas_header[2] |= len & 0xff;
 
-    avio_write(pb, loas_header, 3);
-    avio_write(pb, ctx->buffer, len);
+    avio_write_xij(pb, loas_header, 3);
+    avio_write_xij(pb, ctx->buffer, len);
 
     return 0;
 
@@ -234,7 +234,7 @@ static int latm_check_bitstream(struct AVFormatContext *s, const AVPacket *pkt)
 
     if (st->codecpar->codec_id == AV_CODEC_ID_AAC) {
         if (pkt->size > 2 && (AV_RB16(pkt->data) & 0xfff0) == 0xfff0)
-            ret = ff_stream_add_bitstream_filter(st, "aac_adtstoasc", NULL);
+            ret = ff_stream_add_bitstream_filter_xij(st, "aac_adtstoasc", NULL);
     }
 
     return ret;

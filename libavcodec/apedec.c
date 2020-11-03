@@ -1437,7 +1437,7 @@ static int ape_decode_frame(AVCodecContext *avctx, void *data,
         }
         if (s->fileversion < 3950) // previous versions overread two bytes
             buf_size += 2;
-        av_fast_padded_malloc(&s->data, &s->data_size, buf_size);
+        av_fast_padded_malloc_xij(&s->data, &s->data_size, buf_size);
         if (!s->data)
             return AVERROR(ENOMEM);
         s->bdsp.bswap_buf((uint32_t *) s->data, (const uint32_t *) buf,
@@ -1505,7 +1505,7 @@ static int ape_decode_frame(AVCodecContext *avctx, void *data,
 
     /* get output buffer */
     frame->nb_samples = blockstodecode;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     s->error=0;

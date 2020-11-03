@@ -251,7 +251,7 @@ static int rtmpe_open(URLContext *h, const char *uri, int flags)
     char host[256], url[1024];
     int ret, port;
 
-    av_url_split(NULL, 0, NULL, 0, host, sizeof(host), &port, NULL, 0, uri);
+    av_url_split_xij(NULL, 0, NULL, 0, host, sizeof(host), &port, NULL, 0, uri);
 
     if (rt->tunneling) {
         if (port < 0)

@@ -340,7 +340,7 @@ static int read_ir(AVFilterLink *inlink, AVFrame *frame)
 
     ret = av_audio_fifo_write(s->in[input_number].fifo, (void **)frame->extended_data,
                              frame->nb_samples);
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
 
     if (ret < 0)
         return ret;
@@ -636,7 +636,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     if (s->pts == AV_NOPTS_VALUE)
         s->pts = in->pts;
 
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
 
     if (ret < 0)
         return ret;
@@ -833,7 +833,7 @@ static int request_frame(AVFilterLink *outlink)
 
         ret = av_audio_fifo_write(s->in[0].fifo, (void **)in->extended_data,
                                   in->nb_samples);
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         if (ret < 0)
             return ret;
         ret = headphone_frame(s, outlink, nb_samples);
@@ -868,7 +868,7 @@ static av_cold void uninit(AVFilterContext *ctx)
     av_freep(&s->fdsp);
 
     for (i = 0; i < s->nb_inputs; i++) {
-        av_frame_free(&s->in[i].frame);
+        av_frame_free_xij(&s->in[i].frame);
         av_audio_fifo_free(s->in[i].fifo);
         if (ctx->input_pads && i)
             av_freep(&ctx->input_pads[i].name);

@@ -316,7 +316,7 @@ static int decode_frame(AVCodecContext *avctx,
     h = bytestream2_get_be16(&gbc);
     w = bytestream2_get_be16(&gbc);
 
-    ret = ff_set_dimensions(avctx, w, h);
+    ret = ff_set_dimensions_xij(avctx, w, h);
     if (ret < 0)
         return ret;
 
@@ -377,7 +377,7 @@ static int decode_frame(AVCodecContext *avctx,
                        bytestream2_get_bytes_left(&gbc));
                 return AVERROR_INVALIDDATA;
             }
-            if ((ret = ff_get_buffer(avctx, p, 0)) < 0)
+            if ((ret = ff_get_buffer_xij(avctx, p, 0)) < 0)
                 return ret;
 
             ret = parse_palette(avctx, &gbc, (uint32_t *)p->data[1], colors);
@@ -421,7 +421,7 @@ static int decode_frame(AVCodecContext *avctx,
             w = bytestream2_get_be16(&gbc);
             bytestream2_skip(&gbc, 2);
 
-            ret = ff_set_dimensions(avctx, w, h);
+            ret = ff_set_dimensions_xij(avctx, w, h);
             if (ret < 0)
                 return ret;
 
@@ -453,7 +453,7 @@ static int decode_frame(AVCodecContext *avctx,
                 avpriv_request_sample(avctx, "Pack type %d", pack_type);
                 return AVERROR_PATCHWELCOME;
             }
-            if ((ret = ff_get_buffer(avctx, p, 0)) < 0)
+            if ((ret = ff_get_buffer_xij(avctx, p, 0)) < 0)
                 return ret;
 
             /* jump to data */

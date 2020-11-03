@@ -757,7 +757,7 @@ static int decode(AVCodecContext *avctx, void *data, int *got_sub, AVPacket *avp
     int ret = 0;
     int i;
 
-    av_fast_padded_malloc(&ctx->pktbuf, &ctx->pktbuf_size, len);
+    av_fast_padded_malloc_xij(&ctx->pktbuf, &ctx->pktbuf_size, len);
     if (!ctx->pktbuf) {
         av_log(ctx, AV_LOG_WARNING, "Insufficient Memory of %d truncated to %d\n", len, ctx->pktbuf_size);
         return AVERROR(ENOMEM);

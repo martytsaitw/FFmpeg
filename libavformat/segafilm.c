@@ -98,7 +98,7 @@ static int film_read_header(AVFormatContext *s)
     film->sample_table = NULL;
 
     /* load the main FILM header */
-    if (avio_read(pb, scratch, 16) != 16)
+    if (avio_read_xij(pb, scratch, 16) != 16)
         return AVERROR(EIO);
     data_offset = AV_RB32(&scratch[4]);
     film->version = AV_RB32(&scratch[8]);
@@ -106,7 +106,7 @@ static int film_read_header(AVFormatContext *s)
     /* load the FDSC chunk */
     if (film->version == 0) {
         /* special case for Lemmings .film files; 20-byte header */
-        if (avio_read(pb, scratch, 20) != 20)
+        if (avio_read_xij(pb, scratch, 20) != 20)
             return AVERROR(EIO);
         /* make some assumptions about the audio parameters */
         film->audio_type = AV_CODEC_ID_PCM_S8;
@@ -115,7 +115,7 @@ static int film_read_header(AVFormatContext *s)
         film->audio_bits = 8;
     } else {
         /* normal Saturn .cpk files; 32-byte header */
-        if (avio_read(pb, scratch, 32) != 32)
+        if (avio_read_xij(pb, scratch, 32) != 32)
             return AVERROR(EIO);
         film->audio_samplerate = AV_RB16(&scratch[24]);
         film->audio_channels = scratch[21];
@@ -192,7 +192,7 @@ static int film_read_header(AVFormatContext *s)
     }
 
     /* load the sample table */
-    if (avio_read(pb, scratch, 16) != 16)
+    if (avio_read_xij(pb, scratch, 16) != 16)
         return AVERROR(EIO);
     if (AV_RB32(&scratch[0]) != STAB_TAG)
         return AVERROR_INVALIDDATA;
@@ -215,7 +215,7 @@ static int film_read_header(AVFormatContext *s)
     audio_frame_counter = video_frame_counter = 0;
     for (i = 0; i < film->sample_count; i++) {
         /* load the next sample record and transfer it to an internal struct */
-        if (avio_read(pb, scratch, 16) != 16) {
+        if (avio_read_xij(pb, scratch, 16) != 16) {
             ret = AVERROR(EIO);
             goto fail;
         }
@@ -242,7 +242,7 @@ static int film_read_header(AVFormatContext *s)
             film->sample_table[i].keyframe = (scratch[8] & 0x80) ? AVINDEX_KEYFRAME : 0;
             video_frame_counter++;
             if (film->video_type)
-                av_add_index_entry(s->streams[film->video_stream_index],
+                av_add_index_entry_xij(s->streams[film->video_stream_index],
                                    film->sample_table[i].sample_offset,
                                    film->sample_table[i].pts,
                                    film->sample_table[i].sample_size, 0,
@@ -294,9 +294,9 @@ static int film_read_packet(AVFormatContext *s,
     }
 
     /* position the stream (will probably be there anyway) */
-    avio_seek(pb, sample->sample_offset, SEEK_SET);
+    avio_seek_xij(pb, sample->sample_offset, SEEK_SET);
 
-    ret = av_get_packet(pb, pkt, sample->sample_size);
+    ret = av_get_packet_xij(pb, pkt, sample->sample_size);
     if (ret != sample->sample_size)
         ret = AVERROR(EIO);
 
@@ -317,11 +317,11 @@ static int film_read_seek(AVFormatContext *s, int stream_index, int64_t timestam
     FilmDemuxContext *film = s->priv_data;
     AVStream *st = s->streams[stream_index];
     int64_t pos;
-    int ret = av_index_search_timestamp(st, timestamp, flags);
+    int ret = av_index_search_timestamp_xij(st, timestamp, flags);
     if (ret < 0)
         return ret;
 
-    pos = avio_seek(s->pb, st->index_entries[ret].pos, SEEK_SET);
+    pos = avio_seek_xij(s->pb, st->index_entries[ret].pos, SEEK_SET);
     if (pos < 0)
         return pos;
 

@@ -165,7 +165,7 @@ static int mpeg2_metadata_update_fragment(AVBSFContext *bsf,
     if (add_sde) {
         int err;
 
-        err = ff_cbs_insert_unit_content(ctx->cbc, frag, se_pos + 1,
+        err = ff_cbs_insert_unit_content_xij(ctx->cbc, frag, se_pos + 1,
                                          MPEG2_START_EXTENSION,
                                          &ctx->sequence_display_extension,
                                          NULL);
@@ -186,11 +186,11 @@ static int mpeg2_metadata_filter(AVBSFContext *bsf, AVPacket *out)
     CodedBitstreamFragment *frag = &ctx->fragment;
     int err;
 
-    err = ff_bsf_get_packet(bsf, &in);
+    err = ff_bsf_get_packet_xij(bsf, &in);
     if (err < 0)
         return err;
 
-    err = ff_cbs_read_packet(ctx->cbc, frag, in);
+    err = ff_cbs_read_packet_xij(ctx->cbc, frag, in);
     if (err < 0) {
         av_log(bsf, AV_LOG_ERROR, "Failed to read packet.\n");
         goto fail;
@@ -202,7 +202,7 @@ static int mpeg2_metadata_filter(AVBSFContext *bsf, AVPacket *out)
         goto fail;
     }
 
-    err = ff_cbs_write_packet(ctx->cbc, out, frag);
+    err = ff_cbs_write_packet_xij(ctx->cbc, out, frag);
     if (err < 0) {
         av_log(bsf, AV_LOG_ERROR, "Failed to write packet.\n");
         goto fail;
@@ -218,7 +218,7 @@ fail:
 
     if (err < 0)
         av_packet_unref_ijk(out);
-    av_packet_free(&in);
+    av_packet_free_xij(&in);
 
     return err;
 }
@@ -229,12 +229,12 @@ static int mpeg2_metadata_init(AVBSFContext *bsf)
     CodedBitstreamFragment *frag = &ctx->fragment;
     int err;
 
-    err = ff_cbs_init(&ctx->cbc, AV_CODEC_ID_MPEG2VIDEO, bsf);
+    err = ff_cbs_init_xij(&ctx->cbc, AV_CODEC_ID_MPEG2VIDEO, bsf);
     if (err < 0)
         return err;
 
     if (bsf->par_in->extradata) {
-        err = ff_cbs_read_extradata(ctx->cbc, frag, bsf->par_in);
+        err = ff_cbs_read_extradata_xij(ctx->cbc, frag, bsf->par_in);
         if (err < 0) {
             av_log(bsf, AV_LOG_ERROR, "Failed to read extradata.\n");
             goto fail;
@@ -246,7 +246,7 @@ static int mpeg2_metadata_init(AVBSFContext *bsf)
             goto fail;
         }
 
-        err = ff_cbs_write_extradata(ctx->cbc, bsf->par_out, frag);
+        err = ff_cbs_write_extradata_xij(ctx->cbc, bsf->par_out, frag);
         if (err < 0) {
             av_log(bsf, AV_LOG_ERROR, "Failed to write extradata.\n");
             goto fail;
@@ -262,7 +262,7 @@ fail:
 static void mpeg2_metadata_close(AVBSFContext *bsf)
 {
     MPEG2MetadataContext *ctx = bsf->priv_data;
-    ff_cbs_close(&ctx->cbc);
+    ff_cbs_close_xij(&ctx->cbc);
 }
 
 #define OFFSET(x) offsetof(MPEG2MetadataContext, x)

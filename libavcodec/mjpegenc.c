@@ -367,7 +367,7 @@ static int amv_encode_picture(AVCodecContext *avctx, AVPacket *pkt,
         return AVERROR_EXPERIMENTAL;
     }
 
-    pic = av_frame_clone(pic_arg);
+    pic = av_frame_clone_xij(pic_arg);
     if (!pic)
         return AVERROR(ENOMEM);
     //picture should be flipped upside-down
@@ -377,7 +377,7 @@ static int amv_encode_picture(AVCodecContext *avctx, AVPacket *pkt,
         pic->linesize[i] *= -1;
     }
     ret = ff_mpv_encode_picture(avctx, pkt, pic, got_packet);
-    av_frame_free(&pic);
+    av_frame_free_xij(&pic);
     return ret;
 }
 #endif

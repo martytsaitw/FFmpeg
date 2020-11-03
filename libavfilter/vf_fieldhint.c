@@ -120,14 +120,14 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     char hint = '=';
     int p;
 
-    av_frame_free(&s->frame[0]);
+    av_frame_free_xij(&s->frame[0]);
     s->frame[0] = s->frame[1];
     s->frame[1] = s->frame[2];
     s->frame[2] = in;
     if (!s->frame[1])
         return 0;
     else if (!s->frame[0]) {
-        s->frame[0] = av_frame_clone(s->frame[1]);
+        s->frame[0] = av_frame_clone_xij(s->frame[1]);
         if (!s->frame[0])
             return AVERROR(ENOMEM);
     }
@@ -170,7 +170,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out)
         return AVERROR(ENOMEM);
-    av_frame_copy_props(out, s->frame[1]);
+    av_frame_copy_props_xij(out, s->frame[1]);
 
     switch (s->mode) {
     case 0:
@@ -196,7 +196,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         break;
     default:
         av_log(ctx, AV_LOG_ERROR, "Invalid hint: %c.\n", hint);
-        av_frame_free(&out);
+        av_frame_free_xij(&out);
         return AVERROR(EINVAL);
     }
 
@@ -229,7 +229,7 @@ static int request_frame(AVFilterLink *outlink)
 
     ret = ff_request_frame(ctx->inputs[0]);
     if (ret == AVERROR_EOF && s->frame[2]) {
-        AVFrame *next = av_frame_clone(s->frame[2]);
+        AVFrame *next = av_frame_clone_xij(s->frame[2]);
         if (!next)
             return AVERROR(ENOMEM);
         ret = filter_frame(ctx->inputs[0], next);
@@ -247,9 +247,9 @@ static av_cold void uninit(AVFilterContext *ctx)
         fclose(s->hint);
     s->hint = NULL;
 
-    av_frame_free(&s->frame[0]);
-    av_frame_free(&s->frame[1]);
-    av_frame_free(&s->frame[2]);
+    av_frame_free_xij(&s->frame[0]);
+    av_frame_free_xij(&s->frame[1]);
+    av_frame_free_xij(&s->frame[2]);
 }
 
 static const AVFilterPad inputs[] = {

@@ -252,17 +252,17 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     int plane;
     AVRational sar;
 
-    if (av_frame_is_writable(in)) {
+    if (av_frame_is_writable_xij(in)) {
         direct = 1;
         out = in;
     } else {
         out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out) {
-            av_frame_free(&in);
+            av_frame_free_xij(&in);
             return AVERROR(ENOMEM);
         }
 
-        av_frame_copy_props(out, in);
+        av_frame_copy_props_xij(out, in);
     }
 
     sar = in->sample_aspect_ratio;
@@ -288,7 +288,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     }
 
     if (!direct)
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
 
     return ff_filter_frame(outlink, out);
 }

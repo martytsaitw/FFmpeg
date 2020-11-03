@@ -3960,7 +3960,7 @@ case "$toolchain" in
         target_exec_default="valgrind"
         case "$toolchain" in
             valgrind-massif)
-                target_exec_args="--tool=massif --alloc-fn=av_malloc --alloc-fn=av_mallocz --alloc-fn=av_calloc --alloc-fn=av_fast_padded_malloc --alloc-fn=av_fast_malloc --alloc-fn=av_realloc_f --alloc-fn=av_fast_realloc --alloc-fn=av_realloc"
+                target_exec_args="--tool=massif --alloc-fn=av_malloc --alloc-fn=av_mallocz --alloc-fn=av_calloc --alloc-fn=av_fast_padded_malloc_xij --alloc-fn=av_fast_malloc --alloc-fn=av_realloc_f --alloc-fn=av_fast_realloc --alloc-fn=av_realloc"
                 ;;
             valgrind-memcheck)
                 target_exec_args="--error-exitcode=1 --malloc-fill=0x2a --track-origins=yes --leak-check=full --gen-suppressions=all --suppressions=$source_path/tests/fate-valgrind.supp"
@@ -6416,34 +6416,34 @@ test_ldflags -Wl,-Bsymbolic && append SHFLAGS -Wl,-Bsymbolic
 check_stripflags -x
 
 enabled neon_clobber_test &&
-    check_ldflags -Wl,--wrap,avcodec_open2              \
-                  -Wl,--wrap,avcodec_decode_audio4      \
-                  -Wl,--wrap,avcodec_decode_video2      \
-                  -Wl,--wrap,avcodec_decode_subtitle2   \
+    check_ldflags -Wl,--wrap,avcodec_open2_xij              \
+                  -Wl,--wrap,avcodec_decode_audio4_xij      \
+                  -Wl,--wrap,avcodec_decode_video2_xij      \
+                  -Wl,--wrap,avcodec_decode_subtitle2_xij   \
                   -Wl,--wrap,avcodec_encode_audio2      \
                   -Wl,--wrap,avcodec_encode_video2      \
                   -Wl,--wrap,avcodec_encode_subtitle    \
-                  -Wl,--wrap,avcodec_send_packet        \
+                  -Wl,--wrap,avcodec_send_packet_xij        \
                   -Wl,--wrap,avcodec_receive_packet     \
                   -Wl,--wrap,avcodec_send_frame         \
-                  -Wl,--wrap,avcodec_receive_frame      \
-                  -Wl,--wrap,swr_convert                \
+                  -Wl,--wrap,avcodec_receive_frame_xij      \
+                  -Wl,--wrap,swr_convert_xij                \
                   -Wl,--wrap,avresample_convert ||
     disable neon_clobber_test
 
 enabled xmm_clobber_test &&
-    check_ldflags -Wl,--wrap,avcodec_open2              \
-                  -Wl,--wrap,avcodec_decode_audio4      \
-                  -Wl,--wrap,avcodec_decode_video2      \
-                  -Wl,--wrap,avcodec_decode_subtitle2   \
+    check_ldflags -Wl,--wrap,avcodec_open2_xij              \
+                  -Wl,--wrap,avcodec_decode_audio4_xij      \
+                  -Wl,--wrap,avcodec_decode_video2_xij      \
+                  -Wl,--wrap,avcodec_decode_subtitle2_xij   \
                   -Wl,--wrap,avcodec_encode_audio2      \
                   -Wl,--wrap,avcodec_encode_video2      \
                   -Wl,--wrap,avcodec_encode_subtitle    \
-                  -Wl,--wrap,avcodec_send_packet        \
+                  -Wl,--wrap,avcodec_send_packet_xij        \
                   -Wl,--wrap,avcodec_receive_packet     \
                   -Wl,--wrap,avcodec_send_frame         \
-                  -Wl,--wrap,avcodec_receive_frame      \
-                  -Wl,--wrap,swr_convert                \
+                  -Wl,--wrap,avcodec_receive_frame_xij      \
+                  -Wl,--wrap,swr_convert_xij                \
                   -Wl,--wrap,avresample_convert         \
                   -Wl,--wrap,sws_scale ||
     disable xmm_clobber_test
@@ -7203,7 +7203,7 @@ print_enabled_components libavfilter/filter_list.c AVFilter filter_list $FILTER_
 print_enabled_components libavcodec/codec_list.c AVCodec codec_list $CODEC_LIST
 print_enabled_components libavcodec/parser_list.c AVCodecParser parser_list $PARSER_LIST
 print_enabled_components libavcodec/bsf_list.c AVBitStreamFilter bitstream_filters $BSF_LIST
-print_enabled_components libavformat/demuxer_list_ijk_ijk.c AVInputFormat demuxer_list_ijk_ijk $DEMUXER_LIST
+print_enabled_components libavformat/demuxer_list_ijk.c AVInputFormat demuxer_list_ijk $DEMUXER_LIST
 print_enabled_components libavformat/muxer_list_ijk.c AVOutputFormat muxer_list_ijk $MUXER_LIST
 print_enabled_components libavdevice/indev_list.c AVInputFormat indev_list $INDEV_LIST
 print_enabled_components libavdevice/outdev_list.c AVOutputFormat outdev_list $OUTDEV_LIST

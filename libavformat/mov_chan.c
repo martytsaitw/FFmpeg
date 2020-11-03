@@ -553,9 +553,9 @@ int ff_mov_read_chan(AVFormatContext *s, AVIOContext *pb, AVStream *st,
     if (size < 12)
         return AVERROR_INVALIDDATA;
 
-    layout_tag = avio_rb32(pb);
-    bitmap     = avio_rb32(pb);
-    num_descr  = avio_rb32(pb);
+    layout_tag = avio_rb32_xij(pb);
+    bitmap     = avio_rb32_xij(pb);
+    num_descr  = avio_rb32_xij(pb);
 
     av_log(s, AV_LOG_TRACE, "chan: layout=%"PRIu32" "
            "bitmap=%"PRIu32" num_descr=%"PRIu32"\n",
@@ -572,11 +572,11 @@ int ff_mov_read_chan(AVFormatContext *s, AVIOContext *pb, AVStream *st,
                    "reached EOF while reading channel layout\n");
             return AVERROR_INVALIDDATA;
         }
-        label     = avio_rb32(pb);          // mChannelLabel
-        avio_rb32(pb);                      // mChannelFlags
-        avio_rl32(pb);                      // mCoordinates[0]
-        avio_rl32(pb);                      // mCoordinates[1]
-        avio_rl32(pb);                      // mCoordinates[2]
+        label     = avio_rb32_xij(pb);          // mChannelLabel
+        avio_rb32_xij(pb);                      // mChannelFlags
+        avio_rl32_xij(pb);                      // mCoordinates[0]
+        avio_rl32_xij(pb);                      // mCoordinates[1]
+        avio_rl32_xij(pb);                      // mCoordinates[2]
         size -= 20;
         if (layout_tag == 0) {
             uint32_t mask_incr = mov_get_channel_label(label);
@@ -592,7 +592,7 @@ int ff_mov_read_chan(AVFormatContext *s, AVIOContext *pb, AVStream *st,
             st->codecpar->channel_layout = label_mask;
     } else
         st->codecpar->channel_layout = ff_mov_get_channel_layout(layout_tag, bitmap);
-    avio_skip(pb, size - 12);
+    avio_skip_xij(pb, size - 12);
 
     return 0;
 }

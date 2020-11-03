@@ -92,12 +92,12 @@ static void qsvdeint_uninit(AVFilterContext *ctx)
         MFXClose(s->session);
         s->session = NULL;
     }
-    av_buffer_unref(&s->hw_frames_ctx);
+    av_buffer_unref_xij(&s->hw_frames_ctx);
 
     cur = s->work_frames;
     while (cur) {
         s->work_frames = cur->next;
-        av_frame_free(&cur->frame);
+        av_frame_free_xij(&cur->frame);
         av_freep(&cur);
         cur = s->work_frames;
     }
@@ -338,7 +338,7 @@ static int qsvdeint_config_props(AVFilterLink *outlink)
     if (!s->hw_frames_ctx)
         return AVERROR(ENOMEM);
 
-    av_buffer_unref(&outlink->hw_frames_ctx);
+    av_buffer_unref_xij(&outlink->hw_frames_ctx);
     outlink->hw_frames_ctx = av_buffer_ref_ijk(inlink->hw_frames_ctx);
     if (!outlink->hw_frames_ctx) {
         qsvdeint_uninit(ctx);
@@ -358,7 +358,7 @@ static void clear_unused_frames(QSVDeintContext *s)
     QSVFrame *cur = s->work_frames;
     while (cur) {
         if (!cur->surface.Data.Locked) {
-            av_frame_free(&cur->frame);
+            av_frame_free_xij(&cur->frame);
             cur->used = 0;
         }
         cur = cur->next;
@@ -471,7 +471,7 @@ static int process_frame(AVFilterContext *ctx, const AVFrame *in,
     } while (err == MFX_WRN_DEVICE_BUSY);
 
     if (err == MFX_ERR_MORE_DATA) {
-        av_frame_free(&out);
+        av_frame_free_xij(&out);
         return QSVDEINT_MORE_INPUT;
     }
 
@@ -492,7 +492,7 @@ static int process_frame(AVFilterContext *ctx, const AVFrame *in,
         goto fail;
     }
 
-    ret = av_frame_copy_props(out, in);
+    ret = av_frame_copy_props_xij(out, in);
     if (ret < 0)
         goto fail;
 
@@ -511,7 +511,7 @@ static int process_frame(AVFilterContext *ctx, const AVFrame *in,
 
     return again ? QSVDEINT_MORE_OUTPUT : 0;
 fail:
-    av_frame_free(&out);
+    av_frame_free_xij(&out);
     return ret;
 }
 
@@ -524,7 +524,7 @@ static int qsvdeint_filter_frame(AVFilterLink *link, AVFrame *in)
 
     ret = submit_frame(ctx, in, &surf_in);
     if (ret < 0) {
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         return ret;
     }
 

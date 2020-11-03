@@ -53,7 +53,7 @@ static int sap_read_close(AVFormatContext *s)
 {
     struct SAPState *sap = s->priv_data;
     if (sap->sdp_ctx)
-        avformat_close_input(&sap->sdp_ctx);
+        avformat_close_input_xij(&sap->sdp_ctx);
     if (sap->ann_fd)
         ffurl_close(sap->ann_fd);
     av_freep(&sap->sdp);
@@ -73,7 +73,7 @@ static int sap_read_header(AVFormatContext *s)
     if (!ff_network_init())
         return AVERROR(EIO);
 
-    av_url_split(NULL, 0, NULL, 0, host, sizeof(host), &port,
+    av_url_split_xij(NULL, 0, NULL, 0, host, sizeof(host), &port,
                  path, sizeof(path), s->url);
     if (port < 0)
         port = 9875;
@@ -146,10 +146,10 @@ static int sap_read_header(AVFormatContext *s)
     }
 
     av_log(s, AV_LOG_VERBOSE, "SDP:\n%s\n", sap->sdp);
-    ffio_init_context(&sap->sdp_pb, sap->sdp, strlen(sap->sdp), 0, NULL, NULL,
+    ffio_init_context_xij(&sap->sdp_pb, sap->sdp, strlen(sap->sdp), 0, NULL, NULL,
                   NULL, NULL);
 
-    infmt = av_find_input_format("sdp");
+    infmt = av_find_input_format_xij("sdp");
     if (!infmt)
         goto fail;
     sap->sdp_ctx = avformat_alloc_context_ijk();
@@ -161,7 +161,7 @@ static int sap_read_header(AVFormatContext *s)
     sap->sdp_ctx->pb        = &sap->sdp_pb;
     sap->sdp_ctx->interrupt_callback = s->interrupt_callback;
 
-    if ((ret = ff_copy_whiteblacklists(sap->sdp_ctx, s)) < 0)
+    if ((ret = ff_copy_whiteblacklists_xij(sap->sdp_ctx, s)) < 0)
         goto fail;
 
     ret = avformat_open_input_ijk(&sap->sdp_ctx, "temp.sdp", infmt, NULL);

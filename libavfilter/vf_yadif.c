@@ -272,7 +272,7 @@ static int return_frame(AVFilterContext *ctx, int is_second)
         if (!yadif->out)
             return AVERROR(ENOMEM);
 
-        av_frame_copy_props(yadif->out, yadif->cur);
+        av_frame_copy_props_xij(yadif->out, yadif->cur);
         yadif->out->interlaced_frame = 0;
     }
 
@@ -308,13 +308,13 @@ static void fixstride(AVFilterLink *link, AVFrame *f)
     AVFrame *dst = ff_default_get_video_buffer(link, f->width, f->height);
     if(!dst)
         return;
-    av_frame_copy_props(dst, f);
+    av_frame_copy_props_xij(dst, f);
     av_image_copy(dst->data, dst->linesize,
                   (const uint8_t **)f->data, f->linesize,
                   dst->format, dst->width, dst->height);
-    av_frame_unref(f);
-    av_frame_move_ref(f, dst);
-    av_frame_free(&dst);
+    av_frame_unref_xij(f);
+    av_frame_move_ref_xij(f, dst);
+    av_frame_free_xij(&dst);
 }
 
 static int filter_frame(AVFilterLink *link, AVFrame *frame)
@@ -328,13 +328,13 @@ static int filter_frame(AVFilterLink *link, AVFrame *frame)
         return_frame(ctx, 1);
 
     if (yadif->prev)
-        av_frame_free(&yadif->prev);
+        av_frame_free_xij(&yadif->prev);
     yadif->prev = yadif->cur;
     yadif->cur  = yadif->next;
     yadif->next = frame;
 
     if (!yadif->cur &&
-        !(yadif->cur = av_frame_clone(yadif->next)))
+        !(yadif->cur = av_frame_clone_xij(yadif->next)))
         return AVERROR(ENOMEM);
 
     if (checkstride(yadif, yadif->next, yadif->cur)) {
@@ -358,11 +358,11 @@ static int filter_frame(AVFilterLink *link, AVFrame *frame)
         (yadif->deint && !yadif->prev->interlaced_frame && yadif->prev->repeat_pict) ||
         (yadif->deint && !yadif->next->interlaced_frame && yadif->next->repeat_pict)
     ) {
-        yadif->out  = av_frame_clone(yadif->cur);
+        yadif->out  = av_frame_clone_xij(yadif->cur);
         if (!yadif->out)
             return AVERROR(ENOMEM);
 
-        av_frame_free(&yadif->prev);
+        av_frame_free_xij(&yadif->prev);
         if (yadif->out->pts != AV_NOPTS_VALUE)
             yadif->out->pts *= 2;
         return ff_filter_frame(ctx->outputs[0], yadif->out);
@@ -372,7 +372,7 @@ static int filter_frame(AVFilterLink *link, AVFrame *frame)
     if (!yadif->out)
         return AVERROR(ENOMEM);
 
-    av_frame_copy_props(yadif->out, yadif->cur);
+    av_frame_copy_props_xij(yadif->out, yadif->cur);
     yadif->out->interlaced_frame = 0;
 
     if (yadif->out->pts != AV_NOPTS_VALUE)
@@ -398,7 +398,7 @@ static int request_frame(AVFilterLink *link)
     ret  = ff_request_frame(ctx->inputs[0]);
 
     if (ret == AVERROR_EOF && yadif->cur) {
-        AVFrame *next = av_frame_clone(yadif->next);
+        AVFrame *next = av_frame_clone_xij(yadif->next);
 
         if (!next)
             return AVERROR(ENOMEM);
@@ -418,9 +418,9 @@ static av_cold void uninit(AVFilterContext *ctx)
 {
     YADIFContext *yadif = ctx->priv;
 
-    av_frame_free(&yadif->prev);
-    av_frame_free(&yadif->cur );
-    av_frame_free(&yadif->next);
+    av_frame_free_xij(&yadif->prev);
+    av_frame_free_xij(&yadif->cur );
+    av_frame_free_xij(&yadif->next);
 }
 
 static int query_formats(AVFilterContext *ctx)

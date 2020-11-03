@@ -2075,7 +2075,7 @@ static int filter_frame_fixed(DCACoreDecoder *s, AVFrame *frame)
     avctx->bits_per_raw_sample = 24;
 
     frame->nb_samples = nsamples = s->npcmsamples;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     // Undo embedded XCH downmix
@@ -2175,7 +2175,7 @@ static int filter_frame_float(DCACoreDecoder *s, AVFrame *frame)
     avctx->bits_per_raw_sample = 0;
 
     frame->nb_samples = nsamples = (s->npcmblocks * DCA_PCMBLOCK_SAMPLES) << x96_synth;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     // Build reverse speaker to channel mapping
@@ -2390,7 +2390,7 @@ int ff_dca_core_filter_frame(DCACoreDecoder *s, AVFrame *frame)
         matrix_encoding = AV_MATRIX_ENCODING_DOLBY;
     else
         matrix_encoding = AV_MATRIX_ENCODING_NONE;
-    if ((ret = ff_side_data_update_matrix_encoding(frame, matrix_encoding)) < 0)
+    if ((ret = ff_side_data_update_matrix_encoding_xij(frame, matrix_encoding)) < 0)
         return ret;
 
     return 0;

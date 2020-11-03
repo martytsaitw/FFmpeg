@@ -370,7 +370,7 @@ static int encode_headers(AVCodecContext *avctx, const AVFrame *pict)
     png_write_chunk(&s->bytestream, MKTAG('p', 'H', 'Y', 's'), s->buf, 9);
 
     /* write stereoscopic information */
-    side_data = av_frame_get_side_data(pict, AV_FRAME_DATA_STEREO3D);
+    side_data = av_frame_get_side_data_xij(pict, AV_FRAME_DATA_STEREO3D);
     if (side_data) {
         AVStereo3D *stereo3d = (AVStereo3D *)side_data->data;
         switch (stereo3d->type) {
@@ -741,7 +741,7 @@ static int apng_encode_frame(AVCodecContext *avctx, const AVFrame *pict,
     diffFrame->format = pict->format;
     diffFrame->width = pict->width;
     diffFrame->height = pict->height;
-    if ((ret = av_frame_get_buffer(diffFrame, 32)) < 0)
+    if ((ret = av_frame_get_buffer_xij(diffFrame, 32)) < 0)
         goto fail;
 
     original_bytestream = s->bytestream;
@@ -771,7 +771,7 @@ static int apng_encode_frame(AVCodecContext *avctx, const AVFrame *pict,
             if (last_fctl_chunk.dispose_op != APNG_DISPOSE_OP_PREVIOUS) {
                 diffFrame->width = pict->width;
                 diffFrame->height = pict->height;
-                ret = av_frame_copy(diffFrame, s->last_frame);
+                ret = av_frame_copy_xij(diffFrame, s->last_frame);
                 if (ret < 0)
                     goto fail;
 
@@ -787,7 +787,7 @@ static int apng_encode_frame(AVCodecContext *avctx, const AVFrame *pict,
 
                 diffFrame->width = pict->width;
                 diffFrame->height = pict->height;
-                ret = av_frame_copy(diffFrame, s->prev_frame);
+                ret = av_frame_copy_xij(diffFrame, s->prev_frame);
                 if (ret < 0)
                     goto fail;
             }
@@ -834,7 +834,7 @@ static int apng_encode_frame(AVCodecContext *avctx, const AVFrame *pict,
 
 fail:
     av_freep(&temp_bytestream);
-    av_frame_free(&diffFrame);
+    av_frame_free_xij(&diffFrame);
     return ret;
 }
 
@@ -921,7 +921,7 @@ static int encode_apng(AVCodecContext *avctx, AVPacket *pkt,
         uint8_t* last_fctl_chunk_start = pkt->data;
         uint8_t buf[26];
         if (!s->extra_data_updated) {
-            uint8_t *side_data = av_packet_new_side_data(pkt, AV_PKT_DATA_NEW_EXTRADATA, s->extra_data_size);
+            uint8_t *side_data = av_packet_new_side_data_xij(pkt, AV_PKT_DATA_NEW_EXTRADATA, s->extra_data_size);
             if (!side_data)
                 return AVERROR(ENOMEM);
             memcpy(side_data, s->extra_data, s->extra_data_size);
@@ -956,12 +956,12 @@ static int encode_apng(AVCodecContext *avctx, AVPacket *pkt,
                 s->prev_frame->format = pict->format;
                 s->prev_frame->width = pict->width;
                 s->prev_frame->height = pict->height;
-                if ((ret = av_frame_get_buffer(s->prev_frame, 32)) < 0)
+                if ((ret = av_frame_get_buffer_xij(s->prev_frame, 32)) < 0)
                     return ret;
             }
 
             // Do disposal, but not blending
-            av_frame_copy(s->prev_frame, s->last_frame);
+            av_frame_copy_xij(s->prev_frame, s->last_frame);
             if (s->last_frame_fctl.dispose_op == APNG_DISPOSE_OP_BACKGROUND) {
                 uint32_t y;
                 uint8_t bpp = (s->bits_per_pixel + 7) >> 3;
@@ -972,15 +972,15 @@ static int encode_apng(AVCodecContext *avctx, AVPacket *pkt,
             }
         }
 
-        av_frame_unref(s->last_frame);
-        ret = av_frame_ref(s->last_frame, (AVFrame*)pict);
+        av_frame_unref_xij(s->last_frame);
+        ret = av_frame_ref_xij(s->last_frame, (AVFrame*)pict);
         if (ret < 0)
             return ret;
 
         s->last_frame_fctl = fctl_chunk;
         s->last_frame_packet_size = s->bytestream - s->bytestream_start;
     } else {
-        av_frame_free(&s->last_frame);
+        av_frame_free_xij(&s->last_frame);
     }
 
     return 0;
@@ -1100,8 +1100,8 @@ static av_cold int png_enc_close(AVCodecContext *avctx)
     PNGEncContext *s = avctx->priv_data;
 
     deflateEnd(&s->zstream);
-    av_frame_free(&s->last_frame);
-    av_frame_free(&s->prev_frame);
+    av_frame_free_xij(&s->last_frame);
+    av_frame_free_xij(&s->prev_frame);
     av_freep(&s->last_frame_packet);
     av_freep(&s->extra_data);
     s->extra_data_size = 0;

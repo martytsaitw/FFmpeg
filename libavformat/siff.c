@@ -94,31 +94,31 @@ static int siff_parse_vbv1(AVFormatContext *s, SIFFContext *c, AVIOContext *pb)
     AVStream *st;
     int width, height;
 
-    if (avio_rl32(pb) != TAG_VBHD) {
+    if (avio_rl32_xij(pb) != TAG_VBHD) {
         av_log(s, AV_LOG_ERROR, "Header chunk is missing\n");
         return AVERROR_INVALIDDATA;
     }
-    if (avio_rb32(pb) != 32) {
+    if (avio_rb32_xij(pb) != 32) {
         av_log(s, AV_LOG_ERROR, "Header chunk size is incorrect\n");
         return AVERROR_INVALIDDATA;
     }
-    if (avio_rl16(pb) != 1) {
+    if (avio_rl16_xij(pb) != 1) {
         av_log(s, AV_LOG_ERROR, "Incorrect header version\n");
         return AVERROR_INVALIDDATA;
     }
-    width  = avio_rl16(pb);
-    height = avio_rl16(pb);
-    avio_skip(pb, 4);
-    c->frames = avio_rl16(pb);
+    width  = avio_rl16_xij(pb);
+    height = avio_rl16_xij(pb);
+    avio_skip_xij(pb, 4);
+    c->frames = avio_rl16_xij(pb);
     if (!c->frames) {
         av_log(s, AV_LOG_ERROR, "File contains no frames ???\n");
         return AVERROR_INVALIDDATA;
     }
-    c->bits        = avio_rl16(pb);
-    c->rate        = avio_rl16(pb);
+    c->bits        = avio_rl16_xij(pb);
+    c->rate        = avio_rl16_xij(pb);
     c->block_align = c->rate * (c->bits >> 3);
 
-    avio_skip(pb, 16); // zeroes
+    avio_skip_xij(pb, 16); // zeroes
 
     st = avformat_new_stream_ijk(s, NULL);
     if (!st)
@@ -144,17 +144,17 @@ static int siff_parse_vbv1(AVFormatContext *s, SIFFContext *c, AVIOContext *pb)
 
 static int siff_parse_soun(AVFormatContext *s, SIFFContext *c, AVIOContext *pb)
 {
-    if (avio_rl32(pb) != TAG_SHDR) {
+    if (avio_rl32_xij(pb) != TAG_SHDR) {
         av_log(s, AV_LOG_ERROR, "Header chunk is missing\n");
         return AVERROR_INVALIDDATA;
     }
-    if (avio_rb32(pb) != 8) {
+    if (avio_rb32_xij(pb) != 8) {
         av_log(s, AV_LOG_ERROR, "Header chunk size is incorrect\n");
         return AVERROR_INVALIDDATA;
     }
-    avio_skip(pb, 4); // unknown value
-    c->rate        = avio_rl16(pb);
-    c->bits        = avio_rl16(pb);
+    avio_skip_xij(pb, 4); // unknown value
+    c->rate        = avio_rl16_xij(pb);
+    c->bits        = avio_rl16_xij(pb);
     c->block_align = c->rate * (c->bits >> 3);
     return create_audio_stream(s, c);
 }
@@ -166,10 +166,10 @@ static int siff_read_header(AVFormatContext *s)
     uint32_t tag;
     int ret;
 
-    if (avio_rl32(pb) != TAG_SIFF)
+    if (avio_rl32_xij(pb) != TAG_SIFF)
         return AVERROR_INVALIDDATA;
-    avio_skip(pb, 4); // ignore size
-    tag = avio_rl32(pb);
+    avio_skip_xij(pb, 4); // ignore size
+    tag = avio_rl32_xij(pb);
 
     if (tag != TAG_VBV1 && tag != TAG_SOUN) {
         av_log(s, AV_LOG_ERROR, "Not a VBV file\n");
@@ -180,11 +180,11 @@ static int siff_read_header(AVFormatContext *s)
         return ret;
     if (tag == TAG_SOUN && (ret = siff_parse_soun(s, c, pb)) < 0)
         return ret;
-    if (avio_rl32(pb) != MKTAG('B', 'O', 'D', 'Y')) {
+    if (avio_rl32_xij(pb) != MKTAG('B', 'O', 'D', 'Y')) {
         av_log(s, AV_LOG_ERROR, "'BODY' chunk is missing\n");
         return AVERROR_INVALIDDATA;
     }
-    avio_skip(pb, 4); // ignore size
+    avio_skip_xij(pb, 4); // ignore size
 
     return 0;
 }
@@ -198,12 +198,12 @@ static int siff_read_packet(AVFormatContext *s, AVPacket *pkt)
         if (c->cur_frame >= c->frames)
             return AVERROR_EOF;
         if (c->curstrm == -1) {
-            c->pktsize = avio_rl32(s->pb) - 4;
-            c->flags   = avio_rl16(s->pb);
+            c->pktsize = avio_rl32_xij(s->pb) - 4;
+            c->flags   = avio_rl16_xij(s->pb);
             c->gmcsize = (c->flags & VB_HAS_GMC) ? 4 : 0;
             if (c->gmcsize)
-                avio_read(s->pb, c->gmc, c->gmcsize);
-            c->sndsize = (c->flags & VB_HAS_AUDIO) ? avio_rl32(s->pb) : 0;
+                avio_read_xij(s->pb, c->gmc, c->gmcsize);
+            c->sndsize = (c->flags & VB_HAS_AUDIO) ? avio_rl32_xij(s->pb) : 0;
             c->curstrm = !!(c->flags & VB_HAS_AUDIO);
         }
 
@@ -212,20 +212,20 @@ static int siff_read_packet(AVFormatContext *s, AVPacket *pkt)
                 return AVERROR_INVALIDDATA;
 
             size = c->pktsize - c->sndsize - c->gmcsize - 2;
-            size = ffio_limit(s->pb, size);
+            size = ffio_limit_xij(s->pb, size);
             if (av_new_packet_ijk(pkt, size + c->gmcsize + 2) < 0)
                 return AVERROR(ENOMEM);
             AV_WL16(pkt->data, c->flags);
             if (c->gmcsize)
                 memcpy(pkt->data + 2, c->gmc, c->gmcsize);
-            if (avio_read(s->pb, pkt->data + 2 + c->gmcsize, size) != size) {
+            if (avio_read_xij(s->pb, pkt->data + 2 + c->gmcsize, size) != size) {
                 av_packet_unref_ijk(pkt);
                 return AVERROR_INVALIDDATA;
             }
             pkt->stream_index = 0;
             c->curstrm        = -1;
         } else {
-            int pktsize = av_get_packet(s->pb, pkt, c->sndsize - 4);
+            int pktsize = av_get_packet_xij(s->pb, pkt, c->sndsize - 4);
             if (pktsize < 0)
                 return AVERROR(EIO);
             pkt->stream_index = 1;
@@ -237,7 +237,7 @@ static int siff_read_packet(AVFormatContext *s, AVPacket *pkt)
         if (c->curstrm == -1)
             c->cur_frame++;
     } else {
-        int pktsize = av_get_packet(s->pb, pkt, c->block_align);
+        int pktsize = av_get_packet_xij(s->pb, pkt, c->block_align);
         if (!pktsize)
             return AVERROR_EOF;
         if (pktsize <= 0)

@@ -100,11 +100,11 @@ static void close_context(PayloadContext *data)
 static int parse_fmtp_config(AVCodecParameters *par, const char *value)
 {
     /* decode the hexa encoded parameter */
-    int len = ff_hex_to_data(NULL, value);
+    int len = ff_hex_to_data_xij(NULL, value);
     av_freep(&par->extradata);
-    if (ff_alloc_extradata(par, len))
+    if (ff_alloc_extradata_xij(par, len))
         return AVERROR(ENOMEM);
-    ff_hex_to_data(par->extradata, value);
+    ff_hex_to_data_xij(par->extradata, value);
     return 0;
 }
 

@@ -157,7 +157,7 @@ static void qsv_frames_uninit(AVHWFramesContext *ctx)
     av_freep(&s->mem_ids);
     av_freep(&s->surface_ptrs);
     av_freep(&s->surfaces_internal);
-    av_buffer_unref(&s->child_frames_ref);
+    av_buffer_unref_xij(&s->child_frames_ref);
 }
 
 static void qsv_pool_release_dummy(void *opaque, uint8_t *data)
@@ -277,8 +277,8 @@ static int qsv_init_child_ctx(AVHWFramesContext *ctx)
     child_frames_ref          = NULL;
 
 fail:
-    av_buffer_unref(&child_device_ref);
-    av_buffer_unref(&child_frames_ref);
+    av_buffer_unref_xij(&child_device_ref);
+    av_buffer_unref_xij(&child_frames_ref);
     return ret;
 }
 
@@ -347,7 +347,7 @@ static int qsv_init_pool(AVHWFramesContext *ctx, uint32_t fourcc)
             return ret;
     }
 
-    ctx->internal->pool_internal = av_buffer_pool_init2(sizeof(mfxFrameSurface1),
+    ctx->internal->pool_internal = av_buffer_pool_init2_xij(sizeof(mfxFrameSurface1),
                                                         ctx, qsv_pool_alloc, NULL);
     if (!ctx->internal->pool_internal)
         return AVERROR(ENOMEM);
@@ -548,7 +548,7 @@ static int qsv_frames_init(AVHWFramesContext *ctx)
 
 static int qsv_get_buffer(AVHWFramesContext *ctx, AVFrame *frame)
 {
-    frame->buf[0] = av_buffer_pool_get(ctx->pool);
+    frame->buf[0] = av_buffer_pool_get_xij(ctx->pool);
     if (!frame->buf[0])
         return AVERROR(ENOMEM);
 
@@ -692,7 +692,7 @@ static int qsv_map_from(AVHWFramesContext *ctx,
     ret = av_hwframe_map(dst, dummy, flags);
 
 fail:
-    av_frame_free(&dummy);
+    av_frame_free_xij(&dummy);
 
     return ret;
 }
@@ -726,7 +726,7 @@ static int qsv_transfer_data_child(AVHWFramesContext *ctx, AVFrame *dst,
     dummy->data[3]       = NULL;
     dummy->hw_frames_ctx = NULL;
 
-    av_frame_free(&dummy);
+    av_frame_free_xij(&dummy);
 
     return ret;
 }
@@ -948,7 +948,7 @@ static void qsv_device_free(AVHWDeviceContext *ctx)
     if (hwctx->session)
         MFXClose(hwctx->session);
 
-    av_buffer_unref(&priv->child_device_ctx);
+    av_buffer_unref_xij(&priv->child_device_ctx);
     av_freep(&priv);
 }
 

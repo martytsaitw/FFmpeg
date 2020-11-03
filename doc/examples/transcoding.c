@@ -95,7 +95,7 @@ static int open_input_file(const char *filename)
             if (codec_ctx->codec_type == AVMEDIA_TYPE_VIDEO)
                 codec_ctx->framerate = av_guess_frame_rate_ijk(ifmt_ctx, stream, NULL);
             /* Open decoder */
-            ret = avcodec_open2(codec_ctx, dec, NULL);
+            ret = avcodec_open2_xij(codec_ctx, dec, NULL);
             if (ret < 0) {
                 av_log(NULL, AV_LOG_ERROR, "Failed to open decoder for stream #%u\n", i);
                 return ret;
@@ -173,7 +173,7 @@ static int open_output_file(const char *filename)
             }
 
             /* Third parameter can be used to pass settings to encoder */
-            ret = avcodec_open2(enc_ctx, encoder, NULL);
+            ret = avcodec_open2_xij(enc_ctx, encoder, NULL);
             if (ret < 0) {
                 av_log(NULL, AV_LOG_ERROR, "Cannot open video encoder for stream #%u\n", i);
                 return ret;
@@ -205,7 +205,7 @@ static int open_output_file(const char *filename)
     av_dump_format_ijk(ofmt_ctx, 0, filename, 1);
 
     if (!(ofmt_ctx->oformat->flags & AVFMT_NOFILE)) {
-        ret = avio_open(&ofmt_ctx->pb, filename, AVIO_FLAG_WRITE);
+        ret = avio_open_xij(&ofmt_ctx->pb, filename, AVIO_FLAG_WRITE);
         if (ret < 0) {
             av_log(NULL, AV_LOG_ERROR, "Could not open output file '%s'", filename);
             return ret;
@@ -213,7 +213,7 @@ static int open_output_file(const char *filename)
     }
 
     /* init muxer, write output file header */
-    ret = avformat_write_header(ofmt_ctx, NULL);
+    ret = avformat_write_header_xij(ofmt_ctx, NULL);
     if (ret < 0) {
         av_log(NULL, AV_LOG_ERROR, "Error occurred when opening output file\n");
         return ret;
@@ -419,7 +419,7 @@ static int encode_write_frame(AVFrame *filt_frame, unsigned int stream_index, in
     av_init_packet_ijk(&enc_pkt);
     ret = enc_func(stream_ctx[stream_index].enc_ctx, &enc_pkt,
             filt_frame, got_frame);
-    av_frame_free(&filt_frame);
+    av_frame_free_xij(&filt_frame);
     if (ret < 0)
         return ret;
     if (!(*got_frame))
@@ -427,13 +427,13 @@ static int encode_write_frame(AVFrame *filt_frame, unsigned int stream_index, in
 
     /* prepare packet for muxing */
     enc_pkt.stream_index = stream_index;
-    av_packet_rescale_ts(&enc_pkt,
+    av_packet_rescale_ts_xij(&enc_pkt,
                          stream_ctx[stream_index].enc_ctx->time_base,
                          ofmt_ctx->streams[stream_index]->time_base);
 
     av_log(NULL, AV_LOG_DEBUG, "Muxing frame\n");
     /* mux encoded frame */
-    ret = av_interleaved_write_frame(ofmt_ctx, &enc_pkt);
+    ret = av_interleaved_write_frame_xij(ofmt_ctx, &enc_pkt);
     return ret;
 }
 
@@ -468,7 +468,7 @@ static int filter_encode_write_frame(AVFrame *frame, unsigned int stream_index)
              */
             if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
                 ret = 0;
-            av_frame_free(&filt_frame);
+            av_frame_free_xij(&filt_frame);
             break;
         }
 
@@ -540,15 +540,15 @@ int main(int argc, char **argv)
                 ret = AVERROR(ENOMEM);
                 break;
             }
-            av_packet_rescale_ts(&packet,
+            av_packet_rescale_ts_xij(&packet,
                                  ifmt_ctx->streams[stream_index]->time_base,
                                  stream_ctx[stream_index].dec_ctx->time_base);
-            dec_func = (type == AVMEDIA_TYPE_VIDEO) ? avcodec_decode_video2 :
-                avcodec_decode_audio4;
+            dec_func = (type == AVMEDIA_TYPE_VIDEO) ? avcodec_decode_video2_xij :
+                avcodec_decode_audio4_xij;
             ret = dec_func(stream_ctx[stream_index].dec_ctx, frame,
                     &got_frame, &packet);
             if (ret < 0) {
-                av_frame_free(&frame);
+                av_frame_free_xij(&frame);
                 av_log(NULL, AV_LOG_ERROR, "Decoding failed\n");
                 break;
             }
@@ -556,19 +556,19 @@ int main(int argc, char **argv)
             if (got_frame) {
                 frame->pts = frame->best_effort_timestamp;
                 ret = filter_encode_write_frame(frame, stream_index);
-                av_frame_free(&frame);
+                av_frame_free_xij(&frame);
                 if (ret < 0)
                     goto end;
             } else {
-                av_frame_free(&frame);
+                av_frame_free_xij(&frame);
             }
         } else {
             /* remux this frame without reencoding */
-            av_packet_rescale_ts(&packet,
+            av_packet_rescale_ts_xij(&packet,
                                  ifmt_ctx->streams[stream_index]->time_base,
                                  ofmt_ctx->streams[stream_index]->time_base);
 
-            ret = av_interleaved_write_frame(ofmt_ctx, &packet);
+            ret = av_interleaved_write_frame_xij(ofmt_ctx, &packet);
             if (ret < 0)
                 goto end;
         }
@@ -594,10 +594,10 @@ int main(int argc, char **argv)
         }
     }
 
-    av_write_trailer(ofmt_ctx);
+    av_write_trailer_xij(ofmt_ctx);
 end:
     av_packet_unref_ijk(&packet);
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
     for (i = 0; i < ifmt_ctx->nb_streams; i++) {
         avcodec_free_context_ijk(&stream_ctx[i].dec_ctx);
         if (ofmt_ctx && ofmt_ctx->nb_streams > i && ofmt_ctx->streams[i] && stream_ctx[i].enc_ctx)
@@ -607,9 +607,9 @@ end:
     }
     av_free(filter_ctx);
     av_free(stream_ctx);
-    avformat_close_input(&ifmt_ctx);
+    avformat_close_input_xij(&ifmt_ctx);
     if (ofmt_ctx && !(ofmt_ctx->oformat->flags & AVFMT_NOFILE))
-        avio_closep(&ofmt_ctx->pb);
+        avio_closep_xij(&ofmt_ctx->pb);
     avformat_free_context_ijk(ofmt_ctx);
 
     if (ret < 0)

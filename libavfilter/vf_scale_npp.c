@@ -131,10 +131,10 @@ static void nppscale_uninit(AVFilterContext *ctx)
     int i;
 
     for (i = 0; i < FF_ARRAY_ELEMS(s->stages); i++) {
-        av_frame_free(&s->stages[i].frame);
-        av_buffer_unref(&s->stages[i].frames_ctx);
+        av_frame_free_xij(&s->stages[i].frame);
+        av_buffer_unref_xij(&s->stages[i].frames_ctx);
     }
-    av_frame_free(&s->tmp_frame);
+    av_frame_free_xij(&s->tmp_frame);
 }
 
 static int nppscale_query_formats(AVFilterContext *ctx)
@@ -182,7 +182,7 @@ static int init_stage(NPPScaleStageContext *stage, AVBufferRef *device_ctx)
     if (ret < 0)
         goto fail;
 
-    av_frame_unref(stage->frame);
+    av_frame_unref_xij(stage->frame);
     ret = av_hwframe_get_buffer(out_ref, stage->frame, 0);
     if (ret < 0)
         goto fail;
@@ -190,12 +190,12 @@ static int init_stage(NPPScaleStageContext *stage, AVBufferRef *device_ctx)
     stage->frame->width  = stage->planes_out[0].width;
     stage->frame->height = stage->planes_out[0].height;
 
-    av_buffer_unref(&stage->frames_ctx);
+    av_buffer_unref_xij(&stage->frames_ctx);
     stage->frames_ctx = out_ref;
 
     return 0;
 fail:
-    av_buffer_unref(&out_ref);
+    av_buffer_unref_xij(&out_ref);
     return ret;
 }
 
@@ -479,10 +479,10 @@ static int nppscale_scale(AVFilterContext *ctx, AVFrame *out, AVFrame *in)
     if (ret < 0)
         return ret;
 
-    av_frame_move_ref(out, src);
-    av_frame_move_ref(src, s->tmp_frame);
+    av_frame_move_ref_xij(out, src);
+    av_frame_move_ref_xij(src, s->tmp_frame);
 
-    ret = av_frame_copy_props(out, in);
+    ret = av_frame_copy_props_xij(out, in);
     if (ret < 0)
         return ret;
 
@@ -528,11 +528,11 @@ static int nppscale_filter_frame(AVFilterLink *link, AVFrame *in)
               (int64_t)in->sample_aspect_ratio.den * outlink->w * link->h,
               INT_MAX);
 
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
     return ff_filter_frame(outlink, out);
 fail:
-    av_frame_free(&in);
-    av_frame_free(&out);
+    av_frame_free_xij(&in);
+    av_frame_free_xij(&out);
     return ret;
 }
 

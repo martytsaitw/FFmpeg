@@ -306,16 +306,16 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
     const float old_brightness = hue->brightness;
     int direct = 0;
 
-    if (av_frame_is_writable(inpic)) {
+    if (av_frame_is_writable_xij(inpic)) {
         direct = 1;
         outpic = inpic;
     } else {
         outpic = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!outpic) {
-            av_frame_free(&inpic);
+            av_frame_free_xij(&inpic);
             return AVERROR(ENOMEM);
         }
-        av_frame_copy_props(outpic, inpic);
+        av_frame_copy_props_xij(outpic, inpic);
     }
 
     hue->var_values[VAR_N]   = inlink->frame_count_out;
@@ -384,7 +384,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
                        inpic->data[0], inpic->linesize[0], inlink->w, inlink->h);
 
     if (!direct)
-        av_frame_free(&inpic);
+        av_frame_free_xij(&inpic);
 
     hue->is_first = 0;
     return ff_filter_frame(outlink, outpic);

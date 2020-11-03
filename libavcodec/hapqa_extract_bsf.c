@@ -55,7 +55,7 @@ static int hapqa_extract(AVBSFContext *bsf, AVPacket *pkt)
     int target_packet_size = 0;
     int ret = 0;
 
-    ret = ff_bsf_get_packet_ref(bsf, pkt);
+    ret = ff_bsf_get_packet_ref_xij(bsf, pkt);
     if (ret < 0)
         return ret;
 

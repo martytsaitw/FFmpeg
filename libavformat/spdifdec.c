@@ -179,13 +179,13 @@ int ff_spdif_read_packet(AVFormatContext *s, AVPacket *pkt)
     int pkt_size_bits, offset, ret;
 
     while (state != (AV_BSWAP16C(SYNCWORD1) << 16 | AV_BSWAP16C(SYNCWORD2))) {
-        state = (state << 8) | avio_r8(pb);
-        if (avio_feof(pb))
+        state = (state << 8) | avio_r8_xij(pb);
+        if (avio_feof_xij(pb))
             return AVERROR_EOF;
     }
 
-    data_type = avio_rl16(pb);
-    pkt_size_bits = avio_rl16(pb);
+    data_type = avio_rl16_xij(pb);
+    pkt_size_bits = avio_rl16_xij(pb);
 
     if (pkt_size_bits % 16)
         avpriv_request_sample(s, "Packet not ending at a 16-bit boundary");
@@ -196,7 +196,7 @@ int ff_spdif_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     pkt->pos = avio_tell(pb) - BURST_HEADER_SIZE;
 
-    if (avio_read(pb, pkt->data, pkt->size) < pkt->size) {
+    if (avio_read_xij(pb, pkt->data, pkt->size) < pkt->size) {
         av_packet_unref_ijk(pkt);
         return AVERROR_EOF;
     }
@@ -210,7 +210,7 @@ int ff_spdif_read_packet(AVFormatContext *s, AVPacket *pkt)
     }
 
     /* skip over the padding to the beginning of the next frame */
-    avio_skip(pb, offset - pkt->size - BURST_HEADER_SIZE);
+    avio_skip_xij(pb, offset - pkt->size - BURST_HEADER_SIZE);
 
     if (!s->nb_streams) {
         /* first packet, create a stream */

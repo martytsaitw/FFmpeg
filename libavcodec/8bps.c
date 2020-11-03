@@ -70,7 +70,7 @@ static int decode_frame(AVCodecContext *avctx, void *data,
     unsigned char *planemap = c->planemap;
     int ret;
 
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     ep = encoded + buf_size;
@@ -123,7 +123,7 @@ static int decode_frame(AVCodecContext *avctx, void *data,
 
     if (avctx->bits_per_coded_sample <= 8) {
         int size;
-        const uint8_t *pal = av_packet_get_side_data(avpkt,
+        const uint8_t *pal = av_packet_get_side_data_xij(avpkt,
                                                      AV_PKT_DATA_PALETTE,
                                                      &size);
         if (pal && size == AVPALETTE_SIZE) {
@@ -155,7 +155,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
         c->planemap[0] = 0; // 1st plane is palette indexes
         break;
     case 24:
-        avctx->pix_fmt = ff_get_format(avctx, pixfmt_rgb24);
+        avctx->pix_fmt = ff_get_format_xij(avctx, pixfmt_rgb24);
         c->planes      = 3;
         c->planemap[0] = 2; // 1st plane is red
         c->planemap[1] = 1; // 2nd plane is green

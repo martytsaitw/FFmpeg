@@ -182,7 +182,7 @@ static int http_connect(URLContext *h, const char *path, const char *local_path,
 static int http_read_header(URLContext *h, int *new_location);
 static int http_shutdown(URLContext *h, int flags);
 
-void ff_http_init_auth_state(URLContext *dest, const URLContext *src)
+void ff_http_init_auth_state_xij(URLContext *dest, const URLContext *src)
 {
     memcpy(&((HTTPContext *)dest->priv_data)->auth_state,
            &((HTTPContext *)src->priv_data)->auth_state,
@@ -205,7 +205,7 @@ static int http_open_cnx_internal(URLContext *h, AVDictionary **options)
 
     lower_proto = s->tcp_hook;
 
-    av_url_split(proto, sizeof(proto), auth, sizeof(auth),
+    av_url_split_xij(proto, sizeof(proto), auth, sizeof(auth),
                  hostname, sizeof(hostname), &port,
                  path1, sizeof(path1), s->location);
     ff_url_join(hoststr, sizeof(hoststr), NULL, NULL, hostname, port, NULL);
@@ -235,7 +235,7 @@ static int http_open_cnx_internal(URLContext *h, AVDictionary **options)
         ff_url_join(urlbuf, sizeof(urlbuf), proto, NULL, hostname, port, "%s",
                     path1);
         path = urlbuf;
-        av_url_split(NULL, 0, proxyauth, sizeof(proxyauth),
+        av_url_split_xij(NULL, 0, proxyauth, sizeof(proxyauth),
                      hostname, sizeof(hostname), &port, NULL, 0, proxy_path);
     }
 
@@ -313,10 +313,10 @@ fail:
         ffurl_closep(&s->hd);
     if (location_changed < 0)
         return location_changed;
-    return ff_http_averror(s->http_code, AVERROR(EIO));
+    return ff_http_averror_xij(s->http_code, AVERROR(EIO));
 }
 
-int ff_http_do_new_request(URLContext *h, const char *uri)
+int ff_http_do_new_request_xij(URLContext *h, const char *uri)
 {
     HTTPContext *s = h->priv_data;
     AVDictionary *options = NULL;
@@ -329,10 +329,10 @@ int ff_http_do_new_request(URLContext *h, const char *uri)
           !strcmp(h->prot->name, "https")))
         return AVERROR(EINVAL);
 
-    av_url_split(proto1, sizeof(proto1), NULL, 0,
+    av_url_split_xij(proto1, sizeof(proto1), NULL, 0,
                  hostname1, sizeof(hostname1), &port1,
                  NULL, 0, s->location);
-    av_url_split(proto2, sizeof(proto2), NULL, 0,
+    av_url_split_xij(proto2, sizeof(proto2), NULL, 0,
                  hostname2, sizeof(hostname2), &port2,
                  NULL, 0, uri);
     if (port1 != port2 || strncmp(hostname1, hostname2, sizeof(hostname2)) != 0) {
@@ -367,7 +367,7 @@ int ff_http_do_new_request(URLContext *h, const char *uri)
     return ret;
 }
 
-int ff_http_averror(int status_code, int default_averror)
+int ff_http_averror_xij(int status_code, int default_averror)
 {
     switch (status_code) {
         case 400: return AVERROR_HTTP_BAD_REQUEST;
@@ -508,7 +508,7 @@ static int http_listen(URLContext *h, const char *uri, int flags,
     char lower_url[100];
     const char *lower_proto = "tcp";
     int port;
-    av_url_split(proto, sizeof(proto), NULL, 0, hostname, sizeof(hostname), &port,
+    av_url_split_xij(proto, sizeof(proto), NULL, 0, hostname, sizeof(hostname), &port,
                  NULL, 0, uri);
     if (!strcmp(proto, "https"))
         lower_proto = "tls";
@@ -659,7 +659,7 @@ static int check_http_code(URLContext *h, int http_code, const char *end)
         (http_code != 407 || s->proxy_auth_state.auth_type != HTTP_AUTH_NONE)) {
         end += strspn(end, SPACE_CHARS);
         av_log(h, AV_LOG_WARNING, "HTTP error %d %s\n", http_code, end);
-        return ff_http_averror(http_code, AVERROR(EIO));
+        return ff_http_averror_xij(http_code, AVERROR(EIO));
     }
     return 0;
 }
@@ -921,7 +921,7 @@ static int process_line(URLContext *h, char *line, int line_count,
                 if (av_strcasecmp(s->method, method)) {
                     av_log(h, AV_LOG_ERROR, "Received and expected HTTP method do not match. (%s expected, %s received)\n",
                            s->method, method);
-                    return ff_http_averror(400, AVERROR(EIO));
+                    return ff_http_averror_xij(400, AVERROR(EIO));
                 }
             } else {
                 // use autodetected HTTP method to expect
@@ -929,7 +929,7 @@ static int process_line(URLContext *h, char *line, int line_count,
                 if (av_strcasecmp(auto_method, method)) {
                     av_log(h, AV_LOG_ERROR, "Received and autodetected HTTP method did not match "
                            "(%s autodetected %s received)\n", auto_method, method);
-                    return ff_http_averror(400, AVERROR(EIO));
+                    return ff_http_averror_xij(400, AVERROR(EIO));
                 }
                 if (!(s->method = av_strdup(method)))
                     return AVERROR(ENOMEM);
@@ -955,7 +955,7 @@ static int process_line(URLContext *h, char *line, int line_count,
             *p = '\0';
             if (av_strncasecmp(version, "HTTP/", 5)) {
                 av_log(h, AV_LOG_ERROR, "Malformed HTTP version string.\n");
-                return ff_http_averror(400, AVERROR(EIO));
+                return ff_http_averror_xij(400, AVERROR(EIO));
             }
             av_log(h, AV_LOG_TRACE, "HTTP version string: %s\n", version);
         } else {
@@ -1779,7 +1779,7 @@ static const AVClass flavor ## _context_class = {   \
 #if CONFIG_HTTP_PROTOCOL
 HTTP_CLASS(http);
 
-const URLProtocol ff_http_protocol = {
+const URLProtocol ff_http_protocol_xij = {
     .name                = "http",
     .url_open2           = http_open,
     .url_accept          = http_accept,
@@ -1845,7 +1845,7 @@ static int http_proxy_open(URLContext *h, const char *uri, int flags)
     else
         h->is_streamed = 1;
 
-    av_url_split(NULL, 0, auth, sizeof(auth), hostname, sizeof(hostname), &port,
+    av_url_split_xij(NULL, 0, auth, sizeof(auth), hostname, sizeof(hostname), &port,
                  pathbuf, sizeof(pathbuf), uri);
     ff_url_join(hoststr, sizeof(hoststr), NULL, NULL, hostname, port, NULL);
     path = pathbuf;
@@ -1906,7 +1906,7 @@ redo:
 
     if (s->http_code < 400)
         return 0;
-    ret = ff_http_averror(s->http_code, AVERROR(EIO));
+    ret = ff_http_averror_xij(s->http_code, AVERROR(EIO));
 
 fail:
     http_proxy_close(h);
@@ -1919,7 +1919,7 @@ static int http_proxy_write(URLContext *h, const uint8_t *buf, int size)
     return ffurl_write(s->hd, buf, size);
 }
 
-const URLProtocol ff_httpproxy_protocol = {
+const URLProtocol ff_httpproxy_protocol_xij = {
     .name                = "httpproxy",
     .url_open            = http_proxy_open,
     .url_read            = http_buf_read,

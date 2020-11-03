@@ -656,8 +656,8 @@ static AVCodec *find_codec_or_die(const char *name, enum AVMediaType type, int e
     AVCodec *codec;
 
     codec = encoder ?
-        avcodec_find_encoder_by_name(name) :
-        avcodec_find_decoder_by_name(name);
+        avcodec_find_encoder_by_name_xij(name) :
+        avcodec_find_decoder_by_name_xij(name);
 
     if (!codec && (desc = avcodec_descriptor_get_by_name(name))) {
         codec = encoder ? avcodec_find_encoder_ijk(desc->id) :
@@ -948,15 +948,15 @@ static void dump_attachment(AVStream *st, const char *filename)
 
     assert_file_overwrite(filename);
 
-    if ((ret = avio_open2(&out, filename, AVIO_FLAG_WRITE, &int_cb, NULL)) < 0) {
+    if ((ret = avio_open2_xij(&out, filename, AVIO_FLAG_WRITE, &int_cb, NULL)) < 0) {
         av_log(NULL, AV_LOG_FATAL, "Could not open file %s for writing.\n",
                filename);
         exit_program(1);
     }
 
-    avio_write(out, st->codecpar->extradata, st->codecpar->extradata_size);
-    avio_flush(out);
-    avio_close(out);
+    avio_write_xij(out, st->codecpar->extradata, st->codecpar->extradata_size);
+    avio_flush_xij(out);
+    avio_close_xij(out);
 }
 
 static int open_input_file(OptionsContext *o, const char *filename)
@@ -990,7 +990,7 @@ static int open_input_file(OptionsContext *o, const char *filename)
     }
 
     if (o->format) {
-        if (!(file_iformat = av_find_input_format(o->format))) {
+        if (!(file_iformat = av_find_input_format_xij(o->format))) {
             av_log(NULL, AV_LOG_FATAL, "Unknown input format: '%s'\n", o->format);
             exit_program(1);
         }
@@ -1005,7 +1005,7 @@ static int open_input_file(OptionsContext *o, const char *filename)
     /* get default parameters from command line */
     ic = avformat_alloc_context_ijk();
     if (!ic) {
-        print_error(filename, AVERROR(ENOMEM));
+        print_error_xij(filename, AVERROR(ENOMEM));
         exit_program(1);
     }
     if (o->nb_audio_sample_rate) {
@@ -1068,7 +1068,7 @@ static int open_input_file(OptionsContext *o, const char *filename)
     /* open the input file with generic avformat function */
     err = avformat_open_input_ijk(&ic, filename, file_iformat, &o->g->format_opts);
     if (err < 0) {
-        print_error(filename, err);
+        print_error_xij(filename, err);
         if (err == AVERROR_PROTOCOL_NOT_FOUND)
             av_log(NULL, AV_LOG_ERROR, "Did you mean file:%s?\n", filename);
         exit_program(1);
@@ -1097,7 +1097,7 @@ static int open_input_file(OptionsContext *o, const char *filename)
         if (ret < 0) {
             av_log(NULL, AV_LOG_FATAL, "%s: could not find codec parameters\n", filename);
             if (ic->nb_streams == 0) {
-                avformat_close_input(&ic);
+                avformat_close_input_xij(&ic);
                 exit_program(1);
             }
         }
@@ -1224,15 +1224,15 @@ static uint8_t *get_line(AVIOContext *s)
     uint8_t *buf;
     char c;
 
-    if (avio_open_dyn_buf(&line) < 0) {
+    if (avio_open_dyn_buf_xij(&line) < 0) {
         av_log(NULL, AV_LOG_FATAL, "Could not alloc buffer for reading preset.\n");
         exit_program(1);
     }
 
-    while ((c = avio_r8(s)) && c != '\n')
-        avio_w8(line, c);
-    avio_w8(line, 0);
-    avio_close_dyn_buf(line, &buf);
+    while ((c = avio_r8_xij(s)) && c != '\n')
+        avio_w8_xij(line, c);
+    avio_w8_xij(line, 0);
+    avio_close_dyn_buf_xij(line, &buf);
 
     return buf;
 }
@@ -1252,12 +1252,12 @@ static int get_preset_file_2(const char *preset_name, const char *codec_name, AV
         if (codec_name) {
             snprintf(filename, sizeof(filename), "%s%s/%s-%s.avpreset", base[i],
                      i != 1 ? "" : "/.avconv", codec_name, preset_name);
-            ret = avio_open2(s, filename, AVIO_FLAG_READ, &int_cb, NULL);
+            ret = avio_open2_xij(s, filename, AVIO_FLAG_READ, &int_cb, NULL);
         }
         if (ret < 0) {
             snprintf(filename, sizeof(filename), "%s%s/%s.avpreset", base[i],
                      i != 1 ? "" : "/.avconv", preset_name);
-            ret = avio_open2(s, filename, AVIO_FLAG_READ, &int_cb, NULL);
+            ret = avio_open2_xij(s, filename, AVIO_FLAG_READ, &int_cb, NULL);
         }
     }
     return ret;
@@ -1271,7 +1271,7 @@ static int choose_encoder(OptionsContext *o, AVFormatContext *s, OutputStream *o
     if (type == AVMEDIA_TYPE_VIDEO || type == AVMEDIA_TYPE_AUDIO || type == AVMEDIA_TYPE_SUBTITLE) {
         MATCH_PER_STREAM_OPT(codec_names, str, codec_name, s, ost->st);
         if (!codec_name) {
-            ost->st->codecpar->codec_id = av_guess_codec(s->oformat, NULL, s->url,
+            ost->st->codecpar->codec_id = av_guess_codec_xij(s->oformat, NULL, s->url,
                                                          NULL, ost->st->codecpar->codec_type);
             ost->enc = avcodec_find_encoder_ijk(ost->st->codecpar->codec_id);
             if (!ost->enc) {
@@ -1279,7 +1279,7 @@ static int choose_encoder(OptionsContext *o, AVFormatContext *s, OutputStream *o
                        "output stream #%d:%d. Default encoder for format %s (codec %s) is "
                        "probably disabled. Please choose an encoder manually.\n",
                        ost->file_index, ost->index, s->oformat->name,
-                       avcodec_get_name(ost->st->codecpar->codec_id));
+                       avcodec_get_name_xij(ost->st->codecpar->codec_id));
                 return AVERROR_ENCODER_NOT_FOUND;
             }
         } else if (!strcmp(codec_name, "copy"))
@@ -1368,7 +1368,7 @@ static OutputStream *new_output_stream(OptionsContext *o, AVFormatContext *oc, e
                 av_dict_set(&ost->encoder_opts, buf, arg, AV_DICT_DONT_OVERWRITE);
                 av_free(buf);
             } while (!s->eof_reached);
-            avio_closep(&s);
+            avio_closep_xij(&s);
         }
         if (ret) {
             av_log(NULL, AV_LOG_FATAL,
@@ -1498,7 +1498,7 @@ static OutputStream *new_output_stream(OptionsContext *o, AVFormatContext *oc, e
     av_dict_copy(&ost->sws_dict, o->g->sws_dict, 0);
 
     av_dict_copy(&ost->swr_opts, o->g->swr_opts, 0);
-    if (ost->enc && av_get_exact_bits_per_sample(ost->enc->id) == 24)
+    if (ost->enc && av_get_exact_bits_per_sample_xij(ost->enc->id) == 24)
         av_dict_set(&ost->swr_opts, "output_sample_bits", "24", 0);
 
     av_dict_copy(&ost->resample_opts, o->g->resample_opts, 0);
@@ -1540,7 +1540,7 @@ static uint8_t *read_file(const char *filename)
 {
     AVIOContext *pb      = NULL;
     AVIOContext *dyn_buf = NULL;
-    int ret = avio_open(&pb, filename, AVIO_FLAG_READ);
+    int ret = avio_open_xij(&pb, filename, AVIO_FLAG_READ);
     uint8_t buf[1024], *str;
 
     if (ret < 0) {
@@ -1548,17 +1548,17 @@ static uint8_t *read_file(const char *filename)
         return NULL;
     }
 
-    ret = avio_open_dyn_buf(&dyn_buf);
+    ret = avio_open_dyn_buf_xij(&dyn_buf);
     if (ret < 0) {
-        avio_closep(&pb);
+        avio_closep_xij(&pb);
         return NULL;
     }
-    while ((ret = avio_read(pb, buf, sizeof(buf))) > 0)
-        avio_write(dyn_buf, buf, ret);
-    avio_w8(dyn_buf, 0);
-    avio_closep(&pb);
+    while ((ret = avio_read_xij(pb, buf, sizeof(buf))) > 0)
+        avio_write_xij(dyn_buf, buf, ret);
+    avio_w8_xij(dyn_buf, 0);
+    avio_closep_xij(&pb);
 
-    ret = avio_close_dyn_buf(dyn_buf, &str);
+    ret = avio_close_dyn_buf_xij(dyn_buf, &str);
     if (ret < 0)
         return NULL;
     return str;
@@ -1593,7 +1593,7 @@ static void check_streamcopy_filters(OptionsContext *o, AVFormatContext *oc,
                "Filtering and streamcopy cannot be used together.\n",
                ost->filters ? "Filtergraph" : "Filtergraph script",
                ost->filters ? ost->filters : ost->filters_script,
-               av_get_media_type_string(type), ost->file_index, ost->index);
+               av_get_media_type_string_xij(type), ost->file_index, ost->index);
         exit_program(1);
     }
 }
@@ -1948,7 +1948,7 @@ static int opt_streamid(void *optctx, const char *opt, const char *arg)
     }
     *p++ = '\0';
     idx = parse_number_or_die(opt, idx_str, OPT_INT, 0, MAX_STREAMS-1);
-    o->streamid_map = grow_array(o->streamid_map, sizeof(*o->streamid_map), &o->nb_streamid_map, idx+1);
+    o->streamid_map = grow_array_xij(o->streamid_map, sizeof(*o->streamid_map), &o->nb_streamid_map, idx+1);
     o->streamid_map[idx] = parse_number_or_die(opt, p, OPT_INT, 0, INT_MAX);
     return 0;
 }
@@ -2094,7 +2094,7 @@ static int open_output_file(OptionsContext *o, const char *filename)
 
     err = avformat_alloc_output_context2_ijk(&oc, NULL, o->format, filename);
     if (!oc) {
-        print_error(filename, err);
+        print_error_xij(filename, err);
         exit_program(1);
     }
 
@@ -2137,9 +2137,9 @@ static int open_output_file(OptionsContext *o, const char *filename)
         /* pick the "best" stream of each type */
 
         /* video: highest resolution */
-        if (!o->video_disable && av_guess_codec(oc->oformat, NULL, filename, NULL, AVMEDIA_TYPE_VIDEO) != AV_CODEC_ID_NONE) {
+        if (!o->video_disable && av_guess_codec_xij(oc->oformat, NULL, filename, NULL, AVMEDIA_TYPE_VIDEO) != AV_CODEC_ID_NONE) {
             int area = 0, idx = -1;
-            int qcr = avformat_query_codec(oc->oformat, oc->oformat->video_codec, 0);
+            int qcr = avformat_query_codec_xij(oc->oformat, oc->oformat->video_codec, 0);
             for (i = 0; i < nb_input_streams; i++) {
                 int new_area;
                 ist = input_streams[i];
@@ -2159,7 +2159,7 @@ static int open_output_file(OptionsContext *o, const char *filename)
         }
 
         /* audio: most channels */
-        if (!o->audio_disable && av_guess_codec(oc->oformat, NULL, filename, NULL, AVMEDIA_TYPE_AUDIO) != AV_CODEC_ID_NONE) {
+        if (!o->audio_disable && av_guess_codec_xij(oc->oformat, NULL, filename, NULL, AVMEDIA_TYPE_AUDIO) != AV_CODEC_ID_NONE) {
             int best_score = 0, idx = -1;
             for (i = 0; i < nb_input_streams; i++) {
                 int score;
@@ -2205,7 +2205,7 @@ static int open_output_file(OptionsContext *o, const char *filename)
         }
         /* Data only if codec id match */
         if (!o->data_disable ) {
-            enum AVCodecID codec_id = av_guess_codec(oc->oformat, NULL, filename, NULL, AVMEDIA_TYPE_DATA);
+            enum AVCodecID codec_id = av_guess_codec_xij(oc->oformat, NULL, filename, NULL, AVMEDIA_TYPE_DATA);
             for (i = 0; codec_id != AV_CODEC_ID_NONE && i < nb_input_streams; i++) {
                 if (input_streams[i]->st->codecpar->codec_type == AVMEDIA_TYPE_DATA
                     && input_streams[i]->st->codecpar->codec_id == codec_id )
@@ -2292,12 +2292,12 @@ loop_end:
         const char *p;
         int64_t len;
 
-        if ((err = avio_open2(&pb, o->attachments[i], AVIO_FLAG_READ, &int_cb, NULL)) < 0) {
+        if ((err = avio_open2_xij(&pb, o->attachments[i], AVIO_FLAG_READ, &int_cb, NULL)) < 0) {
             av_log(NULL, AV_LOG_FATAL, "Could not open attachment file %s.\n",
                    o->attachments[i]);
             exit_program(1);
         }
-        if ((len = avio_size(pb)) <= 0) {
+        if ((len = avio_size_xij(pb)) <= 0) {
             av_log(NULL, AV_LOG_FATAL, "Could not get size of the attachment %s.\n",
                    o->attachments[i]);
             exit_program(1);
@@ -2307,7 +2307,7 @@ loop_end:
                    o->attachments[i]);
             exit_program(1);
         }
-        avio_read(pb, attachment, len);
+        avio_read_xij(pb, attachment, len);
 
         ost = new_attachment_stream(o, oc, -1);
         ost->stream_copy               = 0;
@@ -2317,7 +2317,7 @@ loop_end:
 
         p = strrchr(o->attachments[i], '/');
         av_dict_set(&ost->st->metadata, "filename", (p && *p) ? p + 1 : o->attachments[i], AV_DICT_DONT_OVERWRITE);
-        avio_closep(&pb);
+        avio_closep_xij(&pb);
     }
 
 #if FF_API_LAVF_AVCTX
@@ -2466,8 +2466,8 @@ loop_end:
 
     /* check filename in case of an image number is expected */
     if (oc->oformat->flags & AVFMT_NEEDNUMBER) {
-        if (!av_filename_number_test(oc->url)) {
-            print_error(oc->url, AVERROR(EINVAL));
+        if (!av_filename_number_test_xij(oc->url)) {
+            print_error_xij(oc->url, AVERROR(EINVAL));
             exit_program(1);
         }
     }
@@ -2483,13 +2483,13 @@ loop_end:
         assert_file_overwrite(filename);
 
         /* open the file */
-        if ((err = avio_open2(&oc->pb, filename, AVIO_FLAG_WRITE,
+        if ((err = avio_open2_xij(&oc->pb, filename, AVIO_FLAG_WRITE,
                               &oc->interrupt_callback,
                               &of->opts)) < 0) {
-            print_error(filename, err);
+            print_error_xij(filename, err);
             exit_program(1);
         }
-    } else if (strcmp(oc->oformat->name, "image2")==0 && !av_filename_number_test(filename))
+    } else if (strcmp(oc->oformat->name, "image2")==0 && !av_filename_number_test_xij(filename))
         assert_file_overwrite(filename);
 
     if (o->mux_preload) {
@@ -2580,7 +2580,7 @@ loop_end:
             av_freep(&key);
         }
 
-        program = av_new_program(oc, progid);
+        program = av_new_program_xij(oc, progid);
 
         p = o->program[i].u.str;
         while(*p) {
@@ -2607,7 +2607,7 @@ loop_end:
             } else if (!strcmp(key, "program_num")) {
             } else if (!strcmp(key, "st")) {
                 int st_num = strtol(p2, NULL, 0);
-                av_program_add_stream_index(oc, progid, st_num);
+                av_program_add_stream_index_xij(oc, progid, st_num);
             } else {
                 av_log(NULL, AV_LOG_FATAL, "Unknown program key %s.\n", key);
                 exit_program(1);
@@ -3159,7 +3159,7 @@ void show_help_default(const char *opt, const char *arg)
 #endif
         show_help_children(swr_get_class(), AV_OPT_FLAG_AUDIO_PARAM);
         show_help_children(avfilter_get_class(), AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_FILTERING_PARAM);
-        show_help_children(av_bsf_get_class(), AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_BSF_PARAM);
+        show_help_children(av_bsf_get_class_xij(), AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_BSF_PARAM);
     }
 }
 
@@ -3278,7 +3278,7 @@ static int opt_progress(void *optctx, const char *opt, const char *arg)
 
     if (!strcmp(arg, "-"))
         arg = "pipe:";
-    ret = avio_open2(&avio, arg, AVIO_FLAG_WRITE, &int_cb, NULL);
+    ret = avio_open2_xij(&avio, arg, AVIO_FLAG_WRITE, &int_cb, NULL);
     if (ret < 0) {
         av_log(NULL, AV_LOG_ERROR, "Failed to open progress URL \"%s\": %s\n",
                arg, av_err2str(ret));

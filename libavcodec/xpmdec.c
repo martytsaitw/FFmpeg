@@ -310,7 +310,7 @@ static int xpm_decode_frame(AVCodecContext *avctx, void *data,
 
     avctx->pix_fmt = AV_PIX_FMT_BGRA;
 
-    av_fast_padded_malloc(&x->buf, &x->buf_size, avpkt->size);
+    av_fast_padded_malloc_xij(&x->buf, &x->buf_size, avpkt->size);
     if (!x->buf)
         return AVERROR(ENOMEM);
     memcpy(x->buf, avpkt->data, avpkt->size);
@@ -333,10 +333,10 @@ static int xpm_decode_frame(AVCodecContext *avctx, void *data,
         return AVERROR_INVALIDDATA;
     }
 
-    if ((ret = ff_set_dimensions(avctx, avctx->width, avctx->height)) < 0)
+    if ((ret = ff_set_dimensions_xij(avctx, avctx->width, avctx->height)) < 0)
         return ret;
 
-    if ((ret = ff_get_buffer(avctx, p, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, p, 0)) < 0)
         return ret;
 
     if (cpp <= 0 || cpp >= 5) {
@@ -355,7 +355,7 @@ static int xpm_decode_frame(AVCodecContext *avctx, void *data,
 
     size *= 4;
 
-    av_fast_padded_malloc(&x->pixels, &x->pixels_size, size);
+    av_fast_padded_malloc_xij(&x->pixels, &x->pixels_size, size);
     if (!x->pixels)
         return AVERROR(ENOMEM);
 

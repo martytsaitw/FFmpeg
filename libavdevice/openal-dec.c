@@ -163,7 +163,7 @@ static int read_header(AVFormatContext *ctx)
     par->codec_id = get_al_format_info(ad->sample_format)->codec_id;
 
     /* This is needed to read the audio data */
-    ad->sample_step = (av_get_bits_per_sample(get_al_format_info(ad->sample_format)->codec_id) *
+    ad->sample_step = (av_get_bits_per_sample_xij(get_al_format_info(ad->sample_format)->codec_id) *
                        get_al_format_info(ad->sample_format)->channels) / 8;
 
     /* Finally, start the capture process */

@@ -68,7 +68,7 @@ static int init_encoder(AVCodec *enc, AVCodecContext **enc_ctx,
     ctx->sample_rate = sample_rate;
     ctx->channel_layout = ch_layout;
 
-    result = avcodec_open2(ctx, enc, NULL);
+    result = avcodec_open2_xij(ctx, enc, NULL);
     if (result < 0) {
         av_log(ctx, AV_LOG_ERROR, "Can't open encoder\n");
         return result;
@@ -95,7 +95,7 @@ static int init_decoder(AVCodec *dec, AVCodecContext **dec_ctx,
     ctx->request_channel_layout = ch_layout;
     ctx->channel_layout = ch_layout;
 
-    result = avcodec_open2(ctx, dec, NULL);
+    result = avcodec_open2_xij(ctx, dec, NULL);
     if (result < 0) {
         av_log(ctx, AV_LOG_ERROR, "Can't open decoder\n");
         return result;
@@ -126,7 +126,7 @@ static int run_test(AVCodec *enc, AVCodec *dec, AVCodecContext *enc_ctx,
     in_frame->nb_samples = enc_ctx->frame_size;
     in_frame->format = enc_ctx->sample_fmt;
     in_frame->channel_layout = enc_ctx->channel_layout;
-    if (av_frame_get_buffer(in_frame, 32) != 0) {
+    if (av_frame_get_buffer_xij(in_frame, 32) != 0) {
         av_log(NULL, AV_LOG_ERROR, "Can't allocate a buffer for input frame\n");
         return AVERROR(ENOMEM);
     }
@@ -171,7 +171,7 @@ static int run_test(AVCodec *enc, AVCodec *dec, AVCodecContext *enc_ctx,
 
         /* if we get an encoded packet, feed it straight to the decoder */
         if (got_output) {
-            result = avcodec_decode_audio4(dec_ctx, out_frame, &got_output, &enc_pkt);
+            result = avcodec_decode_audio4_xij(dec_ctx, out_frame, &got_output, &enc_pkt);
             if (result < 0) {
                 av_log(NULL, AV_LOG_ERROR, "Error decoding audio packet\n");
                 return result;
@@ -218,21 +218,21 @@ static int run_test(AVCodec *enc, AVCodec *dec, AVCodecContext *enc_ctx,
 
     av_freep(&raw_in);
     av_freep(&raw_out);
-    av_frame_free(&in_frame);
-    av_frame_free(&out_frame);
+    av_frame_free_xij(&in_frame);
+    av_frame_free_xij(&out_frame);
     return 0;
 }
 
 static int close_encoder(AVCodecContext **enc_ctx)
 {
-    avcodec_close(*enc_ctx);
+    avcodec_close_xij(*enc_ctx);
     av_freep(enc_ctx);
     return 0;
 }
 
 static int close_decoder(AVCodecContext **dec_ctx)
 {
-    avcodec_close(*dec_ctx);
+    avcodec_close_xij(*dec_ctx);
     av_freep(dec_ctx);
     return 0;
 }

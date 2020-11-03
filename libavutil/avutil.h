@@ -175,17 +175,17 @@ unsigned avutil_version_ijk(void);
  * version number or a git commit description. This string has no fixed format
  * and can change any time. It should never be parsed by code.
  */
-const char *av_version_info(void);
+const char *av_version_info_xij(void);
 
 /**
  * Return the libavutil build-time configuration.
  */
-const char *avutil_configuration(void);
+const char *avutil_configuration_xij(void);
 
 /**
  * Return the libavutil license.
  */
-const char *avutil_license(void);
+const char *avutil_license_xij(void);
 
 /**
  * @}
@@ -210,7 +210,7 @@ enum AVMediaType {
  * Return a string describing the media_type enum, NULL if media_type
  * is unknown.
  */
-const char *av_get_media_type_string(enum AVMediaType media_type);
+const char *av_get_media_type_string_xij(enum AVMediaType media_type);
 
 /**
  * @defgroup lavu_const Constants
@@ -287,7 +287,7 @@ enum AVPictureType {
  * @param[in] pict_type the picture type @return a single character
  * representing the picture type, '?' if pict_type is unknown
  */
-char av_get_picture_type_char(enum AVPictureType pict_type);
+char av_get_picture_type_char_xij(enum AVPictureType pict_type);
 
 /**
  * @}
@@ -318,7 +318,7 @@ static inline void *av_x_if_null(const void *p, const void *x)
  * @param list    pointer to the list
  * @return  length of the list, in elements, not counting the terminator
  */
-unsigned av_int_list_length_for_size(unsigned elsize,
+unsigned av_int_list_length_for_size_xij(unsigned elsize,
                                      const void *list, uint64_t term) av_pure;
 
 /**
@@ -329,7 +329,7 @@ unsigned av_int_list_length_for_size(unsigned elsize,
  * @return  length of the list, in elements, not counting the terminator
  */
 #define av_int_list_length(list, term) \
-    av_int_list_length_for_size(sizeof(*(list)), list, term)
+    av_int_list_length_for_size_xij(sizeof(*(list)), list, term)
 
 /**
  * Open a file using a UTF-8 filename.
@@ -341,11 +341,11 @@ FILE *av_fopen_utf8(const char *path, const char *mode);
 /**
  * Return the fractional representation of the internal time base.
  */
-AVRational av_get_time_base_q(void);
+AVRational av_get_time_base_q_xij(void);
 
 #define AV_FOURCC_MAX_STRING_SIZE 32
 
-#define av_fourcc2str(fourcc) av_fourcc_make_string((char[AV_FOURCC_MAX_STRING_SIZE]){0}, fourcc)
+#define av_fourcc2str(fourcc) av_fourcc_make_string_xij((char[AV_FOURCC_MAX_STRING_SIZE]){0}, fourcc)
 
 /**
  * Fill the provided buffer with a string containing a FourCC (four-character
@@ -355,7 +355,7 @@ AVRational av_get_time_base_q(void);
  * @param fourcc the fourcc to represent
  * @return the buffer in input
  */
-char *av_fourcc_make_string(char *buf, uint32_t fourcc);
+char *av_fourcc_make_string_xij(char *buf, uint32_t fourcc);
 
 /**
  * @}

@@ -70,7 +70,7 @@ static int g729_read_header(AVFormatContext *s)
 static int g729_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     AVStream *st = s->streams[0];
-    int ret = av_get_packet(s->pb, pkt, st->codecpar->block_align);
+    int ret = av_get_packet_xij(s->pb, pkt, st->codecpar->block_align);
     if (ret < 0)
         return ret;
 

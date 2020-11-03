@@ -665,7 +665,7 @@ static int ftp_connect(URLContext *h, const char *url)
     s->position = 0;
     s->features = NULL;
 
-    av_url_split(proto, sizeof(proto),
+    av_url_split_xij(proto, sizeof(proto),
                  credencials, sizeof(credencials),
                  hostname, sizeof(hostname),
                  &s->server_control_port,
@@ -1092,7 +1092,7 @@ static int ftp_move(URLContext *h_src, URLContext *h_dst)
         goto cleanup;
     }
 
-    av_url_split(0, 0, 0, 0, 0, 0, 0,
+    av_url_split_xij(0, 0, 0, 0, 0, 0, 0,
                  path, sizeof(path),
                  h_dst->filename);
     snprintf(command, sizeof(command), "RNTO %s\r\n", path);

@@ -176,7 +176,7 @@ typedef struct AVHWFramesContext {
     /**
      * A pool from which the frames are allocated by av_hwframe_get_buffer().
      * This field may be set by the caller before calling av_hwframe_ctx_init().
-     * The buffers returned by calling av_buffer_pool_get() on this pool must
+     * The buffers returned by calling av_buffer_pool_get_xij() on this pool must
      * have the properties described in the documentation in the corresponding hw
      * type's header (hwcontext_*.h). The pool will be freed strictly before
      * this struct's free() callback is invoked.
@@ -289,7 +289,7 @@ int av_hwdevice_ctx_init(AVBufferRef *ref);
  *
  * @param device_ctx On success, a reference to the newly-created device context
  *                   will be written here. The reference is owned by the caller
- *                   and must be released with av_buffer_unref() when no longer
+ *                   and must be released with av_buffer_unref_xij() when no longer
  *                   needed. On failure, NULL will be written to this pointer.
  * @param type The type of the device to create.
  * @param device A type-specific string identifying the device to open.
@@ -372,7 +372,7 @@ int av_hwframe_get_buffer(AVBufferRef *hwframe_ctx, AVFrame *frame, int flags);
  * AV_HWFRAME_TRANSFER_DIRECTION_TO)
  *
  * dst may be "clean" (i.e. with data/buf pointers unset), in which case the
- * data buffers will be allocated by this function using av_frame_get_buffer().
+ * data buffers will be allocated by this function using av_frame_get_buffer_xij().
  * If dst->format is set, then this format will be used, otherwise (when
  * dst->format is AV_PIX_FMT_NONE) the first acceptable format will be chosen.
  *

@@ -70,7 +70,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     AVFrame *frame = c->frame;
     int ret;
 
-    if ((ret = ff_reget_buffer(avctx, frame)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, frame)) < 0)
         return ret;
 
     ret = inflateReset(&c->zstream);
@@ -99,7 +99,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     /* make the palette available on the way out */
     if (c->avctx->pix_fmt == AV_PIX_FMT_PAL8) {
         int size;
-        const uint8_t *pal = av_packet_get_side_data(avpkt, AV_PKT_DATA_PALETTE, &size);
+        const uint8_t *pal = av_packet_get_side_data_xij(avpkt, AV_PKT_DATA_PALETTE, &size);
 
         if (pal && size == AVPALETTE_SIZE) {
             frame->palette_has_changed = 1;
@@ -110,7 +110,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         memcpy(frame->data[1], c->pal, AVPALETTE_SIZE);
     }
 
-    if ((ret = av_frame_ref(data, frame)) < 0)
+    if ((ret = av_frame_ref_xij(data, frame)) < 0)
         return ret;
     *got_frame      = 1;
 
@@ -170,7 +170,7 @@ static av_cold int decode_end(AVCodecContext *avctx)
     CamtasiaContext * const c = avctx->priv_data;
 
     av_freep(&c->decomp_buf);
-    av_frame_free(&c->frame);
+    av_frame_free_xij(&c->frame);
 
     inflateEnd(&c->zstream);
 

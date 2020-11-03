@@ -1431,7 +1431,7 @@ int ff_dca_xll_filter_frame(DCAXllDecoder *s, AVFrame *frame)
     avctx->bit_rate = 0;
 
     frame->nb_samples = nsamples = s->nframesamples << (s->nfreqbands - 1);
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     // Downmix primary channel set to stereo
@@ -1462,7 +1462,7 @@ int ff_dca_xll_filter_frame(DCAXllDecoder *s, AVFrame *frame)
     } else if (request_mask != s->output_mask && p->dmix_type == DCA_DMIX_TYPE_LtRt) {
         matrix_encoding = AV_MATRIX_ENCODING_DOLBY;
     }
-    if ((ret = ff_side_data_update_matrix_encoding(frame, matrix_encoding)) < 0)
+    if ((ret = ff_side_data_update_matrix_encoding_xij(frame, matrix_encoding)) < 0)
         return ret;
 
     return 0;

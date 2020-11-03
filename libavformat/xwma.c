@@ -58,19 +58,19 @@ static int xwma_read_header(AVFormatContext *s)
      */
 
     /* check RIFF header */
-    tag = avio_rl32(pb);
+    tag = avio_rl32_xij(pb);
     if (tag != MKTAG('R', 'I', 'F', 'F'))
         return -1;
-    avio_rl32(pb); /* file size */
-    tag = avio_rl32(pb);
+    avio_rl32_xij(pb); /* file size */
+    tag = avio_rl32_xij(pb);
     if (tag != MKTAG('X', 'W', 'M', 'A'))
         return -1;
 
     /* parse fmt header */
-    tag = avio_rl32(pb);
+    tag = avio_rl32_xij(pb);
     if (tag != MKTAG('f', 'm', 't', ' '))
         return -1;
-    size = avio_rl32(pb);
+    size = avio_rl32_xij(pb);
     st = avformat_new_stream_ijk(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
@@ -106,14 +106,14 @@ static int xwma_read_header(AVFormatContext *s)
             avpriv_request_sample(s, "Unexpected extradata (%d bytes)",
                                   st->codecpar->extradata_size);
         } else if (st->codecpar->codec_id == AV_CODEC_ID_WMAPRO) {
-            if (ff_alloc_extradata(st->codecpar, 18))
+            if (ff_alloc_extradata_xij(st->codecpar, 18))
                 return AVERROR(ENOMEM);
 
             memset(st->codecpar->extradata, 0, st->codecpar->extradata_size);
             st->codecpar->extradata[ 0] = st->codecpar->bits_per_coded_sample;
             st->codecpar->extradata[14] = 224;
         } else {
-            if (ff_alloc_extradata(st->codecpar, 6))
+            if (ff_alloc_extradata_xij(st->codecpar, 6))
                 return AVERROR(ENOMEM);
 
             memset(st->codecpar->extradata, 0, st->codecpar->extradata_size);
@@ -143,8 +143,8 @@ static int xwma_read_header(AVFormatContext *s)
             goto fail;
         }
         /* read next chunk tag */
-        tag = avio_rl32(pb);
-        size = avio_rl32(pb);
+        tag = avio_rl32_xij(pb);
+        size = avio_rl32_xij(pb);
         if (tag == MKTAG('d', 'a', 't', 'a')) {
             /* We assume that the data chunk comes last. */
             break;
@@ -187,11 +187,11 @@ static int xwma_read_header(AVFormatContext *s)
             }
 
             for (i = 0; i < dpds_table_size; ++i) {
-                dpds_table[i] = avio_rl32(pb);
+                dpds_table[i] = avio_rl32_xij(pb);
                 size -= 4;
             }
         }
-        avio_skip(pb, size);
+        avio_skip_xij(pb, size);
     }
 
     /* Determine overall data length */
@@ -238,7 +238,7 @@ static int xwma_read_header(AVFormatContext *s)
              * output buffer after decoding the first (i+1) packets, we compute
              * an offset / timestamp pair.
              */
-            av_add_index_entry(st,
+            av_add_index_entry_xij(st,
                                cur_pos + (i+1) * st->codecpar->block_align, /* pos */
                                dpds_table[i] / bytes_per_sample,            /* timestamp */
                                st->codecpar->block_align,                   /* size */
@@ -277,7 +277,7 @@ static int xwma_read_packet(AVFormatContext *s, AVPacket *pkt)
     size = (st->codecpar->block_align > 1) ? st->codecpar->block_align : 2230;
     size = FFMIN(size, left);
 
-    ret  = av_get_packet(s->pb, pkt, size);
+    ret  = av_get_packet_xij(s->pb, pkt, size);
     if (ret < 0)
         return ret;
 

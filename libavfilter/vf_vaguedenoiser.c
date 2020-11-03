@@ -501,24 +501,24 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     VagueDenoiserContext *s = ctx->priv;
     AVFilterLink *outlink = ctx->outputs[0];
     AVFrame *out;
-    int direct = av_frame_is_writable(in);
+    int direct = av_frame_is_writable_xij(in);
 
     if (direct) {
         out = in;
     } else {
         out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out) {
-            av_frame_free(&in);
+            av_frame_free_xij(&in);
             return AVERROR(ENOMEM);
         }
 
-        av_frame_copy_props(out, in);
+        av_frame_copy_props_xij(out, in);
     }
 
     filter(s, in, out);
 
     if (!direct)
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
 
     return ff_filter_frame(outlink, out);
 }

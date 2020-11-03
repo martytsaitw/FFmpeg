@@ -1644,8 +1644,8 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     ff_snow_frame_start(s);
 #if FF_API_CODED_FRAME
 FF_DISABLE_DEPRECATION_WARNINGS
-    av_frame_unref(avctx->coded_frame);
-    ret = av_frame_ref(avctx->coded_frame, s->current_picture);
+    av_frame_unref_xij(avctx->coded_frame);
+    ret = av_frame_ref_xij(avctx->coded_frame, s->current_picture);
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
     if (ret < 0)
@@ -1888,7 +1888,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
 
     emms_c();
 
-    ff_side_data_set_encoder_stats(pkt, s->current_picture->quality,
+    ff_side_data_set_encoder_stats_xij(pkt, s->current_picture->quality,
                                    s->encoding_error,
                                    (s->avctx->flags&AV_CODEC_FLAG_PSNR) ? 4 : 0,
                                    s->current_picture->pict_type);
@@ -1913,7 +1913,7 @@ static av_cold int encode_end(AVCodecContext *avctx)
 
     ff_snow_common_end(s);
     ff_rate_control_uninit(&s->m);
-    av_frame_free(&s->input_picture);
+    av_frame_free_xij(&s->input_picture);
     av_freep(&avctx->stats_out);
 
     return 0;

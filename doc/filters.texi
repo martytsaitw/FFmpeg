@@ -14159,7 +14159,7 @@ This is 1 if the frame is a key frame, 0 otherwise.
 The picture type of the input frame ("I" for an I-frame, "P" for a
 P-frame, "B" for a B-frame, or "?" for an unknown type).
 Also refer to the documentation of the @code{AVPictureType} enum and of
-the @code{av_get_picture_type_char} function defined in
+the @code{av_get_picture_type_char_xij} function defined in
 @file{libavutil/avutil.h}.
 
 @item checksum
@@ -20503,7 +20503,7 @@ movie=dvd.vob:s=v:0+#0x81 [video] [audio]
 Both movie and amovie support the following commands:
 @table @option
 @item seek
-Perform seek using "av_seek_frame".
+Perform seek using "av_seek_frame_xij".
 The syntax is: seek @var{stream_index}|@var{timestamp}|@var{flags}
 @itemize
 @item

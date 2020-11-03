@@ -198,7 +198,7 @@ static int decode_frame(AVCodecContext *avctx,
     AVFrame * const p     = data;
     int decoded, ret;
 
-    if ((ret = ff_get_buffer(avctx, p, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, p, 0)) < 0)
         return ret;
     p->key_frame = 1;
 

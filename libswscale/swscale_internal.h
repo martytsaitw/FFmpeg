@@ -415,7 +415,7 @@ typedef struct SwsContext {
     int *dither_error[4];
 
     //Colorspace stuff
-    int contrast, brightness, saturation;    // for sws_getColorspaceDetails
+    int contrast, brightness, saturation;    // for sws_getColorspaceDetails_xij
     int srcColorspaceTable[4];
     int dstColorspaceTable[4];
     int srcRange;                 ///< 0 = MPG YUV range, 1 = JPG YUV range (source      image).
@@ -880,12 +880,12 @@ void ff_hcscale_fast_mmxext(SwsContext *c, int16_t *dst1, int16_t *dst2,
 
 /**
  * Allocate and return an SwsContext.
- * This is like sws_getContext() but does not perform the init step, allowing
+ * This is like sws_getContext_xij() but does not perform the init step, allowing
  * the user to set additional AVOptions.
  *
- * @see sws_getContext()
+ * @see sws_getContext_xij()
  */
-struct SwsContext *sws_alloc_set_opts(int srcW, int srcH, enum AVPixelFormat srcFormat,
+struct SwsContext *sws_alloc_set_opts_xij(int srcW, int srcH, enum AVPixelFormat srcFormat,
                                       int dstW, int dstH, enum AVPixelFormat dstFormat,
                                       int flags, const double *param);
 

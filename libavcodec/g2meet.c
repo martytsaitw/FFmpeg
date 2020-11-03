@@ -1437,7 +1437,7 @@ static int g2m_decode_frame(AVCodecContext *avctx, void *data,
                 goto header_fail;
             }
             if (c->width != avctx->width || c->height != avctx->height) {
-                ret = ff_set_dimensions(avctx, c->width, c->height);
+                ret = ff_set_dimensions_xij(avctx, c->width, c->height);
                 if (ret < 0)
                     goto header_fail;
             }
@@ -1563,7 +1563,7 @@ static int g2m_decode_frame(AVCodecContext *avctx, void *data,
         c->got_header = 1;
 
     if (c->width && c->height && c->framebuf) {
-        if ((ret = ff_get_buffer(avctx, pic, 0)) < 0)
+        if ((ret = ff_get_buffer_xij(avctx, pic, 0)) < 0)
             return ret;
 
         pic->key_frame = got_header;

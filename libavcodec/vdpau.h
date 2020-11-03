@@ -109,7 +109,7 @@ void av_vdpau_hwaccel_set_render2(AVVDPAUContext *, AVVDPAU_Render2);
 /**
  * Associate a VDPAU device with a codec context for hardware acceleration.
  * This function is meant to be called from the get_format() codec callback,
- * or earlier. It can also be called after avcodec_flush_buffers() to change
+ * or earlier. It can also be called after avcodec_flush_buffers_xij() to change
  * the underlying VDPAU device mid-stream (e.g. to recover from non-transparent
  * display preemption).
  *

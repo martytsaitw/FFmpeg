@@ -110,7 +110,7 @@ static int add_event(FFDemuxSubtitlesQueue *q, AVBPrint *buf, char *line_cache,
         sub->pts = ei->pts;
         sub->duration = ei->duration;
         if (ei->x1 != -1) {
-            uint8_t *p = av_packet_new_side_data(sub, AV_PKT_DATA_SUBTITLE_POSITION, 16);
+            uint8_t *p = av_packet_new_side_data_xij(sub, AV_PKT_DATA_SUBTITLE_POSITION, 16);
             if (p) {
                 AV_WL32(p,      ei->x1);
                 AV_WL32(p +  4, ei->y1);

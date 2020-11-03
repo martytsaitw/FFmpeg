@@ -176,7 +176,7 @@ static int copy_stream_props_ijk(AVStream *st, AVStream *source_st)
                 av_freep(&st->codecpar->extradata);
                 st->codecpar->extradata_size = 0;
             }
-            ret = ff_alloc_extradata(st->codecpar,
+            ret = ff_alloc_extradata_xij(st->codecpar,
                                      source_st->codecpar->extradata_size);
             if (ret < 0)
                 return ret;
@@ -342,7 +342,7 @@ static int open_file(AVFormatContext *avf, unsigned fileno)
 #endif
     new_avf->interrupt_callback = avf->interrupt_callback;
 
-    if ((ret = ff_copy_whiteblacklists(new_avf, avf)) < 0)
+    if ((ret = ff_copy_whiteblacklists_xij(new_avf, avf)) < 0)
         return ret;
 
     if (cat->options)
@@ -372,7 +372,7 @@ static int open_file(AVFormatContext *avf, unsigned fileno)
     if (ret < 0 ||
         (ret = !cat->use_new_find_stream_info ? avformat_find_stream_info_ijk(new_avf, NULL) : av_try_find_stream_info(new_avf, NULL)) < 0) {
         av_log(avf, AV_LOG_ERROR, "Impossible to open '%s'\n", file->url);
-        avformat_close_input(&new_avf);
+        avformat_close_input_xij(&new_avf);
         return ret;
     }
 
@@ -380,7 +380,7 @@ static int open_file(AVFormatContext *avf, unsigned fileno)
         return 0;
 
     if (cat->avf)
-        avformat_close_input(&cat->avf);
+        avformat_close_input_xij(&cat->avf);
 
     avf->bit_rate = new_avf->bit_rate;
     cat->avf      = new_avf;
@@ -418,13 +418,13 @@ static int concat_read_close(AVFormatContext *avf)
         av_freep(&cat->files[i].url);
         for (j = 0; j < cat->files[i].nb_streams; j++) {
             if (cat->files[i].streams[j].bsf)
-                av_bsf_free(&cat->files[i].streams[j].bsf);
+                av_bsf_free_xij(&cat->files[i].streams[j].bsf);
         }
         av_freep(&cat->files[i].streams);
         av_dict_free(&cat->files[i].metadata);
     }
     if (cat->avf)
-        avformat_close_input(&cat->avf);
+        avformat_close_input_xij(&cat->avf);
     av_dict_free(&cat->options);
     av_freep(&cat->files);
     return 0;
@@ -445,7 +445,7 @@ static int concat_read_header_ijk(AVFormatContext *avf, AVDictionary **options)
 
     av_bprint_init(&bp, 0, AV_BPRINT_SIZE_UNLIMITED);
 
-    while ((ret = ff_read_line_to_bprint_overwrite(avf->pb, &bp)) >= 0) {
+    while ((ret = ff_read_line_to_bprint_overwrite_xij(avf->pb, &bp)) >= 0) {
         line++;
         cursor = bp.str;
         keyword = get_keyword(&cursor);
@@ -704,10 +704,10 @@ open_fail:
     if (cat->cur_file->metadata) {
         uint8_t* metadata;
         int metadata_len;
-        char* packed_metadata = av_packet_pack_dictionary(cat->cur_file->metadata, &metadata_len);
+        char* packed_metadata = av_packet_pack_dictionary_xij(cat->cur_file->metadata, &metadata_len);
         if (!packed_metadata)
             return AVERROR(ENOMEM);
-        if (!(metadata = av_packet_new_side_data(pkt, AV_PKT_DATA_STRINGS_METADATA, metadata_len))) {
+        if (!(metadata = av_packet_new_side_data_xij(pkt, AV_PKT_DATA_STRINGS_METADATA, metadata_len))) {
             av_freep(&packed_metadata);
             return AVERROR(ENOMEM);
         }
@@ -816,13 +816,13 @@ static int concat_seek(AVFormatContext *avf, int stream,
     if ((ret = real_seek(avf, stream, min_ts, ts, max_ts, flags, cur_avf_saved)) < 0) {
         if (cat->cur_file != cur_file_saved) {
             if (cat->avf)
-                avformat_close_input(&cat->avf);
+                avformat_close_input_xij(&cat->avf);
         }
         cat->avf      = cur_avf_saved;
         cat->cur_file = cur_file_saved;
     } else {
         if (cat->cur_file != cur_file_saved) {
-            avformat_close_input(&cur_avf_saved);
+            avformat_close_input_xij(&cur_avf_saved);
         }
         cat->eof = 0;
     }

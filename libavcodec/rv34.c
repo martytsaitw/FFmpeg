@@ -1614,13 +1614,13 @@ static int finish_frame(AVCodecContext *avctx, AVFrame *pict)
         ff_thread_report_progress(&s->current_picture_ptr->tf, INT_MAX, 0);
 
     if (s->pict_type == AV_PICTURE_TYPE_B || s->low_delay) {
-        if ((ret = av_frame_ref(pict, s->current_picture_ptr->f)) < 0)
+        if ((ret = av_frame_ref_xij(pict, s->current_picture_ptr->f)) < 0)
             return ret;
         ff_print_debug_info(s, s->current_picture_ptr, pict);
         ff_mpv_export_qp_table(s, pict, s->current_picture_ptr, FF_QSCALE_TYPE_MPEG1);
         got_picture = 1;
     } else if (s->last_picture_ptr) {
-        if ((ret = av_frame_ref(pict, s->last_picture_ptr->f)) < 0)
+        if ((ret = av_frame_ref_xij(pict, s->last_picture_ptr->f)) < 0)
             return ret;
         ff_print_debug_info(s, s->last_picture_ptr, pict);
         ff_mpv_export_qp_table(s, pict, s->last_picture_ptr, FF_QSCALE_TYPE_MPEG1);
@@ -1661,7 +1661,7 @@ int ff_rv34_decode_frame(AVCodecContext *avctx,
     if (buf_size == 0) {
         /* special case for last picture */
         if (s->low_delay==0 && s->next_picture_ptr) {
-            if ((ret = av_frame_ref(pict, s->next_picture_ptr->f)) < 0)
+            if ((ret = av_frame_ref_xij(pict, s->next_picture_ptr->f)) < 0)
                 return ret;
             s->next_picture_ptr = NULL;
 
@@ -1724,7 +1724,7 @@ int ff_rv34_decode_frame(AVCodecContext *avctx,
             s->width  = si.width;
             s->height = si.height;
 
-            err = ff_set_dimensions(s->avctx, s->width, s->height);
+            err = ff_set_dimensions_xij(s->avctx, s->width, s->height);
             if (err < 0)
                 return err;
 

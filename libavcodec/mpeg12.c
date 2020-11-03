@@ -205,7 +205,7 @@ int ff_mpeg1_find_frame_end(ParseContext *pc, const uint8_t *buf, int buf_size, 
             }
             state++;
         } else {
-            i = avpriv_find_start_code(buf + i, buf + buf_size, &state) - buf - 1;
+            i = avpriv_find_start_code_xij(buf + i, buf + buf_size, &state) - buf - 1;
             if (pc->frame_start_found == 0 && state >= SLICE_MIN_START_CODE && state <= SLICE_MAX_START_CODE) {
                 i++;
                 pc->frame_start_found = 4;
@@ -227,7 +227,7 @@ int ff_mpeg1_find_frame_end(ParseContext *pc, const uint8_t *buf, int buf_size, 
                 }
             }
             if (pc->frame_start_found == 0 && s && state == PICTURE_START_CODE) {
-                ff_fetch_timestamp(s, i - 3, 1, i > 3);
+                ff_fetch_timestamp_xij(s, i - 3, 1, i > 3);
             }
         }
     }

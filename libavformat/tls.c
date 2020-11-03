@@ -67,7 +67,7 @@ int ff_tls_open_underlying(TLSShared *c, URLContext *parent, const char *uri, AV
     if (c->listen)
         snprintf(opts, sizeof(opts), "?listen=1");
 
-    av_url_split(NULL, 0, NULL, 0, c->underlying_host, sizeof(c->underlying_host), &port, NULL, 0, uri);
+    av_url_split_xij(NULL, 0, NULL, 0, c->underlying_host, sizeof(c->underlying_host), &port, NULL, 0, uri);
 
     p = strchr(uri, '?');
 
@@ -96,7 +96,7 @@ int ff_tls_open_underlying(TLSShared *c, URLContext *parent, const char *uri, AV
     if (use_proxy) {
         char proxy_host[200], proxy_auth[200], dest[200];
         int proxy_port;
-        av_url_split(NULL, 0, proxy_auth, sizeof(proxy_auth),
+        av_url_split_xij(NULL, 0, proxy_auth, sizeof(proxy_auth),
                      proxy_host, sizeof(proxy_host), &proxy_port, NULL, 0,
                      proxy_path);
         ff_url_join(dest, sizeof(dest), NULL, NULL, c->underlying_host, port, NULL);

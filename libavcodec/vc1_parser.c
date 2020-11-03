@@ -232,7 +232,7 @@ static int vc1_parse(AVCodecParserContext *s,
     if (s->flags & PARSER_FLAG_COMPLETE_FRAMES) {
         next = buf_size;
     } else {
-        if (ff_combine_frame(&vpc->pc, next, &buf, &buf_size) < 0) {
+        if (ff_combine_frame_xij(&vpc->pc, next, &buf, &buf_size) < 0) {
             vpc->bytes_to_skip = 0;
             *poutbuf = NULL;
             *poutbuf_size = 0;
@@ -264,7 +264,7 @@ static int vc1_split(AVCodecContext *avctx,
     const uint8_t *ptr = buf, *end = buf + buf_size;
 
     while (ptr < end) {
-        ptr = avpriv_find_start_code(ptr, end, &state);
+        ptr = avpriv_find_start_code_xij(ptr, end, &state);
         if (state == VC1_CODE_SEQHDR || state == VC1_CODE_ENTRYPOINT) {
             charged = 1;
         } else if (charged && IS_MARKER(state))
@@ -291,6 +291,6 @@ AVCodecParser ff_vc1_parser = {
     .priv_data_size = sizeof(VC1ParseContext),
     .parser_init    = vc1_parse_init,
     .parser_parse   = vc1_parse,
-    .parser_close   = ff_parse_close,
+    .parser_close   = ff_parse_close_xij,
     .split          = vc1_split,
 };

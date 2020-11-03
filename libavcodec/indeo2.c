@@ -160,7 +160,7 @@ static int ir2_decode_frame(AVCodecContext *avctx,
     int start, ret;
     int ltab, ctab;
 
-    if ((ret = ff_reget_buffer(avctx, p)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, p)) < 0)
         return ret;
 
     start = 48; /* hardcoded for now */
@@ -220,7 +220,7 @@ static int ir2_decode_frame(AVCodecContext *avctx,
             return ret;
     }
 
-    if ((ret = av_frame_ref(picture, p)) < 0)
+    if ((ret = av_frame_ref_xij(picture, p)) < 0)
         return ret;
 
     *got_frame = 1;
@@ -260,7 +260,7 @@ static av_cold int ir2_decode_end(AVCodecContext *avctx)
 {
     Ir2Context * const ic = avctx->priv_data;
 
-    av_frame_free(&ic->picture);
+    av_frame_free_xij(&ic->picture);
 
     return 0;
 }

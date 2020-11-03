@@ -106,12 +106,12 @@ static int svc_decode_frame(AVCodecContext *avctx, void *data,
         return avpkt->size;
     }
 
-    ret = ff_set_dimensions(avctx, info.UsrData.sSystemBuffer.iWidth, info.UsrData.sSystemBuffer.iHeight);
+    ret = ff_set_dimensions_xij(avctx, info.UsrData.sSystemBuffer.iWidth, info.UsrData.sSystemBuffer.iHeight);
     if (ret < 0)
         return ret;
     // The decoder doesn't (currently) support decoding into a user
     // provided buffer, so do a copy instead.
-    if (ff_get_buffer(avctx, avframe, 0) < 0) {
+    if (ff_get_buffer_xij(avctx, avframe, 0) < 0) {
         av_log(avctx, AV_LOG_ERROR, "Unable to allocate buffer\n");
         return AVERROR(ENOMEM);
     }

@@ -24,7 +24,7 @@
 static void cuvid_uninit(AVCodecContext *avctx)
 {
     InputStream *ist = avctx->opaque;
-    av_buffer_unref(&ist->hw_frames_ctx);
+    av_buffer_unref_xij(&ist->hw_frames_ctx);
 }
 
 int cuvid_init(AVCodecContext *avctx)
@@ -44,7 +44,7 @@ int cuvid_init(AVCodecContext *avctx)
         }
     }
 
-    av_buffer_unref(&ist->hw_frames_ctx);
+    av_buffer_unref_xij(&ist->hw_frames_ctx);
     ist->hw_frames_ctx = av_hwframe_ctx_alloc(hw_device_ctx);
     if (!ist->hw_frames_ctx) {
         av_log(avctx, AV_LOG_ERROR, "Error creating a CUDA frames context\n");

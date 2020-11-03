@@ -88,7 +88,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
         if (ret < 0)
             return ret;
 clone:
-        s->second = av_frame_clone(inpicref);
+        s->second = av_frame_clone_xij(inpicref);
         if (!s->second)
             return AVERROR(ENOMEM);
     }
@@ -122,7 +122,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 {
     SeparateFieldsContext *s = ctx->priv;
 
-    av_frame_free(&s->second);
+    av_frame_free_xij(&s->second);
 }
 
 static const AVFilterPad separatefields_inputs[] = {

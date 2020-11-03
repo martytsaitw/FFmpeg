@@ -34,11 +34,11 @@
  * Audio resampling, sample format conversion and mixing library.
  *
  * Interaction with lswr is done through SwrContext, which is
- * allocated with swr_alloc() or swr_alloc_set_opts(). It is opaque, so all parameters
+ * allocated with swr_alloc() or swr_alloc_set_opts_xij(). It is opaque, so all parameters
  * must be set with the @ref avoptions API.
  *
  * The first thing you will need to do in order to use lswr is to allocate
- * SwrContext. This can be done with swr_alloc() or swr_alloc_set_opts(). If you
+ * SwrContext. This can be done with swr_alloc() or swr_alloc_set_opts_xij(). If you
  * are using the former, you must set options through the @ref avoptions API.
  * The latter function provides the same feature, but it allows you to set some
  * common options in the same statement.
@@ -57,9 +57,9 @@
  * av_opt_set_sample_fmt(swr, "out_sample_fmt", AV_SAMPLE_FMT_S16,  0);
  * @endcode
  *
- * The same job can be done using swr_alloc_set_opts() as well:
+ * The same job can be done using swr_alloc_set_opts_xij() as well:
  * @code
- * SwrContext *swr = swr_alloc_set_opts(NULL,  // we're allocating a new context
+ * SwrContext *swr = swr_alloc_set_opts_xij(NULL,  // we're allocating a new context
  *                       AV_CH_LAYOUT_STEREO,  // out_ch_layout
  *                       AV_SAMPLE_FMT_S16,    // out_sample_fmt
  *                       44100,                // out_sample_rate
@@ -70,26 +70,26 @@
  *                       NULL);                // log_ctx
  * @endcode
  *
- * Once all values have been set, it must be initialized with swr_init(). If
+ * Once all values have been set, it must be initialized with swr_init_xij(). If
  * you need to change the conversion parameters, you can change the parameters
  * using @ref AVOptions, as described above in the first example; or by using
- * swr_alloc_set_opts(), but with the first argument the allocated context.
- * You must then call swr_init() again.
+ * swr_alloc_set_opts_xij(), but with the first argument the allocated context.
+ * You must then call swr_init_xij() again.
  *
- * The conversion itself is done by repeatedly calling swr_convert().
+ * The conversion itself is done by repeatedly calling swr_convert_xij().
  * Note that the samples may get buffered in swr if you provide insufficient
  * output space or if sample rate conversion is done, which requires "future"
  * samples. Samples that do not require future input can be retrieved at any
- * time by using swr_convert() (in_count can be set to 0).
+ * time by using swr_convert_xij() (in_count can be set to 0).
  * At the end of conversion the resampling buffer can be flushed by calling
- * swr_convert() with NULL in and 0 in_count.
+ * swr_convert_xij() with NULL in and 0 in_count.
  *
  * The samples used in the conversion process can be managed with the libavutil
  * @ref lavu_sampmanip "samples manipulation" API, including av_samples_alloc()
  * function used in the following example.
  *
  * The delay between input and output, can at any time be found by using
- * swr_get_delay().
+ * swr_get_delay_xij().
  *
  * The following code demonstrates the conversion loop assuming the parameters
  * from above and caller-defined functions get_input() and handle_output():
@@ -99,11 +99,11 @@
  *
  * while (get_input(&input, &in_samples)) {
  *     uint8_t *output;
- *     int out_samples = av_rescale_rnd(swr_get_delay(swr, 48000) +
+ *     int out_samples = av_rescale_rnd(swr_get_delay_xij(swr, 48000) +
  *                                      in_samples, 44100, 48000, AV_ROUND_UP);
  *     av_samples_alloc(&output, NULL, 2, out_samples,
  *                      AV_SAMPLE_FMT_S16, 0);
- *     out_samples = swr_convert(swr, &output, out_samples,
+ *     out_samples = swr_convert_xij(swr, &output, out_samples,
  *                                      input, in_samples);
  *     handle_output(output, out_samples);
  *     av_freep(&output);
@@ -111,12 +111,12 @@
  * @endcode
  *
  * When the conversion is finished, the conversion
- * context and everything associated with it must be freed with swr_free().
- * A swr_close() function is also available, but it exists mainly for
+ * context and everything associated with it must be freed with swr_free_xij().
+ * A swr_close_xij() function is also available, but it exists mainly for
  * compatibility with libavresample, and is not required to be called.
  *
  * There will be no memory leak if the data is not completely flushed before
- * swr_free().
+ * swr_free_xij().
  */
 
 #include <stdint.h>
@@ -199,9 +199,9 @@ const AVClass *swr_get_class(void);
  * Allocate SwrContext.
  *
  * If you use this function you will need to set the parameters (manually or
- * with swr_alloc_set_opts()) before calling swr_init().
+ * with swr_alloc_set_opts_xij()) before calling swr_init_xij().
  *
- * @see swr_alloc_set_opts(), swr_init(), swr_free()
+ * @see swr_alloc_set_opts_xij(), swr_init_xij(), swr_free_xij()
  * @return NULL on error, allocated context otherwise
  */
 struct SwrContext *swr_alloc(void);
@@ -216,22 +216,22 @@ struct SwrContext *swr_alloc(void);
  * @param[in,out]   s Swr context to initialize
  * @return AVERROR error code in case of failure.
  */
-int swr_init(struct SwrContext *s);
+int swr_init_xij(struct SwrContext *s);
 
 /**
  * Check whether an swr context has been initialized or not.
  *
  * @param[in]       s Swr context to check
- * @see swr_init()
+ * @see swr_init_xij()
  * @return positive if it has been initialized, 0 if not initialized
  */
-int swr_is_initialized(struct SwrContext *s);
+int swr_is_initialized_xij(struct SwrContext *s);
 
 /**
  * Allocate SwrContext if needed and set/reset common parameters.
  *
  * This function does not require s to be allocated with swr_alloc(). On the
- * other hand, swr_alloc() can use swr_alloc_set_opts() to set the parameters
+ * other hand, swr_alloc() can use swr_alloc_set_opts_xij() to set the parameters
  * on the allocated context.
  *
  * @param s               existing Swr context if available, or NULL if not
@@ -244,10 +244,10 @@ int swr_is_initialized(struct SwrContext *s);
  * @param log_offset      logging level offset
  * @param log_ctx         parent logging context, can be NULL
  *
- * @see swr_init(), swr_free()
+ * @see swr_init_xij(), swr_free_xij()
  * @return NULL on error, allocated context otherwise
  */
-struct SwrContext *swr_alloc_set_opts(struct SwrContext *s,
+struct SwrContext *swr_alloc_set_opts_xij(struct SwrContext *s,
                                       int64_t out_ch_layout, enum AVSampleFormat out_sample_fmt, int out_sample_rate,
                                       int64_t  in_ch_layout, enum AVSampleFormat  in_sample_fmt, int  in_sample_rate,
                                       int log_offset, void *log_ctx);
@@ -264,19 +264,19 @@ struct SwrContext *swr_alloc_set_opts(struct SwrContext *s,
  *
  * @param[in] s a pointer to a pointer to Swr context
  */
-void swr_free(struct SwrContext **s);
+void swr_free_xij(struct SwrContext **s);
 
 /**
- * Closes the context so that swr_is_initialized() returns 0.
+ * Closes the context so that swr_is_initialized_xij() returns 0.
  *
- * The context can be brought back to life by running swr_init(),
- * swr_init() can also be used without swr_close().
+ * The context can be brought back to life by running swr_init_xij(),
+ * swr_init() can also be used without swr_close_xij().
  * This function is mainly provided for simplifying the usecase
  * where one tries to support libavresample and libswresample.
  *
  * @param[in,out] s Swr context to be closed
  */
-void swr_close(struct SwrContext *s);
+void swr_close_xij(struct SwrContext *s);
 
 /**
  * @}
@@ -291,7 +291,7 @@ void swr_close(struct SwrContext *s);
  * end.
  *
  * If more input is provided than output space, then the input will be buffered.
- * You can avoid this buffering by using swr_get_out_samples() to retrieve an
+ * You can avoid this buffering by using swr_get_out_samples_xij() to retrieve an
  * upper bound on the required number of output samples for the given number of
  * input samples. Conversion will run directly without copying whenever possible.
  *
@@ -303,7 +303,7 @@ void swr_close(struct SwrContext *s);
  *
  * @return number of samples output per channel, negative value on error
  */
-int swr_convert(struct SwrContext *s, uint8_t **out, int out_count,
+int swr_convert_xij(struct SwrContext *s, uint8_t **out, int out_count,
                                 const uint8_t **in , int in_count);
 
 /**
@@ -319,11 +319,11 @@ int swr_convert(struct SwrContext *s, uint8_t **out, int out_count,
  *
  * @param s[in]     initialized Swr context
  * @param pts[in]   timestamp for the next input sample, INT64_MIN if unknown
- * @see swr_set_compensation(), swr_drop_output(), and swr_inject_silence() are
+ * @see swr_set_compensation_xij(), swr_drop_output_xij(), and swr_inject_silence_xij() are
  *      function used internally for timestamp compensation.
  * @return the output timestamp for the next output sample
  */
-int64_t swr_next_pts(struct SwrContext *s, int64_t pts);
+int64_t swr_next_pts_xij(struct SwrContext *s, int64_t pts);
 
 /**
  * @}
@@ -336,10 +336,10 @@ int64_t swr_next_pts(struct SwrContext *s, int64_t pts);
 
 /**
  * Activate resampling compensation ("soft" compensation). This function is
- * internally called when needed in swr_next_pts().
+ * internally called when needed in swr_next_pts_xij().
  *
  * @param[in,out] s             allocated Swr context. If it is not initialized,
- *                              or SWR_FLAG_RESAMPLE is not set, swr_init() is
+ *                              or SWR_FLAG_RESAMPLE is not set, swr_init_xij() is
  *                              called with the flag set.
  * @param[in]     sample_delta  delta in PTS per sample
  * @param[in]     compensation_distance number of samples to compensate for
@@ -348,9 +348,9 @@ int64_t swr_next_pts(struct SwrContext *s, int64_t pts);
  *            @li @c compensation_distance is less than 0,
  *            @li @c compensation_distance is 0 but sample_delta is not,
  *            @li compensation unsupported by resampler, or
- *            @li swr_init() fails when called.
+ *            @li swr_init_xij() fails when called.
  */
-int swr_set_compensation(struct SwrContext *s, int sample_delta, int compensation_distance);
+int swr_set_compensation_xij(struct SwrContext *s, int sample_delta, int compensation_distance);
 
 /**
  * Set a customized input channel mapping.
@@ -360,7 +360,7 @@ int swr_set_compensation(struct SwrContext *s, int sample_delta, int compensatio
  *                            indexes, -1 for a muted channel)
  * @return >= 0 on success, or AVERROR error code in case of failure.
  */
-int swr_set_channel_mapping(struct SwrContext *s, const int *channel_map);
+int swr_set_channel_mapping_xij(struct SwrContext *s, const int *channel_map);
 
 /**
  * Generate a channel mixing matrix.
@@ -413,7 +413,7 @@ int swr_set_matrix(struct SwrContext *s, const double *matrix, int stride);
 /**
  * Drops the specified number of output samples.
  *
- * This function, along with swr_inject_silence(), is called by swr_next_pts()
+ * This function, along with swr_inject_silence_xij(), is called by swr_next_pts_xij()
  * if needed for "hard" compensation.
  *
  * @param s     allocated Swr context
@@ -421,12 +421,12 @@ int swr_set_matrix(struct SwrContext *s, const double *matrix, int stride);
  *
  * @return >= 0 on success, or a negative AVERROR code on failure
  */
-int swr_drop_output(struct SwrContext *s, int count);
+int swr_drop_output_xij(struct SwrContext *s, int count);
 
 /**
  * Injects the specified number of silence samples.
  *
- * This function, along with swr_drop_output(), is called by swr_next_pts()
+ * This function, along with swr_drop_output_xij(), is called by swr_next_pts_xij()
  * if needed for "hard" compensation.
  *
  * @param s     allocated Swr context
@@ -434,7 +434,7 @@ int swr_drop_output(struct SwrContext *s, int count);
  *
  * @return >= 0 on success, or a negative AVERROR code on failure
  */
-int swr_inject_silence(struct SwrContext *s, int count);
+int swr_inject_silence_xij(struct SwrContext *s, int count);
 
 /**
  * Gets the delay the next input sample will experience relative to the next output sample.
@@ -460,25 +460,25 @@ int swr_inject_silence(struct SwrContext *s, int count);
  *                  returned
  * @returns     the delay in 1 / @c base units.
  */
-int64_t swr_get_delay(struct SwrContext *s, int64_t base);
+int64_t swr_get_delay_xij(struct SwrContext *s, int64_t base);
 
 /**
- * Find an upper bound on the number of samples that the next swr_convert
+ * Find an upper bound on the number of samples that the next swr_convert_xij
  * call will output, if called with in_samples of input samples. This
  * depends on the internal state, and anything changing the internal state
- * (like further swr_convert() calls) will may change the number of samples
- * swr_get_out_samples() returns for the same number of input samples.
+ * (like further swr_convert_xij() calls) will may change the number of samples
+ * swr_get_out_samples_xij() returns for the same number of input samples.
  *
  * @param in_samples    number of input samples.
- * @note any call to swr_inject_silence(), swr_convert(), swr_next_pts()
- *       or swr_set_compensation() invalidates this limit
+ * @note any call to swr_inject_silence_xij(), swr_convert_xij(), swr_next_pts_xij()
+ *       or swr_set_compensation_xij() invalidates this limit
  * @note it is recommended to pass the correct available buffer size
- *       to all functions like swr_convert() even if swr_get_out_samples()
+ *       to all functions like swr_convert_xij() even if swr_get_out_samples_xij()
  *       indicates that less would be used.
- * @returns an upper bound on the number of samples that the next swr_convert
+ * @returns an upper bound on the number of samples that the next swr_convert_xij
  *          will output or a negative value to indicate an error
  */
-int swr_get_out_samples(struct SwrContext *s, int in_samples);
+int swr_get_out_samples_xij(struct SwrContext *s, int in_samples);
 
 /**
  * @}
@@ -502,14 +502,14 @@ unsigned swresample_version_ijk(void);
  *
  * @returns     the build-time @c ./configure flags
  */
-const char *swresample_configuration(void);
+const char *swresample_configuration_xij(void);
 
 /**
  * Return the swr license.
  *
  * @returns     the license of libswresample, determined at build-time
  */
-const char *swresample_license(void);
+const char *swresample_license_xij(void);
 
 /**
  * @}
@@ -524,18 +524,18 @@ const char *swresample_license(void);
  * Input and output AVFrames must have channel_layout, sample_rate and format set.
  *
  * If the output AVFrame does not have the data pointers allocated the nb_samples
- * field will be set using av_frame_get_buffer()
+ * field will be set using av_frame_get_buffer_xij()
  * is called to allocate the frame.
  *
  * The output AVFrame can be NULL or have fewer allocated samples than required.
  * In this case, any remaining samples not written to the output will be added
  * to an internal FIFO buffer, to be returned at the next call to this function
- * or to swr_convert().
+ * or to swr_convert_xij().
  *
  * If converting sample rate, there may be data remaining in the internal
- * resampling delay buffer. swr_get_delay() tells the number of
+ * resampling delay buffer. swr_get_delay_xij() tells the number of
  * remaining samples. To get this data as output, call this function or
- * swr_convert() with NULL input.
+ * swr_convert_xij() with NULL input.
  *
  * If the SwrContext configuration does not match the output and
  * input AVFrame settings the conversion does not take place and depending on
@@ -543,8 +543,8 @@ const char *swresample_license(void);
  * or the result of a bitwise-OR of them is returned.
  *
  * @see swr_delay()
- * @see swr_convert()
- * @see swr_get_delay()
+ * @see swr_convert_xij()
+ * @see swr_get_delay_xij()
  *
  * @param swr             audio resample context
  * @param output          output AVFrame
@@ -560,9 +560,9 @@ int swr_convert_frame(SwrContext *swr,
  * provided by the AVFrames.
  *
  * The original resampling context is reset even on failure.
- * The function calls swr_close() internally if the context is open.
+ * The function calls swr_close_xij() internally if the context is open.
  *
- * @see swr_close();
+ * @see swr_close_xij();
  *
  * @param swr             audio resample context
  * @param output          output AVFrame

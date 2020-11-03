@@ -95,10 +95,10 @@ static inline void bwf_write_bext_string(AVFormatContext *s, const char *key, in
     if (tag = av_dict_get(s->metadata, key, NULL, 0)) {
         len = strlen(tag->value);
         len = FFMIN(len, maxlen);
-        avio_write(s->pb, tag->value, len);
+        avio_write_xij(s->pb, tag->value, len);
     }
 
-    ffio_fill(s->pb, 0, maxlen - len);
+    ffio_fill_xij(s->pb, 0, maxlen - len);
 }
 
 static void bwf_write_bext_chunk(AVFormatContext *s)
@@ -115,8 +115,8 @@ static void bwf_write_bext_chunk(AVFormatContext *s)
 
     if (tmp_tag = av_dict_get(s->metadata, "time_reference", NULL, 0))
         time_reference = strtoll(tmp_tag->value, NULL, 10);
-    avio_wl64(s->pb, time_reference);
-    avio_wl16(s->pb, 1);  // set version to 1
+    avio_wl64_xij(s->pb, time_reference);
+    avio_wl16_xij(s->pb, 1);  // set version to 1
 
     if ((tmp_tag = av_dict_get(s->metadata, "umid", NULL, 0)) && strlen(tmp_tag->value) > 2) {
         unsigned char umidpart_str[17] = {0};
@@ -127,16 +127,16 @@ static void bwf_write_bext_chunk(AVFormatContext *s)
         for (i = 0; i < len/16; i++) {
             memcpy(umidpart_str, tmp_tag->value + 2 + (i*16), 16);
             umidpart = strtoll(umidpart_str, NULL, 16);
-            avio_wb64(s->pb, umidpart);
+            avio_wb64_xij(s->pb, umidpart);
         }
-        ffio_fill(s->pb, 0, 64 - i*8);
+        ffio_fill_xij(s->pb, 0, 64 - i*8);
     } else
-        ffio_fill(s->pb, 0, 64); // zero UMID
+        ffio_fill_xij(s->pb, 0, 64); // zero UMID
 
-    ffio_fill(s->pb, 0, 190); // Reserved
+    ffio_fill_xij(s->pb, 0, 190); // Reserved
 
     if (tmp_tag = av_dict_get(s->metadata, "coding_history", NULL, 0))
-        avio_put_str(s->pb, tmp_tag->value);
+        avio_put_str_xij(s->pb, tmp_tag->value);
 
     ff_end_tag(s->pb, bext);
 }
@@ -165,7 +165,7 @@ static av_cold int peak_init_writer(AVFormatContext *s)
         return -1;
     }
 
-    wav->peak_bps = av_get_bits_per_sample(par->codec_id) / 8;
+    wav->peak_bps = av_get_bits_per_sample_xij(par->codec_id) / 8;
 
     if (wav->peak_bps == 1 && wav->peak_format == PEAK_FORMAT_UINT16) {
         av_log(s, AV_LOG_ERROR,
@@ -272,18 +272,18 @@ static int peak_write_chunk(AVFormatContext *s)
         }
     }
 
-    avio_wl32(pb, 1);                           /* version */
-    avio_wl32(pb, wav->peak_format);            /* 8 or 16 bit */
-    avio_wl32(pb, wav->peak_ppv);               /* positive and negative */
-    avio_wl32(pb, wav->peak_block_size);        /* frames per value */
-    avio_wl32(pb, par->channels);               /* number of channels */
-    avio_wl32(pb, wav->peak_num_frames);        /* number of peak frames */
-    avio_wl32(pb, -1);                          /* audio sample frame position (not implemented) */
-    avio_wl32(pb, 128);                         /* equal to size of header */
-    avio_write(pb, timestamp, 28);              /* ASCII time stamp */
-    ffio_fill(pb, 0, 60);
+    avio_wl32_xij(pb, 1);                           /* version */
+    avio_wl32_xij(pb, wav->peak_format);            /* 8 or 16 bit */
+    avio_wl32_xij(pb, wav->peak_ppv);               /* positive and negative */
+    avio_wl32_xij(pb, wav->peak_block_size);        /* frames per value */
+    avio_wl32_xij(pb, par->channels);               /* number of channels */
+    avio_wl32_xij(pb, wav->peak_num_frames);        /* number of peak frames */
+    avio_wl32_xij(pb, -1);                          /* audio sample frame position (not implemented) */
+    avio_wl32_xij(pb, 128);                         /* equal to size of header */
+    avio_write_xij(pb, timestamp, 28);              /* ASCII time stamp */
+    ffio_fill_xij(pb, 0, 60);
 
-    avio_write(pb, wav->peak_output, wav->peak_outbuf_bytes);
+    avio_write_xij(pb, wav->peak_output, wav->peak_outbuf_bytes);
 
     ff_end_tag(pb, peak);
 
@@ -306,10 +306,10 @@ static int wav_write_header(AVFormatContext *s)
 
     if (wav->rf64 == RF64_ALWAYS) {
         ffio_wfourcc(pb, "RF64");
-        avio_wl32(pb, -1); /* RF64 chunk size: use size in ds64 */
+        avio_wl32_xij(pb, -1); /* RF64 chunk size: use size in ds64 */
     } else {
         ffio_wfourcc(pb, "RIFF");
-        avio_wl32(pb, -1); /* file length */
+        avio_wl32_xij(pb, -1); /* file length */
     }
 
     ffio_wfourcc(pb, "WAVE");
@@ -317,9 +317,9 @@ static int wav_write_header(AVFormatContext *s)
     if (wav->rf64 != RF64_NEVER) {
         /* write empty ds64 chunk or JUNK chunk to reserve space for ds64 */
         ffio_wfourcc(pb, wav->rf64 == RF64_ALWAYS ? "ds64" : "JUNK");
-        avio_wl32(pb, 28); /* chunk size */
+        avio_wl32_xij(pb, 28); /* chunk size */
         wav->ds64 = avio_tell(pb);
-        ffio_fill(pb, 0, 28);
+        ffio_fill_xij(pb, 0, 28);
     }
 
     if (wav->write_peak != PEAK_ONLY) {
@@ -337,7 +337,7 @@ static int wav_write_header(AVFormatContext *s)
     if (s->streams[0]->codecpar->codec_tag != 0x01 /* hence for all other than PCM */
         && (s->pb->seekable & AVIO_SEEKABLE_NORMAL)) {
         wav->fact_pos = ff_start_tag(pb, "fact");
-        avio_wl32(pb, 0);
+        avio_wl32_xij(pb, 0);
         ff_end_tag(pb, wav->fact_pos);
     }
 
@@ -362,7 +362,7 @@ static int wav_write_header(AVFormatContext *s)
         wav->data = ff_start_tag(pb, "data");
     }
 
-    avio_flush(pb);
+    avio_flush_xij(pb);
 
     return 0;
 }
@@ -373,7 +373,7 @@ static int wav_write_packet(AVFormatContext *s, AVPacket *pkt)
     WAVMuxContext    *wav = s->priv_data;
 
     if (wav->write_peak != PEAK_ONLY)
-        avio_write(pb, pkt->data, pkt->size);
+        avio_write_xij(pb, pkt->data, pkt->size);
 
     if (wav->write_peak) {
         int c = 0;
@@ -414,17 +414,17 @@ static int wav_write_trailer(AVFormatContext *s)
     int rf64 = 0;
     int ret = 0;
 
-    avio_flush(pb);
+    avio_flush_xij(pb);
 
     if (s->pb->seekable & AVIO_SEEKABLE_NORMAL) {
         if (wav->write_peak != PEAK_ONLY && avio_tell(pb) - wav->data < UINT32_MAX) {
             ff_end_tag(pb, wav->data);
-            avio_flush(pb);
+            avio_flush_xij(pb);
         }
 
         if (wav->write_peak && wav->peak_output) {
             ret = peak_write_chunk(s);
-            avio_flush(pb);
+            avio_flush_xij(pb);
         }
 
         /* update file size */
@@ -433,11 +433,11 @@ static int wav_write_trailer(AVFormatContext *s)
         if (wav->rf64 == RF64_ALWAYS || (wav->rf64 == RF64_AUTO && file_size - 8 > UINT32_MAX)) {
             rf64 = 1;
         } else if (file_size - 8 <= UINT32_MAX) {
-            avio_seek(pb, 4, SEEK_SET);
-            avio_wl32(pb, (uint32_t)(file_size - 8));
-            avio_seek(pb, file_size, SEEK_SET);
+            avio_seek_xij(pb, 4, SEEK_SET);
+            avio_wl32_xij(pb, (uint32_t)(file_size - 8));
+            avio_seek_xij(pb, file_size, SEEK_SET);
 
-            avio_flush(pb);
+            avio_flush_xij(pb);
         } else {
             av_log(s, AV_LOG_ERROR,
                    "Filesize %"PRId64" invalid for wav, output file will be broken\n",
@@ -450,38 +450,38 @@ static int wav_write_trailer(AVFormatContext *s)
 
         if(s->streams[0]->codecpar->codec_tag != 0x01) {
             /* Update num_samps in fact chunk */
-            avio_seek(pb, wav->fact_pos, SEEK_SET);
+            avio_seek_xij(pb, wav->fact_pos, SEEK_SET);
             if (rf64 || (wav->rf64 == RF64_AUTO && number_of_samples > UINT32_MAX)) {
                 rf64 = 1;
-                avio_wl32(pb, -1);
+                avio_wl32_xij(pb, -1);
             } else {
-                avio_wl32(pb, number_of_samples);
-                avio_seek(pb, file_size, SEEK_SET);
-                avio_flush(pb);
+                avio_wl32_xij(pb, number_of_samples);
+                avio_seek_xij(pb, file_size, SEEK_SET);
+                avio_flush_xij(pb);
             }
         }
 
         if (rf64) {
             /* overwrite RIFF with RF64 */
-            avio_seek(pb, 0, SEEK_SET);
+            avio_seek_xij(pb, 0, SEEK_SET);
             ffio_wfourcc(pb, "RF64");
-            avio_wl32(pb, -1);
+            avio_wl32_xij(pb, -1);
 
             /* write ds64 chunk (overwrite JUNK if rf64 == RF64_AUTO) */
-            avio_seek(pb, wav->ds64 - 8, SEEK_SET);
+            avio_seek_xij(pb, wav->ds64 - 8, SEEK_SET);
             ffio_wfourcc(pb, "ds64");
-            avio_wl32(pb, 28);                  /* ds64 chunk size */
-            avio_wl64(pb, file_size - 8);       /* RF64 chunk size */
-            avio_wl64(pb, data_size);           /* data chunk size */
-            avio_wl64(pb, number_of_samples);   /* fact chunk number of samples */
-            avio_wl32(pb, 0);                   /* number of table entries for non-'data' chunks */
+            avio_wl32_xij(pb, 28);                  /* ds64 chunk size */
+            avio_wl64_xij(pb, file_size - 8);       /* RF64 chunk size */
+            avio_wl64_xij(pb, data_size);           /* data chunk size */
+            avio_wl64_xij(pb, number_of_samples);   /* fact chunk number of samples */
+            avio_wl32_xij(pb, 0);                   /* number of table entries for non-'data' chunks */
 
             /* write -1 in data chunk size */
-            avio_seek(pb, wav->data - 4, SEEK_SET);
-            avio_wl32(pb, -1);
+            avio_seek_xij(pb, wav->data - 4, SEEK_SET);
+            avio_wl32_xij(pb, -1);
 
-            avio_seek(pb, file_size, SEEK_SET);
-            avio_flush(pb);
+            avio_seek_xij(pb, file_size, SEEK_SET);
+            avio_flush_xij(pb);
         }
     }
 
@@ -540,8 +540,8 @@ static void start_guid(AVIOContext *pb, const uint8_t *guid, int64_t *pos)
 {
     *pos = avio_tell(pb);
 
-    avio_write(pb, guid, 16);
-    avio_wl64(pb, INT64_MAX);
+    avio_write_xij(pb, guid, 16);
+    avio_wl64_xij(pb, INT64_MAX);
 }
 
 static void end_guid(AVIOContext *pb, int64_t start)
@@ -549,10 +549,10 @@ static void end_guid(AVIOContext *pb, int64_t start)
     int64_t end, pos = avio_tell(pb);
 
     end = FFALIGN(pos, 8);
-    ffio_fill(pb, 0, end - pos);
-    avio_seek(pb, start + 16, SEEK_SET);
-    avio_wl64(pb, end - start);
-    avio_seek(pb, end, SEEK_SET);
+    ffio_fill_xij(pb, 0, end - pos);
+    avio_seek_xij(pb, start + 16, SEEK_SET);
+    avio_wl64_xij(pb, end - start);
+    avio_seek_xij(pb, end, SEEK_SET);
 }
 
 static int w64_write_header(AVFormatContext *s)
@@ -562,9 +562,9 @@ static int w64_write_header(AVFormatContext *s)
     int64_t start;
     int ret;
 
-    avio_write(pb, ff_w64_guid_riff, sizeof(ff_w64_guid_riff));
-    avio_wl64(pb, -1);
-    avio_write(pb, ff_w64_guid_wave, sizeof(ff_w64_guid_wave));
+    avio_write_xij(pb, ff_w64_guid_riff, sizeof(ff_w64_guid_riff));
+    avio_wl64_xij(pb, -1);
+    avio_write_xij(pb, ff_w64_guid_wave, sizeof(ff_w64_guid_wave));
     start_guid(pb, ff_w64_guid_fmt, &start);
     if ((ret = ff_put_wav_header(s, pb, s->streams[0]->codecpar, 0)) < 0) {
         AVCodec *codec = avcodec_find_decoder_ijk(s->streams[0]->codecpar->codec_id);
@@ -577,7 +577,7 @@ static int w64_write_header(AVFormatContext *s)
     if (s->streams[0]->codecpar->codec_tag != 0x01 /* hence for all other than PCM */
         && (s->pb->seekable & AVIO_SEEKABLE_NORMAL)) {
         start_guid(pb, ff_w64_guid_fact, &wav->fact_pos);
-        avio_wl64(pb, 0);
+        avio_wl64_xij(pb, 0);
         end_guid(pb, wav->fact_pos);
     }
 
@@ -596,8 +596,8 @@ static int w64_write_trailer(AVFormatContext *s)
         end_guid(pb, wav->data);
 
         file_size = avio_tell(pb);
-        avio_seek(pb, 16, SEEK_SET);
-        avio_wl64(pb, file_size);
+        avio_seek_xij(pb, 16, SEEK_SET);
+        avio_wl64_xij(pb, file_size);
 
         if (s->streams[0]->codecpar->codec_tag != 0x01) {
             int64_t number_of_samples;
@@ -605,12 +605,12 @@ static int w64_write_trailer(AVFormatContext *s)
             number_of_samples = av_rescale(wav->maxpts - wav->minpts + wav->last_duration,
                                            s->streams[0]->codecpar->sample_rate * (int64_t)s->streams[0]->time_base.num,
                                            s->streams[0]->time_base.den);
-            avio_seek(pb, wav->fact_pos + 24, SEEK_SET);
-            avio_wl64(pb, number_of_samples);
+            avio_seek_xij(pb, wav->fact_pos + 24, SEEK_SET);
+            avio_wl64_xij(pb, number_of_samples);
         }
 
-        avio_seek(pb, file_size, SEEK_SET);
-        avio_flush(pb);
+        avio_seek_xij(pb, file_size, SEEK_SET);
+        avio_flush_xij(pb);
     }
 
     return 0;

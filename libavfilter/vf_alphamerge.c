@@ -162,7 +162,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
 
         draw_frame(ctx, main_buf, alpha_buf);
         ret = ff_filter_frame(ctx->outputs[0], main_buf);
-        av_frame_free(&alpha_buf);
+        av_frame_free_xij(&alpha_buf);
     } while (ret >= 0);
     return ret;
 }

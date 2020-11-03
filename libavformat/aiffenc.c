@@ -55,8 +55,8 @@ static int put_id3v2_tags(AVFormatContext *s, AIFFOutputContext *aiff)
     if (!s->metadata && !aiff->pict_list)
         return 0;
 
-    avio_wl32(pb, MKTAG('I', 'D', '3', ' '));
-    avio_wb32(pb, 0);
+    avio_wl32_xij(pb, MKTAG('I', 'D', '3', ' '));
+    avio_wb32_xij(pb, 0);
     pos = avio_tell(pb);
 
     ff_id3v2_start(&id3v2, pb, aiff->id3v2_version, ID3v2_DEFAULT_MAGIC);
@@ -72,12 +72,12 @@ static int put_id3v2_tags(AVFormatContext *s, AIFFOutputContext *aiff)
     size = end - pos;
 
     /* Update chunk size */
-    avio_seek(pb, pos - 4, SEEK_SET);
-    avio_wb32(pb, size);
-    avio_seek(pb, end, SEEK_SET);
+    avio_seek_xij(pb, pos - 4, SEEK_SET);
+    avio_wb32_xij(pb, size);
+    avio_seek_xij(pb, end, SEEK_SET);
 
     if (size & 1)
-        avio_w8(pb, 0);
+        avio_w8_xij(pb, 0);
 
     return 0;
 }
@@ -90,11 +90,11 @@ static void put_meta(AVFormatContext *s, const char *key, uint32_t id)
     if (tag = av_dict_get(s->metadata, key, NULL, 0)) {
         int size = strlen(tag->value);
 
-        avio_wl32(pb, id);
-        avio_wb32(pb, FFALIGN(size, 2));
-        avio_write(pb, tag->value, size);
+        avio_wl32_xij(pb, id);
+        avio_wb32_xij(pb, FFALIGN(size, 2));
+        avio_write_xij(pb, tag->value, size);
         if (size & 1)
-            avio_w8(pb, 0);
+            avio_w8_xij(pb, 0);
     }
 }
 
@@ -132,7 +132,7 @@ static int aiff_write_header(AVFormatContext *s)
     /* FORM AIFF header */
     ffio_wfourcc(pb, "FORM");
     aiff->form = avio_tell(pb);
-    avio_wb32(pb, 0);                    /* file length */
+    avio_wb32_xij(pb, 0);                    /* file length */
     ffio_wfourcc(pb, aifc ? "AIFC" : "AIFF");
 
     if (aifc) { // compressed audio
@@ -142,14 +142,14 @@ static int aiff_write_header(AVFormatContext *s)
         }
         /* Version chunk */
         ffio_wfourcc(pb, "FVER");
-        avio_wb32(pb, 4);
-        avio_wb32(pb, 0xA2805140);
+        avio_wb32_xij(pb, 4);
+        avio_wb32_xij(pb, 0xA2805140);
     }
 
     if (par->channels > 2 && par->channel_layout) {
         ffio_wfourcc(pb, "CHAN");
-        avio_wb32(pb, 12);
-        ff_mov_write_chan(pb, par->channel_layout);
+        avio_wb32_xij(pb, 12);
+        ff_mov_write_chan_xij(pb, par->channel_layout);
     }
 
     put_meta(s, "title",     MKTAG('N', 'A', 'M', 'E'));
@@ -159,14 +159,14 @@ static int aiff_write_header(AVFormatContext *s)
 
     /* Common chunk */
     ffio_wfourcc(pb, "COMM");
-    avio_wb32(pb, aifc ? 24 : 18); /* size */
-    avio_wb16(pb, par->channels);  /* Number of channels */
+    avio_wb32_xij(pb, aifc ? 24 : 18); /* size */
+    avio_wb16_xij(pb, par->channels);  /* Number of channels */
 
     aiff->frames = avio_tell(pb);
-    avio_wb32(pb, 0);              /* Number of frames */
+    avio_wb32_xij(pb, 0);              /* Number of frames */
 
     if (!par->bits_per_coded_sample)
-        par->bits_per_coded_sample = av_get_bits_per_sample(par->codec_id);
+        par->bits_per_coded_sample = av_get_bits_per_sample_xij(par->codec_id);
     if (!par->bits_per_coded_sample) {
         av_log(s, AV_LOG_ERROR, "could not compute bits per sample\n");
         return -1;
@@ -174,36 +174,36 @@ static int aiff_write_header(AVFormatContext *s)
     if (!par->block_align)
         par->block_align = (par->bits_per_coded_sample * par->channels) >> 3;
 
-    avio_wb16(pb, par->bits_per_coded_sample); /* Sample size */
+    avio_wb16_xij(pb, par->bits_per_coded_sample); /* Sample size */
 
     sample_rate = av_double2int(par->sample_rate);
-    avio_wb16(pb, (sample_rate >> 52) + (16383 - 1023));
-    avio_wb64(pb, UINT64_C(1) << 63 | sample_rate << 11);
+    avio_wb16_xij(pb, (sample_rate >> 52) + (16383 - 1023));
+    avio_wb64_xij(pb, UINT64_C(1) << 63 | sample_rate << 11);
 
     if (aifc) {
-        avio_wl32(pb, par->codec_tag);
-        avio_wb16(pb, 0);
+        avio_wl32_xij(pb, par->codec_tag);
+        avio_wb16_xij(pb, 0);
     }
 
     if (  (par->codec_tag == MKTAG('Q','D','M','2')
         || par->codec_tag == MKTAG('Q','c','l','p')) && par->extradata_size) {
         ffio_wfourcc(pb, "wave");
-        avio_wb32(pb, par->extradata_size);
-        avio_write(pb, par->extradata, par->extradata_size);
+        avio_wb32_xij(pb, par->extradata_size);
+        avio_write_xij(pb, par->extradata, par->extradata_size);
     }
 
     /* Sound data chunk */
     ffio_wfourcc(pb, "SSND");
     aiff->ssnd = avio_tell(pb);         /* Sound chunk size */
-    avio_wb32(pb, 0);                    /* Sound samples data size */
-    avio_wb32(pb, 0);                    /* Data offset */
-    avio_wb32(pb, 0);                    /* Block-size (block align) */
+    avio_wb32_xij(pb, 0);                    /* Sound samples data size */
+    avio_wb32_xij(pb, 0);                    /* Data offset */
+    avio_wb32_xij(pb, 0);                    /* Block-size (block align) */
 
     avpriv_set_pts_info_ijk(s->streams[aiff->audio_stream_idx], 64, 1,
                         s->streams[aiff->audio_stream_idx]->codecpar->sample_rate);
 
     /* Data is starting here */
-    avio_flush(pb);
+    avio_flush_xij(pb);
 
     return 0;
 }
@@ -213,7 +213,7 @@ static int aiff_write_packet(AVFormatContext *s, AVPacket *pkt)
     AIFFOutputContext *aiff = s->priv_data;
     AVIOContext *pb = s->pb;
     if (pkt->stream_index == aiff->audio_stream_idx)
-        avio_write(pb, pkt->data, pkt->size);
+        avio_write_xij(pb, pkt->data, pkt->size);
     else {
         int ret;
         AVPacketList *pict_list, *last;
@@ -264,21 +264,21 @@ static int aiff_write_trailer(AVFormatContext *s)
     int64_t file_size, end_size;
     end_size = file_size = avio_tell(pb);
     if (file_size & 1) {
-        avio_w8(pb, 0);
+        avio_w8_xij(pb, 0);
         end_size++;
     }
 
     if (s->pb->seekable & AVIO_SEEKABLE_NORMAL) {
         /* Number of sample frames */
-        avio_seek(pb, aiff->frames, SEEK_SET);
-        avio_wb32(pb, (file_size - aiff->ssnd - 12) / par->block_align);
+        avio_seek_xij(pb, aiff->frames, SEEK_SET);
+        avio_wb32_xij(pb, (file_size - aiff->ssnd - 12) / par->block_align);
 
         /* Sound Data chunk size */
-        avio_seek(pb, aiff->ssnd, SEEK_SET);
-        avio_wb32(pb, file_size - aiff->ssnd - 4);
+        avio_seek_xij(pb, aiff->ssnd, SEEK_SET);
+        avio_wb32_xij(pb, file_size - aiff->ssnd - 4);
 
         /* return to the end */
-        avio_seek(pb, end_size, SEEK_SET);
+        avio_seek_xij(pb, end_size, SEEK_SET);
 
         /* Write ID3 tags */
         if (aiff->write_id3v2)
@@ -287,10 +287,10 @@ static int aiff_write_trailer(AVFormatContext *s)
 
         /* File length */
         file_size = avio_tell(pb);
-        avio_seek(pb, aiff->form, SEEK_SET);
-        avio_wb32(pb, file_size - aiff->form - 4);
+        avio_seek_xij(pb, aiff->form, SEEK_SET);
+        avio_wb32_xij(pb, file_size - aiff->form - 4);
 
-        avio_flush(pb);
+        avio_flush_xij(pb);
     }
 
     while (pict_list) {

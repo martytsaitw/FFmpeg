@@ -28,9 +28,9 @@
  */
 
 #include "libavutil/ffversion.h"
-const char av_util_ffversion[] = "FFmpeg version " FFMPEG_VERSION;
+const char av_util_ffversion_xij[] = "FFmpeg version " FFMPEG_VERSION;
 
-const char *av_version_info(void)
+const char *av_version_info_xij(void)
 {
     return FFMPEG_VERSION;
 }
@@ -62,18 +62,18 @@ unsigned avutil_version_ijk(void)
     return LIBAVUTIL_VERSION_INT;
 }
 
-const char *avutil_configuration(void)
+const char *avutil_configuration_xij(void)
 {
     return FFMPEG_CONFIGURATION;
 }
 
-const char *avutil_license(void)
+const char *avutil_license_xij(void)
 {
 #define LICENSE_PREFIX "libavutil license: "
     return LICENSE_PREFIX FFMPEG_LICENSE + sizeof(LICENSE_PREFIX) - 1;
 }
 
-const char *av_get_media_type_string(enum AVMediaType media_type)
+const char *av_get_media_type_string_xij(enum AVMediaType media_type)
 {
     switch (media_type) {
     case AVMEDIA_TYPE_VIDEO:      return "video";
@@ -85,7 +85,7 @@ const char *av_get_media_type_string(enum AVMediaType media_type)
     }
 }
 
-char av_get_picture_type_char(enum AVPictureType pict_type)
+char av_get_picture_type_char_xij(enum AVPictureType pict_type)
 {
     switch (pict_type) {
     case AV_PICTURE_TYPE_I:  return 'I';
@@ -99,7 +99,7 @@ char av_get_picture_type_char(enum AVPictureType pict_type)
     }
 }
 
-unsigned av_int_list_length_for_size(unsigned elsize,
+unsigned av_int_list_length_for_size_xij(unsigned elsize,
                                      const void *list, uint64_t term)
 {
     unsigned i;
@@ -118,7 +118,7 @@ unsigned av_int_list_length_for_size(unsigned elsize,
     return i;
 }
 
-char *av_fourcc_make_string(char *buf, uint32_t fourcc)
+char *av_fourcc_make_string_xij(char *buf, uint32_t fourcc)
 {
     int i;
     char *orig_buf = buf;
@@ -141,12 +141,12 @@ char *av_fourcc_make_string(char *buf, uint32_t fourcc)
     return orig_buf;
 }
 
-AVRational av_get_time_base_q(void)
+AVRational av_get_time_base_q_xij(void)
 {
     return (AVRational){1, AV_TIME_BASE};
 }
 
-void av_assert0_fpu(void) {
+void av_assert0_fpu_xij(void) {
 #if HAVE_MMX_INLINE
     uint16_t state[14];
      __asm__ volatile (

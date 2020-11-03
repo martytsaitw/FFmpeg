@@ -56,7 +56,7 @@ static int v410_decode_frame(AVCodecContext *avctx, void *data,
         return AVERROR(EINVAL);
     }
 
-    if ((ret = ff_get_buffer(avctx, pic, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, pic, 0)) < 0)
         return ret;
 
     pic->key_frame = 1;

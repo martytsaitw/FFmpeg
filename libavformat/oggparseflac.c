@@ -61,7 +61,7 @@ flac_header (AVFormatContext * s, int idx)
         st->codecpar->codec_id = AV_CODEC_ID_FLAC;
         st->need_parsing = AVSTREAM_PARSE_HEADERS;
 
-        if (ff_alloc_extradata(st->codecpar, FLAC_STREAMINFO_SIZE) < 0)
+        if (ff_alloc_extradata_xij(st->codecpar, FLAC_STREAMINFO_SIZE) < 0)
             return AVERROR(ENOMEM);
         memcpy(st->codecpar->extradata, streaminfo_start, st->codecpar->extradata_size);
 
@@ -83,7 +83,7 @@ old_flac_header (AVFormatContext * s, int idx)
     struct ogg *ogg = s->priv_data;
     AVStream *st = s->streams[idx];
     struct ogg_stream *os = ogg->streams + idx;
-    AVCodecParserContext *parser = av_parser_init(AV_CODEC_ID_FLAC);
+    AVCodecParserContext *parser = av_parser_init_xij(AV_CODEC_ID_FLAC);
     AVCodecContext *avctx;
     int size, ret;
     uint8_t *data;
@@ -105,7 +105,7 @@ old_flac_header (AVFormatContext * s, int idx)
         goto fail;
 
     parser->flags = PARSER_FLAG_COMPLETE_FRAMES;
-    av_parser_parse2(parser, avctx,
+    av_parser_parse2_xij(parser, avctx,
                      &data, &size, os->buf + os->pstart, os->psize,
                      AV_NOPTS_VALUE, AV_NOPTS_VALUE, -1);
 

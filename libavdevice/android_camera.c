@@ -649,7 +649,7 @@ static int add_display_matrix(AVFormatContext *avctx, AVStream *st)
         av_display_matrix_flip(display_matrix, 1, 0);
     }
 
-    side_data = av_stream_new_side_data(st,
+    side_data = av_stream_new_side_data_xij(st,
             AV_PKT_DATA_DISPLAYMATRIX, sizeof(display_matrix));
 
     if (!side_data) {

@@ -104,7 +104,7 @@ static int vp9_superframe_filter(AVBSFContext *ctx, AVPacket *out)
     AVPacket *in;
     int res, invisible, profile, marker, uses_superframe_syntax = 0, n;
 
-    res = ff_bsf_get_packet(ctx, &in);
+    res = ff_bsf_get_packet_xij(ctx, &in);
     if (res < 0)
         return res;
 
@@ -138,7 +138,7 @@ static int vp9_superframe_filter(AVBSFContext *ctx, AVPacket *out)
         goto done;
     } else if ((!invisible || uses_superframe_syntax) && !s->n_cache) {
         // passthrough
-        av_packet_move_ref(out, in);
+        av_packet_move_ref_xij(out, in);
         goto done;
     } else if (s->n_cache + 1 >= MAX_CACHE) {
         av_log(ctx, AV_LOG_ERROR,
@@ -147,7 +147,7 @@ static int vp9_superframe_filter(AVBSFContext *ctx, AVPacket *out)
         goto done;
     }
 
-    av_packet_move_ref(s->cache[s->n_cache++], in);
+    av_packet_move_ref_xij(s->cache[s->n_cache++], in);
 
     if (invisible) {
         res = AVERROR(EAGAIN);
@@ -170,7 +170,7 @@ static int vp9_superframe_filter(AVBSFContext *ctx, AVPacket *out)
 done:
     if (res < 0)
         av_packet_unref_ijk(out);
-    av_packet_free(&in);
+    av_packet_free_xij(&in);
     return res;
 }
 
@@ -196,7 +196,7 @@ static void vp9_superframe_close(AVBSFContext *ctx)
 
     // free cached data
     for (n = 0; n < MAX_CACHE; n++)
-        av_packet_free(&s->cache[n]);
+        av_packet_free_xij(&s->cache[n]);
 }
 
 static const enum AVCodecID codec_ids[] = {

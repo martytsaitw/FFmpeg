@@ -197,7 +197,7 @@ static av_cold int libssh_connect(URLContext *h, const char *url, char *path, si
     const char *user = NULL, *pass = NULL;
     char *end = NULL;
 
-    av_url_split(proto, sizeof(proto),
+    av_url_split_xij(proto, sizeof(proto),
                  credencials, sizeof(credencials),
                  hostname, sizeof(hostname),
                  &port,
@@ -437,14 +437,14 @@ static int libssh_move(URLContext *h_src, URLContext *h_dst)
     char credentials_src[1024], credentials_dst[1024];
     int port_src = 22, port_dst = 22;
 
-    av_url_split(NULL, 0,
+    av_url_split_xij(NULL, 0,
                  credentials_src, sizeof(credentials_src),
                  hostname_src, sizeof(hostname_src),
                  &port_src,
                  path_src, sizeof(path_src),
                  h_src->filename);
 
-    av_url_split(NULL, 0,
+    av_url_split_xij(NULL, 0,
                  credentials_dst, sizeof(credentials_dst),
                  hostname_dst, sizeof(hostname_dst),
                  &port_dst,

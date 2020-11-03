@@ -549,7 +549,7 @@ static int resample_flush(struct SwrContext *s) {
     int i, j, ret;
     int reflection = (FFMIN(s->in_buffer_count, c->filter_length) + 1) / 2;
 
-    if((ret = swri_realloc_audio(a, s->in_buffer_index + s->in_buffer_count + reflection)) < 0)
+    if((ret = swri_realloc_audio_xij(a, s->in_buffer_index + s->in_buffer_count + reflection)) < 0)
         return ret;
     av_assert0(a->planar);
     for(i=0; i<a->ch_count; i++){
@@ -571,7 +571,7 @@ static int invert_initial_buffer(ResampleContext *c, AudioData *dst, const Audio
     if (c->index >= 0)
         return 0;
 
-    if ((res = swri_realloc_audio(dst, c->filter_length * 2 + 1)) < 0)
+    if ((res = swri_realloc_audio_xij(dst, c->filter_length * 2 + 1)) < 0)
         return res;
 
     // copy

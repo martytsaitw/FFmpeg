@@ -869,7 +869,7 @@ static int read_whole_file(AVIOContext *io, int max_size, char **rbuf)
                 goto fail;
             }
         }
-        r = avio_read(io, buf, bufsize - size - 1);
+        r = avio_read_xij(io, buf, bufsize - size - 1);
         if (r == AVERROR_EOF)
             break;
         if (r < 0)
@@ -1336,7 +1336,7 @@ static int encode_intervals(struct sbg_script *s, AVCodecParameters *par,
         if (edata_size < 0)
             return AVERROR(ENOMEM);
     }
-    if (ff_alloc_extradata(par, edata_size))
+    if (ff_alloc_extradata_xij(par, edata_size))
         return AVERROR(ENOMEM);
     edata = par->extradata;
 

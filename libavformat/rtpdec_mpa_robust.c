@@ -36,7 +36,7 @@ struct PayloadContext {
 
 static void mpa_robust_close_context(PayloadContext *data)
 {
-    ffio_free_dyn_buf(&data->fragment);
+    ffio_free_dyn_buf_xij(&data->fragment);
     av_free(data->split_buf);
 }
 
@@ -145,17 +145,17 @@ static int mpa_robust_parse_packet(AVFormatContext *ctx, PayloadContext *data,
         return 0;
     } else if (!continuation) { /* && adu_size > len */
         /* First fragment */
-        ffio_free_dyn_buf(&data->fragment);
+        ffio_free_dyn_buf_xij(&data->fragment);
 
         data->adu_size = adu_size;
         data->cur_size = len;
         data->timestamp = *timestamp;
 
-        err = avio_open_dyn_buf(&data->fragment);
+        err = avio_open_dyn_buf_xij(&data->fragment);
         if (err < 0)
             return err;
 
-        avio_write(data->fragment, buf, len);
+        avio_write_xij(data->fragment, buf, len);
         return AVERROR(EAGAIN);
     }
     /* else continuation == 1 */
@@ -168,12 +168,12 @@ static int mpa_robust_parse_packet(AVFormatContext *ctx, PayloadContext *data,
     }
     if (adu_size != data->adu_size ||
         data->timestamp != *timestamp) {
-        ffio_free_dyn_buf(&data->fragment);
+        ffio_free_dyn_buf_xij(&data->fragment);
         av_log(ctx, AV_LOG_ERROR, "Invalid packet received\n");
         return AVERROR_INVALIDDATA;
     }
 
-    avio_write(data->fragment, buf, len);
+    avio_write_xij(data->fragment, buf, len);
     data->cur_size += len;
 
     if (data->cur_size < data->adu_size)

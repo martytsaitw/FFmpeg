@@ -43,7 +43,7 @@ static int dump_extradata(AVBSFContext *ctx, AVPacket *out)
     AVPacket *in;
     int ret = 0;
 
-    ret = ff_bsf_get_packet(ctx, &in);
+    ret = ff_bsf_get_packet_xij(ctx, &in);
     if (ret < 0)
         return ret;
 
@@ -68,11 +68,11 @@ static int dump_extradata(AVBSFContext *ctx, AVPacket *out)
         memcpy(out->data, ctx->par_in->extradata, ctx->par_in->extradata_size);
         memcpy(out->data + ctx->par_in->extradata_size, in->data, in->size);
     } else {
-        av_packet_move_ref(out, in);
+        av_packet_move_ref_xij(out, in);
     }
 
 fail:
-    av_packet_free(&in);
+    av_packet_free_xij(&in);
 
     return ret;
 }

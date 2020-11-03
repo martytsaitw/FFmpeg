@@ -45,7 +45,7 @@ static int ndi_write_trailer(AVFormatContext *avctx)
 
     if (ctx->ndi_send) {
         NDIlib_send_destroy(ctx->ndi_send);
-        av_frame_free(&ctx->last_avframe);
+        av_frame_free_xij(&ctx->last_avframe);
     }
 
     av_freep(&ctx->video);
@@ -79,7 +79,7 @@ static int ndi_write_video_packet(AVFormatContext *avctx, AVStream *st, AVPacket
         return AVERROR(EINVAL);
     }
 
-    avframe = av_frame_clone(tmp);
+    avframe = av_frame_clone_xij(tmp);
     if (!avframe)
         return AVERROR(ENOMEM);
 
@@ -95,7 +95,7 @@ static int ndi_write_video_packet(AVFormatContext *avctx, AVStream *st, AVPacket
         is given before the first one has been sent */
     NDIlib_send_send_video_async(ctx->ndi_send, ctx->video);
 
-    av_frame_free(&ctx->last_avframe);
+    av_frame_free_xij(&ctx->last_avframe);
     ctx->last_avframe = avframe;
 
     return 0;

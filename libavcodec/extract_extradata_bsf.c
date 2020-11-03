@@ -115,7 +115,7 @@ static int extract_extradata_h2645(AVBSFContext *ctx, AVPacket *pkt,
 
         extradata = av_malloc(extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
         if (!extradata) {
-            av_buffer_unref(&filtered_buf);
+            av_buffer_unref_xij(&filtered_buf);
             return AVERROR(ENOMEM);
         }
         memset(extradata + extradata_size, 0, AV_INPUT_BUFFER_PADDING_SIZE);
@@ -138,7 +138,7 @@ static int extract_extradata_h2645(AVBSFContext *ctx, AVPacket *pkt,
         }
 
         if (s->remove) {
-            av_buffer_unref(&pkt->buf);
+            av_buffer_unref_xij(&pkt->buf);
             pkt->buf  = filtered_buf;
             pkt->data = filtered_buf->data;
             pkt->size = filtered_size;
@@ -157,7 +157,7 @@ static int extract_extradata_vc1(AVBSFContext *ctx, AVPacket *pkt,
     int has_extradata = 0, extradata_size = 0;
 
     while (ptr < end) {
-        ptr = avpriv_find_start_code(ptr, end, &state);
+        ptr = avpriv_find_start_code_xij(ptr, end, &state);
         if (state == VC1_CODE_SEQHDR || state == VC1_CODE_ENTRYPOINT) {
             has_extradata = 1;
         } else if (has_extradata && IS_MARKER(state)) {
@@ -224,7 +224,7 @@ static int extract_extradata_mpeg4(AVBSFContext *ctx, AVPacket *pkt,
     uint32_t state = UINT32_MAX;
 
     while (ptr < end) {
-        ptr = avpriv_find_start_code(ptr, end, &state);
+        ptr = avpriv_find_start_code_xij(ptr, end, &state);
         if (state == 0x1B3 || state == 0x1B6) {
             if (ptr - pkt->data > 4) {
                 *size = ptr - 4 - pkt->data;
@@ -284,7 +284,7 @@ static int extract_extradata_filter(AVBSFContext *ctx, AVPacket *pkt)
     int extradata_size;
     int ret = 0;
 
-    ret = ff_bsf_get_packet_ref(ctx, pkt);
+    ret = ff_bsf_get_packet_ref_xij(ctx, pkt);
     if (ret < 0)
         return ret;
 

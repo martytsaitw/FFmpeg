@@ -51,7 +51,7 @@ static void trim_right(char *p)
 
 static int get_line(AVIOContext *pb, char *line, int line_size)
 {
-    ff_get_line(pb, line, line_size);
+    ff_get_line_xij(pb, line, line_size);
 
     if (pb->error)
         return pb->error;
@@ -120,13 +120,13 @@ static int mpjpeg_read_probe(AVProbeData *p)
     if (p->buf_size < 2 || p->buf[0] != '-' || p->buf[1] != '-')
         return 0;
 
-    pb = avio_alloc_context(p->buf, p->buf_size, 0, NULL, NULL, NULL, NULL);
+    pb = avio_alloc_context_xij(p->buf, p->buf_size, 0, NULL, NULL, NULL, NULL);
     if (!pb)
         return 0;
 
     ret = (parse_multipart_header(pb, &size, "--", NULL) >= 0) ? AVPROBE_SCORE_MAX : 0;
 
-    avio_context_free(&pb);
+    avio_context_free_xij(&pb);
 
     return ret;
 }
@@ -156,7 +156,7 @@ static int mpjpeg_read_header(AVFormatContext *s)
 
     avpriv_set_pts_info_ijk(st, 60, 1, 25);
 
-    avio_seek(s->pb, pos, SEEK_SET);
+    avio_seek_xij(s->pb, pos, SEEK_SET);
 
     return 0;
 }
@@ -328,7 +328,7 @@ static int mpjpeg_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     if (size > 0) {
         /* size has been provided to us in MIME header */
-        ret = av_get_packet(s->pb, pkt, size);
+        ret = av_get_packet_xij(s->pb, pkt, size);
     } else {
         /* no size was given -- we read until the next boundary or end-of-file */
         int remaining = 0, len;
@@ -340,9 +340,9 @@ static int mpjpeg_read_packet(AVFormatContext *s, AVPacket *pkt)
         pkt->pos  = avio_tell(s->pb);
 
         /* we may need to return as much as all we've read back to the buffer */
-        ffio_ensure_seekback(s->pb, read_chunk);
+        ffio_ensure_seekback_xij(s->pb, read_chunk);
 
-        while ((ret = av_append_packet(s->pb, pkt, read_chunk - remaining)) >= 0) {
+        while ((ret = av_append_packet_xij(s->pb, pkt, read_chunk - remaining)) >= 0) {
             /* scan the new data */
             char *start;
 
@@ -351,7 +351,7 @@ static int mpjpeg_read_packet(AVFormatContext *s, AVPacket *pkt)
             do {
                 if (!memcmp(start, mpjpeg->searchstr, mpjpeg->searchstr_len)) {
                     // got the boundary! rewind the stream
-                    avio_seek(s->pb, -len, SEEK_CUR);
+                    avio_seek_xij(s->pb, -len, SEEK_CUR);
                     pkt->size -= len;
                     return pkt->size;
                 }

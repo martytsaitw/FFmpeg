@@ -92,15 +92,15 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
         return ff_filter_frame(outlink, frame);
     }
 
-    if (av_frame_is_writable(frame)) {
+    if (av_frame_is_writable_xij(frame)) {
         out = frame;
     } else {
         out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out) {
-            av_frame_free(&frame);
+            av_frame_free_xij(&frame);
             return AVERROR(ENOMEM);
         }
-        av_frame_copy_props(out, frame);
+        av_frame_copy_props_xij(out, frame);
     }
 
     av_log(ctx, AV_LOG_TRACE,
@@ -150,7 +150,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
     out->top_field_first = s->dst_tff;
 
     if (frame != out)
-        av_frame_free(&frame);
+        av_frame_free_xij(&frame);
     return ff_filter_frame(outlink, out);
 }
 

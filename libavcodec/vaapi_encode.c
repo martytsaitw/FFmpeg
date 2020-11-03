@@ -128,7 +128,7 @@ static int vaapi_encode_wait(AVCodecContext *avctx,
     }
 
     // Input is definitely finished with now.
-    av_frame_free(&pic->input_image);
+    av_frame_free_xij(&pic->input_image);
 
     pic->encode_complete = 1;
     return 0;
@@ -186,7 +186,7 @@ static int vaapi_encode_issue(AVCodecContext *avctx,
     pic->recon_surface = (VASurfaceID)(uintptr_t)pic->recon_image->data[3];
     av_log(avctx, AV_LOG_DEBUG, "Recon surface is %#x.\n", pic->recon_surface);
 
-    pic->output_buffer_ref = av_buffer_pool_get(ctx->output_buffer_pool);
+    pic->output_buffer_ref = av_buffer_pool_get_xij(ctx->output_buffer_pool);
     if (!pic->output_buffer_ref) {
         err = AVERROR(ENOMEM);
         goto fail;
@@ -444,8 +444,8 @@ fail_at_end:
     av_freep(&pic->codec_picture_params);
     av_freep(&pic->param_buffers);
     av_freep(&pic->slices);
-    av_frame_free(&pic->recon_image);
-    av_buffer_unref(&pic->output_buffer_ref);
+    av_frame_free_xij(&pic->recon_image);
+    av_buffer_unref_xij(&pic->output_buffer_ref);
     pic->output_buffer = VA_INVALID_ID;
     return err;
 }
@@ -496,7 +496,7 @@ static int vaapi_encode_output(AVCodecContext *avctx,
         goto fail;
     }
 
-    av_buffer_unref(&pic->output_buffer_ref);
+    av_buffer_unref_xij(&pic->output_buffer_ref);
     pic->output_buffer = VA_INVALID_ID;
 
     av_log(avctx, AV_LOG_DEBUG, "Output read for pic %"PRId64"/%"PRId64".\n",
@@ -506,7 +506,7 @@ static int vaapi_encode_output(AVCodecContext *avctx,
 fail_mapped:
     vaUnmapBuffer(ctx->hwctx->display, pic->output_buffer);
 fail:
-    av_buffer_unref(&pic->output_buffer_ref);
+    av_buffer_unref_xij(&pic->output_buffer_ref);
     pic->output_buffer = VA_INVALID_ID;
     return err;
 }
@@ -521,7 +521,7 @@ static int vaapi_encode_discard(AVCodecContext *avctx,
                "%"PRId64"/%"PRId64".\n",
                pic->display_order, pic->encode_order);
 
-        av_buffer_unref(&pic->output_buffer_ref);
+        av_buffer_unref_xij(&pic->output_buffer_ref);
         pic->output_buffer = VA_INVALID_ID;
     }
 
@@ -559,8 +559,8 @@ static int vaapi_encode_free(AVCodecContext *avctx,
     }
     av_freep(&pic->codec_picture_params);
 
-    av_frame_free(&pic->input_image);
-    av_frame_free(&pic->recon_image);
+    av_frame_free_xij(&pic->input_image);
+    av_frame_free_xij(&pic->recon_image);
 
     av_freep(&pic->param_buffers);
     av_freep(&pic->slices);
@@ -879,7 +879,7 @@ int ff_vaapi_encode2(AVCodecContext *avctx, AVPacket *pkt,
             err = AVERROR(ENOMEM);
             goto fail;
         }
-        err = av_frame_ref(pic->input_image, input_image);
+        err = av_frame_ref_xij(pic->input_image, input_image);
         if (err < 0)
             goto fail;
         pic->input_surface = (VASurfaceID)(uintptr_t)input_image->data[3];
@@ -1432,7 +1432,7 @@ av_cold int ff_vaapi_encode_init(AVCodecContext *avctx)
     }
 
     ctx->output_buffer_pool =
-        av_buffer_pool_init2(sizeof(VABufferID), avctx,
+        av_buffer_pool_init2_xij(sizeof(VABufferID), avctx,
                              &vaapi_encode_alloc_output_buffer, NULL);
     if (!ctx->output_buffer_pool) {
         err = AVERROR(ENOMEM);
@@ -1564,7 +1564,7 @@ av_cold int ff_vaapi_encode_close(AVCodecContext *avctx)
         vaapi_encode_free(avctx, pic);
     }
 
-    av_buffer_pool_uninit(&ctx->output_buffer_pool);
+    av_buffer_pool_uninit_xij(&ctx->output_buffer_pool);
 
     if (ctx->va_context != VA_INVALID_ID) {
         vaDestroyContext(ctx->hwctx->display, ctx->va_context);
@@ -1579,9 +1579,9 @@ av_cold int ff_vaapi_encode_close(AVCodecContext *avctx)
     av_freep(&ctx->codec_sequence_params);
     av_freep(&ctx->codec_picture_params);
 
-    av_buffer_unref(&ctx->recon_frames_ref);
-    av_buffer_unref(&ctx->input_frames_ref);
-    av_buffer_unref(&ctx->device_ref);
+    av_buffer_unref_xij(&ctx->recon_frames_ref);
+    av_buffer_unref_xij(&ctx->input_frames_ref);
+    av_buffer_unref_xij(&ctx->device_ref);
 
     av_freep(&ctx->priv_data);
 

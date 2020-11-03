@@ -167,7 +167,7 @@ static int modplug_read_header(AVFormatContext *s)
     AVIOContext *pb = s->pb;
     ModPlug_Settings settings;
     ModPlugContext *modplug = s->priv_data;
-    int64_t sz = avio_size(pb);
+    int64_t sz = avio_size_xij(pb);
 
     if (sz < 0) {
         av_log(s, AV_LOG_WARNING, "Could not determine file size\n");
@@ -189,7 +189,7 @@ static int modplug_read_header(AVFormatContext *s)
     modplug->buf = av_malloc(modplug->max_size);
     if (!modplug->buf)
         return AVERROR(ENOMEM);
-    sz = avio_read(pb, modplug->buf, sz);
+    sz = avio_read_xij(pb, modplug->buf, sz);
 
     ModPlug_GetSettings(&settings);
     settings.mChannels       = 2;
@@ -352,7 +352,7 @@ static const char modplug_extensions[] = "669,abc,amf,ams,dbm,dmf,dsm,far,it,mdl
 
 static int modplug_probe(AVProbeData *p)
 {
-    if (av_match_ext(p->filename, modplug_extensions)) {
+    if (av_match_ext_xij(p->filename, modplug_extensions)) {
         if (p->buf_size < 16384)
             return AVPROBE_SCORE_EXTENSION/2-1;
         else

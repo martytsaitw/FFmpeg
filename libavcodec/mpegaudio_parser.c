@@ -109,7 +109,7 @@ static int mpegaudio_parse(AVCodecParserContext *s1,
     }
 
     pc->state= state;
-    if (ff_combine_frame(pc, next, &buf, &buf_size) < 0) {
+    if (ff_combine_frame_xij(pc, next, &buf, &buf_size) < 0) {
         *poutbuf = NULL;
         *poutbuf_size = 0;
         return buf_size;
@@ -137,5 +137,5 @@ AVCodecParser ff_mpegaudio_parser = {
     .codec_ids      = { AV_CODEC_ID_MP1, AV_CODEC_ID_MP2, AV_CODEC_ID_MP3, AV_CODEC_ID_MP3ADU },
     .priv_data_size = sizeof(MpegAudioParseContext),
     .parser_parse   = mpegaudio_parse,
-    .parser_close   = ff_parse_close,
+    .parser_close   = ff_parse_close_xij,
 };

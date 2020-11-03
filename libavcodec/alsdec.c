@@ -302,7 +302,7 @@ static av_cold int read_specific_config(ALSDecContext *ctx)
     if ((ret = init_get_bits8(&gb, avctx->extradata, avctx->extradata_size)) < 0)
         return ret;
 
-    config_offset = avpriv_mpeg4audio_get_config(&m4ac, avctx->extradata,
+    config_offset = avpriv_mpeg4audio_get_config_xij(&m4ac, avctx->extradata,
                                                  avctx->extradata_size * 8, 1);
 
     if (config_offset < 0)
@@ -1785,7 +1785,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame_ptr,
 
     /* get output buffer */
     frame->nb_samples = ctx->cur_frame_length;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     // transform decoded frame into output format

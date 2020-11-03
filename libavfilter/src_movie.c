@@ -112,13 +112,13 @@ static AVStream *find_stream(void *log, AVFormatContext *avf, const char *spec)
         ret = av_find_best_stream_ijk(avf, type, stream_id, -1, NULL, 0);
         if (ret < 0) {
             av_log(log, AV_LOG_ERROR, "No %s stream with index '%d' found\n",
-                   av_get_media_type_string(type), stream_id);
+                   av_get_media_type_string_xij(type), stream_id);
             return NULL;
         }
         return avf->streams[ret];
     }
     for (i = 0; i < avf->nb_streams; i++) {
-        ret = avformat_match_stream_specifier(avf, avf->streams[i], spec);
+        ret = avformat_match_stream_specifier_xij(avf, avf->streams[i], spec);
         if (ret < 0) {
             av_log(log, AV_LOG_ERROR,
                    "Invalid stream specifier \"%s\"\n", spec);
@@ -147,7 +147,7 @@ static AVStream *find_stream(void *log, AVFormatContext *avf, const char *spec)
         found->codecpar->codec_type != AVMEDIA_TYPE_AUDIO) {
         av_log(log, AV_LOG_ERROR, "Stream specifier \"%s\" matched a %s stream,"
                "currently unsupported by libavfilter\n", spec,
-               av_get_media_type_string(found->codecpar->codec_type));
+               av_get_media_type_string_xij(found->codecpar->codec_type));
         return NULL;
     }
     return found;
@@ -174,7 +174,7 @@ static int open_stream(void *log, MovieStream *st)
 
     st->codec_ctx->refcounted_frames = 1;
 
-    if ((ret = avcodec_open2(st->codec_ctx, codec, NULL)) < 0) {
+    if ((ret = avcodec_open2_xij(st->codec_ctx, codec, NULL)) < 0) {
         av_log(log, AV_LOG_ERROR, "Failed to open codec\n");
         return ret;
     }
@@ -240,7 +240,7 @@ static av_cold int movie_common_init(AVFilterContext *ctx)
     }
 
     // Try to find the movie format (container)
-    iformat = movie->format_name ? av_find_input_format(movie->format_name) : NULL;
+    iformat = movie->format_name ? av_find_input_format_xij(movie->format_name) : NULL;
 
     movie->format_ctx = NULL;
     if ((ret = avformat_open_input_ijk(&movie->format_ctx, movie->file_name, iformat, NULL)) < 0) {
@@ -264,7 +264,7 @@ static av_cold int movie_common_init(AVFilterContext *ctx)
             }
             timestamp += movie->format_ctx->start_time;
         }
-        if ((ret = av_seek_frame(movie->format_ctx, -1, timestamp, AVSEEK_FLAG_BACKWARD)) < 0) {
+        if ((ret = av_seek_frame_xij(movie->format_ctx, -1, timestamp, AVSEEK_FLAG_BACKWARD)) < 0) {
             av_log(ctx, AV_LOG_ERROR, "%s: could not seek to position %"PRId64"\n",
                    movie->file_name, timestamp);
             return ret;
@@ -346,7 +346,7 @@ static av_cold void movie_uninit(AVFilterContext *ctx)
     av_freep(&movie->st);
     av_freep(&movie->out_index);
     if (movie->format_ctx)
-        avformat_close_input(&movie->format_ctx);
+        avformat_close_input_xij(&movie->format_ctx);
 }
 
 static int movie_query_formats(AVFilterContext *ctx)
@@ -428,7 +428,7 @@ static char *describe_frame_to_str(char *dst, size_t dst_size,
                  frame->nb_samples);
                  break;
     default:
-        snprintf(dst, dst_size, "%s BUG", av_get_media_type_string(frame_type));
+        snprintf(dst, dst_size, "%s BUG", av_get_media_type_string_xij(frame_type));
         break;
     }
     return dst;
@@ -442,7 +442,7 @@ static int rewind_file(AVFilterContext *ctx)
 
     if (movie->format_ctx->start_time != AV_NOPTS_VALUE)
         timestamp += movie->format_ctx->start_time;
-    ret = av_seek_frame(movie->format_ctx, -1, timestamp, AVSEEK_FLAG_BACKWARD);
+    ret = av_seek_frame_xij(movie->format_ctx, -1, timestamp, AVSEEK_FLAG_BACKWARD);
     if (ret < 0) {
         av_log(ctx, AV_LOG_ERROR, "Unable to loop: %s\n", av_err2str(ret));
         movie->loop_count = 1; /* do not try again */
@@ -450,7 +450,7 @@ static int rewind_file(AVFilterContext *ctx)
     }
 
     for (i = 0; i < ctx->nb_outputs; i++) {
-        avcodec_flush_buffers(movie->st[i].codec_ctx);
+        avcodec_flush_buffers_xij(movie->st[i].codec_ctx);
         movie->st[i].done = 0;
     }
     movie->eof = 0;
@@ -526,10 +526,10 @@ static int movie_push_frame(AVFilterContext *ctx, unsigned out_id)
     frame_type = st->st->codecpar->codec_type;
     switch (frame_type) {
     case AVMEDIA_TYPE_VIDEO:
-        ret = avcodec_decode_video2(st->codec_ctx, frame, &got_frame, pkt);
+        ret = avcodec_decode_video2_xij(st->codec_ctx, frame, &got_frame, pkt);
         break;
     case AVMEDIA_TYPE_AUDIO:
-        ret = avcodec_decode_audio4(st->codec_ctx, frame, &got_frame, pkt);
+        ret = avcodec_decode_audio4_xij(st->codec_ctx, frame, &got_frame, pkt);
         break;
     default:
         ret = AVERROR(ENOSYS);
@@ -537,7 +537,7 @@ static int movie_push_frame(AVFilterContext *ctx, unsigned out_id)
     }
     if (ret < 0) {
         av_log(ctx, AV_LOG_WARNING, "Decode error: %s\n", av_err2str(ret));
-        av_frame_free(&frame);
+        av_frame_free_xij(&frame);
         av_packet_unref_ijk(&movie->pkt0);
         movie->pkt.size = 0;
         movie->pkt.data = NULL;
@@ -556,7 +556,7 @@ static int movie_push_frame(AVFilterContext *ctx, unsigned out_id)
     if (!got_frame) {
         if (!ret)
             st->done = 1;
-        av_frame_free(&frame);
+        av_frame_free_xij(&frame);
         return 0;
     }
 
@@ -585,7 +585,7 @@ static int movie_push_frame(AVFilterContext *ctx, unsigned out_id)
                 av_get_pix_fmt_name(outlink->format),
                 av_get_pix_fmt_name(frame->format)
                 );
-            av_frame_free(&frame);
+            av_frame_free_xij(&frame);
             return 0;
         }
     }
@@ -623,12 +623,12 @@ static int process_command(AVFilterContext *ctx, const char *cmd, const char *ar
         if (sscanf(args, "%i|%"SCNi64"|%i %1s", &idx, &ts, &flags, tail) != 3)
             return AVERROR(EINVAL);
 
-        ret = av_seek_frame(movie->format_ctx, idx, ts, flags);
+        ret = av_seek_frame_xij(movie->format_ctx, idx, ts, flags);
         if (ret < 0)
             return ret;
 
         for (i = 0; i < ctx->nb_outputs; i++) {
-            avcodec_flush_buffers(movie->st[i].codec_ctx);
+            avcodec_flush_buffers_xij(movie->st[i].codec_ctx);
             movie->st[i].done = 0;
         }
         return ret;

@@ -174,7 +174,7 @@ static int config_video(AVFilterLink *outlink)
     outlink->w = s->w;
     outlink->h = s->h;
 
-    av_frame_free(&s->video);
+    av_frame_free_xij(&s->video);
     s->video = out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out)
         return AVERROR(ENOMEM);
@@ -262,7 +262,7 @@ static av_cold void uninit(AVFilterContext *ctx)
     av_freep(&ctx->output_pads[0].name);
     if (s->draw_curves)
         av_freep(&ctx->output_pads[1].name);
-    av_frame_free(&s->video);
+    av_frame_free_xij(&s->video);
     av_freep(&s->filters);
     s->nb_filters = 0;
     s->nb_allocated = 0;
@@ -728,7 +728,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
         int ret;
 
         s->video->pts = pts;
-        ret = ff_filter_frame(ctx->outputs[1], av_frame_clone(s->video));
+        ret = ff_filter_frame(ctx->outputs[1], av_frame_clone_xij(s->video));
         if (ret < 0)
             return ret;
     }

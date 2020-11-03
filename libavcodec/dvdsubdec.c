@@ -716,7 +716,7 @@ static int dvdsub_parse_extradata(AVCodecContext *avctx)
         } else if (strncmp("size:", data, 5) == 0) {
             int w, h;
             if (sscanf(data + 5, "%dx%d", &w, &h) == 2) {
-               ret = ff_set_dimensions(avctx, w, h);
+               ret = ff_set_dimensions_xij(avctx, w, h);
                if (ret < 0)
                    goto fail;
             }

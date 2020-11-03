@@ -408,7 +408,7 @@ int ff_h264_build_ref_list(H264Context *h, H264SliceContext *sl)
                 else
                     return -1;
             }
-            av_assert0(av_buffer_get_ref_count(sl->ref_list[list][index].parent->f->buf[0]) > 0);
+            av_assert0(av_buffer_get_ref_count_xij(sl->ref_list[list][index].parent->f->buf[0]) > 0);
         }
     }
 

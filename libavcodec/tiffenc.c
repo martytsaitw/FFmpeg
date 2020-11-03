@@ -357,8 +357,8 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         ret = AVERROR(ENOMEM);
         goto fail;
     }
-    av_fast_padded_mallocz(&s->strip_sizes  , &s->strip_sizes_size  , sizeof(s->strip_sizes  [0]) * strips);
-    av_fast_padded_mallocz(&s->strip_offsets, &s->strip_offsets_size, sizeof(s->strip_offsets[0]) * strips);
+    av_fast_padded_mallocz_xij(&s->strip_sizes  , &s->strip_sizes_size  , sizeof(s->strip_sizes  [0]) * strips);
+    av_fast_padded_mallocz_xij(&s->strip_offsets, &s->strip_offsets_size, sizeof(s->strip_offsets[0]) * strips);
 
     if (!s->strip_sizes || !s->strip_offsets) {
         ret = AVERROR(ENOMEM);
@@ -366,7 +366,7 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     }
 
     if (is_yuv) {
-        av_fast_padded_malloc(&s->yuv_line, &s->yuv_line_size, bytes_per_row);
+        av_fast_padded_malloc_xij(&s->yuv_line, &s->yuv_line_size, bytes_per_row);
         if (s->yuv_line == NULL) {
             av_log(s->avctx, AV_LOG_ERROR, "Not enough memory\n");
             ret = AVERROR(ENOMEM);

@@ -52,11 +52,11 @@ static av_cold int oma_write_header(AVFormatContext *s)
     ff_id3v2_write_simple(s, 3, ID3v2_EA3_MAGIC);
 
     ffio_wfourcc(s->pb, "EA3\0");
-    avio_w8(s->pb, EA3_HEADER_SIZE >> 7);
-    avio_w8(s->pb, EA3_HEADER_SIZE & 0x7F);
-    avio_wl16(s->pb, 0xFFFF);       /* not encrypted */
+    avio_w8_xij(s->pb, EA3_HEADER_SIZE >> 7);
+    avio_w8_xij(s->pb, EA3_HEADER_SIZE & 0x7F);
+    avio_wl16_xij(s->pb, 0xFFFF);       /* not encrypted */
     for (i = 0; i < 6; i++)
-        avio_wl32(s->pb, 0);        /* Padding + DRM id */
+        avio_wl32_xij(s->pb, 0);        /* Padding + DRM id */
 
     switch (par->codec_tag) {
     case OMA_CODECID_ATRAC3:
@@ -72,13 +72,13 @@ static av_cold int oma_write_header(AVFormatContext *s)
             av_log(s, AV_LOG_ERROR, "ATRAC3: Unsupported extradata size\n");
             return AVERROR(EINVAL);
         }
-        avio_wb32(s->pb, (OMA_CODECID_ATRAC3 << 24) |
+        avio_wb32_xij(s->pb, (OMA_CODECID_ATRAC3 << 24) |
                          (isjointstereo << 17) |
                          (srate_index << 13) |
                          (par->block_align/8));
         break;
     case OMA_CODECID_ATRAC3P:
-        avio_wb32(s->pb, (OMA_CODECID_ATRAC3P << 24) |
+        avio_wb32_xij(s->pb, (OMA_CODECID_ATRAC3P << 24) |
                          (srate_index << 13) |
                          (par->channels << 10) |
                          (par->block_align/8 - 1));
@@ -89,7 +89,7 @@ static av_cold int oma_write_header(AVFormatContext *s)
         return AVERROR(EINVAL);
     }
     for (i = 0; i < (EA3_HEADER_SIZE - 36)/4; i++)
-        avio_wl32(s->pb, 0);        /* Padding */
+        avio_wl32_xij(s->pb, 0);        /* Padding */
 
     return 0;
 }

@@ -254,11 +254,11 @@ static av_cold int cinepak_encode_init(AVCodecContext *avctx)
     return 0;
 
 enomem:
-    av_frame_free(&s->last_frame);
-    av_frame_free(&s->best_frame);
-    av_frame_free(&s->scratch_frame);
+    av_frame_free_xij(&s->last_frame);
+    av_frame_free_xij(&s->best_frame);
+    av_frame_free_xij(&s->scratch_frame);
     if (avctx->pix_fmt == AV_PIX_FMT_RGB24)
-        av_frame_free(&s->input_frame);
+        av_frame_free_xij(&s->input_frame);
     av_freep(&s->codebook_input);
     av_freep(&s->codebook_closest);
     av_freep(&s->strip_buf);
@@ -1177,11 +1177,11 @@ static av_cold int cinepak_encode_end(AVCodecContext *avctx)
     CinepakEncContext *s = avctx->priv_data;
     int x;
 
-    av_frame_free(&s->last_frame);
-    av_frame_free(&s->best_frame);
-    av_frame_free(&s->scratch_frame);
+    av_frame_free_xij(&s->last_frame);
+    av_frame_free_xij(&s->best_frame);
+    av_frame_free_xij(&s->scratch_frame);
     if (avctx->pix_fmt == AV_PIX_FMT_RGB24)
-        av_frame_free(&s->input_frame);
+        av_frame_free_xij(&s->input_frame);
     av_freep(&s->codebook_input);
     av_freep(&s->codebook_closest);
     av_freep(&s->strip_buf);

@@ -88,7 +88,7 @@ AVInputFormat ff_loas_demuxer = {
     .long_name      = NULL_IF_CONFIG_SMALL("LOAS AudioSyncStream"),
     .read_probe     = loas_probe,
     .read_header    = loas_read_header,
-    .read_packet    = ff_raw_read_partial_packet,
+    .read_packet    = ff_raw_read_partial_packet_xij,
     .flags= AVFMT_GENERIC_INDEX,
     .raw_codec_id = AV_CODEC_ID_AAC_LATM,
 };

@@ -499,16 +499,16 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
     AVFrame *outpicref;
     int direct = 0;
 
-    if (av_frame_is_writable(inpicref)) {
+    if (av_frame_is_writable_xij(inpicref)) {
         direct = 1;
         outpicref = inpicref;
     } else {
         outpicref = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!outpicref) {
-            av_frame_free(&inpicref);
+            av_frame_free_xij(&inpicref);
             return AVERROR(ENOMEM);
         }
-        av_frame_copy_props(outpicref, inpicref);
+        av_frame_copy_props_xij(outpicref, inpicref);
     }
 
     blur_image(s->mask,
@@ -528,7 +528,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
                inlink->w/2, inlink->h/2, direct, &s->half_mask_bbox);
 
     if (!direct)
-        av_frame_free(&inpicref);
+        av_frame_free_xij(&inpicref);
 
     return ff_filter_frame(outlink, outpicref);
 }

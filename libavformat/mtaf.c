@@ -45,10 +45,10 @@ static int mtaf_read_header(AVFormatContext *s)
     if (!st)
         return AVERROR(ENOMEM);
 
-    avio_skip(s->pb, 0x5c);
-    st->duration = avio_rl32(s->pb);
-    avio_skip(s->pb, 1);
-    stream_count = avio_r8(s->pb);
+    avio_skip_xij(s->pb, 0x5c);
+    st->duration = avio_rl32_xij(s->pb);
+    avio_skip_xij(s->pb, 1);
+    stream_count = avio_r8_xij(s->pb);
     if (!stream_count)
         return AVERROR_INVALIDDATA;
 
@@ -59,7 +59,7 @@ static int mtaf_read_header(AVFormatContext *s)
     st->codecpar->block_align = 0x110 * st->codecpar->channels / 2;
     avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
-    avio_seek(s->pb, 0x800, SEEK_SET);
+    avio_seek_xij(s->pb, 0x800, SEEK_SET);
 
     return 0;
 }
@@ -68,7 +68,7 @@ static int mtaf_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     AVCodecParameters *par = s->streams[0]->codecpar;
 
-    return av_get_packet(s->pb, pkt, par->block_align);
+    return av_get_packet_xij(s->pb, pkt, par->block_align);
 }
 
 AVInputFormat ff_mtaf_demuxer = {

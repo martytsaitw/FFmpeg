@@ -90,23 +90,23 @@ static int ico_write_header(AVFormatContext *s)
     ico->current_image = 0;
     ico->nb_images = s->nb_streams;
 
-    avio_wl16(pb, 0); // reserved
-    avio_wl16(pb, 1); // 1 == icon
-    avio_skip(pb, 2); // skip the number of images
+    avio_wl16_xij(pb, 0); // reserved
+    avio_wl16_xij(pb, 1); // 1 == icon
+    avio_skip_xij(pb, 2); // skip the number of images
 
     for (i = 0; i < s->nb_streams; i++) {
         if (ret = ico_check_attributes(s, s->streams[i]->codecpar))
             return ret;
 
         // Fill in later when writing trailer...
-        avio_skip(pb, 16);
+        avio_skip_xij(pb, 16);
     }
 
     ico->images = av_mallocz_array(ico->nb_images, sizeof(IcoMuxContext));
     if (!ico->images)
         return AVERROR(ENOMEM);
 
-    avio_flush(pb);
+    avio_flush_xij(pb);
 
     return 0;
 }
@@ -134,7 +134,7 @@ static int ico_write_packet(AVFormatContext *s, AVPacket *pkt)
         image->bits = par->bits_per_coded_sample;
         image->size = pkt->size;
 
-        avio_write(pb, pkt->data, pkt->size);
+        avio_write_xij(pb, pkt->data, pkt->size);
     } else { // BMP
         if (AV_RL32(pkt->data + 14) != 40) { // must be BITMAPINFOHEADER
             av_log(s, AV_LOG_ERROR, "Invalid BMP\n");
@@ -144,12 +144,12 @@ static int ico_write_packet(AVFormatContext *s, AVPacket *pkt)
         image->bits = AV_RL16(pkt->data + 28); // allows things like 1bit and 4bit images to be preserved
         image->size = pkt->size - 14 + par->height * (par->width + 7) / 8;
 
-        avio_write(pb, pkt->data + 14, 8); // Skip the BITMAPFILEHEADER header
-        avio_wl32(pb, AV_RL32(pkt->data + 22) * 2); // rewrite height as 2 * height
-        avio_write(pb, pkt->data + 26, pkt->size - 26);
+        avio_write_xij(pb, pkt->data + 14, 8); // Skip the BITMAPFILEHEADER header
+        avio_wl32_xij(pb, AV_RL32(pkt->data + 22) * 2); // rewrite height as 2 * height
+        avio_write_xij(pb, pkt->data + 26, pkt->size - 26);
 
         for (i = 0; i < par->height * (par->width + 7) / 8; ++i)
-            avio_w8(pb, 0x00); // Write bitmask (opaque)
+            avio_w8_xij(pb, 0x00); // Write bitmask (opaque)
     }
 
     return 0;
@@ -161,26 +161,26 @@ static int ico_write_trailer(AVFormatContext *s)
     AVIOContext *pb = s->pb;
     int i;
 
-    avio_seek(pb, 4, SEEK_SET);
+    avio_seek_xij(pb, 4, SEEK_SET);
 
-    avio_wl16(pb, ico->current_image);
+    avio_wl16_xij(pb, ico->current_image);
 
     for (i = 0; i < ico->nb_images; i++) {
-        avio_w8(pb, ico->images[i].width);
-        avio_w8(pb, ico->images[i].height);
+        avio_w8_xij(pb, ico->images[i].width);
+        avio_w8_xij(pb, ico->images[i].height);
 
         if (s->streams[i]->codecpar->codec_id == AV_CODEC_ID_BMP &&
             s->streams[i]->codecpar->format == AV_PIX_FMT_PAL8) {
-            avio_w8(pb, (ico->images[i].bits >= 8) ? 0 : 1 << ico->images[i].bits);
+            avio_w8_xij(pb, (ico->images[i].bits >= 8) ? 0 : 1 << ico->images[i].bits);
         } else {
-            avio_w8(pb, 0);
+            avio_w8_xij(pb, 0);
         }
 
-        avio_w8(pb, 0); // reserved
-        avio_wl16(pb, 1); // color planes
-        avio_wl16(pb, ico->images[i].bits);
-        avio_wl32(pb, ico->images[i].size);
-        avio_wl32(pb, ico->images[i].offset);
+        avio_w8_xij(pb, 0); // reserved
+        avio_wl16_xij(pb, 1); // color planes
+        avio_wl16_xij(pb, ico->images[i].bits);
+        avio_wl32_xij(pb, ico->images[i].size);
+        avio_wl32_xij(pb, ico->images[i].offset);
     }
 
     av_freep(&ico->images);

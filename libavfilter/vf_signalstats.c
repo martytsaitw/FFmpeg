@@ -105,9 +105,9 @@ static av_cold int init(AVFilterContext *ctx)
 static av_cold void uninit(AVFilterContext *ctx)
 {
     SignalstatsContext *s = ctx->priv;
-    av_frame_free(&s->frame_prev);
-    av_frame_free(&s->frame_sat);
-    av_frame_free(&s->frame_hue);
+    av_frame_free_xij(&s->frame_prev);
+    av_frame_free_xij(&s->frame_sat);
+    av_frame_free_xij(&s->frame_hue);
     av_freep(&s->jobs_rets);
     av_freep(&s->histy);
     av_freep(&s->histu);
@@ -149,8 +149,8 @@ static AVFrame *alloc_frame(enum AVPixelFormat pixfmt, int w, int h)
     frame->width  = w;
     frame->height = h;
 
-    if (av_frame_get_buffer(frame, 32) < 0) {
-        av_frame_free(&frame);
+    if (av_frame_get_buffer_xij(frame, 32) < 0) {
+        av_frame_free_xij(&frame);
         return NULL;
     }
 
@@ -592,13 +592,13 @@ static int filter_frame8(AVFilterLink *link, AVFrame *in)
     };
 
     if (!s->frame_prev)
-        s->frame_prev = av_frame_clone(in);
+        s->frame_prev = av_frame_clone_xij(in);
 
     prev = s->frame_prev;
 
     if (s->outfilter != FILTER_NONE) {
-        out = av_frame_clone(in);
-        av_frame_make_writable(out);
+        out = av_frame_clone_xij(in);
+        av_frame_make_writable_xij(out);
     }
 
     ctx->internal->execute(ctx, compute_sat_hue_metrics8, &td_huesat,
@@ -707,8 +707,8 @@ static int filter_frame8(AVFilterLink *link, AVFrame *in)
         }
     }
 
-    av_frame_free(&s->frame_prev);
-    s->frame_prev = av_frame_clone(in);
+    av_frame_free_xij(&s->frame_prev);
+    s->frame_prev = av_frame_clone_xij(in);
 
 #define SET_META(key, fmt, val) do {                                \
     snprintf(metabuf, sizeof(metabuf), fmt, val);                   \
@@ -760,7 +760,7 @@ static int filter_frame8(AVFilterLink *link, AVFrame *in)
     }
 
     if (in != out)
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
     return ff_filter_frame(outlink, out);
 }
 
@@ -810,13 +810,13 @@ static int filter_frame16(AVFilterLink *link, AVFrame *in)
     };
 
     if (!s->frame_prev)
-        s->frame_prev = av_frame_clone(in);
+        s->frame_prev = av_frame_clone_xij(in);
 
     prev = s->frame_prev;
 
     if (s->outfilter != FILTER_NONE) {
-        out = av_frame_clone(in);
-        av_frame_make_writable(out);
+        out = av_frame_clone_xij(in);
+        av_frame_make_writable_xij(out);
     }
 
     ctx->internal->execute(ctx, compute_sat_hue_metrics16, &td_huesat,
@@ -929,8 +929,8 @@ static int filter_frame16(AVFilterLink *link, AVFrame *in)
         }
     }
 
-    av_frame_free(&s->frame_prev);
-    s->frame_prev = av_frame_clone(in);
+    av_frame_free_xij(&s->frame_prev);
+    s->frame_prev = av_frame_clone_xij(in);
 
     SET_META("YMIN",    "%d", miny);
     SET_META("YLOW",    "%d", lowy);
@@ -977,7 +977,7 @@ static int filter_frame16(AVFilterLink *link, AVFrame *in)
     }
 
     if (in != out)
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
     return ff_filter_frame(outlink, out);
 }
 

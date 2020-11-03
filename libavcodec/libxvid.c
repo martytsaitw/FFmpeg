@@ -695,7 +695,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
 
         xerr = xvid_encore(NULL, XVID_ENC_CREATE, &xvid_enc_create, NULL);
         if( xerr ) {
-            av_frame_free(&picture);
+            av_frame_free_xij(&picture);
             av_log(avctx, AV_LOG_ERROR, "Xvid: Could not create encoder reference\n");
             return AVERROR_EXTERNAL;
         }
@@ -703,7 +703,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
         size = ((avctx->width + 1) & ~1) * ((avctx->height + 1) & ~1);
         picture->data[0] = av_malloc(size + size / 2);
         if (!picture->data[0]) {
-            av_frame_free(&picture);
+            av_frame_free_xij(&picture);
             return AVERROR(ENOMEM);
         }
         picture->data[1] = picture->data[0] + size;
@@ -714,7 +714,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
         if (!ret && got_packet)
             av_packet_unref_ijk(&packet);
         av_free(picture->data[0]);
-        av_frame_free(&picture);
+        av_frame_free_xij(&picture);
         xvid_encore(x->encoder_handle, XVID_ENC_DESTROY, NULL, NULL);
     }
 
@@ -837,7 +837,7 @@ FF_DISABLE_DEPRECATION_WARNINGS
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
 
-        ff_side_data_set_encoder_stats(pkt, xvid_enc_stats.quant * FF_QP2LAMBDA, NULL, 0, pict_type);
+        ff_side_data_set_encoder_stats_xij(pkt, xvid_enc_stats.quant * FF_QP2LAMBDA, NULL, 0, pict_type);
 
         if (xvid_enc_frame.out_flags & XVID_KEYFRAME) {
 #if FF_API_CODED_FRAME

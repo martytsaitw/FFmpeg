@@ -48,7 +48,7 @@ static int opencl_filter_set_device(AVFilterContext *avctx,
 {
     OpenCLFilterContext *ctx = avctx->priv;
 
-    av_buffer_unref(&ctx->device_ref);
+    av_buffer_unref_xij(&ctx->device_ref);
 
     ctx->device_ref = av_buffer_ref_ijk(device);
     if (!ctx->device_ref)
@@ -104,7 +104,7 @@ int ff_opencl_filter_config_output(AVFilterLink *outlink)
     AVHWFramesContext *output_frames;
     int err;
 
-    av_buffer_unref(&outlink->hw_frames_ctx);
+    av_buffer_unref_xij(&outlink->hw_frames_ctx);
 
     if (!ctx->device_ref) {
         if (!avctx->hw_device_ctx) {
@@ -143,7 +143,7 @@ int ff_opencl_filter_config_output(AVFilterLink *outlink)
 
     return 0;
 fail:
-    av_buffer_unref(&output_frames_ref);
+    av_buffer_unref_xij(&output_frames_ref);
     return err;
 }
 
@@ -168,7 +168,7 @@ void ff_opencl_filter_uninit(AVFilterContext *avctx)
                    "program: %d.\n", cle);
     }
 
-    av_buffer_unref(&ctx->device_ref);
+    av_buffer_unref_xij(&ctx->device_ref);
 }
 
 int ff_opencl_filter_load_program(AVFilterContext *avctx,

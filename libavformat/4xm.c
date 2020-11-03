@@ -57,11 +57,11 @@
 #define strk_SIZE 0x28
 
 #define GET_LIST_HEADER() \
-    fourcc_tag = avio_rl32(pb); \
-    size       = avio_rl32(pb); \
+    fourcc_tag = avio_rl32_xij(pb); \
+    size       = avio_rl32_xij(pb); \
     if (fourcc_tag != LIST_TAG) \
         return AVERROR_INVALIDDATA; \
-    fourcc_tag = avio_rl32(pb);
+    fourcc_tag = avio_rl32_xij(pb);
 
 typedef struct AudioTrack {
     int sample_rate;
@@ -218,7 +218,7 @@ static int fourxm_read_header(AVFormatContext *s)
     fourxm->fps         = (AVRational){1,1};
 
     /* skip the first 3 32-bit numbers */
-    avio_skip(pb, 12);
+    avio_skip_xij(pb, 12);
 
     /* check for LIST-HEAD */
     GET_LIST_HEADER();
@@ -230,7 +230,7 @@ static int fourxm_read_header(AVFormatContext *s)
     header = av_malloc(header_size);
     if (!header)
         return AVERROR(ENOMEM);
-    if (avio_read(pb, header, header_size) != header_size) {
+    if (avio_read_xij(pb, header, header_size) != header_size) {
         av_free(header);
         return AVERROR(EIO);
     }
@@ -298,11 +298,11 @@ static int fourxm_read_packet(AVFormatContext *s,
     int audio_frame_count;
 
     while (!packet_read) {
-        if ((ret = avio_read(s->pb, header, 8)) < 0)
+        if ((ret = avio_read_xij(s->pb, header, 8)) < 0)
             return ret;
         fourcc_tag = AV_RL32(&header[0]);
         size       = AV_RL32(&header[4]);
-        if (avio_feof(pb))
+        if (avio_feof_xij(pb))
             return AVERROR(EIO);
         switch (fourcc_tag) {
         case LIST_TAG:
@@ -310,7 +310,7 @@ static int fourxm_read_packet(AVFormatContext *s,
             fourxm->video_pts++;
 
             /* skip the LIST-* tag and move on to the next fourcc */
-            avio_rl32(pb);
+            avio_rl32_xij(pb);
             break;
 
         case ifrm_TAG:
@@ -327,24 +327,24 @@ static int fourxm_read_packet(AVFormatContext *s,
             pkt->pts          = fourxm->video_pts;
             pkt->pos          = avio_tell(s->pb);
             memcpy(pkt->data, header, 8);
-            ret = avio_read(s->pb, &pkt->data[8], size);
+            ret = avio_read_xij(s->pb, &pkt->data[8], size);
 
             if (ret < 0) {
                 av_packet_unref_ijk(pkt);
             } else {
                 packet_read = 1;
-                av_shrink_packet(pkt, ret + 8);
+                av_shrink_packet_xij(pkt, ret + 8);
             }
             break;
 
         case snd__TAG:
-            track_number = avio_rl32(pb);
-            avio_skip(pb, 4);
+            track_number = avio_rl32_xij(pb);
+            avio_skip_xij(pb, 4);
             size -= 8;
 
             if (track_number < fourxm->track_count &&
                 fourxm->tracks[track_number].channels > 0) {
-                ret = av_get_packet(s->pb, pkt, size);
+                ret = av_get_packet_xij(s->pb, pkt, size);
                 if (ret < 0)
                     return AVERROR(EIO);
                 pkt->stream_index =
@@ -364,12 +364,12 @@ static int fourxm_read_packet(AVFormatContext *s,
                         (fourxm->tracks[track_number].bits / 8);
                 fourxm->tracks[track_number].audio_pts += audio_frame_count;
             } else {
-                avio_skip(pb, size);
+                avio_skip_xij(pb, size);
             }
             break;
 
         default:
-            avio_skip(pb, size);
+            avio_skip_xij(pb, size);
             break;
         }
     }

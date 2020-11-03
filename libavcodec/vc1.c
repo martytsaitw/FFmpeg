@@ -314,14 +314,14 @@ int ff_vc1_decode_sequence_header(AVCodecContext *avctx, VC1Context *v, GetBitCo
     v->multires        = get_bits1(gb);
     v->res_fasttx      = get_bits1(gb);
     if (!v->res_fasttx) {
-        v->vc1dsp.vc1_inv_trans_8x8    = ff_simple_idct_int16_8bit;
-        v->vc1dsp.vc1_inv_trans_8x4    = ff_simple_idct84_add;
-        v->vc1dsp.vc1_inv_trans_4x8    = ff_simple_idct48_add;
-        v->vc1dsp.vc1_inv_trans_4x4    = ff_simple_idct44_add;
-        v->vc1dsp.vc1_inv_trans_8x8_dc = ff_simple_idct_add_int16_8bit;
-        v->vc1dsp.vc1_inv_trans_8x4_dc = ff_simple_idct84_add;
-        v->vc1dsp.vc1_inv_trans_4x8_dc = ff_simple_idct48_add;
-        v->vc1dsp.vc1_inv_trans_4x4_dc = ff_simple_idct44_add;
+        v->vc1dsp.vc1_inv_trans_8x8    = ff_simple_idct_int16_8bit_xij;
+        v->vc1dsp.vc1_inv_trans_8x4    = ff_simple_idct84_add_xij;
+        v->vc1dsp.vc1_inv_trans_4x8    = ff_simple_idct48_add_xij;
+        v->vc1dsp.vc1_inv_trans_4x4    = ff_simple_idct44_add_xij;
+        v->vc1dsp.vc1_inv_trans_8x8_dc = ff_simple_idct_add_int16_8bit_xij;
+        v->vc1dsp.vc1_inv_trans_8x4_dc = ff_simple_idct84_add_xij;
+        v->vc1dsp.vc1_inv_trans_4x8_dc = ff_simple_idct48_add_xij;
+        v->vc1dsp.vc1_inv_trans_4x4_dc = ff_simple_idct44_add_xij;
     }
 
     v->fastuvmc        = get_bits1(gb); //common
@@ -363,7 +363,7 @@ int ff_vc1_decode_sequence_header(AVCodecContext *avctx, VC1Context *v, GetBitCo
     if (v->res_sprite) {
         int w = get_bits(gb, 11);
         int h = get_bits(gb, 11);
-        int ret = ff_set_dimensions(v->s.avctx, w, h);
+        int ret = ff_set_dimensions_xij(v->s.avctx, w, h);
         if (ret < 0) {
             av_log(avctx, AV_LOG_ERROR, "Failed to set dimensions %d %d\n", w, h);
             return ret;
@@ -462,7 +462,7 @@ static int decode_sequence_header_adv(VC1Context *v, GetBitContext *gb)
                       v->s.avctx->width * h,
                       1 << 30);
         }
-        ff_set_sar(v->s.avctx, v->s.avctx->sample_aspect_ratio);
+        ff_set_sar_xij(v->s.avctx, v->s.avctx->sample_aspect_ratio);
         av_log(v->s.avctx, AV_LOG_DEBUG, "Aspect: %i:%i\n",
                v->s.avctx->sample_aspect_ratio.num,
                v->s.avctx->sample_aspect_ratio.den);
@@ -540,7 +540,7 @@ int ff_vc1_decode_entry_point(AVCodecContext *avctx, VC1Context *v, GetBitContex
         w = v->max_coded_width;
         h = v->max_coded_height;
     }
-    if ((ret = ff_set_dimensions(avctx, w, h)) < 0) {
+    if ((ret = ff_set_dimensions_xij(avctx, w, h)) < 0) {
         av_log(avctx, AV_LOG_ERROR, "Failed to set dimensions %d %d\n", w, h);
         return ret;
     }

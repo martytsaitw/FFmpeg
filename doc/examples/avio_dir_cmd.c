@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    avformat_network_init();
+    avformat_network_init_xij();
 
     op = argv[1];
     if (strcmp(op, "list") == 0) {
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
         ret = AVERROR(EINVAL);
     }
 
-    avformat_network_deinit();
+    avformat_network_deinit_xij();
 
     return ret < 0 ? 1 : 0;
 }

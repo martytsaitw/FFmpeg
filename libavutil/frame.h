@@ -146,15 +146,15 @@ enum AVFrameSideDataType {
     /**
      * Implementation-specific description of the format of AV_FRAME_QP_TABLE_DATA.
      * The contents of this side data are undocumented and internal; use
-     * av_frame_set_qp_table() and av_frame_get_qp_table() to access this in a
+     * av_frame_set_qp_table_xij() and av_frame_get_qp_table_xij() to access this in a
      * meaningful way instead.
      */
     AV_FRAME_DATA_QP_TABLE_PROPERTIES,
 
     /**
      * Raw QP table data. Its format is described by
-     * AV_FRAME_DATA_QP_TABLE_PROPERTIES. Use av_frame_set_qp_table() and
-     * av_frame_get_qp_table() to access this instead.
+     * AV_FRAME_DATA_QP_TABLE_PROPERTIES. Use av_frame_set_qp_table_xij() and
+     * av_frame_get_qp_table_xij() to access this instead.
      */
     AV_FRAME_DATA_QP_TABLE_DATA,
 #endif
@@ -191,11 +191,11 @@ typedef struct AVFrameSideData {
  * AVFrame must be allocated using av_frame_alloc_ijk(). Note that this only
  * allocates the AVFrame itself, the buffers for the data must be managed
  * through other means (see below).
- * AVFrame must be freed with av_frame_free().
+ * AVFrame must be freed with av_frame_free_xij().
  *
  * AVFrame is typically allocated once and then reused multiple times to hold
  * different data (e.g. a single AVFrame to hold frames received from a
- * decoder). In such a case, av_frame_unref() will free any references held by
+ * decoder). In such a case, av_frame_unref_xij() will free any references held by
  * the frame and reset it to its original clean state before it
  * is reused again.
  *
@@ -213,7 +213,7 @@ typedef struct AVFrameSideData {
  *
  * Fields can be accessed through AVOptions, the name string used, matches the
  * C structure field name for fields accessible through AVOptions. The AVClass
- * for AVFrame can be obtained from avcodec_get_frame_class()
+ * for AVFrame can be obtained from avcodec_get_frame_class_xij()
  */
 typedef struct AVFrame {
 #define AV_NUM_DATA_POINTERS 8
@@ -222,7 +222,7 @@ typedef struct AVFrame {
      * This might be different from the first allocated byte
      *
      * Some decoders access areas outside 0,0 - width,height, please
-     * see avcodec_align_dimensions2(). Some filters and swscale can read
+     * see avcodec_align_dimensions2_xij(). Some filters and swscale can read
      * up to 16 bytes beyond the planes, if these filters are to be used,
      * then 16 extra bytes must be allocated.
      *
@@ -419,7 +419,7 @@ typedef struct AVFrame {
      * which cannot fit into AVFrame.buf.
      *
      * This array is always allocated using av_malloc() by whoever constructs
-     * the frame. It is freed in av_frame_unref().
+     * the frame. It is freed in av_frame_unref_xij().
      */
     AVBufferRef **extended_buf;
     /**
@@ -557,8 +557,8 @@ typedef struct AVFrame {
 
     /**
      * AVBufferRef for free use by the API user. FFmpeg will never check the
-     * contents of the buffer ref. FFmpeg calls av_buffer_unref() on it when
-     * the frame is unreferenced. av_frame_copy_props() calls create a new
+     * contents of the buffer ref. FFmpeg calls av_buffer_unref_xij() on it when
+     * the frame is unreferenced. av_frame_copy_props_xij() calls create a new
      * reference with av_buffer_ref_ijk() for the target frame's opaque_ref field.
      *
      * This is unrelated to the opaque field, although it serves a similar
@@ -589,8 +589,8 @@ typedef struct AVFrame {
      *
      * Code outside the FFmpeg libs should never check or change the contents of the buffer ref.
      *
-     * FFmpeg calls av_buffer_unref() on it when the frame is unreferenced.
-     * av_frame_copy_props() calls create a new reference with av_buffer_ref_ijk()
+     * FFmpeg calls av_buffer_unref_xij() on it when the frame is unreferenced.
+     * av_frame_copy_props_xij() calls create a new reference with av_buffer_ref_ijk()
      * for the target frame's private_ref field.
      */
     AVBufferRef *private_ref;
@@ -602,71 +602,71 @@ typedef struct AVFrame {
  * compatibility, and do not need to be used anymore.
  */
 attribute_deprecated
-int64_t av_frame_get_best_effort_timestamp(const AVFrame *frame);
+int64_t av_frame_get_best_effort_timestamp_xij(const AVFrame *frame);
 attribute_deprecated
-void    av_frame_set_best_effort_timestamp(AVFrame *frame, int64_t val);
+void    av_frame_set_best_effort_timestamp_xij(AVFrame *frame, int64_t val);
 attribute_deprecated
-int64_t av_frame_get_pkt_duration         (const AVFrame *frame);
+int64_t av_frame_get_pkt_duration_xij         (const AVFrame *frame);
 attribute_deprecated
-void    av_frame_set_pkt_duration         (AVFrame *frame, int64_t val);
+void    av_frame_set_pkt_duration_xij         (AVFrame *frame, int64_t val);
 attribute_deprecated
-int64_t av_frame_get_pkt_pos              (const AVFrame *frame);
+int64_t av_frame_get_pkt_pos_xij              (const AVFrame *frame);
 attribute_deprecated
-void    av_frame_set_pkt_pos              (AVFrame *frame, int64_t val);
+void    av_frame_set_pkt_pos_xij              (AVFrame *frame, int64_t val);
 attribute_deprecated
-int64_t av_frame_get_channel_layout       (const AVFrame *frame);
+int64_t av_frame_get_channel_layout_xij       (const AVFrame *frame);
 attribute_deprecated
-void    av_frame_set_channel_layout       (AVFrame *frame, int64_t val);
+void    av_frame_set_channel_layout_xij       (AVFrame *frame, int64_t val);
 attribute_deprecated
-int     av_frame_get_channels             (const AVFrame *frame);
+int     av_frame_get_channels_xij             (const AVFrame *frame);
 attribute_deprecated
-void    av_frame_set_channels             (AVFrame *frame, int     val);
+void    av_frame_set_channels_xij             (AVFrame *frame, int     val);
 attribute_deprecated
-int     av_frame_get_sample_rate          (const AVFrame *frame);
+int     av_frame_get_sample_rate_xij          (const AVFrame *frame);
 attribute_deprecated
-void    av_frame_set_sample_rate          (AVFrame *frame, int     val);
+void    av_frame_set_sample_rate_xij          (AVFrame *frame, int     val);
 attribute_deprecated
-AVDictionary *av_frame_get_metadata       (const AVFrame *frame);
+AVDictionary *av_frame_get_metadata_xij       (const AVFrame *frame);
 attribute_deprecated
-void          av_frame_set_metadata       (AVFrame *frame, AVDictionary *val);
+void          av_frame_set_metadata_xij       (AVFrame *frame, AVDictionary *val);
 attribute_deprecated
-int     av_frame_get_decode_error_flags   (const AVFrame *frame);
+int     av_frame_get_decode_error_flags_xij   (const AVFrame *frame);
 attribute_deprecated
-void    av_frame_set_decode_error_flags   (AVFrame *frame, int     val);
+void    av_frame_set_decode_error_flags_xij   (AVFrame *frame, int     val);
 attribute_deprecated
-int     av_frame_get_pkt_size(const AVFrame *frame);
+int     av_frame_get_pkt_size_xij(const AVFrame *frame);
 attribute_deprecated
-void    av_frame_set_pkt_size(AVFrame *frame, int val);
+void    av_frame_set_pkt_size_xij(AVFrame *frame, int val);
 #if FF_API_FRAME_QP
 attribute_deprecated
-int8_t *av_frame_get_qp_table(AVFrame *f, int *stride, int *type);
+int8_t *av_frame_get_qp_table_xij(AVFrame *f, int *stride, int *type);
 attribute_deprecated
-int av_frame_set_qp_table(AVFrame *f, AVBufferRef *buf, int stride, int type);
+int av_frame_set_qp_table_xij(AVFrame *f, AVBufferRef *buf, int stride, int type);
 #endif
 attribute_deprecated
-enum AVColorSpace av_frame_get_colorspace(const AVFrame *frame);
+enum AVColorSpace av_frame_get_colorspace_xij(const AVFrame *frame);
 attribute_deprecated
-void    av_frame_set_colorspace(AVFrame *frame, enum AVColorSpace val);
+void    av_frame_set_colorspace_xij(AVFrame *frame, enum AVColorSpace val);
 attribute_deprecated
-enum AVColorRange av_frame_get_color_range(const AVFrame *frame);
+enum AVColorRange av_frame_get_color_range_xij(const AVFrame *frame);
 attribute_deprecated
-void    av_frame_set_color_range(AVFrame *frame, enum AVColorRange val);
+void    av_frame_set_color_range_xij(AVFrame *frame, enum AVColorRange val);
 #endif
 
 /**
  * Get the name of a colorspace.
  * @return a static string identifying the colorspace; can be NULL.
  */
-const char *av_get_colorspace_name(enum AVColorSpace val);
+const char *av_get_colorspace_name_xij(enum AVColorSpace val);
 
 /**
  * Allocate an AVFrame and set its fields to default values.  The resulting
- * struct must be freed using av_frame_free().
+ * struct must be freed using av_frame_free_xij().
  *
  * @return An AVFrame filled with default values or NULL on failure.
  *
  * @note this only allocates the AVFrame itself, not the data buffers. Those
- * must be allocated through other means, e.g. with av_frame_get_buffer() or
+ * must be allocated through other means, e.g. with av_frame_get_buffer_xij() or
  * manually.
  */
 AVFrame *av_frame_alloc_ijk(void);
@@ -678,7 +678,7 @@ AVFrame *av_frame_alloc_ijk(void);
  *
  * @param frame frame to be freed. The pointer will be set to NULL.
  */
-void av_frame_free(AVFrame **frame);
+void av_frame_free_xij(AVFrame **frame);
 
 /**
  * Set up a new reference to the data described by the source frame.
@@ -689,36 +689,36 @@ void av_frame_free(AVFrame **frame);
  * If src is not reference counted, new buffers are allocated and the data is
  * copied.
  *
- * @warning: dst MUST have been either unreferenced with av_frame_unref(dst),
+ * @warning: dst MUST have been either unreferenced with av_frame_unref_xij(dst),
  *           or newly allocated with av_frame_alloc_ijk() before calling this
  *           function, or undefined behavior will occur.
  *
  * @return 0 on success, a negative AVERROR on error
  */
-int av_frame_ref(AVFrame *dst, const AVFrame *src);
+int av_frame_ref_xij(AVFrame *dst, const AVFrame *src);
 
 /**
  * Create a new frame that references the same data as src.
  *
- * This is a shortcut for av_frame_alloc_ijk()+av_frame_ref().
+ * This is a shortcut for av_frame_alloc_ijk()+av_frame_ref_xij().
  *
  * @return newly created AVFrame on success, NULL on error.
  */
-AVFrame *av_frame_clone(const AVFrame *src);
+AVFrame *av_frame_clone_xij(const AVFrame *src);
 
 /**
  * Unreference all the buffers referenced by frame and reset the frame fields.
  */
-void av_frame_unref(AVFrame *frame);
+void av_frame_unref_xij(AVFrame *frame);
 
 /**
  * Move everything contained in src to dst and reset src.
  *
  * @warning: dst is not unreferenced, but directly overwritten without reading
- *           or deallocating its contents. Call av_frame_unref(dst) manually
+ *           or deallocating its contents. Call av_frame_unref_xij(dst) manually
  *           before calling this function to ensure that no memory is leaked.
  */
-void av_frame_move_ref(AVFrame *dst, AVFrame *src);
+void av_frame_move_ref_xij(AVFrame *dst, AVFrame *src);
 
 /**
  * Allocate new buffer(s) for audio or video data.
@@ -743,7 +743,7 @@ void av_frame_move_ref(AVFrame *dst, AVFrame *src);
  *
  * @return 0 on success, a negative AVERROR on error.
  */
-int av_frame_get_buffer(AVFrame *frame, int align);
+int av_frame_get_buffer_xij(AVFrame *frame, int align);
 
 /**
  * Check if the frame data is writable.
@@ -753,11 +753,11 @@ int av_frame_get_buffer(AVFrame *frame, int align);
  * stored in this frame). Return 0 otherwise.
  *
  * If 1 is returned the answer is valid until av_buffer_ref_ijk() is called on any
- * of the underlying AVBufferRefs (e.g. through av_frame_ref() or directly).
+ * of the underlying AVBufferRefs (e.g. through av_frame_ref_xij() or directly).
  *
- * @see av_frame_make_writable(), av_buffer_is_writable()
+ * @see av_frame_make_writable_xij(), av_buffer_is_writable_xij()
  */
-int av_frame_is_writable(AVFrame *frame);
+int av_frame_is_writable_xij(AVFrame *frame);
 
 /**
  * Ensure that the frame data is writable, avoiding data copy if possible.
@@ -767,10 +767,10 @@ int av_frame_is_writable(AVFrame *frame);
  *
  * @return 0 on success, a negative AVERROR on error.
  *
- * @see av_frame_is_writable(), av_buffer_is_writable(),
- * av_buffer_make_writable()
+ * @see av_frame_is_writable_xij(), av_buffer_is_writable_xij(),
+ * av_buffer_make_writable_xij()
  */
-int av_frame_make_writable(AVFrame *frame);
+int av_frame_make_writable_xij(AVFrame *frame);
 
 /**
  * Copy the frame data from src to dst.
@@ -783,7 +783,7 @@ int av_frame_make_writable(AVFrame *frame);
  *
  * @return >= 0 on success, a negative AVERROR on error.
  */
-int av_frame_copy(AVFrame *dst, const AVFrame *src);
+int av_frame_copy_xij(AVFrame *dst, const AVFrame *src);
 
 /**
  * Copy only "metadata" fields from src to dst.
@@ -793,7 +793,7 @@ int av_frame_copy(AVFrame *dst, const AVFrame *src);
  * aspect ratio (for video), but not width/height or channel layout.
  * Side data is also copied.
  */
-int av_frame_copy_props(AVFrame *dst, const AVFrame *src);
+int av_frame_copy_props_xij(AVFrame *dst, const AVFrame *src);
 
 /**
  * Get the buffer reference a given data plane is stored in.
@@ -803,7 +803,7 @@ int av_frame_copy_props(AVFrame *dst, const AVFrame *src);
  * @return the buffer reference that contains the plane or NULL if the input
  * frame is not valid.
  */
-AVBufferRef *av_frame_get_plane_buffer(AVFrame *frame, int plane);
+AVBufferRef *av_frame_get_plane_buffer_xij(AVFrame *frame, int plane);
 
 /**
  * Add a new side data to a frame.
@@ -814,7 +814,7 @@ AVBufferRef *av_frame_get_plane_buffer(AVFrame *frame, int plane);
  *
  * @return newly added side data on success, NULL on error
  */
-AVFrameSideData *av_frame_new_side_data(AVFrame *frame,
+AVFrameSideData *av_frame_new_side_data_xij(AVFrame *frame,
                                         enum AVFrameSideDataType type,
                                         int size);
 
@@ -830,7 +830,7 @@ AVFrameSideData *av_frame_new_side_data(AVFrame *frame,
  *         the frame is unchanged and the AVBufferRef remains owned by
  *         the caller.
  */
-AVFrameSideData *av_frame_new_side_data_from_buf(AVFrame *frame,
+AVFrameSideData *av_frame_new_side_data_from_buf_xij(AVFrame *frame,
                                                  enum AVFrameSideDataType type,
                                                  AVBufferRef *buf);
 
@@ -838,14 +838,14 @@ AVFrameSideData *av_frame_new_side_data_from_buf(AVFrame *frame,
  * @return a pointer to the side data of a given type on success, NULL if there
  * is no side data with such type in this frame.
  */
-AVFrameSideData *av_frame_get_side_data(const AVFrame *frame,
+AVFrameSideData *av_frame_get_side_data_xij(const AVFrame *frame,
                                         enum AVFrameSideDataType type);
 
 /**
  * If side data of the supplied type exists in the frame, free it and remove it
  * from the frame.
  */
-void av_frame_remove_side_data(AVFrame *frame, enum AVFrameSideDataType type);
+void av_frame_remove_side_data_xij(AVFrame *frame, enum AVFrameSideDataType type);
 
 
 /**
@@ -879,12 +879,12 @@ enum {
  * @return >= 0 on success, a negative AVERROR on error. If the cropping fields
  * were invalid, AVERROR(ERANGE) is returned, and nothing is changed.
  */
-int av_frame_apply_cropping(AVFrame *frame, int flags);
+int av_frame_apply_cropping_xij(AVFrame *frame, int flags);
 
 /**
  * @return a string identifying the side data type
  */
-const char *av_frame_side_data_name(enum AVFrameSideDataType type);
+const char *av_frame_side_data_name_xij(enum AVFrameSideDataType type);
 
 /**
  * @}

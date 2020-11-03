@@ -219,7 +219,7 @@ invalid:
 fail:
     av_log(NULL, AV_LOG_ERROR,
            "Device creation failed: %d.\n", err);
-    av_buffer_unref(&device_ref);
+    av_buffer_unref_xij(&device_ref);
     goto done;
 }
 
@@ -262,7 +262,7 @@ static int hw_device_init_from_type(enum AVHWDeviceType type,
 
 fail:
     av_freep(&name);
-    av_buffer_unref(&device_ref);
+    av_buffer_unref_xij(&device_ref);
     return err;
 }
 
@@ -271,7 +271,7 @@ void hw_device_free_all(void)
     int i;
     for (i = 0; i < nb_hw_devices; i++) {
         av_freep(&hw_devices[i]->name);
-        av_buffer_unref(&hw_devices[i]->device_ref);
+        av_buffer_unref_xij(&hw_devices[i]->device_ref);
         av_freep(&hw_devices[i]);
     }
     av_freep(&hw_devices);
@@ -284,7 +284,7 @@ static HWDevice *hw_device_match_by_codec(const AVCodec *codec)
     HWDevice *dev;
     int i;
     for (i = 0;; i++) {
-        config = avcodec_get_hw_config(codec, i);
+        config = avcodec_get_hw_config_xij(codec, i);
         if (!config)
             return NULL;
         if (!(config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX))
@@ -348,12 +348,12 @@ int hw_device_setup_for_decode(InputStream *ist)
 
     if (auto_device) {
         int i;
-        if (!avcodec_get_hw_config(ist->dec, 0)) {
+        if (!avcodec_get_hw_config_xij(ist->dec, 0)) {
             // Decoder does not support any hardware devices.
             return 0;
         }
         for (i = 0; !dev; i++) {
-            config = avcodec_get_hw_config(ist->dec, i);
+            config = avcodec_get_hw_config_xij(ist->dec, i);
             if (!config)
                 break;
             type = config->device_type;
@@ -365,7 +365,7 @@ int hw_device_setup_for_decode(InputStream *ist)
             }
         }
         for (i = 0; !dev; i++) {
-            config = avcodec_get_hw_config(ist->dec, i);
+            config = avcodec_get_hw_config_xij(ist->dec, i);
             if (!config)
                 break;
             type = config->device_type;
@@ -452,20 +452,20 @@ static int hwaccel_retrieve_data(AVCodecContext *avctx, AVFrame *input)
         goto fail;
     }
 
-    err = av_frame_copy_props(output, input);
+    err = av_frame_copy_props_xij(output, input);
     if (err < 0) {
-        av_frame_unref(output);
+        av_frame_unref_xij(output);
         goto fail;
     }
 
-    av_frame_unref(input);
-    av_frame_move_ref(input, output);
-    av_frame_free(&output);
+    av_frame_unref_xij(input);
+    av_frame_move_ref_xij(input, output);
+    av_frame_free_xij(&output);
 
     return 0;
 
 fail:
-    av_frame_free(&output);
+    av_frame_free_xij(&output);
     return err;
 }
 

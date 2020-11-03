@@ -34,10 +34,10 @@ static int try_decode_video_frame(AVCodecContext *codec_ctx, AVPacket *pkt, int 
     AVFrame *frame = NULL;
     int skip_frame = codec_ctx->skip_frame;
 
-    if (!avcodec_is_open(codec_ctx)) {
+    if (!avcodec_is_open_xij(codec_ctx)) {
         const AVCodec *codec = avcodec_find_decoder_ijk(codec_ctx->codec_id);
 
-        ret = avcodec_open2(codec_ctx, codec, NULL);
+        ret = avcodec_open2_xij(codec_ctx, codec, NULL);
         if (ret < 0) {
             av_log(codec_ctx, AV_LOG_ERROR, "Failed to open codec\n");
             goto end;
@@ -50,12 +50,12 @@ static int try_decode_video_frame(AVCodecContext *codec_ctx, AVPacket *pkt, int 
         goto end;
     }
 
-    if (!decode && avpriv_codec_get_cap_skip_frame_fill_param(codec_ctx->codec)) {
+    if (!decode && avpriv_codec_get_cap_skip_frame_fill_param_xij(codec_ctx->codec)) {
         codec_ctx->skip_frame = AVDISCARD_ALL;
     }
 
     do {
-        ret = avcodec_decode_video2(codec_ctx, frame, &got_frame, pkt);
+        ret = avcodec_decode_video2_xij(codec_ctx, frame, &got_frame, pkt);
         av_assert0(decode || (!decode && !got_frame));
         if (ret < 0)
             break;
@@ -70,7 +70,7 @@ static int try_decode_video_frame(AVCodecContext *codec_ctx, AVPacket *pkt, int 
 end:
     codec_ctx->skip_frame = skip_frame;
 
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
     return ret;
 }
 
@@ -132,7 +132,7 @@ end:
     /* close all codecs opened in try_decode_video_frame */
     for (i = 0; i < fmt_ctx->nb_streams; i++) {
         AVStream *st = fmt_ctx->streams[i];
-        avcodec_close(st->codec);
+        avcodec_close_xij(st->codec);
     }
 
     return ret < 0;
@@ -249,8 +249,8 @@ int main(int argc, char* argv[])
     ret = check_video_streams(fmt_ctx, fmt_ctx_no_decode);
 
 end:
-    avformat_close_input(&fmt_ctx);
-    avformat_close_input(&fmt_ctx_no_decode);
+    avformat_close_input_xij(&fmt_ctx);
+    avformat_close_input_xij(&fmt_ctx_no_decode);
 
     return ret;
 }

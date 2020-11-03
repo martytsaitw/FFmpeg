@@ -142,7 +142,7 @@ static int config_props(AVFilterLink *inlink)
         enc_ctx->flags |= AV_CODEC_FLAG_QPEL;
     }
 
-    ret = avcodec_open2(enc_ctx, enc, &opts);
+    ret = avcodec_open2_xij(enc_ctx, enc, &opts);
     av_dict_free(&opts);
     if (ret < 0)
         return ret;
@@ -178,10 +178,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
 
     outpic = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!outpic) {
-        av_frame_free(&inpic);
+        av_frame_free_xij(&inpic);
         return AVERROR(ENOMEM);
     }
-    av_frame_copy_props(outpic, inpic);
+    av_frame_copy_props_xij(outpic, inpic);
     inpic->quality = mcdeint->qp * FF_QP2LAMBDA;
 
     av_init_packet_ijk(&pkt);
@@ -275,9 +275,9 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
 
 end:
     av_packet_unref_ijk(&pkt);
-    av_frame_free(&inpic);
+    av_frame_free_xij(&inpic);
     if (ret < 0) {
-        av_frame_free(&outpic);
+        av_frame_free_xij(&outpic);
         return ret;
     }
     return ff_filter_frame(outlink, outpic);

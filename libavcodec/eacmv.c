@@ -51,8 +51,8 @@ static av_cold int cmv_decode_init(AVCodecContext *avctx){
     s->last_frame  = av_frame_alloc_ijk();
     s->last2_frame = av_frame_alloc_ijk();
     if (!s->last_frame || !s->last2_frame) {
-        av_frame_free(&s->last_frame);
-        av_frame_free(&s->last2_frame);
+        av_frame_free_xij(&s->last_frame);
+        av_frame_free_xij(&s->last2_frame);
         return AVERROR(ENOMEM);
     }
 
@@ -144,11 +144,11 @@ static int cmv_process_header(CmvContext *s, const uint8_t *buf, const uint8_t *
 
     if (s->width  != s->avctx->width ||
         s->height != s->avctx->height) {
-        av_frame_unref(s->last_frame);
-        av_frame_unref(s->last2_frame);
+        av_frame_unref_xij(s->last_frame);
+        av_frame_unref_xij(s->last2_frame);
     }
 
-    ret = ff_set_dimensions(s->avctx, s->width, s->height);
+    ret = ff_set_dimensions_xij(s->avctx, s->width, s->height);
     if (ret < 0)
         return ret;
 
@@ -198,7 +198,7 @@ static int cmv_decode_frame(AVCodecContext *avctx,
     if (av_image_check_size(s->width, s->height, 0, s->avctx))
         return -1;
 
-    if ((ret = ff_get_buffer(avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
         return ret;
 
     memcpy(frame->data[1], s->palette, AVPALETTE_SIZE);
@@ -214,9 +214,9 @@ static int cmv_decode_frame(AVCodecContext *avctx,
         cmv_decode_intra(s, frame, buf+2, buf_end);
     }
 
-    av_frame_unref(s->last2_frame);
-    av_frame_move_ref(s->last2_frame, s->last_frame);
-    if ((ret = av_frame_ref(s->last_frame, frame)) < 0)
+    av_frame_unref_xij(s->last2_frame);
+    av_frame_move_ref_xij(s->last2_frame, s->last_frame);
+    if ((ret = av_frame_ref_xij(s->last_frame, frame)) < 0)
         return ret;
 
     *got_frame = 1;
@@ -227,8 +227,8 @@ static int cmv_decode_frame(AVCodecContext *avctx,
 static av_cold int cmv_decode_end(AVCodecContext *avctx){
     CmvContext *s = avctx->priv_data;
 
-    av_frame_free(&s->last_frame);
-    av_frame_free(&s->last2_frame);
+    av_frame_free_xij(&s->last_frame);
+    av_frame_free_xij(&s->last2_frame);
 
     return 0;
 }

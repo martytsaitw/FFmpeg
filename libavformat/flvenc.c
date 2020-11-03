@@ -216,7 +216,7 @@ error:
         break;
     default:
         av_log(s, AV_LOG_ERROR, "Audio codec '%s' not compatible with FLV\n",
-               avcodec_get_name(par->codec_id));
+               avcodec_get_name_xij(par->codec_id));
         return AVERROR(EINVAL);
     }
 
@@ -226,44 +226,44 @@ error:
 static void put_amf_string(AVIOContext *pb, const char *str)
 {
     size_t len = strlen(str);
-    avio_wb16(pb, len);
-    avio_write(pb, str, len);
+    avio_wb16_xij(pb, len);
+    avio_write_xij(pb, str, len);
 }
 
 static void put_avc_eos_tag(AVIOContext *pb, unsigned ts)
 {
-    avio_w8(pb, FLV_TAG_TYPE_VIDEO);
-    avio_wb24(pb, 5);               /* Tag Data Size */
-    avio_wb24(pb, ts);              /* lower 24 bits of timestamp in ms */
-    avio_w8(pb, (ts >> 24) & 0x7F); /* MSB of ts in ms */
-    avio_wb24(pb, 0);               /* StreamId = 0 */
-    avio_w8(pb, 23);                /* ub[4] FrameType = 1, ub[4] CodecId = 7 */
-    avio_w8(pb, 2);                 /* AVC end of sequence */
-    avio_wb24(pb, 0);               /* Always 0 for AVC EOS. */
-    avio_wb32(pb, 16);              /* Size of FLV tag */
+    avio_w8_xij(pb, FLV_TAG_TYPE_VIDEO);
+    avio_wb24_xij(pb, 5);               /* Tag Data Size */
+    avio_wb24_xij(pb, ts);              /* lower 24 bits of timestamp in ms */
+    avio_w8_xij(pb, (ts >> 24) & 0x7F); /* MSB of ts in ms */
+    avio_wb24_xij(pb, 0);               /* StreamId = 0 */
+    avio_w8_xij(pb, 23);                /* ub[4] FrameType = 1, ub[4] CodecId = 7 */
+    avio_w8_xij(pb, 2);                 /* AVC end of sequence */
+    avio_wb24_xij(pb, 0);               /* Always 0 for AVC EOS. */
+    avio_wb32_xij(pb, 16);              /* Size of FLV tag */
 }
 
 static void put_amf_double(AVIOContext *pb, double d)
 {
-    avio_w8(pb, AMF_DATA_TYPE_NUMBER);
-    avio_wb64(pb, av_double2int(d));
+    avio_w8_xij(pb, AMF_DATA_TYPE_NUMBER);
+    avio_wb64_xij(pb, av_double2int(d));
 }
 
 static void put_amf_byte(AVIOContext *pb, unsigned char abyte)
 {
-    avio_w8(pb, abyte);
+    avio_w8_xij(pb, abyte);
 }
 
 static void put_amf_dword_array(AVIOContext *pb, uint32_t dw)
 {
-    avio_w8(pb, AMF_DATA_TYPE_ARRAY);
-    avio_wb32(pb, dw);
+    avio_w8_xij(pb, AMF_DATA_TYPE_ARRAY);
+    avio_wb32_xij(pb, dw);
 }
 
 static void put_amf_bool(AVIOContext *pb, int b)
 {
-    avio_w8(pb, AMF_DATA_TYPE_BOOL);
-    avio_w8(pb, !!b);
+    avio_w8_xij(pb, AMF_DATA_TYPE_BOOL);
+    avio_w8_xij(pb, !!b);
 }
 
 static void write_metadata(AVFormatContext *s, unsigned int ts)
@@ -276,20 +276,20 @@ static void write_metadata(AVFormatContext *s, unsigned int ts)
     AVDictionaryEntry *tag = NULL;
 
     /* write meta_tag */
-    avio_w8(pb, FLV_TAG_TYPE_META);            // tag type META
+    avio_w8_xij(pb, FLV_TAG_TYPE_META);            // tag type META
     flv->metadata_size_pos = avio_tell(pb);
-    avio_wb24(pb, 0);           // size of data part (sum of all parts below)
-    avio_wb24(pb, ts);          // timestamp
-    avio_wb32(pb, 0);           // reserved
+    avio_wb24_xij(pb, 0);           // size of data part (sum of all parts below)
+    avio_wb24_xij(pb, ts);          // timestamp
+    avio_wb32_xij(pb, 0);           // reserved
 
     /* now data of data_size size */
 
     /* first event name as a string */
-    avio_w8(pb, AMF_DATA_TYPE_STRING);
+    avio_w8_xij(pb, AMF_DATA_TYPE_STRING);
     put_amf_string(pb, "onMetaData"); // 12 bytes
 
     /* mixed array (hash) with size and string/type/data tuples */
-    avio_w8(pb, AMF_DATA_TYPE_MIXEDARRAY);
+    avio_w8_xij(pb, AMF_DATA_TYPE_MIXEDARRAY);
     metadata_count_pos = avio_tell(pb);
     metadata_count = 4 * !!flv->video_par +
                      5 * !!flv->audio_par +
@@ -297,7 +297,7 @@ static void write_metadata(AVFormatContext *s, unsigned int ts)
     if (write_duration_filesize) {
         metadata_count += 2; // +2 for duration and file size
     }
-    avio_wb32(pb, metadata_count);
+    avio_wb32_xij(pb, metadata_count);
 
     if (write_duration_filesize) {
         put_amf_string(pb, "duration");
@@ -348,7 +348,7 @@ static void write_metadata(AVFormatContext *s, unsigned int ts)
         put_amf_double(pb, 0.0);
     }
 
-    ff_standardize_creation_time(s);
+    ff_standardize_creation_time_xij(s);
     while ((tag = av_dict_get(s->metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
         if(   !strcmp(tag->key, "width")
             ||!strcmp(tag->key, "height")
@@ -375,7 +375,7 @@ static void write_metadata(AVFormatContext *s, unsigned int ts)
             continue;
         }
         put_amf_string(pb, tag->key);
-        avio_w8(pb, AMF_DATA_TYPE_STRING);
+        avio_w8_xij(pb, AMF_DATA_TYPE_STRING);
         put_amf_string(pb, tag->value);
         metadata_count++;
     }
@@ -454,19 +454,19 @@ static void write_metadata(AVFormatContext *s, unsigned int ts)
     }
 
     put_amf_string(pb, "");
-    avio_w8(pb, AMF_END_OF_OBJECT);
+    avio_w8_xij(pb, AMF_END_OF_OBJECT);
 
     /* write total size of tag */
     flv->metadata_totalsize = avio_tell(pb) - flv->metadata_size_pos - 10;
 
-    avio_seek(pb, metadata_count_pos, SEEK_SET);
-    avio_wb32(pb, metadata_count);
+    avio_seek_xij(pb, metadata_count_pos, SEEK_SET);
+    avio_wb32_xij(pb, metadata_count);
 
-    avio_seek(pb, flv->metadata_size_pos, SEEK_SET);
-    avio_wb24(pb, flv->metadata_totalsize);
-    avio_skip(pb, flv->metadata_totalsize + 10 - 3);
+    avio_seek_xij(pb, flv->metadata_size_pos, SEEK_SET);
+    avio_wb24_xij(pb, flv->metadata_totalsize);
+    avio_skip_xij(pb, flv->metadata_totalsize + 10 - 3);
     flv->metadata_totalsize_pos = avio_tell(pb);
-    avio_wb32(pb, flv->metadata_totalsize + 11);
+    avio_wb32_xij(pb, flv->metadata_totalsize + 11);
 }
 
 static int unsupported_codec(AVFormatContext *s,
@@ -488,17 +488,17 @@ static void flv_write_codec_header(AVFormatContext* s, AVCodecParameters* par) {
     if (par->codec_id == AV_CODEC_ID_AAC || par->codec_id == AV_CODEC_ID_H264
             || par->codec_id == AV_CODEC_ID_MPEG4) {
         int64_t pos;
-        avio_w8(pb,
+        avio_w8_xij(pb,
                 par->codec_type == AVMEDIA_TYPE_VIDEO ?
                         FLV_TAG_TYPE_VIDEO : FLV_TAG_TYPE_AUDIO);
-        avio_wb24(pb, 0); // size patched later
-        avio_wb24(pb, 0); // ts
-        avio_w8(pb, 0);   // ts ext
-        avio_wb24(pb, 0); // streamid
+        avio_wb24_xij(pb, 0); // size patched later
+        avio_wb24_xij(pb, 0); // ts
+        avio_w8_xij(pb, 0);   // ts ext
+        avio_wb24_xij(pb, 0); // streamid
         pos = avio_tell(pb);
         if (par->codec_id == AV_CODEC_ID_AAC) {
-            avio_w8(pb, get_audio_flags(s, par));
-            avio_w8(pb, 0); // AAC sequence header
+            avio_w8_xij(pb, get_audio_flags(s, par));
+            avio_w8_xij(pb, 0); // AAC sequence header
 
             if (!par->extradata_size && (flv->flags & FLV_AAC_SEQ_HEADER_DETECT)) {
                 PutBitContext pbc;
@@ -522,24 +522,24 @@ static void flv_write_codec_header(AVFormatContext* s, AVCodecParameters* par) {
                 put_bits(&pbc, 1, 0); //is not extension
                 flush_put_bits(&pbc);
 
-                avio_w8(pb, data[0]);
-                avio_w8(pb, data[1]);
+                avio_w8_xij(pb, data[0]);
+                avio_w8_xij(pb, data[1]);
 
                 av_log(s, AV_LOG_WARNING, "AAC sequence header: %02x %02x.\n",
                         data[0], data[1]);
             }
-            avio_write(pb, par->extradata, par->extradata_size);
+            avio_write_xij(pb, par->extradata, par->extradata_size);
         } else {
-            avio_w8(pb, par->codec_tag | FLV_FRAME_KEY); // flags
-            avio_w8(pb, 0); // AVC sequence header
-            avio_wb24(pb, 0); // composition time
+            avio_w8_xij(pb, par->codec_tag | FLV_FRAME_KEY); // flags
+            avio_w8_xij(pb, 0); // AVC sequence header
+            avio_wb24_xij(pb, 0); // composition time
             ff_isom_write_avcc(pb, par->extradata, par->extradata_size);
         }
         data_size = avio_tell(pb) - pos;
-        avio_seek(pb, -data_size - 10, SEEK_CUR);
-        avio_wb24(pb, data_size);
-        avio_skip(pb, data_size + 10 - 3);
-        avio_wb32(pb, data_size + 11); // previous tag size
+        avio_seek_xij(pb, -data_size - 10, SEEK_CUR);
+        avio_wb24_xij(pb, data_size);
+        avio_skip_xij(pb, data_size + 10 - 3);
+        avio_wb32_xij(pb, data_size + 11); // previous tag size
     }
 }
 
@@ -599,17 +599,17 @@ static int shift_data(AVFormatContext *s)
     read_buf[0] = buf;
     read_buf[1] = buf + metadata_size;
 
-    avio_seek(s->pb, flv->metadata_size_pos, SEEK_SET);
-    avio_wb24(s->pb, flv->metadata_totalsize + metadata_size);
+    avio_seek_xij(s->pb, flv->metadata_size_pos, SEEK_SET);
+    avio_wb24_xij(s->pb, flv->metadata_totalsize + metadata_size);
 
-    avio_seek(s->pb, flv->metadata_totalsize_pos, SEEK_SET);
-    avio_wb32(s->pb, flv->metadata_totalsize + 11 + metadata_size);
-    avio_seek(s->pb, pos_end, SEEK_SET);
+    avio_seek_xij(s->pb, flv->metadata_totalsize_pos, SEEK_SET);
+    avio_wb32_xij(s->pb, flv->metadata_totalsize + 11 + metadata_size);
+    avio_seek_xij(s->pb, pos_end, SEEK_SET);
 
     /* Shift the data: the AVIO context of the output can only be used for
      * writing, so we re-open the same output, but for reading. It also avoids
      * a read/seek/write/seek back and forth. */
-    avio_flush(s->pb);
+    avio_flush_xij(s->pb);
     ret = s->io_open(s, &read_pb, s->url, AVIO_FLAG_READ, NULL);
     if (ret < 0) {
         av_log(s, AV_LOG_ERROR, "Unable to re-open %s output file for "
@@ -620,14 +620,14 @@ static int shift_data(AVFormatContext *s)
     /* mark the end of the shift to up to the last data we wrote, and get ready
      * for writing */
     pos_end = avio_tell(s->pb);
-    avio_seek(s->pb, flv->keyframes_info_offset + metadata_size, SEEK_SET);
+    avio_seek_xij(s->pb, flv->keyframes_info_offset + metadata_size, SEEK_SET);
 
     /* start reading at where the keyframe index information will be placed */
-    avio_seek(read_pb, flv->keyframes_info_offset, SEEK_SET);
+    avio_seek_xij(read_pb, flv->keyframes_info_offset, SEEK_SET);
     pos = avio_tell(read_pb);
 
 #define READ_BLOCK do {                                                             \
-    read_size[read_buf_id] = avio_read(read_pb, read_buf[read_buf_id], metadata_size);  \
+    read_size[read_buf_id] = avio_read_xij(read_pb, read_buf[read_buf_id], metadata_size);  \
     read_buf_id ^= 1;                                                               \
 } while (0)
 
@@ -638,11 +638,11 @@ static int shift_data(AVFormatContext *s)
         n = read_size[read_buf_id];
         if (n < 0)
             break;
-        avio_write(s->pb, read_buf[read_buf_id], n);
+        avio_write_xij(s->pb, read_buf[read_buf_id], n);
         pos += n;
     } while (pos <= pos_end);
 
-    ff_format_io_close(s, &read_pb);
+    ff_format_io_close_xij(s, &read_pb);
 
 end:
     av_free(buf);
@@ -671,14 +671,14 @@ static int flv_write_header(AVFormatContext *s)
                 return AVERROR(EINVAL);
             }
             flv->video_par = par;
-            if (!ff_codec_get_tag(flv_video_codec_ids, par->codec_id))
+            if (!ff_codec_get_tag_xij(flv_video_codec_ids, par->codec_id))
                 return unsupported_codec(s, "Video", par->codec_id);
 
             if (par->codec_id == AV_CODEC_ID_MPEG4 ||
                 par->codec_id == AV_CODEC_ID_H263) {
                 int error = s->strict_std_compliance > FF_COMPLIANCE_UNOFFICIAL;
                 av_log(s, error ? AV_LOG_ERROR : AV_LOG_WARNING,
-                       "Codec %s is not supported in the official FLV specification,\n", avcodec_get_name(par->codec_id));
+                       "Codec %s is not supported in the official FLV specification,\n", avcodec_get_name_xij(par->codec_id));
 
                 if (error) {
                     av_log(s, AV_LOG_ERROR,
@@ -711,14 +711,14 @@ static int flv_write_header(AVFormatContext *s)
         case AVMEDIA_TYPE_SUBTITLE:
             if (par->codec_id != AV_CODEC_ID_TEXT) {
                 av_log(s, AV_LOG_ERROR, "Subtitle codec '%s' for stream %d is not compatible with FLV\n",
-                       avcodec_get_name(par->codec_id), i);
+                       avcodec_get_name_xij(par->codec_id), i);
                 return AVERROR_INVALIDDATA;
             }
             flv->data_par = par;
             break;
         default:
             av_log(s, AV_LOG_ERROR, "Codec type '%s' for stream %d is not compatible with FLV\n",
-                   av_get_media_type_string(par->codec_type), i);
+                   av_get_media_type_string_xij(par->codec_type), i);
             return AVERROR(EINVAL);
         }
         avpriv_set_pts_info_ijk(s->streams[i], 32, 1, 1000); /* 32 bit pts in ms */
@@ -732,20 +732,20 @@ static int flv_write_header(AVFormatContext *s)
 
     flv->delay = AV_NOPTS_VALUE;
 
-    avio_write(pb, "FLV", 3);
-    avio_w8(pb, 1);
-    avio_w8(pb, FLV_HEADER_FLAG_HASAUDIO * !!flv->audio_par +
+    avio_write_xij(pb, "FLV", 3);
+    avio_w8_xij(pb, 1);
+    avio_w8_xij(pb, FLV_HEADER_FLAG_HASAUDIO * !!flv->audio_par +
                 FLV_HEADER_FLAG_HASVIDEO * !!flv->video_par);
-    avio_wb32(pb, 9);
-    avio_wb32(pb, 0);
+    avio_wb32_xij(pb, 9);
+    avio_wb32_xij(pb, 0);
 
     for (i = 0; i < s->nb_streams; i++)
         if (s->streams[i]->codecpar->codec_tag == 5) {
-            avio_w8(pb, 8);     // message type
-            avio_wb24(pb, 0);   // include flags
-            avio_wb24(pb, 0);   // time stamp
-            avio_wb32(pb, 0);   // reserved
-            avio_wb32(pb, 11);  // size
+            avio_w8_xij(pb, 8);     // message type
+            avio_wb24_xij(pb, 0);   // include flags
+            avio_wb24_xij(pb, 0);   // time stamp
+            avio_wb32_xij(pb, 0);   // reserved
+            avio_wb32_xij(pb, 11);  // size
             flv->reserved = 5;
         }
 
@@ -775,27 +775,27 @@ static int flv_write_trailer(AVFormatContext *s)
     if (build_keyframes_idx) {
         FLVFileposition *newflv_posinfo, *p;
 
-        avio_seek(pb, flv->videosize_offset, SEEK_SET);
+        avio_seek_xij(pb, flv->videosize_offset, SEEK_SET);
         put_amf_double(pb, flv->videosize);
 
-        avio_seek(pb, flv->audiosize_offset, SEEK_SET);
+        avio_seek_xij(pb, flv->audiosize_offset, SEEK_SET);
         put_amf_double(pb, flv->audiosize);
 
-        avio_seek(pb, flv->lasttimestamp_offset, SEEK_SET);
+        avio_seek_xij(pb, flv->lasttimestamp_offset, SEEK_SET);
         put_amf_double(pb, flv->lasttimestamp);
 
-        avio_seek(pb, flv->lastkeyframetimestamp_offset, SEEK_SET);
+        avio_seek_xij(pb, flv->lastkeyframetimestamp_offset, SEEK_SET);
         put_amf_double(pb, flv->lastkeyframetimestamp);
 
-        avio_seek(pb, flv->lastkeyframelocation_offset, SEEK_SET);
+        avio_seek_xij(pb, flv->lastkeyframelocation_offset, SEEK_SET);
         put_amf_double(pb, flv->lastkeyframelocation + flv->keyframe_index_size);
-        avio_seek(pb, cur_pos, SEEK_SET);
+        avio_seek_xij(pb, cur_pos, SEEK_SET);
 
         res = shift_data(s);
         if (res < 0) {
              goto end;
         }
-        avio_seek(pb, flv->keyframes_info_offset, SEEK_SET);
+        avio_seek_xij(pb, flv->keyframes_info_offset, SEEK_SET);
         put_amf_string(pb, "filepositions");
         put_amf_dword_array(pb, flv->filepositions_count);
         for (newflv_posinfo = flv->head_filepositions; newflv_posinfo; newflv_posinfo = newflv_posinfo->next) {
@@ -822,9 +822,9 @@ static int flv_write_trailer(AVFormatContext *s)
         }
 
         put_amf_string(pb, "");
-        avio_w8(pb, AMF_END_OF_OBJECT);
+        avio_w8_xij(pb, AMF_END_OF_OBJECT);
 
-        avio_seek(pb, cur_pos + flv->keyframe_index_size, SEEK_SET);
+        avio_seek_xij(pb, cur_pos + flv->keyframe_index_size, SEEK_SET);
     }
 
 end:
@@ -845,18 +845,18 @@ end:
 
     if (build_keyframes_idx) {
         flv->datasize = file_size - flv->datastart_offset;
-        avio_seek(pb, flv->datasize_offset, SEEK_SET);
+        avio_seek_xij(pb, flv->datasize_offset, SEEK_SET);
         put_amf_double(pb, flv->datasize);
     }
     if (!(flv->flags & FLV_NO_METADATA)) {
         if (!(flv->flags & FLV_NO_DURATION_FILESIZE)) {
             /* update information */
-            if (avio_seek(pb, flv->duration_offset, SEEK_SET) < 0) {
+            if (avio_seek_xij(pb, flv->duration_offset, SEEK_SET) < 0) {
                 av_log(s, AV_LOG_WARNING, "Failed to update header with correct duration.\n");
             } else {
                 put_amf_double(pb, flv->duration / (double)1000);
             }
-            if (avio_seek(pb, flv->filesize_offset, SEEK_SET) < 0) {
+            if (avio_seek_xij(pb, flv->filesize_offset, SEEK_SET) < 0) {
                 av_log(s, AV_LOG_WARNING, "Failed to update header with correct filesize.\n");
             } else {
                 put_amf_double(pb, file_size);
@@ -890,7 +890,7 @@ static int flv_write_packet(AVFormatContext *s, AVPacket *pkt)
     if (par->codec_id == AV_CODEC_ID_AAC || par->codec_id == AV_CODEC_ID_H264
             || par->codec_id == AV_CODEC_ID_MPEG4) {
         int side_size = 0;
-        uint8_t *side = av_packet_get_side_data(pkt, AV_PKT_DATA_NEW_EXTRADATA, &side_size);
+        uint8_t *side = av_packet_get_side_data_xij(pkt, AV_PKT_DATA_NEW_EXTRADATA, &side_size);
         if (side && side_size > 0 && (side_size != par->extradata_size || memcmp(side, par->extradata, side_size))) {
             av_free(par->extradata);
             par->extradata = av_mallocz(side_size + AV_INPUT_BUFFER_PADDING_SIZE);
@@ -920,14 +920,14 @@ static int flv_write_packet(AVFormatContext *s, AVPacket *pkt)
         s->event_flags &= ~AVSTREAM_EVENT_FLAG_METADATA_UPDATED;
     }
 
-    avio_write_marker(pb, av_rescale(ts, AV_TIME_BASE, 1000),
+    avio_write_marker_xij(pb, av_rescale(ts, AV_TIME_BASE, 1000),
                       pkt->flags & AV_PKT_FLAG_KEY && (flv->video_par ? par->codec_type == AVMEDIA_TYPE_VIDEO : 1) ? AVIO_DATA_MARKER_SYNC_POINT : AVIO_DATA_MARKER_BOUNDARY_POINT);
 
     switch (par->codec_type) {
     case AVMEDIA_TYPE_VIDEO:
-        avio_w8(pb, FLV_TAG_TYPE_VIDEO);
+        avio_w8_xij(pb, FLV_TAG_TYPE_VIDEO);
 
-        flags = ff_codec_get_tag(flv_video_codec_ids, par->codec_id);
+        flags = ff_codec_get_tag_xij(flv_video_codec_ids, par->codec_id);
 
         flags |= pkt->flags & AV_PKT_FLAG_KEY ? FLV_FRAME_KEY : FLV_FRAME_INTER;
         break;
@@ -936,11 +936,11 @@ static int flv_write_packet(AVFormatContext *s, AVPacket *pkt)
 
         av_assert0(size);
 
-        avio_w8(pb, FLV_TAG_TYPE_AUDIO);
+        avio_w8_xij(pb, FLV_TAG_TYPE_AUDIO);
         break;
     case AVMEDIA_TYPE_SUBTITLE:
     case AVMEDIA_TYPE_DATA:
-        avio_w8(pb, FLV_TAG_TYPE_META);
+        avio_w8_xij(pb, FLV_TAG_TYPE_META);
         break;
     default:
         return AVERROR(EINVAL);
@@ -977,10 +977,10 @@ static int flv_write_packet(AVFormatContext *s, AVPacket *pkt)
         return AVERROR(EINVAL);
     }
 
-    avio_wb24(pb, size + flags_size);
-    avio_wb24(pb, ts & 0xFFFFFF);
-    avio_w8(pb, (ts >> 24) & 0x7F); // timestamps are 32 bits _signed_
-    avio_wb24(pb, flv->reserved);
+    avio_wb24_xij(pb, size + flags_size);
+    avio_wb24_xij(pb, ts & 0xFFFFFF);
+    avio_w8_xij(pb, (ts >> 24) & 0x7F); // timestamps are 32 bits _signed_
+    avio_wb24_xij(pb, flv->reserved);
 
     if (par->codec_type == AVMEDIA_TYPE_DATA ||
         par->codec_type == AVMEDIA_TYPE_SUBTITLE ) {
@@ -988,49 +988,49 @@ static int flv_write_packet(AVFormatContext *s, AVPacket *pkt)
         int64_t metadata_size_pos = avio_tell(pb);
         if (par->codec_id == AV_CODEC_ID_TEXT) {
             // legacy FFmpeg magic?
-            avio_w8(pb, AMF_DATA_TYPE_STRING);
+            avio_w8_xij(pb, AMF_DATA_TYPE_STRING);
             put_amf_string(pb, "onTextData");
-            avio_w8(pb, AMF_DATA_TYPE_MIXEDARRAY);
-            avio_wb32(pb, 2);
+            avio_w8_xij(pb, AMF_DATA_TYPE_MIXEDARRAY);
+            avio_wb32_xij(pb, 2);
             put_amf_string(pb, "type");
-            avio_w8(pb, AMF_DATA_TYPE_STRING);
+            avio_w8_xij(pb, AMF_DATA_TYPE_STRING);
             put_amf_string(pb, "Text");
             put_amf_string(pb, "text");
-            avio_w8(pb, AMF_DATA_TYPE_STRING);
+            avio_w8_xij(pb, AMF_DATA_TYPE_STRING);
             put_amf_string(pb, pkt->data);
             put_amf_string(pb, "");
-            avio_w8(pb, AMF_END_OF_OBJECT);
+            avio_w8_xij(pb, AMF_END_OF_OBJECT);
         } else {
             // just pass the metadata through
-            avio_write(pb, data ? data : pkt->data, size);
+            avio_write_xij(pb, data ? data : pkt->data, size);
         }
         /* write total size of tag */
         data_size = avio_tell(pb) - metadata_size_pos;
-        avio_seek(pb, metadata_size_pos - 10, SEEK_SET);
-        avio_wb24(pb, data_size);
-        avio_seek(pb, data_size + 10 - 3, SEEK_CUR);
-        avio_wb32(pb, data_size + 11);
+        avio_seek_xij(pb, metadata_size_pos - 10, SEEK_SET);
+        avio_wb24_xij(pb, data_size);
+        avio_seek_xij(pb, data_size + 10 - 3, SEEK_CUR);
+        avio_wb32_xij(pb, data_size + 11);
     } else {
         av_assert1(flags>=0);
-        avio_w8(pb,flags);
+        avio_w8_xij(pb,flags);
         if (par->codec_id == AV_CODEC_ID_VP6)
-            avio_w8(pb,0);
+            avio_w8_xij(pb,0);
         if (par->codec_id == AV_CODEC_ID_VP6F || par->codec_id == AV_CODEC_ID_VP6A) {
             if (par->extradata_size)
-                avio_w8(pb, par->extradata[0]);
+                avio_w8_xij(pb, par->extradata[0]);
             else
-                avio_w8(pb, ((FFALIGN(par->width,  16) - par->width) << 4) |
+                avio_w8_xij(pb, ((FFALIGN(par->width,  16) - par->width) << 4) |
                              (FFALIGN(par->height, 16) - par->height));
         } else if (par->codec_id == AV_CODEC_ID_AAC)
-            avio_w8(pb, 1); // AAC raw
+            avio_w8_xij(pb, 1); // AAC raw
         else if (par->codec_id == AV_CODEC_ID_H264 || par->codec_id == AV_CODEC_ID_MPEG4) {
-            avio_w8(pb, 1); // AVC NALU
-            avio_wb24(pb, pkt->pts - pkt->dts);
+            avio_w8_xij(pb, 1); // AVC NALU
+            avio_wb24_xij(pb, pkt->pts - pkt->dts);
         }
 
-        avio_write(pb, data ? data : pkt->data, size);
+        avio_write_xij(pb, data ? data : pkt->data, size);
 
-        avio_wb32(pb, size + flags_size + 11); // previous tag size
+        avio_wb32_xij(pb, size + flags_size + 11); // previous tag size
         flv->duration = FFMAX(flv->duration,
                               pkt->pts + flv->delay + pkt->duration);
     }

@@ -1357,7 +1357,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     if (ret >= 0 && s->pts == AV_NOPTS_VALUE)
         s->pts = in->pts;
 
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
     if (ret < 0)
         return ret;
 
@@ -1416,9 +1416,9 @@ static av_cold void uninit(AVFilterContext *ctx)
     AudioSurroundContext *s = ctx->priv;
     int ch;
 
-    av_frame_free(&s->input);
-    av_frame_free(&s->output);
-    av_frame_free(&s->overlap_buffer);
+    av_frame_free_xij(&s->input);
+    av_frame_free_xij(&s->output);
+    av_frame_free_xij(&s->overlap_buffer);
 
     for (ch = 0; ch < s->nb_in_channels; ch++) {
         av_rdft_end(s->rdft[ch]);

@@ -257,7 +257,7 @@ void ff_dv_print_profiles(void *logctx, int loglevel)
 
 #endif /* CONFIG_DVPROFILE */
 
-const AVDVProfile* ff_dv_frame_profile(AVCodecContext* codec, const AVDVProfile *sys,
+const AVDVProfile* ff_dv_frame_profile_xij(AVCodecContext* codec, const AVDVProfile *sys,
                                        const uint8_t *frame, unsigned buf_size)
 {
 #if CONFIG_DVPROFILE
@@ -297,23 +297,23 @@ const AVDVProfile* ff_dv_frame_profile(AVCodecContext* codec, const AVDVProfile 
     return NULL;
 }
 
-const AVDVProfile *av_dv_frame_profile(const AVDVProfile *sys,
+const AVDVProfile *av_dv_frame_profile_xij(const AVDVProfile *sys,
                                        const uint8_t *frame, unsigned buf_size)
 {
-    return ff_dv_frame_profile(NULL, sys, frame, buf_size);
+    return ff_dv_frame_profile_xij(NULL, sys, frame, buf_size);
 }
 
-const AVDVProfile *av_dv_codec_profile(int width, int height,
+const AVDVProfile *av_dv_codec_profile_xij(int width, int height,
                                        enum AVPixelFormat pix_fmt)
 {
 #if CONFIG_DVPROFILE
-    return av_dv_codec_profile2(width, height, pix_fmt, (AVRational){0, 0});
+    return av_dv_codec_profile2_xij(width, height, pix_fmt, (AVRational){0, 0});
 #endif
 
     return NULL;
 }
 
-const AVDVProfile *av_dv_codec_profile2(int width, int height,
+const AVDVProfile *av_dv_codec_profile2_xij(int width, int height,
                                        enum AVPixelFormat pix_fmt,
                                        AVRational frame_rate)
 {

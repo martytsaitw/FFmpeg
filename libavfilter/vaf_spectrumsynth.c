@@ -401,8 +401,8 @@ static int try_push_frame(AVFilterContext *ctx, int x)
 
                 out = ff_get_audio_buffer(outlink, s->win_size);
                 if (!out) {
-                    av_frame_free(&s->magnitude);
-                    av_frame_free(&s->phase);
+                    av_frame_free_xij(&s->magnitude);
+                    av_frame_free_xij(&s->phase);
                     return AVERROR(ENOMEM);
                 }
 
@@ -465,8 +465,8 @@ static int try_push_frames(AVFilterContext *ctx)
         av_assert0(0);
     }
 
-    av_frame_free(&s->magnitude);
-    av_frame_free(&s->phase);
+    av_frame_free_xij(&s->magnitude);
+    av_frame_free_xij(&s->phase);
     return ret;
 }
 
@@ -493,9 +493,9 @@ static av_cold void uninit(AVFilterContext *ctx)
     SpectrumSynthContext *s = ctx->priv;
     int i;
 
-    av_frame_free(&s->magnitude);
-    av_frame_free(&s->phase);
-    av_frame_free(&s->buffer);
+    av_frame_free_xij(&s->magnitude);
+    av_frame_free_xij(&s->phase);
+    av_frame_free_xij(&s->buffer);
     av_fft_end(s->fft);
     if (s->fft_data) {
         for (i = 0; i < s->channels; i++)

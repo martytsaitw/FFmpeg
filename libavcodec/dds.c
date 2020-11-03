@@ -656,7 +656,7 @@ static int dds_decode(AVCodecContext *avctx, void *data,
     if (ret < 0)
         return ret;
 
-    ret = ff_get_buffer(avctx, frame, 0);
+    ret = ff_get_buffer_xij(avctx, frame, 0);
     if (ret < 0)
         return ret;
 

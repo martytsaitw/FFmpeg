@@ -145,7 +145,7 @@ static int libcodec2_decode(AVCodecContext *avctx, void *data,
     nframes           = pkt->size / avctx->block_align;
     frame->nb_samples = avctx->frame_size * nframes;
 
-    ret = ff_get_buffer(avctx, frame, 0);
+    ret = ff_get_buffer_xij(avctx, frame, 0);
     if (ret < 0) {
         return ret;
     }

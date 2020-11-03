@@ -38,7 +38,7 @@ static int xvag_read_header(AVFormatContext *s)
     unsigned offset, big_endian, codec;
     AVStream *st;
 
-    avio_skip(s->pb, 4);
+    avio_skip_xij(s->pb, 4);
 
     st = avformat_new_stream_ijk(s, NULL);
     if (!st)
@@ -46,25 +46,25 @@ static int xvag_read_header(AVFormatContext *s)
 
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
 
-    offset     = avio_rl32(s->pb);
+    offset     = avio_rl32_xij(s->pb);
     big_endian = offset > av_bswap32(offset);
     if (big_endian) {
         offset                 = av_bswap32(offset);
-        avio_skip(s->pb, 28);
-        codec                  = avio_rb32(s->pb);
-        st->codecpar->channels = avio_rb32(s->pb);
-        avio_skip(s->pb, 4);
-        st->duration           = avio_rb32(s->pb);
-        avio_skip(s->pb, 8);
-        st->codecpar->sample_rate = avio_rb32(s->pb);
+        avio_skip_xij(s->pb, 28);
+        codec                  = avio_rb32_xij(s->pb);
+        st->codecpar->channels = avio_rb32_xij(s->pb);
+        avio_skip_xij(s->pb, 4);
+        st->duration           = avio_rb32_xij(s->pb);
+        avio_skip_xij(s->pb, 8);
+        st->codecpar->sample_rate = avio_rb32_xij(s->pb);
     } else {
-        avio_skip(s->pb, 28);
-        codec                  = avio_rl32(s->pb);
-        st->codecpar->channels = avio_rl32(s->pb);
-        avio_skip(s->pb, 4);
-        st->duration           = avio_rl32(s->pb);
-        avio_skip(s->pb, 8);
-        st->codecpar->sample_rate = avio_rl32(s->pb);
+        avio_skip_xij(s->pb, 28);
+        codec                  = avio_rl32_xij(s->pb);
+        st->codecpar->channels = avio_rl32_xij(s->pb);
+        avio_skip_xij(s->pb, 4);
+        st->duration           = avio_rl32_xij(s->pb);
+        avio_skip_xij(s->pb, 8);
+        st->codecpar->sample_rate = avio_rl32_xij(s->pb);
     }
 
     if (st->codecpar->sample_rate <= 0)
@@ -82,15 +82,15 @@ static int xvag_read_header(AVFormatContext *s)
         return AVERROR_PATCHWELCOME;
     };
 
-    avio_skip(s->pb, offset - avio_tell(s->pb));
+    avio_skip_xij(s->pb, offset - avio_tell(s->pb));
 
-    if (avio_rb16(s->pb) == 0xFFFB) {
+    if (avio_rb16_xij(s->pb) == 0xFFFB) {
         st->codecpar->codec_id    = AV_CODEC_ID_MP3;
         st->codecpar->block_align = 0x1000;
         st->need_parsing       = AVSTREAM_PARSE_FULL_RAW;
     }
 
-    avio_skip(s->pb, -2);
+    avio_skip_xij(s->pb, -2);
     avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
     return 0;
@@ -100,7 +100,7 @@ static int xvag_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     AVCodecParameters *par = s->streams[0]->codecpar;
 
-    return av_get_packet(s->pb, pkt, par->block_align);
+    return av_get_packet_xij(s->pb, pkt, par->block_align);
 }
 
 AVInputFormat ff_xvag_demuxer = {

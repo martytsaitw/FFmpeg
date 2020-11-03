@@ -26,7 +26,7 @@
  * The filter is responsible for either freeing the packet or passing it to the
  * caller.
  */
-int ff_bsf_get_packet(AVBSFContext *ctx, AVPacket **pkt);
+int ff_bsf_get_packet_xij(AVBSFContext *ctx, AVPacket **pkt);
 
 /**
  * Called by bitstream filters to get packet for filtering.
@@ -37,8 +37,8 @@ int ff_bsf_get_packet(AVBSFContext *ctx, AVPacket **pkt);
  *
  * @return 0>= on success, negative AVERROR in case of failure
  */
-int ff_bsf_get_packet_ref(AVBSFContext *ctx, AVPacket *pkt);
+int ff_bsf_get_packet_ref_xij(AVBSFContext *ctx, AVPacket *pkt);
 
-const AVClass *ff_bsf_child_class_next(const AVClass *prev);
+const AVClass *ff_bsf_child_class_next_xij(const AVClass *prev);
 
 #endif /* AVCODEC_BSF_H */

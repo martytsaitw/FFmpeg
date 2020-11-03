@@ -140,7 +140,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 
     while (s->frames_count > 0) {
         frame = shift_frame(ctx, s);
-        av_frame_free(&frame);
+        av_frame_free_xij(&frame);
     }
 
     av_log(ctx, AV_LOG_VERBOSE, "%d frames in, %d frames out; %d frames dropped, "
@@ -225,7 +225,7 @@ static int write_frame(AVFilterContext *ctx, FPSContext *s, AVFilterLink *outlin
             av_log(ctx, AV_LOG_WARNING, "Discarding initial frame(s) with no "
                    "timestamp.\n");
             frame = shift_frame(ctx, s);
-            av_frame_free(&frame);
+            av_frame_free_xij(&frame);
             *again = 1;
             return 0;
         }
@@ -240,13 +240,13 @@ static int write_frame(AVFilterContext *ctx, FPSContext *s, AVFilterLink *outlin
         (s->status            && s->status_pts     <= s->next_pts)) {
 
         frame = shift_frame(ctx, s);
-        av_frame_free(&frame);
+        av_frame_free_xij(&frame);
         *again = 1;
         return 0;
 
     /* Output a copy of the first buffered frame */
     } else {
-        frame = av_frame_clone(s->frames[0]);
+        frame = av_frame_clone_xij(s->frames[0]);
         if (!frame)
             return AVERROR(ENOMEM);
         frame->pts = s->next_pts++;

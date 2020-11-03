@@ -100,8 +100,8 @@ static int vmd_read_header(AVFormatContext *s)
     int sound_buffers;
 
     /* fetch the main header, including the 2 header length bytes */
-    avio_seek(pb, 0, SEEK_SET);
-    if (avio_read(pb, vmd->vmd_header, VMD_HEADER_SIZE) != VMD_HEADER_SIZE)
+    avio_seek_xij(pb, 0, SEEK_SET);
+    if (avio_read_xij(pb, vmd->vmd_header, VMD_HEADER_SIZE) != VMD_HEADER_SIZE)
         return AVERROR(EIO);
 
     width = AV_RL16(&vmd->vmd_header[12]);
@@ -127,7 +127,7 @@ static int vmd_read_header(AVFormatContext *s)
             vst->codecpar->width >>= 1;
             vst->codecpar->height >>= 1;
         }
-        if (ff_alloc_extradata(vst->codecpar, VMD_HEADER_SIZE))
+        if (ff_alloc_extradata_xij(vst->codecpar, VMD_HEADER_SIZE))
             return AVERROR(ENOMEM);
         memcpy(vst->codecpar->extradata, vmd->vmd_header, VMD_HEADER_SIZE);
     }
@@ -178,7 +178,7 @@ static int vmd_read_header(AVFormatContext *s)
     toc_offset = AV_RL32(&vmd->vmd_header[812]);
     vmd->frame_count = AV_RL16(&vmd->vmd_header[6]);
     vmd->frames_per_block = AV_RL16(&vmd->vmd_header[18]);
-    avio_seek(pb, toc_offset, SEEK_SET);
+    avio_seek_xij(pb, toc_offset, SEEK_SET);
 
     raw_frame_table = NULL;
     vmd->frame_table = NULL;
@@ -194,7 +194,7 @@ static int vmd_read_header(AVFormatContext *s)
         ret = AVERROR(ENOMEM);
         goto error;
     }
-    if (avio_read(pb, raw_frame_table, raw_frame_table_size) !=
+    if (avio_read_xij(pb, raw_frame_table, raw_frame_table_size) !=
         raw_frame_table_size) {
         ret = AVERROR(EIO);
         goto error;
@@ -210,7 +210,7 @@ static int vmd_read_header(AVFormatContext *s)
             int type;
             uint32_t size;
 
-            if ((ret = avio_read(pb, chunk, BYTES_PER_FRAME_RECORD)) != BYTES_PER_FRAME_RECORD) {
+            if ((ret = avio_read_xij(pb, chunk, BYTES_PER_FRAME_RECORD)) != BYTES_PER_FRAME_RECORD) {
                 av_log(s, AV_LOG_ERROR, "Failed to read frame record\n");
                 if (ret >= 0)
                     ret = AVERROR_INVALIDDATA;
@@ -279,18 +279,18 @@ static int vmd_read_packet(AVFormatContext *s,
 
     frame = &vmd->frame_table[vmd->current_frame];
     /* position the stream (will probably be there already) */
-    avio_seek(pb, frame->frame_offset, SEEK_SET);
+    avio_seek_xij(pb, frame->frame_offset, SEEK_SET);
 
-    if(ffio_limit(pb, frame->frame_size) != frame->frame_size)
+    if(ffio_limit_xij(pb, frame->frame_size) != frame->frame_size)
         return AVERROR(EIO);
     if (av_new_packet_ijk(pkt, frame->frame_size + BYTES_PER_FRAME_RECORD))
         return AVERROR(ENOMEM);
     pkt->pos= avio_tell(pb);
     memcpy(pkt->data, frame->frame_record, BYTES_PER_FRAME_RECORD);
     if(vmd->is_indeo3 && frame->frame_record[0] == 0x02)
-        ret = avio_read(pb, pkt->data, frame->frame_size);
+        ret = avio_read_xij(pb, pkt->data, frame->frame_size);
     else
-        ret = avio_read(pb, pkt->data + BYTES_PER_FRAME_RECORD,
+        ret = avio_read_xij(pb, pkt->data + BYTES_PER_FRAME_RECORD,
             frame->frame_size);
 
     if (ret != frame->frame_size) {

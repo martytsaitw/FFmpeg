@@ -316,7 +316,7 @@ static int dca_parse(AVCodecParserContext *s, AVCodecContext *avctx,
     } else {
         next = dca_find_frame_end(pc1, buf, buf_size);
 
-        if (ff_combine_frame(pc, next, &buf, &buf_size) < 0) {
+        if (ff_combine_frame_xij(pc, next, &buf, &buf_size) < 0) {
             *poutbuf      = NULL;
             *poutbuf_size = 0;
             return buf_size;
@@ -348,5 +348,5 @@ AVCodecParser ff_dca_parser = {
     .priv_data_size = sizeof(DCAParseContext),
     .parser_init    = dca_parse_init,
     .parser_parse   = dca_parse,
-    .parser_close   = ff_parse_close,
+    .parser_close   = ff_parse_close_xij,
 };

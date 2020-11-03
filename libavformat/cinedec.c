@@ -106,40 +106,40 @@ static int cine_read_header(AVFormatContext *avctx)
     st->codecpar->codec_tag  = 0;
 
     /* CINEFILEHEADER structure */
-    avio_skip(pb, 4); // Type, Headersize
+    avio_skip_xij(pb, 4); // Type, Headersize
 
-    compression = avio_rl16(pb);
-    version     = avio_rl16(pb);
+    compression = avio_rl16_xij(pb);
+    version     = avio_rl16_xij(pb);
     if (version != 1) {
         avpriv_request_sample(avctx, "unknown version %i", version);
         return AVERROR_INVALIDDATA;
     }
 
-    avio_skip(pb, 12); // FirstMovieImage, TotalImageCount, FirstImageNumber
+    avio_skip_xij(pb, 12); // FirstMovieImage, TotalImageCount, FirstImageNumber
 
-    st->duration    = avio_rl32(pb);
-    offImageHeader  = avio_rl32(pb);
-    offSetup        = avio_rl32(pb);
-    offImageOffsets = avio_rl32(pb);
+    st->duration    = avio_rl32_xij(pb);
+    offImageHeader  = avio_rl32_xij(pb);
+    offSetup        = avio_rl32_xij(pb);
+    offImageOffsets = avio_rl32_xij(pb);
 
-    avio_skip(pb, 8); // TriggerTime
+    avio_skip_xij(pb, 8); // TriggerTime
 
     /* BITMAPINFOHEADER structure */
-    avio_seek(pb, offImageHeader, SEEK_SET);
-    avio_skip(pb, 4); //biSize
-    st->codecpar->width      = avio_rl32(pb);
-    st->codecpar->height     = avio_rl32(pb);
+    avio_seek_xij(pb, offImageHeader, SEEK_SET);
+    avio_skip_xij(pb, 4); //biSize
+    st->codecpar->width      = avio_rl32_xij(pb);
+    st->codecpar->height     = avio_rl32_xij(pb);
 
-    if (avio_rl16(pb) != 1) // biPlanes
+    if (avio_rl16_xij(pb) != 1) // biPlanes
         return AVERROR_INVALIDDATA;
 
-    biBitCount = avio_rl16(pb);
+    biBitCount = avio_rl16_xij(pb);
     if (biBitCount != 8 && biBitCount != 16 && biBitCount != 24 && biBitCount != 48) {
         avpriv_request_sample(avctx, "unsupported biBitCount %i", biBitCount);
         return AVERROR_INVALIDDATA;
     }
 
-    switch (avio_rl32(pb)) {
+    switch (avio_rl32_xij(pb)) {
     case BMP_RGB:
         vflip = 0;
         break;
@@ -152,48 +152,48 @@ static int cine_read_header(AVFormatContext *avctx)
         return AVERROR_INVALIDDATA;
     }
 
-    avio_skip(pb, 4); // biSizeImage
+    avio_skip_xij(pb, 4); // biSizeImage
 
     /* parse SETUP structure */
-    avio_seek(pb, offSetup, SEEK_SET);
-    avio_skip(pb, 140); // FrameRatae16 .. descriptionOld
-    if (avio_rl16(pb) != 0x5453)
+    avio_seek_xij(pb, offSetup, SEEK_SET);
+    avio_skip_xij(pb, 140); // FrameRatae16 .. descriptionOld
+    if (avio_rl16_xij(pb) != 0x5453)
         return AVERROR_INVALIDDATA;
-    length = avio_rl16(pb);
+    length = avio_rl16_xij(pb);
     if (length < 0x163C) {
         avpriv_request_sample(avctx, "short SETUP header");
         return AVERROR_INVALIDDATA;
     }
 
-    avio_skip(pb, 616); // Binning .. bFlipH
-    if (!avio_rl32(pb) ^ vflip) {
+    avio_skip_xij(pb, 616); // Binning .. bFlipH
+    if (!avio_rl32_xij(pb) ^ vflip) {
         st->codecpar->extradata  = av_strdup("BottomUp");
         st->codecpar->extradata_size  = 9;
     }
 
-    avio_skip(pb, 4); // Grid
+    avio_skip_xij(pb, 4); // Grid
 
-    avpriv_set_pts_info_ijk(st, 64, 1, avio_rl32(pb));
+    avpriv_set_pts_info_ijk(st, 64, 1, avio_rl32_xij(pb));
 
-    avio_skip(pb, 20); // Shutter .. bEnableColor
+    avio_skip_xij(pb, 20); // Shutter .. bEnableColor
 
-    set_metadata_int(&st->metadata, "camera_version", avio_rl32(pb), 0);
-    set_metadata_int(&st->metadata, "firmware_version", avio_rl32(pb), 0);
-    set_metadata_int(&st->metadata, "software_version", avio_rl32(pb), 0);
-    set_metadata_int(&st->metadata, "recording_timezone", avio_rl32(pb), 0);
+    set_metadata_int(&st->metadata, "camera_version", avio_rl32_xij(pb), 0);
+    set_metadata_int(&st->metadata, "firmware_version", avio_rl32_xij(pb), 0);
+    set_metadata_int(&st->metadata, "software_version", avio_rl32_xij(pb), 0);
+    set_metadata_int(&st->metadata, "recording_timezone", avio_rl32_xij(pb), 0);
 
-    CFA = avio_rl32(pb);
+    CFA = avio_rl32_xij(pb);
 
-    set_metadata_int(&st->metadata, "brightness", avio_rl32(pb), 1);
-    set_metadata_int(&st->metadata, "contrast", avio_rl32(pb), 1);
-    set_metadata_int(&st->metadata, "gamma", avio_rl32(pb), 1);
+    set_metadata_int(&st->metadata, "brightness", avio_rl32_xij(pb), 1);
+    set_metadata_int(&st->metadata, "contrast", avio_rl32_xij(pb), 1);
+    set_metadata_int(&st->metadata, "gamma", avio_rl32_xij(pb), 1);
 
-    avio_skip(pb, 12 + 16); // Reserved1 .. AutoExpRect
-    set_metadata_float(&st->metadata, "wbgain[0].r", av_int2float(avio_rl32(pb)), 1);
-    set_metadata_float(&st->metadata, "wbgain[0].b", av_int2float(avio_rl32(pb)), 1);
-    avio_skip(pb, 36); // WBGain[1].. WBView
+    avio_skip_xij(pb, 12 + 16); // Reserved1 .. AutoExpRect
+    set_metadata_float(&st->metadata, "wbgain[0].r", av_int2float(avio_rl32_xij(pb)), 1);
+    set_metadata_float(&st->metadata, "wbgain[0].b", av_int2float(avio_rl32_xij(pb)), 1);
+    avio_skip_xij(pb, 36); // WBGain[1].. WBView
 
-    st->codecpar->bits_per_coded_sample = avio_rl32(pb);
+    st->codecpar->bits_per_coded_sample = avio_rl32_xij(pb);
 
     if (compression == CC_RGB) {
         if (biBitCount == 8) {
@@ -239,39 +239,39 @@ static int cine_read_header(AVFormatContext *avctx)
         return AVERROR_INVALIDDATA;
     }
 
-    avio_skip(pb, 668); // Conv8Min ... Sensor
+    avio_skip_xij(pb, 668); // Conv8Min ... Sensor
 
-    set_metadata_int(&st->metadata, "shutter_ns", avio_rl32(pb), 0);
+    set_metadata_int(&st->metadata, "shutter_ns", avio_rl32_xij(pb), 0);
 
-    avio_skip(pb, 24); // EDRShutterNs ... ImHeightAcq
+    avio_skip_xij(pb, 24); // EDRShutterNs ... ImHeightAcq
 
 #define DESCRIPTION_SIZE 4096
     description = av_malloc(DESCRIPTION_SIZE + 1);
     if (!description)
         return AVERROR(ENOMEM);
-    i = avio_get_str(pb, DESCRIPTION_SIZE, description, DESCRIPTION_SIZE + 1);
+    i = avio_get_str_xij(pb, DESCRIPTION_SIZE, description, DESCRIPTION_SIZE + 1);
     if (i < DESCRIPTION_SIZE)
-        avio_skip(pb, DESCRIPTION_SIZE - i);
+        avio_skip_xij(pb, DESCRIPTION_SIZE - i);
     if (description[0])
         av_dict_set(&st->metadata, "description", description, AV_DICT_DONT_STRDUP_VAL);
     else
         av_free(description);
 
-    avio_skip(pb, 1176); // RisingEdge ... cmUser
+    avio_skip_xij(pb, 1176); // RisingEdge ... cmUser
 
-    set_metadata_int(&st->metadata, "enable_crop", avio_rl32(pb), 1);
-    set_metadata_int(&st->metadata, "crop_left", avio_rl32(pb), 1);
-    set_metadata_int(&st->metadata, "crop_top", avio_rl32(pb), 1);
-    set_metadata_int(&st->metadata, "crop_right", avio_rl32(pb), 1);
-    set_metadata_int(&st->metadata, "crop_bottom", avio_rl32(pb), 1);
+    set_metadata_int(&st->metadata, "enable_crop", avio_rl32_xij(pb), 1);
+    set_metadata_int(&st->metadata, "crop_left", avio_rl32_xij(pb), 1);
+    set_metadata_int(&st->metadata, "crop_top", avio_rl32_xij(pb), 1);
+    set_metadata_int(&st->metadata, "crop_right", avio_rl32_xij(pb), 1);
+    set_metadata_int(&st->metadata, "crop_bottom", avio_rl32_xij(pb), 1);
 
     /* parse image offsets */
-    avio_seek(pb, offImageOffsets, SEEK_SET);
+    avio_seek_xij(pb, offImageOffsets, SEEK_SET);
     for (i = 0; i < st->duration; i++) {
-        if (avio_feof(pb))
+        if (avio_feof_xij(pb))
             return AVERROR_INVALIDDATA;
 
-        av_add_index_entry(st, avio_rl64(pb), i, 0, 0, AVINDEX_KEYFRAME);
+        av_add_index_entry_xij(st, avio_rl64_xij(pb), i, 0, 0, AVINDEX_KEYFRAME);
     }
 
     return 0;
@@ -287,14 +287,14 @@ static int cine_read_packet(AVFormatContext *avctx, AVPacket *pkt)
     if (cine->pts >= st->duration)
         return AVERROR_EOF;
 
-    avio_seek(pb, st->index_entries[cine->pts].pos, SEEK_SET);
-    n = avio_rl32(pb);
+    avio_seek_xij(pb, st->index_entries[cine->pts].pos, SEEK_SET);
+    n = avio_rl32_xij(pb);
     if (n < 8)
         return AVERROR_INVALIDDATA;
-    avio_skip(pb, n - 8);
-    size = avio_rl32(pb);
+    avio_skip_xij(pb, n - 8);
+    size = avio_rl32_xij(pb);
 
-    ret = av_get_packet(pb, pkt, size);
+    ret = av_get_packet_xij(pb, pkt, size);
     if (ret < 0)
         return ret;
 

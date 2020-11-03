@@ -28,7 +28,7 @@ static int text2movsub(AVBSFContext *ctx, AVPacket *out)
     AVPacket *in;
     int ret = 0;
 
-    ret = ff_bsf_get_packet(ctx, &in);
+    ret = ff_bsf_get_packet_xij(ctx, &in);
     if (ret < 0)
         return ret;
 
@@ -53,7 +53,7 @@ static int text2movsub(AVBSFContext *ctx, AVPacket *out)
 fail:
     if (ret < 0)
         av_packet_unref_ijk(out);
-    av_packet_free(&in);
+    av_packet_free_xij(&in);
     return ret;
 }
 
@@ -66,7 +66,7 @@ static int mov2textsub(AVBSFContext *ctx, AVPacket *pkt)
 {
     int ret = 0;
 
-    ret = ff_bsf_get_packet_ref(ctx, pkt);
+    ret = ff_bsf_get_packet_ref_xij(ctx, pkt);
     if (ret < 0)
         return ret;
 

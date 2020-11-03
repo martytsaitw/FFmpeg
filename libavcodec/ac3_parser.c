@@ -237,7 +237,7 @@ AVCodecParser ff_ac3_parser = {
     .priv_data_size = sizeof(AACAC3ParseContext),
     .parser_init    = ac3_parse_init,
     .parser_parse   = ff_aac_ac3_parse,
-    .parser_close   = ff_parse_close,
+    .parser_close   = ff_parse_close_xij,
 };
 
 #else

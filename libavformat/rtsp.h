@@ -190,7 +190,7 @@ typedef struct RTSPMessageHeader {
 /**
  * Client state, i.e. whether we are currently receiving data (PLAYING) or
  * setup-but-not-receiving (PAUSED). State can be changed in applications
- * by calling av_read_play/pause().
+ * by calling av_read_play_xij/pause().
  */
 enum RTSPClientState {
     RTSP_STATE_IDLE,    /**< not initialized */
@@ -230,7 +230,7 @@ typedef struct RTSPState {
      * send 2x the same unexpectedly or commands in the wrong state. */
     enum RTSPClientState state;
 
-    /** the seek value requested when calling av_seek_frame(). This value
+    /** the seek value requested when calling av_seek_frame_xij(). This value
      * is subsequently used as part of the "Range" parameter when emitting
      * the RTSP PLAY command. If we are currently playing, this command is
      * called instantly. If we are currently paused, this command is called
@@ -637,6 +637,6 @@ void ff_rtsp_undo_setup_ijk(AVFormatContext *s, int send_packets);
  */
 int ff_rtsp_open_transport_ctx_ijk(AVFormatContext *s, RTSPStream *rtsp_st);
 
-extern const AVOption ff_rtsp_options[];
+extern const AVOption ff_rtsp_options_xij[];
 
 #endif /* AVFORMAT_RTSP_H */

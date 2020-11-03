@@ -41,13 +41,13 @@ static int sup_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     pos = avio_tell(s->pb);
 
-    if (avio_rb16(s->pb) != SUP_PGS_MAGIC)
-        return avio_feof(s->pb) ? AVERROR_EOF : AVERROR_INVALIDDATA;
+    if (avio_rb16_xij(s->pb) != SUP_PGS_MAGIC)
+        return avio_feof_xij(s->pb) ? AVERROR_EOF : AVERROR_INVALIDDATA;
 
-    pts = avio_rb32(s->pb);
-    dts = avio_rb32(s->pb);
+    pts = avio_rb32_xij(s->pb);
+    dts = avio_rb32_xij(s->pb);
 
-    if ((ret = av_get_packet(s->pb, pkt, 3)) < 0)
+    if ((ret = av_get_packet_xij(s->pb, pkt, 3)) < 0)
         return ret;
 
     pkt->stream_index = 0;
@@ -61,7 +61,7 @@ static int sup_read_packet(AVFormatContext *s, AVPacket *pkt)
         // The full packet size is stored as part of the packet.
         size_t len = AV_RB16(pkt->data + 1);
 
-        if ((ret = av_append_packet(s->pb, pkt, len)) < 0)
+        if ((ret = av_append_packet_xij(s->pb, pkt, len)) < 0)
             return ret;
     }
 

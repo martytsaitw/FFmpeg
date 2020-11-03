@@ -58,11 +58,11 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         return AVERROR_INVALIDDATA;
     }
 
-    ret = ff_set_dimensions(avctx, width, height);
+    ret = ff_set_dimensions_xij(avctx, width, height);
     if (ret < 0)
         return ret;
 
-    ret = ff_get_buffer(avctx, f, 0);
+    ret = ff_get_buffer_xij(avctx, f, 0);
     if (ret < 0)
         return ret;
 

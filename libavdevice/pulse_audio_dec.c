@@ -307,7 +307,7 @@ static int pulse_read_packet(AVFormatContext *s, AVPacket *pkt)
     if (pa_stream_get_latency(pd->stream, &latency, &negative) >= 0) {
         enum AVCodecID codec_id =
             s->audio_codec_id == AV_CODEC_ID_NONE ? DEFAULT_CODEC_ID : s->audio_codec_id;
-        int frame_size = ((av_get_bits_per_sample(codec_id) >> 3) * pd->channels);
+        int frame_size = ((av_get_bits_per_sample_xij(codec_id) >> 3) * pd->channels);
         int frame_duration = read_length / frame_size;
 
 

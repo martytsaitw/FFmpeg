@@ -94,21 +94,21 @@ static av_cold int rl2_read_header(AVFormatContext *s)
     int i;
     int ret = 0;
 
-    avio_skip(pb,4);          /* skip FORM tag */
-    back_size = avio_rl32(pb); /**< get size of the background frame */
-    signature = avio_rb32(pb);
-    avio_skip(pb, 4);         /* data size */
-    frame_count = avio_rl32(pb);
+    avio_skip_xij(pb,4);          /* skip FORM tag */
+    back_size = avio_rl32_xij(pb); /**< get size of the background frame */
+    signature = avio_rb32_xij(pb);
+    avio_skip_xij(pb, 4);         /* data size */
+    frame_count = avio_rl32_xij(pb);
 
     /* disallow back_sizes and frame_counts that may lead to overflows later */
     if(back_size > INT_MAX/2  || frame_count > INT_MAX / sizeof(uint32_t))
         return AVERROR_INVALIDDATA;
 
-    avio_skip(pb, 2);         /* encoding method */
-    sound_rate = avio_rl16(pb);
-    rate = avio_rl16(pb);
-    channels = avio_rl16(pb);
-    def_sound_size = avio_rl16(pb);
+    avio_skip_xij(pb, 2);         /* encoding method */
+    sound_rate = avio_rl16_xij(pb);
+    rate = avio_rl16_xij(pb);
+    channels = avio_rl16_xij(pb);
+    def_sound_size = avio_rl16_xij(pb);
 
     /** setup video stream */
     st = avformat_new_stream_ijk(s, NULL);
@@ -127,7 +127,7 @@ static av_cold int rl2_read_header(AVFormatContext *s)
     if(signature == RLV3_TAG && back_size > 0)
         st->codecpar->extradata_size += back_size;
 
-    if(ff_get_extradata(s, st->codecpar, pb, st->codecpar->extradata_size) < 0)
+    if(ff_get_extradata_xij(s, st->codecpar, pb, st->codecpar->extradata_size) < 0)
         return AVERROR(ENOMEM);
 
     /** setup audio stream if present */
@@ -171,19 +171,19 @@ static av_cold int rl2_read_header(AVFormatContext *s)
 
     /** read offset and size tables */
     for(i=0; i < frame_count;i++) {
-        if (avio_feof(pb))
+        if (avio_feof_xij(pb))
             return AVERROR_INVALIDDATA;
-        chunk_size[i] = avio_rl32(pb);
+        chunk_size[i] = avio_rl32_xij(pb);
     }
     for(i=0; i < frame_count;i++) {
-        if (avio_feof(pb))
+        if (avio_feof_xij(pb))
             return AVERROR_INVALIDDATA;
-        chunk_offset[i] = avio_rl32(pb);
+        chunk_offset[i] = avio_rl32_xij(pb);
     }
     for(i=0; i < frame_count;i++) {
-        if (avio_feof(pb))
+        if (avio_feof_xij(pb))
             return AVERROR_INVALIDDATA;
-        audio_size[i] = avio_rl32(pb) & 0xFFFF;
+        audio_size[i] = avio_rl32_xij(pb) & 0xFFFF;
     }
 
     /** build the sample index */
@@ -194,11 +194,11 @@ static av_cold int rl2_read_header(AVFormatContext *s)
         }
 
         if(sound_rate && audio_size[i]){
-            av_add_index_entry(s->streams[1], chunk_offset[i],
+            av_add_index_entry_xij(s->streams[1], chunk_offset[i],
                 audio_frame_counter,audio_size[i], 0, AVINDEX_KEYFRAME);
             audio_frame_counter += audio_size[i] / channels;
         }
-        av_add_index_entry(s->streams[0], chunk_offset[i] + audio_size[i],
+        av_add_index_entry_xij(s->streams[0], chunk_offset[i] + audio_size[i],
             video_frame_counter,chunk_size[i]-audio_size[i],0,AVINDEX_KEYFRAME);
         ++video_frame_counter;
     }
@@ -244,10 +244,10 @@ static int rl2_read_packet(AVFormatContext *s,
     ++rl2->index_pos[stream_id];
 
     /** position the stream (will probably be there anyway) */
-    avio_seek(pb, sample->pos, SEEK_SET);
+    avio_seek_xij(pb, sample->pos, SEEK_SET);
 
     /** fill the packet */
-    ret = av_get_packet(pb, pkt, sample->size);
+    ret = av_get_packet_xij(pb, pkt, sample->size);
     if(ret != sample->size){
         av_packet_unref_ijk(pkt);
         return AVERROR(EIO);
@@ -272,7 +272,7 @@ static int rl2_read_seek(AVFormatContext *s, int stream_index, int64_t timestamp
     AVStream *st = s->streams[stream_index];
     Rl2DemuxContext *rl2 = s->priv_data;
     int i;
-    int index = av_index_search_timestamp(st, timestamp, flags);
+    int index = av_index_search_timestamp_xij(st, timestamp, flags);
     if(index < 0)
         return -1;
 
@@ -281,7 +281,7 @@ static int rl2_read_seek(AVFormatContext *s, int stream_index, int64_t timestamp
 
     for(i=0; i < s->nb_streams; i++){
         AVStream *st2 = s->streams[i];
-        index = av_index_search_timestamp(st2,
+        index = av_index_search_timestamp_xij(st2,
                     av_rescale_q(timestamp, st->time_base, st2->time_base),
                     flags | AVSEEK_FLAG_BACKWARD);
 

@@ -35,7 +35,7 @@ static int make_tables_writable(Picture *pic)
 #define MAKE_WRITABLE(table) \
 do {\
     if (pic->table &&\
-       (ret = av_buffer_make_writable(&pic->table)) < 0)\
+       (ret = av_buffer_make_writable_xij(&pic->table)) < 0)\
     return ret;\
 } while (0)
 
@@ -97,7 +97,7 @@ static int alloc_frame_buffer(AVCodecContext *avctx,  Picture *pic,
                               int chroma_x_shift, int chroma_y_shift,
                               int linesize, int uvlinesize)
 {
-    int edges_needed = av_codec_is_encoder(avctx->codec);
+    int edges_needed = av_codec_is_encoder_xij(avctx->codec);
     int r, ret;
 
     pic->tf.f = pic->f;
@@ -115,7 +115,7 @@ static int alloc_frame_buffer(AVCodecContext *avctx,  Picture *pic,
         pic->f->width  = avctx->width;
         pic->f->height = avctx->height;
         pic->f->format = avctx->pix_fmt;
-        r = avcodec_default_get_buffer2(avctx, pic->f, 0);
+        r = avcodec_default_get_buffer2_xij(avctx, pic->f, 0);
     }
 
     if (r < 0 || !pic->f->buf[0]) {
@@ -139,7 +139,7 @@ static int alloc_frame_buffer(AVCodecContext *avctx,  Picture *pic,
     if (avctx->hwaccel) {
         assert(!pic->hwaccel_picture_private);
         if (avctx->hwaccel->frame_priv_data_size) {
-            pic->hwaccel_priv_buf = av_buffer_allocz(avctx->hwaccel->frame_priv_data_size);
+            pic->hwaccel_priv_buf = av_buffer_allocz_xij(avctx->hwaccel->frame_priv_data_size);
             if (!pic->hwaccel_priv_buf) {
                 av_log(avctx, AV_LOG_ERROR, "alloc_frame_buffer() failed (hwaccel private data allocation)\n");
                 return -1;
@@ -187,17 +187,17 @@ static int alloc_picture_tables(AVCodecContext *avctx, Picture *pic, int encodin
     int i;
 
 
-    pic->mbskip_table_buf = av_buffer_allocz(mb_array_size + 2);
-    pic->qscale_table_buf = av_buffer_allocz(big_mb_num + mb_stride);
-    pic->mb_type_buf      = av_buffer_allocz((big_mb_num + mb_stride) *
+    pic->mbskip_table_buf = av_buffer_allocz_xij(mb_array_size + 2);
+    pic->qscale_table_buf = av_buffer_allocz_xij(big_mb_num + mb_stride);
+    pic->mb_type_buf      = av_buffer_allocz_xij((big_mb_num + mb_stride) *
                                              sizeof(uint32_t));
     if (!pic->mbskip_table_buf || !pic->qscale_table_buf || !pic->mb_type_buf)
         return AVERROR(ENOMEM);
 
     if (encoding) {
-        pic->mb_var_buf    = av_buffer_allocz(mb_array_size * sizeof(int16_t));
-        pic->mc_mb_var_buf = av_buffer_allocz(mb_array_size * sizeof(int16_t));
-        pic->mb_mean_buf   = av_buffer_allocz(mb_array_size);
+        pic->mb_var_buf    = av_buffer_allocz_xij(mb_array_size * sizeof(int16_t));
+        pic->mc_mb_var_buf = av_buffer_allocz_xij(mb_array_size * sizeof(int16_t));
+        pic->mb_mean_buf   = av_buffer_allocz_xij(mb_array_size);
         if (!pic->mb_var_buf || !pic->mc_mb_var_buf || !pic->mb_mean_buf)
             return AVERROR(ENOMEM);
     }
@@ -211,8 +211,8 @@ static int alloc_picture_tables(AVCodecContext *avctx, Picture *pic, int encodin
         int ref_index_size = 4 * mb_array_size;
 
         for (i = 0; mv_size && i < 2; i++) {
-            pic->motion_val_buf[i] = av_buffer_allocz(mv_size);
-            pic->ref_index_buf[i]  = av_buffer_allocz(ref_index_size);
+            pic->motion_val_buf[i] = av_buffer_allocz_xij(mv_size);
+            pic->ref_index_buf[i]  = av_buffer_allocz_xij(ref_index_size);
             if (!pic->motion_val_buf[i] || !pic->ref_index_buf[i])
                 return AVERROR(ENOMEM);
         }
@@ -303,9 +303,9 @@ void ff_mpeg_unref_picture(AVCodecContext *avctx, Picture *pic)
         avctx->codec_id != AV_CODEC_ID_MSS2)
         ff_thread_release_buffer(avctx, &pic->tf);
     else if (pic->f)
-        av_frame_unref(pic->f);
+        av_frame_unref_xij(pic->f);
 
-    av_buffer_unref(&pic->hwaccel_priv_buf);
+    av_buffer_unref_xij(&pic->hwaccel_priv_buf);
 
     if (pic->needs_realloc)
         ff_free_picture_tables(pic);
@@ -321,7 +321,7 @@ int ff_update_picture_tables(Picture *dst, Picture *src)
 do {                                                                          \
     if (src->table &&                                                         \
         (!dst->table || dst->table->buffer != src->table->buffer)) {          \
-        av_buffer_unref(&dst->table);                                         \
+        av_buffer_unref_xij(&dst->table);                                         \
         dst->table = av_buffer_ref_ijk(src->table);                               \
         if (!dst->table) {                                                    \
             ff_free_picture_tables(dst);                                      \
@@ -367,7 +367,7 @@ int ff_mpeg_ref_picture(AVCodecContext *avctx, Picture *dst, Picture *src)
 
     src->tf.f = src->f;
     dst->tf.f = dst->f;
-    ret = ff_thread_ref_frame(&dst->tf, &src->tf);
+    ret = ff_thread_ref_frame_xij(&dst->tf, &src->tf);
     if (ret < 0)
         goto fail;
 
@@ -464,15 +464,15 @@ void ff_free_picture_tables(Picture *pic)
     pic->alloc_mb_width  =
     pic->alloc_mb_height = 0;
 
-    av_buffer_unref(&pic->mb_var_buf);
-    av_buffer_unref(&pic->mc_mb_var_buf);
-    av_buffer_unref(&pic->mb_mean_buf);
-    av_buffer_unref(&pic->mbskip_table_buf);
-    av_buffer_unref(&pic->qscale_table_buf);
-    av_buffer_unref(&pic->mb_type_buf);
+    av_buffer_unref_xij(&pic->mb_var_buf);
+    av_buffer_unref_xij(&pic->mc_mb_var_buf);
+    av_buffer_unref_xij(&pic->mb_mean_buf);
+    av_buffer_unref_xij(&pic->mbskip_table_buf);
+    av_buffer_unref_xij(&pic->qscale_table_buf);
+    av_buffer_unref_xij(&pic->mb_type_buf);
 
     for (i = 0; i < 2; i++) {
-        av_buffer_unref(&pic->motion_val_buf[i]);
-        av_buffer_unref(&pic->ref_index_buf[i]);
+        av_buffer_unref_xij(&pic->motion_val_buf[i]);
+        av_buffer_unref_xij(&pic->ref_index_buf[i]);
     }
 }

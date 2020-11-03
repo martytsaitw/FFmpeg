@@ -255,15 +255,15 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     set_params(s->sigma,  s->steps, &s->postscale,  &s->boundaryscale,  &s->nu);
     set_params(s->sigmaV, s->steps, &s->postscaleV, &s->boundaryscaleV, &s->nuV);
 
-    if (av_frame_is_writable(in)) {
+    if (av_frame_is_writable_xij(in)) {
         out = in;
     } else {
         out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out) {
-            av_frame_free(&in);
+            av_frame_free_xij(&in);
             return AVERROR(ENOMEM);
         }
-        av_frame_copy_props(out, in);
+        av_frame_copy_props_xij(out, in);
     }
 
     for (plane = 0; plane < s->nb_planes; plane++) {
@@ -325,7 +325,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     }
 
     if (out != in)
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
     return ff_filter_frame(outlink, out);
 }
 

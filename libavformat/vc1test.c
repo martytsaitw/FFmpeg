@@ -49,8 +49,8 @@ static int vc1t_read_header(AVFormatContext *s)
     int frames;
     uint32_t fps;
 
-    frames = avio_rl24(pb);
-    if(avio_r8(pb) != 0xC5 || avio_rl32(pb) != 4)
+    frames = avio_rl24_xij(pb);
+    if(avio_r8_xij(pb) != 0xC5 || avio_rl32_xij(pb) != 4)
         return AVERROR_INVALIDDATA;
 
     /* init video codec */
@@ -61,14 +61,14 @@ static int vc1t_read_header(AVFormatContext *s)
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id = AV_CODEC_ID_WMV3;
 
-    if (ff_get_extradata(s, st->codecpar, pb, VC1_EXTRADATA_SIZE) < 0)
+    if (ff_get_extradata_xij(s, st->codecpar, pb, VC1_EXTRADATA_SIZE) < 0)
         return AVERROR(ENOMEM);
-    st->codecpar->height = avio_rl32(pb);
-    st->codecpar->width = avio_rl32(pb);
-    if(avio_rl32(pb) != 0xC)
+    st->codecpar->height = avio_rl32_xij(pb);
+    st->codecpar->width = avio_rl32_xij(pb);
+    if(avio_rl32_xij(pb) != 0xC)
         return AVERROR_INVALIDDATA;
-    avio_skip(pb, 8);
-    fps = avio_rl32(pb);
+    avio_skip_xij(pb, 8);
+    fps = avio_rl32_xij(pb);
     if(fps == 0xFFFFFFFF)
         avpriv_set_pts_info_ijk(st, 32, 1, 1000);
     else{
@@ -91,14 +91,14 @@ static int vc1t_read_packet(AVFormatContext *s,
     int keyframe = 0;
     uint32_t pts;
 
-    if(avio_feof(pb))
+    if(avio_feof_xij(pb))
         return AVERROR(EIO);
 
-    frame_size = avio_rl24(pb);
-    if(avio_r8(pb) & 0x80)
+    frame_size = avio_rl24_xij(pb);
+    if(avio_r8_xij(pb) & 0x80)
         keyframe = 1;
-    pts = avio_rl32(pb);
-    if(av_get_packet(pb, pkt, frame_size) < 0)
+    pts = avio_rl32_xij(pb);
+    if(av_get_packet_xij(pb, pkt, frame_size) < 0)
         return AVERROR(EIO);
     if(s->streams[0]->time_base.den == 1000)
         pkt->pts = pts;

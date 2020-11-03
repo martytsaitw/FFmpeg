@@ -39,27 +39,27 @@ static int vag_read_header(AVFormatContext *s)
     if (!st)
         return AVERROR(ENOMEM);
 
-    avio_skip(s->pb, 4);
+    avio_skip_xij(s->pb, 4);
     st->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id    = AV_CODEC_ID_ADPCM_PSX;
-    st->codecpar->channels    = 1 + (avio_rb32(s->pb) == 0x00000004);
-    avio_skip(s->pb, 4);
+    st->codecpar->channels    = 1 + (avio_rb32_xij(s->pb) == 0x00000004);
+    avio_skip_xij(s->pb, 4);
     if (st->codecpar->channels > 1) {
-        st->duration       = avio_rb32(s->pb);
+        st->duration       = avio_rb32_xij(s->pb);
     } else {
-        st->duration       = avio_rb32(s->pb) / 16 * 28;
+        st->duration       = avio_rb32_xij(s->pb) / 16 * 28;
     }
-    st->codecpar->sample_rate = avio_rb32(s->pb);
+    st->codecpar->sample_rate = avio_rb32_xij(s->pb);
     if (st->codecpar->sample_rate <= 0)
         return AVERROR_INVALIDDATA;
-    avio_seek(s->pb, 0x1000, SEEK_SET);
-    if (avio_rl32(s->pb) == MKTAG('V','A','G','p')) {
+    avio_seek_xij(s->pb, 0x1000, SEEK_SET);
+    if (avio_rl32_xij(s->pb) == MKTAG('V','A','G','p')) {
         st->codecpar->block_align = 0x1000 * st->codecpar->channels;
-        avio_seek(s->pb, 0, SEEK_SET);
+        avio_seek_xij(s->pb, 0, SEEK_SET);
         st->duration = st->duration / 16 * 28;
     } else {
         st->codecpar->block_align = 16 * st->codecpar->channels;
-        avio_seek(s->pb, st->codecpar->channels > 1 ? 0x80 : 0x30, SEEK_SET);
+        avio_seek_xij(s->pb, st->codecpar->channels > 1 ? 0x80 : 0x30, SEEK_SET);
     }
     avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 
@@ -70,7 +70,7 @@ static int vag_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
     AVCodecParameters *par = s->streams[0]->codecpar;
 
-    return av_get_packet(s->pb, pkt, par->block_align);
+    return av_get_packet_xij(s->pb, pkt, par->block_align);
 }
 
 AVInputFormat ff_vag_demuxer = {

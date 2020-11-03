@@ -110,7 +110,7 @@ static int libwebp_anim_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
 end:
         WebPPictureFree(pic);
         av_freep(&pic);
-        av_frame_free(&alt_frame);
+        av_frame_free_xij(&alt_frame);
         return ret;
     }
 }
@@ -118,7 +118,7 @@ end:
 static int libwebp_anim_encode_close(AVCodecContext *avctx)
 {
     LibWebPAnimContext *s = avctx->priv_data;
-    av_frame_free(&s->cc.ref);
+    av_frame_free_xij(&s->cc.ref);
     WebPAnimEncoderDelete(s->enc);
 
     return 0;

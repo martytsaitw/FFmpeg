@@ -93,7 +93,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
     if (frame->pts == AV_NOPTS_VALUE) {
         av_log(ctx, AV_LOG_WARNING,
                "NOPTS value for input frame cannot be accepted, frame discarded\n");
-        av_frame_free(&frame);
+        av_frame_free_xij(&frame);
         return AVERROR_INVALIDDATA;
     }
 

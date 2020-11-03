@@ -516,7 +516,7 @@ static int clv_decode_frame(AVCodecContext *avctx, void *data,
     frame_type = bytestream2_get_byte(&gb);
 
     if ((frame_type & 0x7f) == 0x30) {
-        if ((ret = ff_reget_buffer(avctx, c->pic)) < 0)
+        if ((ret = ff_reget_buffer_xij(avctx, c->pic)) < 0)
             return ret;
 
         c->pic->key_frame = 0;
@@ -527,7 +527,7 @@ static int clv_decode_frame(AVCodecContext *avctx, void *data,
             return AVERROR_INVALIDDATA;
         }
 
-        if ((ret = ff_reget_buffer(avctx, c->pic)) < 0)
+        if ((ret = ff_reget_buffer_xij(avctx, c->pic)) < 0)
             return ret;
 
         c->pic->key_frame = 1;
@@ -558,10 +558,10 @@ static int clv_decode_frame(AVCodecContext *avctx, void *data,
     } else {
         int plane;
 
-        if ((ret = ff_reget_buffer(avctx, c->pic)) < 0)
+        if ((ret = ff_reget_buffer_xij(avctx, c->pic)) < 0)
             return ret;
 
-        ret = av_frame_copy(c->pic, c->prev);
+        ret = av_frame_copy_xij(c->pic, c->prev);
         if (ret < 0)
             return ret;
 
@@ -633,7 +633,7 @@ static int clv_decode_frame(AVCodecContext *avctx, void *data,
         c->pic->pict_type = AV_PICTURE_TYPE_P;
     }
 
-    if ((ret = av_frame_ref(data, c->pic)) < 0)
+    if ((ret = av_frame_ref_xij(data, c->pic)) < 0)
         return ret;
 
     FFSWAP(AVFrame *, c->pic, c->prev);
@@ -668,7 +668,7 @@ static av_cold int clv_decode_init(AVCodecContext *avctx)
     avctx->pix_fmt = AV_PIX_FMT_YUV420P;
     w = avctx->width;
     h = avctx->height;
-    ret = ff_set_dimensions(avctx, FFALIGN(w, 1 << c->tile_shift), FFALIGN(h, 1 << c->tile_shift));
+    ret = ff_set_dimensions_xij(avctx, FFALIGN(w, 1 << c->tile_shift), FFALIGN(h, 1 << c->tile_shift));
     if (ret < 0)
         return ret;
     avctx->width  = w;
@@ -874,8 +874,8 @@ static av_cold int clv_decode_end(AVCodecContext *avctx)
     CLVContext *const c = avctx->priv_data;
     int i;
 
-    av_frame_free(&c->prev);
-    av_frame_free(&c->pic);
+    av_frame_free_xij(&c->prev);
+    av_frame_free_xij(&c->pic);
 
     av_freep(&c->mvi.mv);
 

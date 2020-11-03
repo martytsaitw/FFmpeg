@@ -66,7 +66,7 @@ static av_cold int paf_video_close(AVCodecContext *avctx)
     PAFVideoDecContext *c = avctx->priv_data;
     int i;
 
-    av_frame_free(&c->pic);
+    av_frame_free_xij(&c->pic);
 
     for (i = 0; i < 4; i++)
         av_freep(&c->frame[i]);
@@ -285,7 +285,7 @@ static int paf_video_decode(AVCodecContext *avctx, void *data,
         return AVERROR_INVALIDDATA;
     }
 
-    if ((ret = ff_reget_buffer(avctx, c->pic)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, c->pic)) < 0)
         return ret;
 
     if (code & 0x20) {  // frame is keyframe
@@ -390,7 +390,7 @@ static int paf_video_decode(AVCodecContext *avctx, void *data,
                         c->width, c->height);
 
     c->current_frame = (c->current_frame + 1) & 3;
-    if ((ret = av_frame_ref(data, c->pic)) < 0)
+    if ((ret = av_frame_ref_xij(data, c->pic)) < 0)
         return ret;
 
     *got_frame = 1;

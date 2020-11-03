@@ -96,8 +96,8 @@ static int vp9_alloc_entries(AVCodecContext *avctx, int n) { return 0; }
 static void vp9_frame_unref(AVCodecContext *avctx, VP9Frame *f)
 {
     ff_thread_release_buffer(avctx, &f->tf);
-    av_buffer_unref(&f->extradata);
-    av_buffer_unref(&f->hwaccel_priv_buf);
+    av_buffer_unref_xij(&f->extradata);
+    av_buffer_unref_xij(&f->hwaccel_priv_buf);
     f->segmentation_map = NULL;
     f->hwaccel_picture_private = NULL;
 }
@@ -112,7 +112,7 @@ static int vp9_frame_alloc(AVCodecContext *avctx, VP9Frame *f)
         return ret;
 
     sz = 64 * s->sb_cols * s->sb_rows;
-    f->extradata = av_buffer_allocz(sz * (1 + sizeof(VP9mvrefPair)));
+    f->extradata = av_buffer_allocz_xij(sz * (1 + sizeof(VP9mvrefPair)));
     if (!f->extradata) {
         goto fail;
     }
@@ -124,7 +124,7 @@ static int vp9_frame_alloc(AVCodecContext *avctx, VP9Frame *f)
         const AVHWAccel *hwaccel = avctx->hwaccel;
         av_assert0(!f->hwaccel_picture_private);
         if (hwaccel->frame_priv_data_size) {
-            f->hwaccel_priv_buf = av_buffer_allocz(hwaccel->frame_priv_data_size);
+            f->hwaccel_priv_buf = av_buffer_allocz_xij(hwaccel->frame_priv_data_size);
             if (!f->hwaccel_priv_buf)
                 goto fail;
             f->hwaccel_picture_private = f->hwaccel_priv_buf->data;
@@ -142,7 +142,7 @@ static int vp9_frame_ref(AVCodecContext *avctx, VP9Frame *dst, VP9Frame *src)
 {
     int ret;
 
-    ret = ff_thread_ref_frame(&dst->tf, &src->tf);
+    ret = ff_thread_ref_frame_xij(&dst->tf, &src->tf);
     if (ret < 0)
         return ret;
 
@@ -183,7 +183,7 @@ static int update_size(AVCodecContext *avctx, int w, int h)
     av_assert0(w > 0 && h > 0);
 
     if (!(s->pix_fmt == s->gf_fmt && w == s->w && h == s->h)) {
-        if ((ret = ff_set_dimensions(avctx, w, h)) < 0)
+        if ((ret = ff_set_dimensions_xij(avctx, w, h)) < 0)
             return ret;
 
         switch (s->pix_fmt) {
@@ -1204,15 +1204,15 @@ static av_cold int vp9_decode_free(AVCodecContext *avctx)
     for (i = 0; i < 3; i++) {
         if (s->s.frames[i].tf.f->buf[0])
             vp9_frame_unref(avctx, &s->s.frames[i]);
-        av_frame_free(&s->s.frames[i].tf.f);
+        av_frame_free_xij(&s->s.frames[i].tf.f);
     }
     for (i = 0; i < 8; i++) {
         if (s->s.refs[i].f->buf[0])
             ff_thread_release_buffer(avctx, &s->s.refs[i]);
-        av_frame_free(&s->s.refs[i].f);
+        av_frame_free_xij(&s->s.refs[i].f);
         if (s->next_refs[i].f->buf[0])
             ff_thread_release_buffer(avctx, &s->next_refs[i]);
-        av_frame_free(&s->next_refs[i].f);
+        av_frame_free_xij(&s->next_refs[i].f);
     }
 
     free_buffers(s);
@@ -1479,7 +1479,7 @@ static int vp9_decode_frame(AVCodecContext *avctx, void *frame,
             av_log(avctx, AV_LOG_ERROR, "Requested reference %d not available\n", ref);
             return AVERROR_INVALIDDATA;
         }
-        if ((ret = av_frame_ref(frame, s->s.refs[ref].f)) < 0)
+        if ((ret = av_frame_ref_xij(frame, s->s.refs[ref].f)) < 0)
             return ret;
         ((AVFrame *)frame)->pts = pkt->pts;
 #if FF_API_PKT_PTS
@@ -1492,7 +1492,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
             if (s->next_refs[i].f->buf[0])
                 ff_thread_release_buffer(avctx, &s->next_refs[i]);
             if (s->s.refs[i].f->buf[0] &&
-                (ret = ff_thread_ref_frame(&s->next_refs[i], &s->s.refs[i])) < 0)
+                (ret = ff_thread_ref_frame_xij(&s->next_refs[i], &s->s.refs[i])) < 0)
                 return ret;
         }
         *got_frame = 1;
@@ -1532,9 +1532,9 @@ FF_ENABLE_DEPRECATION_WARNINGS
         if (s->next_refs[i].f->buf[0])
             ff_thread_release_buffer(avctx, &s->next_refs[i]);
         if (s->s.h.refreshrefmask & (1 << i)) {
-            ret = ff_thread_ref_frame(&s->next_refs[i], &s->s.frames[CUR_FRAME].tf);
+            ret = ff_thread_ref_frame_xij(&s->next_refs[i], &s->s.frames[CUR_FRAME].tf);
         } else if (s->s.refs[i].f->buf[0]) {
-            ret = ff_thread_ref_frame(&s->next_refs[i], &s->s.refs[i]);
+            ret = ff_thread_ref_frame_xij(&s->next_refs[i], &s->s.refs[i]);
         }
         if (ret < 0)
             return ret;
@@ -1669,12 +1669,12 @@ finish:
         if (s->s.refs[i].f->buf[0])
             ff_thread_release_buffer(avctx, &s->s.refs[i]);
         if (s->next_refs[i].f->buf[0] &&
-            (ret = ff_thread_ref_frame(&s->s.refs[i], &s->next_refs[i])) < 0)
+            (ret = ff_thread_ref_frame_xij(&s->s.refs[i], &s->next_refs[i])) < 0)
             return ret;
     }
 
     if (!s->s.h.invisible) {
-        if ((ret = av_frame_ref(frame, s->s.frames[CUR_FRAME].tf.f)) < 0)
+        if ((ret = av_frame_ref_xij(frame, s->s.frames[CUR_FRAME].tf.f)) < 0)
             return ret;
         *got_frame = 1;
     }
@@ -1753,7 +1753,7 @@ static int vp9_decode_update_thread_context(AVCodecContext *dst, const AVCodecCo
         if (s->s.refs[i].f->buf[0])
             ff_thread_release_buffer(dst, &s->s.refs[i]);
         if (ssrc->next_refs[i].f->buf[0]) {
-            if ((ret = ff_thread_ref_frame(&s->s.refs[i], &ssrc->next_refs[i])) < 0)
+            if ((ret = ff_thread_ref_frame_xij(&s->s.refs[i], &ssrc->next_refs[i])) < 0)
                 return ret;
         }
     }

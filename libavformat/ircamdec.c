@@ -57,7 +57,7 @@ static int ircam_read_header(AVFormatContext *s)
     int le = -1, i;
     AVStream *st;
 
-    magic = avio_rl32(s->pb);
+    magic = avio_rl32_xij(s->pb);
     for (i = 0; i < 7; i++) {
         if (magic == table[i].magic) {
             le = table[i].is_le;
@@ -66,14 +66,14 @@ static int ircam_read_header(AVFormatContext *s)
     }
 
     if (le == 1) {
-        sample_rate = av_int2float(avio_rl32(s->pb));
-        channels    = avio_rl32(s->pb);
-        tag         = avio_rl32(s->pb);
+        sample_rate = av_int2float(avio_rl32_xij(s->pb));
+        channels    = avio_rl32_xij(s->pb);
+        tag         = avio_rl32_xij(s->pb);
         tags        = ff_codec_ircam_le_tags;
     } else if (le == 0) {
-        sample_rate = av_int2float(avio_rb32(s->pb));
-        channels    = avio_rb32(s->pb);
-        tag         = avio_rb32(s->pb);
+        sample_rate = av_int2float(avio_rb32_xij(s->pb));
+        channels    = avio_rb32_xij(s->pb);
+        tag         = avio_rb32_xij(s->pb);
         tags        = ff_codec_ircam_be_tags;
     } else {
         return AVERROR_INVALIDDATA;
@@ -92,16 +92,16 @@ static int ircam_read_header(AVFormatContext *s)
         return AVERROR(ENOSYS);
     st->codecpar->sample_rate = sample_rate;
 
-    st->codecpar->codec_id = ff_codec_get_id(tags, tag);
+    st->codecpar->codec_id = ff_codec_get_id_xij(tags, tag);
     if (st->codecpar->codec_id == AV_CODEC_ID_NONE) {
         av_log(s, AV_LOG_ERROR, "unknown tag %"PRIx32"\n", tag);
         return AVERROR_INVALIDDATA;
     }
 
-    st->codecpar->bits_per_coded_sample = av_get_bits_per_sample(st->codecpar->codec_id);
+    st->codecpar->bits_per_coded_sample = av_get_bits_per_sample_xij(st->codecpar->codec_id);
     st->codecpar->block_align = st->codecpar->bits_per_coded_sample * st->codecpar->channels / 8;
     avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
-    avio_skip(s->pb, 1008);
+    avio_skip_xij(s->pb, 1008);
 
     return 0;
 }

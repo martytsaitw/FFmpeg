@@ -72,7 +72,7 @@ static int qt_rtp_parse_packet(AVFormatContext *s, PayloadContext *qt,
      * http://developer.apple.com/quicktime/icefloe/dispatch026.html
      */
     init_get_bits(&gb, buf, len << 3);
-    ffio_init_context(&pb, (uint8_t*)buf, len, 0, NULL, NULL, NULL, NULL);
+    ffio_init_context_xij(&pb, (uint8_t*)buf, len, 0, NULL, NULL, NULL, NULL);
 
     if (len < 4)
         return AVERROR_INVALIDDATA;
@@ -104,21 +104,21 @@ static int qt_rtp_parse_packet(AVFormatContext *s, PayloadContext *qt,
         skip_bits(&gb, 12); // reserved
         data_len = get_bits(&gb, 16);
 
-        avio_seek(&pb, pos + 4, SEEK_SET);
-        tag = avio_rl32(&pb);
+        avio_seek_xij(&pb, pos + 4, SEEK_SET);
+        tag = avio_rl32_xij(&pb);
         if ((st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO &&
                  tag != MKTAG('v','i','d','e')) ||
             (st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO &&
                  tag != MKTAG('s','o','u','n')))
             return AVERROR_INVALIDDATA;
-        avpriv_set_pts_info_ijk(st, 32, 1, avio_rb32(&pb));
+        avpriv_set_pts_info_ijk(st, 32, 1, avio_rb32_xij(&pb));
 
         if (pos + data_len > len)
             return AVERROR_INVALIDDATA;
         /* TLVs */
         while (avio_tell(&pb) + 4 < pos + data_len) {
-            int tlv_len = avio_rb16(&pb);
-            tag = avio_rl16(&pb);
+            int tlv_len = avio_rb16_xij(&pb);
+            tag = avio_rl16_xij(&pb);
             if (avio_tell(&pb) + tlv_len > pos + data_len)
                 return AVERROR_INVALIDDATA;
 
@@ -138,10 +138,10 @@ static int qt_rtp_parse_packet(AVFormatContext *s, PayloadContext *qt,
                     st->priv_data = priv_data;
                     return AVERROR(ENOMEM);
                 }
-                /* ff_mov_read_stsd_entries updates stream s->nb_streams-1,
+                /* ff_mov_read_stsd_entries_xij updates stream s->nb_streams-1,
                  * so set it temporarily to indicate which stream to update. */
                 s->nb_streams = st->index + 1;
-                ff_mov_read_stsd_entries(mc, &pb, 1);
+                ff_mov_read_stsd_entries_xij(mc, &pb, 1);
                 qt->bytes_per_frame = msc->bytes_per_frame;
                 av_free(msc);
                 av_free(mc);
@@ -150,15 +150,15 @@ static int qt_rtp_parse_packet(AVFormatContext *s, PayloadContext *qt,
                 break;
             }
             default:
-                avio_skip(&pb, tlv_len);
+                avio_skip_xij(&pb, tlv_len);
                 break;
             }
         }
 
         /* 32-bit alignment */
-        avio_skip(&pb, ((avio_tell(&pb) + 3) & ~3) - avio_tell(&pb));
+        avio_skip_xij(&pb, ((avio_tell(&pb) + 3) & ~3) - avio_tell(&pb));
     } else
-        avio_seek(&pb, 4, SEEK_SET);
+        avio_seek_xij(&pb, 4, SEEK_SET);
 
     if (has_packet_info) {
         avpriv_request_sample(s, "RTP-X-QT with packet-specific info");

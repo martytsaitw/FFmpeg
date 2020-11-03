@@ -27,7 +27,7 @@ AVInputFormat ff_sbc_demuxer = {
     .long_name      = NULL_IF_CONFIG_SMALL("raw SBC (low-complexity subband codec)"),
     .extensions     = "sbc,msbc",
     .raw_codec_id   = AV_CODEC_ID_SBC,
-    .read_header    = ff_raw_audio_read_header,
-    .read_packet    = ff_raw_read_partial_packet,
+    .read_header    = ff_raw_audio_read_header_xij,
+    .read_packet    = ff_raw_read_partial_packet_xij,
     .flags          = AVFMT_GENERIC_INDEX,
 };

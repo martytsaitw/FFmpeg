@@ -97,7 +97,7 @@ static int thread_execute(AVCodecContext *avctx, action_func* func, void *arg, i
     SliceThreadContext *c = avctx->internal->thread_ctx;
 
     if (!(avctx->active_thread_type&FF_THREAD_SLICE) || avctx->thread_count <= 1)
-        return avcodec_default_execute(avctx, func, arg, ret, job_count, job_size);
+        return avcodec_default_execute_xij(avctx, func, arg, ret, job_count, job_size);
 
     if (job_count <= 0)
         return 0;
@@ -133,7 +133,7 @@ int ff_slice_thread_init(AVCodecContext *avctx)
     static void (*mainfunc)(void *);
 
     // We cannot do this in the encoder init as the threads are created before
-    if (av_codec_is_encoder(avctx->codec) &&
+    if (av_codec_is_encoder_xij(avctx->codec) &&
         avctx->codec_id == AV_CODEC_ID_MPEG1VIDEO &&
         avctx->height > 2800)
         thread_count = avctx->thread_count = 1;

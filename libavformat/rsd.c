@@ -62,13 +62,13 @@ static int rsd_read_header(AVFormatContext *s)
     if (!st)
         return AVERROR(ENOMEM);
 
-    avio_skip(pb, 3); // "RSD"
-    version = avio_r8(pb) - '0';
+    avio_skip_xij(pb, 3); // "RSD"
+    version = avio_r8_xij(pb) - '0';
 
     par = st->codecpar;
     par->codec_type = AVMEDIA_TYPE_AUDIO;
-    par->codec_tag  = avio_rl32(pb);
-    par->codec_id   = ff_codec_get_id(rsd_tags, par->codec_tag);
+    par->codec_tag  = avio_rl32_xij(pb);
+    par->codec_id   = ff_codec_get_id_xij(rsd_tags, par->codec_tag);
     if (!par->codec_id) {
         const char *tag_buf = av_fourcc2str(par->codec_tag);
         for (i=0; i < FF_ARRAY_ELEMS(rsd_unsupported_tags); i++) {
@@ -81,23 +81,23 @@ static int rsd_read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
     }
 
-    par->channels = avio_rl32(pb);
+    par->channels = avio_rl32_xij(pb);
     if (par->channels <= 0 || par->channels > INT_MAX / 36) {
         av_log(s, AV_LOG_ERROR, "Invalid number of channels: %d\n", par->channels);
         return AVERROR_INVALIDDATA;
     }
 
-    avio_skip(pb, 4); // Bit depth
-    par->sample_rate = avio_rl32(pb);
+    avio_skip_xij(pb, 4); // Bit depth
+    par->sample_rate = avio_rl32_xij(pb);
     if (!par->sample_rate)
         return AVERROR_INVALIDDATA;
 
-    avio_skip(pb, 4); // Unknown
+    avio_skip_xij(pb, 4); // Unknown
 
     switch (par->codec_id) {
     case AV_CODEC_ID_XMA2:
         par->block_align = 2048;
-        ff_alloc_extradata(par, 34);
+        ff_alloc_extradata_xij(par, 34);
         if (!par->extradata)
             return AVERROR(ENOMEM);
         memset(par->extradata, 0, 34);
@@ -105,61 +105,61 @@ static int rsd_read_header(AVFormatContext *s)
     case AV_CODEC_ID_ADPCM_PSX:
         par->block_align = 16 * par->channels;
         if (pb->seekable & AVIO_SEEKABLE_NORMAL)
-            st->duration = av_get_audio_frame_duration2_ijk(par, avio_size(pb) - start);
+            st->duration = av_get_audio_frame_duration2_ijk(par, avio_size_xij(pb) - start);
         break;
     case AV_CODEC_ID_ADPCM_IMA_RAD:
         par->block_align = 20 * par->channels;
         if (pb->seekable & AVIO_SEEKABLE_NORMAL)
-            st->duration = av_get_audio_frame_duration2_ijk(par, avio_size(pb) - start);
+            st->duration = av_get_audio_frame_duration2_ijk(par, avio_size_xij(pb) - start);
         break;
     case AV_CODEC_ID_ADPCM_IMA_WAV:
         if (version == 2)
-            start = avio_rl32(pb);
+            start = avio_rl32_xij(pb);
 
         par->bits_per_coded_sample = 4;
         par->block_align = 36 * par->channels;
         if (pb->seekable & AVIO_SEEKABLE_NORMAL)
-            st->duration = av_get_audio_frame_duration2_ijk(par, avio_size(pb) - start);
+            st->duration = av_get_audio_frame_duration2_ijk(par, avio_size_xij(pb) - start);
         break;
     case AV_CODEC_ID_ADPCM_THP_LE:
         /* RSD3GADP is mono, so only alloc enough memory
            to store the coeff table for a single channel. */
 
-        start = avio_rl32(pb);
+        start = avio_rl32_xij(pb);
 
-        if ((ret = ff_get_extradata(s, par, s->pb, 32)) < 0)
+        if ((ret = ff_get_extradata_xij(s, par, s->pb, 32)) < 0)
             return ret;
         if (pb->seekable & AVIO_SEEKABLE_NORMAL)
-            st->duration = av_get_audio_frame_duration2_ijk(par, avio_size(pb) - start);
+            st->duration = av_get_audio_frame_duration2_ijk(par, avio_size_xij(pb) - start);
         break;
     case AV_CODEC_ID_ADPCM_THP:
         par->block_align = 8 * par->channels;
-        avio_skip(s->pb, 0x1A4 - avio_tell(s->pb));
+        avio_skip_xij(s->pb, 0x1A4 - avio_tell(s->pb));
 
-        if ((ret = ff_alloc_extradata(st->codecpar, 32 * par->channels)) < 0)
+        if ((ret = ff_alloc_extradata_xij(st->codecpar, 32 * par->channels)) < 0)
             return ret;
 
         for (i = 0; i < par->channels; i++) {
-            avio_read(s->pb, st->codecpar->extradata + 32 * i, 32);
-            avio_skip(s->pb, 8);
+            avio_read_xij(s->pb, st->codecpar->extradata + 32 * i, 32);
+            avio_skip_xij(s->pb, 8);
         }
         if (pb->seekable & AVIO_SEEKABLE_NORMAL)
-            st->duration = (avio_size(pb) - start) / (8 * par->channels) * 14;
+            st->duration = (avio_size_xij(pb) - start) / (8 * par->channels) * 14;
         break;
     case AV_CODEC_ID_PCM_S16LE:
     case AV_CODEC_ID_PCM_S16BE:
         if (version != 4)
-            start = avio_rl32(pb);
+            start = avio_rl32_xij(pb);
 
         if (pb->seekable & AVIO_SEEKABLE_NORMAL)
-            st->duration = (avio_size(pb) - start) / 2 / par->channels;
+            st->duration = (avio_size_xij(pb) - start) / 2 / par->channels;
         break;
     }
 
-    avio_skip(pb, start - avio_tell(pb));
+    avio_skip_xij(pb, start - avio_tell(pb));
     if (par->codec_id == AV_CODEC_ID_XMA2) {
-        avio_skip(pb, avio_rb32(pb) + avio_rb32(pb));
-        st->duration = avio_rb32(pb);
+        avio_skip_xij(pb, avio_rb32_xij(pb) + avio_rb32_xij(pb));
+        st->duration = avio_rb32_xij(pb);
     }
 
     avpriv_set_pts_info_ijk(st, 64, 1, par->sample_rate);
@@ -173,7 +173,7 @@ static int rsd_read_packet(AVFormatContext *s, AVPacket *pkt)
     int ret, size = 1024;
     int64_t pos;
 
-    if (avio_feof(s->pb))
+    if (avio_feof_xij(s->pb))
         return AVERROR_EOF;
 
     pos = avio_tell(s->pb);
@@ -181,7 +181,7 @@ static int rsd_read_packet(AVFormatContext *s, AVPacket *pkt)
         par->codec_id == AV_CODEC_ID_ADPCM_PSX     ||
         par->codec_id == AV_CODEC_ID_ADPCM_IMA_WAV ||
         par->codec_id == AV_CODEC_ID_XMA2) {
-        ret = av_get_packet(s->pb, pkt, par->block_align);
+        ret = av_get_packet_xij(s->pb, pkt, par->block_align);
     } else if (par->codec_tag == MKTAG('W','A','D','P') &&
                par->channels > 1) {
         int i, ch;
@@ -191,13 +191,13 @@ static int rsd_read_packet(AVFormatContext *s, AVPacket *pkt)
             return ret;
         for (i = 0; i < 4; i++) {
             for (ch = 0; ch < par->channels; ch++) {
-                pkt->data[ch * 8 + i * 2 + 0] = avio_r8(s->pb);
-                pkt->data[ch * 8 + i * 2 + 1] = avio_r8(s->pb);
+                pkt->data[ch * 8 + i * 2 + 0] = avio_r8_xij(s->pb);
+                pkt->data[ch * 8 + i * 2 + 1] = avio_r8_xij(s->pb);
             }
         }
         ret = 0;
     } else {
-        ret = av_get_packet(s->pb, pkt, size);
+        ret = av_get_packet_xij(s->pb, pkt, size);
     }
 
     if (par->codec_id == AV_CODEC_ID_XMA2 && pkt->size >= 1)

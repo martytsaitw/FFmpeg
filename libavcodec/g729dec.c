@@ -409,7 +409,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame_ptr,
     AVFrame *frame = data;
 
     frame->nb_samples = SUBFRAME_SIZE<<1;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
     out_frame = (int16_t*) frame->data[0];
 

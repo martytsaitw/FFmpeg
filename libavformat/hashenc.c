@@ -78,8 +78,8 @@ static int hash_write_trailer(struct AVFormatContext *s)
 
     av_hash_final_hex(c->hash, buf + strlen(buf), sizeof(buf) - strlen(buf));
     av_strlcatf(buf, sizeof(buf), "\n");
-    avio_write(s->pb, buf, strlen(buf));
-    avio_flush(s->pb);
+    avio_write_xij(s->pb, buf, strlen(buf));
+    avio_flush_xij(s->pb);
 
     av_hash_freep(&c->hash);
     return 0;
@@ -144,12 +144,12 @@ static void framehash_print_extradata(struct AVFormatContext *s)
             struct HashContext *c = s->priv_data;
             char buf[AV_HASH_MAX_SIZE*2+1];
 
-            avio_printf(s->pb, "#extradata %d, %31d, ", i, par->extradata_size);
+            avio_printf_xij(s->pb, "#extradata %d, %31d, ", i, par->extradata_size);
             av_hash_init(c->hash);
             av_hash_update(c->hash, par->extradata, par->extradata_size);
             av_hash_final_hex(c->hash, buf, sizeof(buf));
-            avio_write(s->pb, buf, strlen(buf));
-            avio_printf(s->pb, "\n");
+            avio_write_xij(s->pb, buf, strlen(buf));
+            avio_printf_xij(s->pb, "\n");
         }
     }
 }
@@ -160,12 +160,12 @@ static int framehash_write_header(struct AVFormatContext *s)
     int res = av_hash_alloc(&c->hash, c->hash_name);
     if (res < 0)
         return res;
-    avio_printf(s->pb, "#format: frame checksums\n");
-    avio_printf(s->pb, "#version: %d\n", c->format_version);
-    avio_printf(s->pb, "#hash: %s\n", av_hash_get_name(c->hash));
+    avio_printf_xij(s->pb, "#format: frame checksums\n");
+    avio_printf_xij(s->pb, "#version: %d\n", c->format_version);
+    avio_printf_xij(s->pb, "#hash: %s\n", av_hash_get_name(c->hash));
     framehash_print_extradata(s);
     ff_framehash_write_header(s);
-    avio_printf(s->pb, "#stream#, dts,        pts, duration,     size, hash\n");
+    avio_printf_xij(s->pb, "#stream#, dts,        pts, duration,     size, hash\n");
     return 0;
 }
 
@@ -181,11 +181,11 @@ static int framehash_write_packet(struct AVFormatContext *s, AVPacket *pkt)
              pkt->stream_index, pkt->dts, pkt->pts, pkt->duration, pkt->size);
     len = strlen(buf);
     av_hash_final_hex(c->hash, buf + len, sizeof(buf) - len);
-    avio_write(s->pb, buf, strlen(buf));
+    avio_write_xij(s->pb, buf, strlen(buf));
 
     if (c->format_version > 1 && pkt->side_data_elems) {
         int i, j;
-        avio_printf(s->pb, ", S=%d", pkt->side_data_elems);
+        avio_printf_xij(s->pb, ", S=%d", pkt->side_data_elems);
         for (i = 0; i < pkt->side_data_elems; i++) {
             av_hash_init(c->hash);
             if (HAVE_BIGENDIAN && pkt->side_data[i].type == AV_PKT_DATA_PALETTE) {
@@ -198,12 +198,12 @@ static int framehash_write_packet(struct AVFormatContext *s, AVPacket *pkt)
             snprintf(buf, sizeof(buf) - (AV_HASH_MAX_SIZE * 2 + 1), ", %8d, ", pkt->side_data[i].size);
             len = strlen(buf);
             av_hash_final_hex(c->hash, buf + len, sizeof(buf) - len);
-            avio_write(s->pb, buf, strlen(buf));
+            avio_write_xij(s->pb, buf, strlen(buf));
         }
     }
 
-    avio_printf(s->pb, "\n");
-    avio_flush(s->pb);
+    avio_printf_xij(s->pb, "\n");
+    avio_flush_xij(s->pb);
     return 0;
 }
 

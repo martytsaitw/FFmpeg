@@ -48,7 +48,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
 
     bytestream2_init(&s->gb, avctx->extradata, avctx->extradata_size);
     if (bytestream2_get_bytes_left(&s->gb) < 16 * 8 + 4 * 256) {
-        av_frame_free(&s->frame);
+        av_frame_free_xij(&s->frame);
         return AVERROR_INVALIDDATA;
     }
 
@@ -119,7 +119,7 @@ static int decode_frame(AVCodecContext *avctx,
     uint8_t *dst, *dst_end;
     int count, ret;
 
-    if ((ret = ff_reget_buffer(avctx, s->frame)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, s->frame)) < 0)
         return ret;
     dst     = s->frame->data[0];
     dst_end = s->frame->data[0] + s->frame->linesize[0]*avctx->height;
@@ -175,7 +175,7 @@ static int decode_frame(AVCodecContext *avctx,
     memcpy(s->frame->data[1], s->palette, AVPALETTE_SIZE);
 
     *got_frame = 1;
-    if ((ret = av_frame_ref(data, s->frame)) < 0)
+    if ((ret = av_frame_ref_xij(data, s->frame)) < 0)
         return ret;
 
     return buf_size;
@@ -185,7 +185,7 @@ static av_cold int decode_end(AVCodecContext *avctx)
 {
     AnmContext *s = avctx->priv_data;
 
-    av_frame_free(&s->frame);
+    av_frame_free_xij(&s->frame);
     return 0;
 }
 

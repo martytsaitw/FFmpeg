@@ -96,7 +96,7 @@ static int mpeg4_decode_header(AVCodecParserContext *s1, AVCodecContext *avctx,
     ret = ff_mpeg4_decode_picture_header(dec_ctx, gb);
     if (s->width && (!avctx->width || !avctx->height ||
                      !avctx->coded_width || !avctx->coded_height)) {
-        ret = ff_set_dimensions(avctx, s->width, s->height);
+        ret = ff_set_dimensions_xij(avctx, s->width, s->height);
         if (ret < 0)
             return ret;
     }
@@ -138,7 +138,7 @@ static int mpeg4video_parse(AVCodecParserContext *s,
     } else {
         next = ff_mpeg4_find_frame_end(pc, buf, buf_size);
 
-        if (ff_combine_frame(pc, next, &buf, &buf_size) < 0) {
+        if (ff_combine_frame_xij(pc, next, &buf, &buf_size) < 0) {
             *poutbuf      = NULL;
             *poutbuf_size = 0;
             return buf_size;
@@ -156,6 +156,6 @@ AVCodecParser ff_mpeg4video_parser = {
     .priv_data_size = sizeof(struct Mp4vParseContext),
     .parser_init    = mpeg4video_parse_init,
     .parser_parse   = mpeg4video_parse,
-    .parser_close   = ff_parse_close,
-    .split          = ff_mpeg4video_split,
+    .parser_close   = ff_parse_close_xij,
+    .split          = ff_mpeg4video_split_xij,
 };

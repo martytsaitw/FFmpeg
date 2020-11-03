@@ -81,8 +81,8 @@ static int read_header(AVFormatContext *s)
     AVIOContext *pb = s->pb;
     int i, codec;
 
-    avio_skip(pb, 4);
-    ico->nb_images = avio_rl16(pb);
+    avio_skip_xij(pb, 4);
+    ico->nb_images = avio_rl16_xij(pb);
 
     ico->images = av_malloc_array(ico->nb_images, sizeof(IcoImage));
     if (!ico->images)
@@ -92,7 +92,7 @@ static int read_header(AVFormatContext *s)
         AVStream *st;
         int tmp;
 
-        if (avio_seek(pb, 6 + i * 16, SEEK_SET) < 0)
+        if (avio_seek_xij(pb, 6 + i * 16, SEEK_SET) < 0)
             break;
 
         st = avformat_new_stream_ijk(s, NULL);
@@ -100,25 +100,25 @@ static int read_header(AVFormatContext *s)
             return AVERROR(ENOMEM);
 
         st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
-        st->codecpar->width      = avio_r8(pb);
-        st->codecpar->height     = avio_r8(pb);
-        ico->images[i].nb_pal = avio_r8(pb);
+        st->codecpar->width      = avio_r8_xij(pb);
+        st->codecpar->height     = avio_r8_xij(pb);
+        ico->images[i].nb_pal = avio_r8_xij(pb);
         if (ico->images[i].nb_pal == 255)
             ico->images[i].nb_pal = 0;
 
-        avio_skip(pb, 5);
+        avio_skip_xij(pb, 5);
 
-        ico->images[i].size   = avio_rl32(pb);
+        ico->images[i].size   = avio_rl32_xij(pb);
         if (ico->images[i].size <= 0) {
             av_log(s, AV_LOG_ERROR, "Invalid image size %d\n", ico->images[i].size);
             return AVERROR_INVALIDDATA;
         }
-        ico->images[i].offset = avio_rl32(pb);
+        ico->images[i].offset = avio_rl32_xij(pb);
 
-        if (avio_seek(pb, ico->images[i].offset, SEEK_SET) < 0)
+        if (avio_seek_xij(pb, ico->images[i].offset, SEEK_SET) < 0)
             break;
 
-        codec = avio_rl32(pb);
+        codec = avio_rl32_xij(pb);
         switch (codec) {
         case MKTAG(0x89, 'P', 'N', 'G'):
             st->codecpar->codec_id = AV_CODEC_ID_PNG;
@@ -129,10 +129,10 @@ static int read_header(AVFormatContext *s)
             if (ico->images[i].size < 40)
                 return AVERROR_INVALIDDATA;
             st->codecpar->codec_id = AV_CODEC_ID_BMP;
-            tmp = avio_rl32(pb);
+            tmp = avio_rl32_xij(pb);
             if (tmp)
                 st->codecpar->width = tmp;
-            tmp = avio_rl32(pb);
+            tmp = avio_rl32_xij(pb);
             if (tmp)
                 st->codecpar->height = tmp / 2;
             break;
@@ -158,11 +158,11 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
 
     image = &ico->images[ico->current_image];
 
-    if ((ret = avio_seek(pb, image->offset, SEEK_SET)) < 0)
+    if ((ret = avio_seek_xij(pb, image->offset, SEEK_SET)) < 0)
         return ret;
 
     if (s->streams[ico->current_image]->codecpar->codec_id == AV_CODEC_ID_PNG) {
-        if ((ret = av_get_packet(pb, pkt, image->size)) < 0)
+        if ((ret = av_get_packet_xij(pb, pkt, image->size)) < 0)
             return ret;
     } else {
         uint8_t *buf;
@@ -178,7 +178,7 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
         bytestream_put_le16(&buf, 0);
         bytestream_put_le32(&buf, 0);
 
-        if ((ret = avio_read(pb, buf, image->size)) != image->size) {
+        if ((ret = avio_read_xij(pb, buf, image->size)) != image->size) {
             av_packet_unref_ijk(pkt);
             return ret < 0 ? ret : AVERROR_INVALIDDATA;
         }

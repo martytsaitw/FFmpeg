@@ -756,7 +756,7 @@ int ff_h264_decode_mb_cavlc(const H264Context *h, H264SliceContext *sl)
             mb_type--;
 decode_intra_mb:
         if(mb_type > 25){
-            av_log(h->avctx, AV_LOG_ERROR, "mb_type %d in %c slice too large at %d %d\n", mb_type, av_get_picture_type_char(sl->slice_type), sl->mb_x, sl->mb_y);
+            av_log(h->avctx, AV_LOG_ERROR, "mb_type %d in %c slice too large at %d %d\n", mb_type, av_get_picture_type_char_xij(sl->slice_type), sl->mb_x, sl->mb_y);
             return -1;
         }
         partition_count=0;

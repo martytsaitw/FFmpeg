@@ -72,18 +72,18 @@ static int tta_write_header(AVFormatContext *s)
     AVCodecParameters *par = s->streams[0]->codecpar;
     int ret;
 
-    if ((ret = avio_open_dyn_buf(&tta->seek_table)) < 0)
+    if ((ret = avio_open_dyn_buf_xij(&tta->seek_table)) < 0)
         return ret;
 
     /* Ignore most extradata information if present. It can be innacurate
        if for example remuxing from Matroska */
-    ffio_init_checksum(s->pb, ff_crcEDB88320_update, UINT32_MAX);
-    ffio_init_checksum(tta->seek_table, ff_crcEDB88320_update, UINT32_MAX);
-    avio_write(s->pb, "TTA1", 4);
-    avio_wl16(s->pb, par->extradata ? AV_RL16(par->extradata + 4) : 1);
-    avio_wl16(s->pb, par->channels);
-    avio_wl16(s->pb, par->bits_per_raw_sample);
-    avio_wl32(s->pb, par->sample_rate);
+    ffio_init_checksum_xij(s->pb, ff_crcEDB88320_update_xij, UINT32_MAX);
+    ffio_init_checksum_xij(tta->seek_table, ff_crcEDB88320_update_xij, UINT32_MAX);
+    avio_write_xij(s->pb, "TTA1", 4);
+    avio_wl16_xij(s->pb, par->extradata ? AV_RL16(par->extradata + 4) : 1);
+    avio_wl16_xij(s->pb, par->channels);
+    avio_wl16_xij(s->pb, par->bits_per_raw_sample);
+    avio_wl32_xij(s->pb, par->sample_rate);
 
     return 0;
 }
@@ -93,13 +93,13 @@ static int tta_write_packet(AVFormatContext *s, AVPacket *pkt)
     TTAMuxContext *tta = s->priv_data;
     int ret;
 
-    ret = ff_packet_list_put(&tta->queue, &tta->queue_end, pkt,
+    ret = ff_packet_list_put_xij(&tta->queue, &tta->queue_end, pkt,
                              FF_PACKETLIST_FLAG_REF_PACKET);
     if (ret < 0) {
         return ret;
     }
 
-    avio_wl32(tta->seek_table, pkt->size);
+    avio_wl32_xij(tta->seek_table, pkt->size);
     tta->nb_samples += pkt->duration;
 
     if (tta->frame_size != pkt->duration) {
@@ -125,8 +125,8 @@ static void tta_queue_flush(AVFormatContext *s)
     AVPacket pkt;
 
     while (tta->queue) {
-        ff_packet_list_get(&tta->queue, &tta->queue_end, &pkt);
-        avio_write(s->pb, pkt.data, pkt.size);
+        ff_packet_list_get_xij(&tta->queue, &tta->queue_end, &pkt);
+        avio_write_xij(s->pb, pkt.data, pkt.size);
         av_packet_unref_ijk(&pkt);
     }
 }
@@ -138,22 +138,22 @@ static int tta_write_trailer(AVFormatContext *s)
     unsigned int crc;
     int size;
 
-    avio_wl32(s->pb, tta->nb_samples);
-    crc = ffio_get_checksum(s->pb) ^ UINT32_MAX;
-    avio_wl32(s->pb, crc);
+    avio_wl32_xij(s->pb, tta->nb_samples);
+    crc = ffio_get_checksum_xij(s->pb) ^ UINT32_MAX;
+    avio_wl32_xij(s->pb, crc);
 
     /* Write Seek table */
-    crc = ffio_get_checksum(tta->seek_table) ^ UINT32_MAX;
-    avio_wl32(tta->seek_table, crc);
-    size = avio_close_dyn_buf(tta->seek_table, &ptr);
-    avio_write(s->pb, ptr, size);
+    crc = ffio_get_checksum_xij(tta->seek_table) ^ UINT32_MAX;
+    avio_wl32_xij(tta->seek_table, crc);
+    size = avio_close_dyn_buf_xij(tta->seek_table, &ptr);
+    avio_write_xij(s->pb, ptr, size);
     av_free(ptr);
 
     /* Write audio data */
     tta_queue_flush(s);
 
     ff_ape_write_tag(s);
-    avio_flush(s->pb);
+    avio_flush_xij(s->pb);
 
     return 0;
 }

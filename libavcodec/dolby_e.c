@@ -577,7 +577,7 @@ static int filter_frame(DBEContext *s, AVFrame *frame)
         reorder = ch_reorder_n;
 
     frame->nb_samples = FRAME_SAMPLES;
-    if ((ret = ff_get_buffer(s->avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(s->avctx, frame, 0)) < 0)
         return ret;
 
     for (ch = 0; ch < s->nb_channels; ch++) {

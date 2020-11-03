@@ -741,7 +741,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
 
     MOVE_DATA_PTR(frame_hdr_size);
 
-    if (ff_get_buffer(avctx, ctx->frame, 0) < 0)
+    if (ff_get_buffer_xij(avctx, ctx->frame, 0) < 0)
         return -1;
 
     for (pic_num = 0; ctx->frame->interlaced_frame - pic_num + 1; pic_num++) {

@@ -63,7 +63,7 @@ static av_cold int init(AVCodecContext *avctx)
         a->mjpeg_avctx->width = avctx->width;
         a->mjpeg_avctx->height = avctx->height;
 
-        if ((ret = ff_codec_open2_recursive(a->mjpeg_avctx, codec, &thread_opt)) < 0) {
+        if ((ret = ff_codec_open2_recursive_xij(a->mjpeg_avctx, codec, &thread_opt)) < 0) {
             av_log(avctx, AV_LOG_ERROR, "MJPEG codec failed to open\n");
         }
         av_dict_free(&thread_opt);
@@ -91,7 +91,7 @@ static av_cold int end(AVCodecContext *avctx)
 {
     AVRnContext *a = avctx->priv_data;
 
-    avcodec_close(a->mjpeg_avctx);
+    avcodec_close_xij(a->mjpeg_avctx);
     av_freep(&a->mjpeg_avctx);
 
     return 0;
@@ -107,7 +107,7 @@ static int decode_frame(AVCodecContext *avctx, void *data,
     int y, ret, true_height;
 
     if(a->is_mjpeg) {
-        ret = avcodec_decode_video2(a->mjpeg_avctx, data, got_frame, avpkt);
+        ret = avcodec_decode_video2_xij(a->mjpeg_avctx, data, got_frame, avpkt);
 
         if (ret >= 0 && *got_frame && avctx->width <= p->width && avctx->height <= p->height) {
             int shift = p->height - avctx->height;
@@ -135,7 +135,7 @@ static int decode_frame(AVCodecContext *avctx, void *data,
         return AVERROR_INVALIDDATA;
     }
 
-    if ((ret = ff_get_buffer(avctx, p, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, p, 0)) < 0)
         return ret;
     p->pict_type= AV_PICTURE_TYPE_I;
     p->key_frame= 1;

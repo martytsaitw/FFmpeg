@@ -436,9 +436,9 @@ static inline int parse_command_line(AVFormatContext *s, const char *line,
         int port;
         char ctl_host[128], ctl_path[512], ctl_auth[128];
         int ctl_port;
-        av_url_split(NULL, 0, auth, sizeof(auth), host, sizeof(host), &port,
+        av_url_split_xij(NULL, 0, auth, sizeof(auth), host, sizeof(host), &port,
                      path, sizeof(path), uri);
-        av_url_split(NULL, 0, ctl_auth, sizeof(ctl_auth), ctl_host,
+        av_url_split_xij(NULL, 0, ctl_auth, sizeof(ctl_auth), ctl_host,
                      sizeof(ctl_host), &ctl_port, ctl_path, sizeof(ctl_path),
                      rt->control_uri);
         if (strcmp(host, ctl_host))
@@ -643,7 +643,7 @@ static int rtsp_listen(AVFormatContext *s)
     enum RTSPMethod methodcode;
 
     /* extract hostname and port */
-    av_url_split(proto, sizeof(proto), auth, sizeof(auth), host, sizeof(host),
+    av_url_split_xij(proto, sizeof(proto), auth, sizeof(auth), host, sizeof(host),
                  &port, path, sizeof(path), s->url);
 
     /* ff_url_join. No authorization by now (NULL) */
@@ -803,7 +803,7 @@ static int resetup_tcp(AVFormatContext *s)
     char host[1024];
     int port;
 
-    av_url_split(NULL, 0, NULL, 0, host, sizeof(host), &port, NULL, 0,
+    av_url_split_xij(NULL, 0, NULL, 0, host, sizeof(host), &port, NULL, 0,
                  s->url);
     ff_rtsp_undo_setup_ijk(s, 0);
     return ff_rtsp_make_setup_request_ijk(s, host, port, RTSP_LOWER_TRANSPORT_TCP,
@@ -955,7 +955,7 @@ static int rtsp_read_seek(AVFormatContext *s, int stream_index,
 static const AVClass rtsp_demuxer_class = {
     .class_name     = "RTSP demuxer",
     .item_name      = av_default_item_name,
-    .option         = ff_rtsp_options,
+    .option         = ff_rtsp_options_xij,
     .version        = LIBAVUTIL_VERSION_INT,
 };
 

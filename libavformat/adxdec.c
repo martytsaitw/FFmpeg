@@ -63,7 +63,7 @@ static int adx_read_packet(AVFormatContext *s, AVPacket *pkt)
     pkt->pos = avio_tell(s->pb);
     pkt->stream_index = 0;
 
-    ret = av_get_packet(s->pb, pkt, size);
+    ret = av_get_packet_xij(s->pb, pkt, size);
     if (ret != size) {
         av_packet_unref_ijk(pkt);
         return ret < 0 ? ret : AVERROR(EIO);
@@ -89,12 +89,12 @@ static int adx_read_header(AVFormatContext *s)
         return AVERROR(ENOMEM);
     par = s->streams[0]->codecpar;
 
-    if (avio_rb16(s->pb) != 0x8000)
+    if (avio_rb16_xij(s->pb) != 0x8000)
         return AVERROR_INVALIDDATA;
-    c->header_size = avio_rb16(s->pb) + 4;
-    avio_seek(s->pb, -4, SEEK_CUR);
+    c->header_size = avio_rb16_xij(s->pb) + 4;
+    avio_seek_xij(s->pb, -4, SEEK_CUR);
 
-    if (ff_get_extradata(s, par, s->pb, c->header_size) < 0)
+    if (ff_get_extradata_xij(s, par, s->pb, c->header_size) < 0)
         return AVERROR(ENOMEM);
 
     if (par->extradata_size < 12) {

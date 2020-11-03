@@ -137,7 +137,7 @@ static int hq_decode_frame(HQContext *ctx, AVFrame *pic,
     ctx->avctx->bits_per_raw_sample = 8;
     ctx->avctx->pix_fmt             = AV_PIX_FMT_YUV422P;
 
-    ret = ff_get_buffer(ctx->avctx, pic, 0);
+    ret = ff_get_buffer_xij(ctx->avctx, pic, 0);
     if (ret < 0)
         return ret;
 
@@ -265,7 +265,7 @@ static int hqa_decode_frame(HQContext *ctx, AVFrame *pic, size_t data_size)
         return AVERROR_INVALIDDATA;
     }
 
-    ret = ff_get_buffer(ctx->avctx, pic, 0);
+    ret = ff_get_buffer_xij(ctx->avctx, pic, 0);
     if (ret < 0)
         return ret;
 

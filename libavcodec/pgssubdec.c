@@ -298,7 +298,7 @@ static int parse_object_segment(AVCodecContext *avctx,
     object->w = width;
     object->h = height;
 
-    av_fast_padded_malloc(&object->rle, &object->rle_buffer_size, rle_bitmap_len);
+    av_fast_padded_malloc_xij(&object->rle, &object->rle_buffer_size, rle_bitmap_len);
 
     if (!object->rle) {
         object->rle_data_len = 0;
@@ -401,7 +401,7 @@ static int parse_presentation_segment(AVCodecContext *avctx,
 
     ff_dlog(avctx, "Video Dimensions %dx%d\n",
             w, h);
-    ret = ff_set_dimensions(avctx, w, h);
+    ret = ff_set_dimensions_xij(avctx, w, h);
     if (ret < 0)
         return ret;
 
@@ -527,7 +527,7 @@ static int display_end_segment(AVCodecContext *avctx, void *data,
         // Missing palette.  Should only happen with damaged streams.
         av_log(avctx, AV_LOG_ERROR, "Invalid palette id %d\n",
                ctx->presentation.palette_id);
-        avsubtitle_free(sub);
+        avsubtitle_free_xij(sub);
         return AVERROR_INVALIDDATA;
     }
     for (i = 0; i < ctx->presentation.object_count; i++) {
@@ -535,7 +535,7 @@ static int display_end_segment(AVCodecContext *avctx, void *data,
 
         sub->rects[i]  = av_mallocz(sizeof(*sub->rects[0]));
         if (!sub->rects[i]) {
-            avsubtitle_free(sub);
+            avsubtitle_free_xij(sub);
             return AVERROR(ENOMEM);
         }
         sub->num_rects++;
@@ -548,7 +548,7 @@ static int display_end_segment(AVCodecContext *avctx, void *data,
             av_log(avctx, AV_LOG_ERROR, "Invalid object id %d\n",
                    ctx->presentation.objects[i].id);
             if (avctx->err_recognition & AV_EF_EXPLODE) {
-                avsubtitle_free(sub);
+                avsubtitle_free_xij(sub);
                 return AVERROR_INVALIDDATA;
             }
             // Leaves rect empty with 0 width and height.
@@ -570,7 +570,7 @@ static int display_end_segment(AVCodecContext *avctx, void *data,
                 av_log(avctx, AV_LOG_ERROR, "RLE data length %u is %u bytes shorter than expected\n",
                        object->rle_data_len, object->rle_remaining_len);
                 if (avctx->err_recognition & AV_EF_EXPLODE) {
-                    avsubtitle_free(sub);
+                    avsubtitle_free_xij(sub);
                     return AVERROR_INVALIDDATA;
                 }
             }
@@ -578,7 +578,7 @@ static int display_end_segment(AVCodecContext *avctx, void *data,
             if (ret < 0) {
                 if ((avctx->err_recognition & AV_EF_EXPLODE) ||
                     ret == AVERROR(ENOMEM)) {
-                    avsubtitle_free(sub);
+                    avsubtitle_free_xij(sub);
                     return ret;
                 }
                 sub->rects[i]->w = 0;
@@ -590,7 +590,7 @@ static int display_end_segment(AVCodecContext *avctx, void *data,
         sub->rects[i]->nb_colors    = 256;
         sub->rects[i]->data[1] = av_mallocz(AVPALETTE_SIZE);
         if (!sub->rects[i]->data[1]) {
-            avsubtitle_free(sub);
+            avsubtitle_free_xij(sub);
             return AVERROR(ENOMEM);
         }
 

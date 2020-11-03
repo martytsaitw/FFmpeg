@@ -80,7 +80,7 @@ static int decode_write(AVCodecContext *avctx, AVPacket *packet)
     int size;
     int ret = 0;
 
-    ret = avcodec_send_packet(avctx, packet);
+    ret = avcodec_send_packet_xij(avctx, packet);
     if (ret < 0) {
         fprintf(stderr, "Error during decoding\n");
         return ret;
@@ -93,10 +93,10 @@ static int decode_write(AVCodecContext *avctx, AVPacket *packet)
             goto fail;
         }
 
-        ret = avcodec_receive_frame(avctx, frame);
+        ret = avcodec_receive_frame_xij(avctx, frame);
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-            av_frame_free(&frame);
-            av_frame_free(&sw_frame);
+            av_frame_free_xij(&frame);
+            av_frame_free_xij(&sw_frame);
             return 0;
         } else if (ret < 0) {
             fprintf(stderr, "Error while decoding\n");
@@ -136,8 +136,8 @@ static int decode_write(AVCodecContext *avctx, AVPacket *packet)
         }
 
     fail:
-        av_frame_free(&frame);
-        av_frame_free(&sw_frame);
+        av_frame_free_xij(&frame);
+        av_frame_free_xij(&sw_frame);
         av_freep(&buffer);
         if (ret < 0)
             return ret;
@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
     video_stream = ret;
 
     for (i = 0;; i++) {
-        const AVCodecHWConfig *config = avcodec_get_hw_config(decoder, i);
+        const AVCodecHWConfig *config = avcodec_get_hw_config_xij(decoder, i);
         if (!config) {
             fprintf(stderr, "Decoder %s does not support device type %s.\n",
                     decoder->name, av_hwdevice_get_type_name(type));
@@ -216,7 +216,7 @@ int main(int argc, char *argv[])
     if (hw_decoder_init(decoder_ctx, type) < 0)
         return -1;
 
-    if ((ret = avcodec_open2(decoder_ctx, decoder, NULL)) < 0) {
+    if ((ret = avcodec_open2_xij(decoder_ctx, decoder, NULL)) < 0) {
         fprintf(stderr, "Failed to open codec for stream #%u\n", video_stream);
         return -1;
     }
@@ -244,8 +244,8 @@ int main(int argc, char *argv[])
     if (output_file)
         fclose(output_file);
     avcodec_free_context_ijk(&decoder_ctx);
-    avformat_close_input(&input_ctx);
-    av_buffer_unref(&hw_device_ctx);
+    avformat_close_input_xij(&input_ctx);
+    av_buffer_unref_xij(&hw_device_ctx);
 
     return 0;
 }

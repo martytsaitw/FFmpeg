@@ -295,7 +295,7 @@ static int ty_read_header(AVFormatContext *s)
     ty->last_video_pts = AV_NOPTS_VALUE;
 
     for (i = 0; i < CHUNK_PEEK_COUNT; i++) {
-        avio_read(pb, ty->chunk, CHUNK_SIZE);
+        avio_read_xij(pb, ty->chunk, CHUNK_SIZE);
 
         ret = analyze_chunk(s, ty->chunk);
         if (ret < 0)
@@ -334,7 +334,7 @@ static int ty_read_header(AVFormatContext *s)
 
     ty->first_chunk = 1;
 
-    avio_seek(pb, 0, SEEK_SET);
+    avio_seek_xij(pb, 0, SEEK_SET);
 
     return 0;
 }
@@ -400,11 +400,11 @@ static int get_chunk(AVFormatContext *s)
     ff_dlog(s, "parsing ty chunk #%d\n", ty->cur_chunk);
 
     /* if we have left-over filler space from the last chunk, get that */
-    if (avio_feof(pb))
+    if (avio_feof_xij(pb))
         return AVERROR_EOF;
 
     /* read the TY packet header */
-    read_size = avio_read(pb, ty->chunk, CHUNK_SIZE);
+    read_size = avio_read_xij(pb, ty->chunk, CHUNK_SIZE);
     ty->cur_chunk++;
 
     if ((read_size < 4) || (AV_RB32(ty->chunk) == 0)) {
@@ -723,7 +723,7 @@ static int ty_read_packet(AVFormatContext *s, AVPacket *pkt)
     int64_t rec_size = 0;
     int ret = 0;
 
-    if (avio_feof(pb))
+    if (avio_feof_xij(pb))
         return AVERROR_EOF;
 
     while (ret <= 0) {
@@ -742,7 +742,7 @@ static int ty_read_packet(AVFormatContext *s, AVPacket *pkt)
         if (ty->cur_chunk_pos + rec->rec_size > CHUNK_SIZE)
             return AVERROR_INVALIDDATA;
 
-        if (avio_feof(pb))
+        if (avio_feof_xij(pb))
             return AVERROR_EOF;
 
         switch (rec->rec_type) {

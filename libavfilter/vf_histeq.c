@@ -143,10 +143,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
 
     outpic = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!outpic) {
-        av_frame_free(&inpic);
+        av_frame_free_xij(&inpic);
         return AVERROR(ENOMEM);
     }
-    av_frame_copy_props(outpic, inpic);
+    av_frame_copy_props_xij(outpic, inpic);
 
     /* Seed random generator for antibanding. */
     jran = LCG_SEED;
@@ -248,7 +248,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpic)
         ff_dlog(ctx, "out[%d]: %u\n", x, histeq->out_histogram[x]);
 #endif
 
-    av_frame_free(&inpic);
+    av_frame_free_xij(&inpic);
     return ff_filter_frame(outlink, outpic);
 }
 

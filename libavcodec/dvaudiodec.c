@@ -100,7 +100,7 @@ static int decode_frame(AVCodecContext *avctx, void *data,
         return AVERROR_INVALIDDATA;
 
     frame->nb_samples = dv_get_audio_sample_count(pkt->data + 244, s->is_pal);
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
     dst = (int16_t *)frame->data[0];
 

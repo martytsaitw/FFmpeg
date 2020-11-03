@@ -80,7 +80,7 @@ static int decode_frame(AVCodecContext *avctx,
     }
     memset(rbuf + buf_size, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 
-    if ((ret = ff_get_buffer(avctx, p, 0)) < 0) {
+    if ((ret = ff_get_buffer_xij(avctx, p, 0)) < 0) {
         av_free(rbuf);
         return ret;
     }

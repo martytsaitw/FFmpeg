@@ -37,7 +37,7 @@ int ff_load_image(uint8_t *data[4], int linesize[4],
 
     av_init_packet_ijk(&pkt);
 
-    iformat = av_find_input_format("image2pipe");
+    iformat = av_find_input_format_xij("image2pipe");
     if ((ret = avformat_open_input_ijk(&format_ctx, filename, iformat, NULL)) < 0) {
         av_log(log_ctx, AV_LOG_ERROR,
                "Failed to open input file '%s'\n", filename);
@@ -71,7 +71,7 @@ int ff_load_image(uint8_t *data[4], int linesize[4],
     }
 
     av_dict_set(&opt, "thread_type", "slice", 0);
-    if ((ret = avcodec_open2(codec_ctx, codec, &opt)) < 0) {
+    if ((ret = avcodec_open2_xij(codec_ctx, codec, &opt)) < 0) {
         av_log(log_ctx, AV_LOG_ERROR, "Failed to open codec\n");
         goto end;
     }
@@ -88,7 +88,7 @@ int ff_load_image(uint8_t *data[4], int linesize[4],
         goto end;
     }
 
-    ret = avcodec_decode_video2(codec_ctx, frame, &frame_decoded, &pkt);
+    ret = avcodec_decode_video2_xij(codec_ctx, frame, &frame_decoded, &pkt);
     if (ret < 0 || !frame_decoded) {
         av_log(log_ctx, AV_LOG_ERROR, "Failed to decode image from file\n");
         if (ret >= 0)
@@ -109,8 +109,8 @@ int ff_load_image(uint8_t *data[4], int linesize[4],
 end:
     av_packet_unref_ijk(&pkt);
     avcodec_free_context_ijk(&codec_ctx);
-    avformat_close_input(&format_ctx);
-    av_frame_free(&frame);
+    avformat_close_input_xij(&format_ctx);
+    av_frame_free_xij(&frame);
     av_dict_free(&opt);
 
     if (ret < 0)

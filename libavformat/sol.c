@@ -89,15 +89,15 @@ static int sol_read_header(AVFormatContext *s)
     AVStream *st;
 
     /* check ".snd" header */
-    magic = avio_rl16(pb);
-    tag = avio_rl32(pb);
+    magic = avio_rl16_xij(pb);
+    tag = avio_rl32_xij(pb);
     if (tag != MKTAG('S', 'O', 'L', 0))
         return -1;
-    rate = avio_rl16(pb);
-    type = avio_r8(pb);
-    avio_skip(pb, 4); /* size */
+    rate = avio_rl16_xij(pb);
+    type = avio_r8_xij(pb);
+    avio_skip_xij(pb, 4); /* size */
     if (magic != 0x0B8D)
-        avio_r8(pb); /* newer SOLs contain padding byte */
+        avio_r8_xij(pb); /* newer SOLs contain padding byte */
 
     codec = sol_codec_id(magic, type);
     channels = sol_channels(magic, type);
@@ -128,9 +128,9 @@ static int sol_read_packet(AVFormatContext *s,
 {
     int ret;
 
-    if (avio_feof(s->pb))
+    if (avio_feof_xij(s->pb))
         return AVERROR(EIO);
-    ret= av_get_packet(s->pb, pkt, MAX_SIZE);
+    ret= av_get_packet_xij(s->pb, pkt, MAX_SIZE);
     if (ret < 0)
         return ret;
     pkt->flags &= ~AV_PKT_FLAG_CORRUPT;

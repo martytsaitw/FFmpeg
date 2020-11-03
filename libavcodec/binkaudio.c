@@ -279,7 +279,7 @@ static av_cold int decode_end(AVCodecContext *avctx)
     else if (CONFIG_BINKAUDIO_DCT_DECODER)
         ff_dct_end(&s->trans.dct);
 
-    av_packet_free(&s->pkt);
+    av_packet_free_xij(&s->pkt);
 
     return 0;
 }
@@ -297,7 +297,7 @@ static int binkaudio_receive_frame(AVCodecContext *avctx, AVFrame *frame)
     int ret;
 
     if (!s->pkt->data) {
-        ret = ff_decode_get_packet(avctx, s->pkt);
+        ret = ff_decode_get_packet_xij(avctx, s->pkt);
         if (ret < 0)
             return ret;
 
@@ -317,7 +317,7 @@ static int binkaudio_receive_frame(AVCodecContext *avctx, AVFrame *frame)
 
     /* get output buffer */
     frame->nb_samples = s->frame_len;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     if (decode_block(s, (float **)frame->extended_data,

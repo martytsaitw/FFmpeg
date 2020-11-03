@@ -44,7 +44,7 @@ static int videotoolbox_retrieve_data(AVCodecContext *s, AVFrame *frame)
     int linesize[4] = { 0 };
     int planes, ret, i;
 
-    av_frame_unref(vt->tmp_frame);
+    av_frame_unref_xij(vt->tmp_frame);
 
     switch (pixel_format) {
     case kCVPixelFormatType_420YpCbCr8Planar: vt->tmp_frame->format = AV_PIX_FMT_YUV420P; break;
@@ -62,7 +62,7 @@ static int videotoolbox_retrieve_data(AVCodecContext *s, AVFrame *frame)
 
     vt->tmp_frame->width  = frame->width;
     vt->tmp_frame->height = frame->height;
-    ret = av_frame_get_buffer(vt->tmp_frame, 32);
+    ret = av_frame_get_buffer_xij(vt->tmp_frame, 32);
     if (ret < 0)
         return ret;
 
@@ -88,13 +88,13 @@ static int videotoolbox_retrieve_data(AVCodecContext *s, AVFrame *frame)
                   (const uint8_t **)data, linesize, vt->tmp_frame->format,
                   frame->width, frame->height);
 
-    ret = av_frame_copy_props(vt->tmp_frame, frame);
+    ret = av_frame_copy_props_xij(vt->tmp_frame, frame);
     CVPixelBufferUnlockBaseAddress(pixbuf, kCVPixelBufferLock_ReadOnly);
     if (ret < 0)
         return ret;
 
-    av_frame_unref(frame);
-    av_frame_move_ref(frame, vt->tmp_frame);
+    av_frame_unref_xij(frame);
+    av_frame_move_ref_xij(frame, vt->tmp_frame);
 
     return 0;
 }
@@ -107,7 +107,7 @@ static void videotoolbox_uninit(AVCodecContext *s)
     ist->hwaccel_uninit        = NULL;
     ist->hwaccel_retrieve_data = NULL;
 
-    av_frame_free(&vt->tmp_frame);
+    av_frame_free_xij(&vt->tmp_frame);
 
     av_videotoolbox_default_free(s);
     av_freep(&ist->hwaccel_ctx);

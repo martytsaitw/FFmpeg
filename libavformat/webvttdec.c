@@ -149,7 +149,7 @@ static int webvtt_read_header(AVFormatContext *s)
 
 #define SET_SIDE_DATA(name, type) do {                                  \
     if (name##_len) {                                                   \
-        uint8_t *buf = av_packet_new_side_data(sub, type, name##_len);  \
+        uint8_t *buf = av_packet_new_side_data_xij(sub, type, name##_len);  \
         if (!buf) {                                                     \
             res = AVERROR(ENOMEM);                                      \
             goto end;                                                   \

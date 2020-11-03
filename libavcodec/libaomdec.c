@@ -192,11 +192,11 @@ static int aom_decode(AVCodecContext *avctx, void *data, int *got_frame,
         if ((int)img->d_w != avctx->width || (int)img->d_h != avctx->height) {
             av_log(avctx, AV_LOG_INFO, "dimension change! %dx%d -> %dx%d\n",
                    avctx->width, avctx->height, img->d_w, img->d_h);
-            ret = ff_set_dimensions(avctx, img->d_w, img->d_h);
+            ret = ff_set_dimensions_xij(avctx, img->d_w, img->d_h);
             if (ret < 0)
                 return ret;
         }
-        if ((ret = ff_get_buffer(avctx, picture, 0)) < 0)
+        if ((ret = ff_get_buffer_xij(avctx, picture, 0)) < 0)
             return ret;
         if ((img->fmt & AOM_IMG_FMT_HIGHBITDEPTH) && img->bit_depth == 8)
             image_copy_16_to_8(picture, img);

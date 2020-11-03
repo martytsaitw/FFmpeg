@@ -69,13 +69,13 @@ static int txd_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         return AVERROR_PATCHWELCOME;
     }
 
-    if ((ret = ff_set_dimensions(avctx, w, h)) < 0)
+    if ((ret = ff_set_dimensions_xij(avctx, w, h)) < 0)
         return ret;
 
     avctx->coded_width  = FFALIGN(w, 4);
     avctx->coded_height = FFALIGN(h, 4);
 
-    if ((ret = ff_get_buffer(avctx, p, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, p, 0)) < 0)
         return ret;
 
     p->pict_type = AV_PICTURE_TYPE_I;

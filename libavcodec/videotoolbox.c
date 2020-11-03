@@ -77,7 +77,7 @@ static int videotoolbox_postproc_frame(void *avctx, AVFrame *frame)
 
     if (!ref) {
         av_log(avctx, AV_LOG_ERROR, "No frame decoded?\n");
-        av_frame_unref(frame);
+        av_frame_unref_xij(frame);
         return AVERROR_EXTERNAL;
     }
 
@@ -91,7 +91,7 @@ int ff_videotoolbox_alloc_frame(AVCodecContext *avctx, AVFrame *frame)
     size_t      size = sizeof(CVPixelBufferRef);
     uint8_t    *data = NULL;
     AVBufferRef *buf = NULL;
-    int ret = ff_attach_decode_data(frame);
+    int ret = ff_attach_decode_data_xij(frame);
     FrameDecodeData *fdd;
     if (ret < 0)
         return ret;
@@ -320,7 +320,7 @@ static int videotoolbox_set_frame(AVCodecContext *avctx, AVFrame *frame)
     VTContext *vtctx = avctx->internal->hwaccel_priv_data;
     if (!frame->buf[0] || frame->data[3]) {
         av_log(avctx, AV_LOG_ERROR, "videotoolbox: invalid state\n");
-        av_frame_unref(frame);
+        av_frame_unref_xij(frame);
         return AVERROR_EXTERNAL;
     }
 
@@ -463,15 +463,15 @@ static int videotoolbox_buffer_create(AVCodecContext *avctx, AVFrame *frame)
 
         ret = av_hwframe_ctx_init(hw_frames_ctx);
         if (ret < 0) {
-            av_buffer_unref(&hw_frames_ctx);
+            av_buffer_unref_xij(&hw_frames_ctx);
             return ret;
         }
 
-        av_buffer_unref(&vtctx->cached_hw_frames_ctx);
+        av_buffer_unref_xij(&vtctx->cached_hw_frames_ctx);
         vtctx->cached_hw_frames_ctx = hw_frames_ctx;
     }
 
-    av_buffer_unref(&frame->hw_frames_ctx);
+    av_buffer_unref_xij(&frame->hw_frames_ctx);
     frame->hw_frames_ctx = av_buffer_ref_ijk(vtctx->cached_hw_frames_ctx);
     if (!frame->hw_frames_ctx)
         return AVERROR(ENOMEM);
@@ -977,7 +977,7 @@ static int videotoolbox_uninit(AVCodecContext *avctx)
     if (vtctx->vt_ctx)
         videotoolbox_stop(avctx);
 
-    av_buffer_unref(&vtctx->cached_hw_frames_ctx);
+    av_buffer_unref_xij(&vtctx->cached_hw_frames_ctx);
     av_freep(&vtctx->vt_ctx);
 
     return 0;
@@ -1022,7 +1022,7 @@ static int videotoolbox_common_init(AVCodecContext *avctx)
 
         err = av_hwframe_ctx_init(avctx->hw_frames_ctx);
         if (err < 0) {
-            av_buffer_unref(&avctx->hw_frames_ctx);
+            av_buffer_unref_xij(&avctx->hw_frames_ctx);
             goto fail;
         }
     }

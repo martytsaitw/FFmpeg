@@ -906,7 +906,7 @@ static int decode_subframe(WmallDecodeCtx *s)
     if (!rawpcm_tile && !s->cdlms[0][0].order) {
         av_log(s->avctx, AV_LOG_DEBUG,
                "Waiting for seekable tile\n");
-        av_frame_unref(s->frame);
+        av_frame_unref_xij(s->frame);
         return -1;
     }
 
@@ -1018,7 +1018,7 @@ static int decode_frame(WmallDecodeCtx *s)
     int more_frames = 0, len = 0, i, ret;
 
     s->frame->nb_samples = s->samples_per_frame;
-    if ((ret = ff_get_buffer(s->avctx, s->frame, 0)) < 0) {
+    if ((ret = ff_get_buffer_xij(s->avctx, s->frame, 0)) < 0) {
         /* return an error if no frame could be decoded at all */
         s->packet_loss = 1;
         s->frame->nb_samples = 0;
@@ -1036,7 +1036,7 @@ static int decode_frame(WmallDecodeCtx *s)
     /* decode tile information */
     if ((ret = decode_tilehdr(s))) {
         s->packet_loss = 1;
-        av_frame_unref(s->frame);
+        av_frame_unref_xij(s->frame);
         return ret;
     }
 
@@ -1286,7 +1286,7 @@ static int decode_packet(AVCodecContext *avctx, void *data, int *got_frame_ptr,
     }
 
     *got_frame_ptr   = s->frame->nb_samples > 0;
-    av_frame_move_ref(data, s->frame);
+    av_frame_move_ref_xij(data, s->frame);
 
     s->packet_offset = get_bits_count(gb) & 7;
 
@@ -1310,7 +1310,7 @@ static av_cold int decode_close(AVCodecContext *avctx)
 {
     WmallDecodeCtx *s = avctx->priv_data;
 
-    av_frame_free(&s->frame);
+    av_frame_free_xij(&s->frame);
     av_freep(&s->frame_data);
 
     return 0;

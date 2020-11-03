@@ -455,7 +455,7 @@ static int cinepak_decode_frame(AVCodecContext *avctx,
     num_strips = AV_RB16 (&s->data[8]);
 
     //Empty frame, do not waste time
-    if (!num_strips && (!s->palette_video || !av_packet_get_side_data(avpkt, AV_PKT_DATA_PALETTE, NULL)))
+    if (!num_strips && (!s->palette_video || !av_packet_get_side_data_xij(avpkt, AV_PKT_DATA_PALETTE, NULL)))
         return buf_size;
 
     if ((ret = cinepak_predecode_check(s)) < 0) {
@@ -463,12 +463,12 @@ static int cinepak_decode_frame(AVCodecContext *avctx,
         return ret;
     }
 
-    if ((ret = ff_reget_buffer(avctx, s->frame)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, s->frame)) < 0)
         return ret;
 
     if (s->palette_video) {
         int size;
-        const uint8_t *pal = av_packet_get_side_data(avpkt, AV_PKT_DATA_PALETTE, &size);
+        const uint8_t *pal = av_packet_get_side_data_xij(avpkt, AV_PKT_DATA_PALETTE, &size);
         if (pal && size == AVPALETTE_SIZE) {
             s->frame->palette_has_changed = 1;
             memcpy(s->pal, pal, AVPALETTE_SIZE);
@@ -484,7 +484,7 @@ static int cinepak_decode_frame(AVCodecContext *avctx,
     if (s->palette_video)
         memcpy (s->frame->data[1], s->pal, AVPALETTE_SIZE);
 
-    if ((ret = av_frame_ref(data, s->frame)) < 0)
+    if ((ret = av_frame_ref_xij(data, s->frame)) < 0)
         return ret;
 
     *got_frame = 1;
@@ -497,7 +497,7 @@ static av_cold int cinepak_decode_end(AVCodecContext *avctx)
 {
     CinepakContext *s = avctx->priv_data;
 
-    av_frame_free(&s->frame);
+    av_frame_free_xij(&s->frame);
 
     return 0;
 }

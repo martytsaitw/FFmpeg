@@ -37,9 +37,9 @@ static int threedostr_read_header(AVFormatContext *s)
     unsigned chunk, codec = 0, size, ctrl_size = -1, found_shdr = 0;
     AVStream *st;
 
-    while (!avio_feof(s->pb) && !found_shdr) {
-        chunk = avio_rl32(s->pb);
-        size  = avio_rb32(s->pb);
+    while (!avio_feof_xij(s->pb) && !found_shdr) {
+        chunk = avio_rl32_xij(s->pb);
+        size  = avio_rb32_xij(s->pb);
 
         if (size < 8)
             return AVERROR_INVALIDDATA;
@@ -52,35 +52,35 @@ static int threedostr_read_header(AVFormatContext *s)
         case MKTAG('S','N','D','S'):
             if (size < 56)
                 return AVERROR_INVALIDDATA;
-            avio_skip(s->pb, 8);
-            if (avio_rl32(s->pb) != MKTAG('S','H','D','R'))
+            avio_skip_xij(s->pb, 8);
+            if (avio_rl32_xij(s->pb) != MKTAG('S','H','D','R'))
                 return AVERROR_INVALIDDATA;
-            avio_skip(s->pb, 24);
+            avio_skip_xij(s->pb, 24);
 
             st = avformat_new_stream_ijk(s, NULL);
             if (!st)
                 return AVERROR(ENOMEM);
 
             st->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
-            st->codecpar->sample_rate = avio_rb32(s->pb);
-            st->codecpar->channels    = avio_rb32(s->pb);
+            st->codecpar->sample_rate = avio_rb32_xij(s->pb);
+            st->codecpar->channels    = avio_rb32_xij(s->pb);
             if (st->codecpar->channels <= 0)
                 return AVERROR_INVALIDDATA;
-            codec                  = avio_rl32(s->pb);
-            avio_skip(s->pb, 4);
+            codec                  = avio_rl32_xij(s->pb);
+            avio_skip_xij(s->pb, 4);
             if (ctrl_size == 20 || ctrl_size == 3 || ctrl_size == -1)
-                st->duration       = (avio_rb32(s->pb) - 1) / st->codecpar->channels;
+                st->duration       = (avio_rb32_xij(s->pb) - 1) / st->codecpar->channels;
             else
-                st->duration       = avio_rb32(s->pb) * 16 / st->codecpar->channels;
+                st->duration       = avio_rb32_xij(s->pb) * 16 / st->codecpar->channels;
             size -= 56;
             found_shdr = 1;
             break;
         case MKTAG('S','H','D','R'):
             if (size >  0x78) {
-                avio_skip(s->pb, 0x74);
+                avio_skip_xij(s->pb, 0x74);
                 size -= 0x78;
-                if (avio_rl32(s->pb) == MKTAG('C','T','R','L') && size > 4) {
-                    ctrl_size = avio_rb32(s->pb);
+                if (avio_rl32_xij(s->pb) == MKTAG('C','T','R','L') && size > 4) {
+                    ctrl_size = avio_rb32_xij(s->pb);
                     size -= 4;
                 }
             }
@@ -90,7 +90,7 @@ static int threedostr_read_header(AVFormatContext *s)
             break;
         }
 
-        avio_skip(s->pb, size);
+        avio_skip_xij(s->pb, size);
     }
 
     switch (codec) {
@@ -116,12 +116,12 @@ static int threedostr_read_packet(AVFormatContext *s, AVPacket *pkt)
     int ret = 0;
 
     while (!found_ssmp) {
-        if (avio_feof(s->pb))
+        if (avio_feof_xij(s->pb))
             return AVERROR_EOF;
 
         pos   = avio_tell(s->pb);
-        chunk = avio_rl32(s->pb);
-        size  = avio_rb32(s->pb);
+        chunk = avio_rl32_xij(s->pb);
+        size  = avio_rb32_xij(s->pb);
 
         if (!size)
             continue;
@@ -134,12 +134,12 @@ static int threedostr_read_packet(AVFormatContext *s, AVPacket *pkt)
         case MKTAG('S','N','D','S'):
             if (size <= 16)
                 return AVERROR_INVALIDDATA;
-            avio_skip(s->pb, 8);
-            if (avio_rl32(s->pb) != MKTAG('S','S','M','P'))
+            avio_skip_xij(s->pb, 8);
+            if (avio_rl32_xij(s->pb) != MKTAG('S','S','M','P'))
                 return AVERROR_INVALIDDATA;
-            avio_skip(s->pb, 4);
+            avio_skip_xij(s->pb, 4);
             size -= 16;
-            ret = av_get_packet(s->pb, pkt, size);
+            ret = av_get_packet_xij(s->pb, pkt, size);
             pkt->pos = pos;
             pkt->stream_index = 0;
             pkt->duration = size / st->codecpar->channels;
@@ -151,7 +151,7 @@ static int threedostr_read_packet(AVFormatContext *s, AVPacket *pkt)
             break;
         }
 
-        avio_skip(s->pb, size);
+        avio_skip_xij(s->pb, size);
     }
 
     return ret;

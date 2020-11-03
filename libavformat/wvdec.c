@@ -87,7 +87,7 @@ static int wv_read_block_header(AVFormatContext *ctx, AVIOContext *pb)
     if (wc->apetag_start && wc->pos >= wc->apetag_start)
         return AVERROR_EOF;
 
-    ret = avio_read(pb, wc->block_header, WV_HEADER_SIZE);
+    ret = avio_read_xij(pb, wc->block_header, WV_HEADER_SIZE);
     if (ret != WV_HEADER_SIZE)
         return (ret < 0) ? ret : AVERROR_EOF;
 
@@ -125,10 +125,10 @@ static int wv_read_block_header(AVFormatContext *ctx, AVIOContext *pb)
                    "Cannot determine additional parameters\n");
             return AVERROR_INVALIDDATA;
         }
-        while (avio_tell(pb) < block_end && !avio_feof(pb)) {
+        while (avio_tell(pb) < block_end && !avio_feof_xij(pb)) {
             int id, size;
-            id   = avio_r8(pb);
-            size = (id & 0x80) ? avio_rl24(pb) : avio_r8(pb);
+            id   = avio_r8_xij(pb);
+            size = (id & 0x80) ? avio_rl24_xij(pb) : avio_r8_xij(pb);
             size <<= 1;
             if (id & 0x40)
                 size--;
@@ -139,24 +139,24 @@ static int wv_read_block_header(AVFormatContext *ctx, AVIOContext *pb)
                            "Insufficient channel information\n");
                     return AVERROR_INVALIDDATA;
                 }
-                chan = avio_r8(pb);
+                chan = avio_r8_xij(pb);
                 switch (size - 2) {
                 case 0:
-                    chmask = avio_r8(pb);
+                    chmask = avio_r8_xij(pb);
                     break;
                 case 1:
-                    chmask = avio_rl16(pb);
+                    chmask = avio_rl16_xij(pb);
                     break;
                 case 2:
-                    chmask = avio_rl24(pb);
+                    chmask = avio_rl24_xij(pb);
                     break;
                 case 3:
-                    chmask = avio_rl32(pb);
+                    chmask = avio_rl32_xij(pb);
                     break;
                 case 5:
-                    avio_skip(pb, 1);
-                    chan  |= (avio_r8(pb) & 0xF) << 8;
-                    chmask = avio_rl24(pb);
+                    avio_skip_xij(pb, 1);
+                    chan  |= (avio_r8_xij(pb) & 0xF) << 8;
+                    chmask = avio_rl24_xij(pb);
                     break;
                 default:
                     av_log(ctx, AV_LOG_ERROR,
@@ -165,20 +165,20 @@ static int wv_read_block_header(AVFormatContext *ctx, AVIOContext *pb)
                 }
                 break;
             case 0x27:
-                rate = avio_rl24(pb);
+                rate = avio_rl24_xij(pb);
                 break;
             default:
-                avio_skip(pb, size);
+                avio_skip_xij(pb, size);
             }
             if (id & 0x40)
-                avio_skip(pb, 1);
+                avio_skip_xij(pb, 1);
         }
         if (rate == -1) {
             av_log(ctx, AV_LOG_ERROR,
                    "Cannot determine custom sampling rate\n");
             return AVERROR_INVALIDDATA;
         }
-        avio_seek(pb, block_end - wc->header.blocksize, SEEK_SET);
+        avio_seek_xij(pb, block_end - wc->header.blocksize, SEEK_SET);
     }
     if (!wc->bpp)
         wc->bpp    = bpp;
@@ -222,7 +222,7 @@ static int wv_read_header(AVFormatContext *s)
         if ((ret = wv_read_block_header(s, pb)) < 0)
             return ret;
         if (!wc->header.samples)
-            avio_skip(pb, wc->header.blocksize);
+            avio_skip_xij(pb, wc->header.blocksize);
         else
             break;
     }
@@ -247,7 +247,7 @@ static int wv_read_header(AVFormatContext *s)
         wc->apetag_start = ff_ape_parse_tag(s);
         if (!av_dict_get(s->metadata, "", NULL, AV_DICT_IGNORE_SUFFIX))
             ff_id3v1_read(s);
-        avio_seek(s->pb, cur, SEEK_SET);
+        avio_seek_xij(s->pb, cur, SEEK_SET);
     }
 
     return 0;
@@ -261,7 +261,7 @@ static int wv_read_packet(AVFormatContext *s, AVPacket *pkt)
     int64_t pos;
     uint32_t block_samples;
 
-    if (avio_feof(s->pb))
+    if (avio_feof_xij(s->pb))
         return AVERROR_EOF;
     if (wc->block_parsed) {
         if ((ret = wv_read_block_header(s, s->pb)) < 0)
@@ -272,7 +272,7 @@ static int wv_read_packet(AVFormatContext *s, AVPacket *pkt)
     if (av_new_packet_ijk(pkt, wc->header.blocksize + WV_HEADER_SIZE) < 0)
         return AVERROR(ENOMEM);
     memcpy(pkt->data, wc->block_header, WV_HEADER_SIZE);
-    ret = avio_read(s->pb, pkt->data + WV_HEADER_SIZE, wc->header.blocksize);
+    ret = avio_read_xij(s->pb, pkt->data + WV_HEADER_SIZE, wc->header.blocksize);
     if (ret != wc->header.blocksize) {
         av_packet_unref_ijk(pkt);
         return AVERROR(EIO);
@@ -290,7 +290,7 @@ static int wv_read_packet(AVFormatContext *s, AVPacket *pkt)
         }
         memcpy(pkt->data + off, wc->block_header, WV_HEADER_SIZE);
 
-        ret = avio_read(s->pb, pkt->data + off + WV_HEADER_SIZE, wc->header.blocksize);
+        ret = avio_read_xij(s->pb, pkt->data + off + WV_HEADER_SIZE, wc->header.blocksize);
         if (ret != wc->header.blocksize) {
             av_packet_unref_ijk(pkt);
             return (ret < 0) ? ret : AVERROR_EOF;

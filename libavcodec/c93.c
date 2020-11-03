@@ -50,8 +50,8 @@ static av_cold int decode_end(AVCodecContext *avctx)
 {
     C93DecoderContext * const c93 = avctx->priv_data;
 
-    av_frame_free(&c93->pictures[0]);
-    av_frame_free(&c93->pictures[1]);
+    av_frame_free_xij(&c93->pictures[0]);
+    av_frame_free_xij(&c93->pictures[1]);
 
     return 0;
 }
@@ -133,12 +133,12 @@ static int decode_frame(AVCodecContext *avctx, void *data,
     uint8_t *out;
     int stride, ret, i, x, y, b, bt = 0;
 
-    if ((ret = ff_set_dimensions(avctx, WIDTH, HEIGHT)) < 0)
+    if ((ret = ff_set_dimensions_xij(avctx, WIDTH, HEIGHT)) < 0)
         return ret;
 
     c93->currentpic ^= 1;
 
-    if ((ret = ff_reget_buffer(avctx, newpic)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, newpic)) < 0)
         return ret;
 
     stride = newpic->linesize[0];
@@ -252,7 +252,7 @@ static int decode_frame(AVCodecContext *avctx, void *data,
             memcpy(newpic->data[1], oldpic->data[1], 256 * 4);
     }
 
-    if ((ret = av_frame_ref(data, newpic)) < 0)
+    if ((ret = av_frame_ref_xij(data, newpic)) < 0)
         return ret;
     *got_frame = 1;
 

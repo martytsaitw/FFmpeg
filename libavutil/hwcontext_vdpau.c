@@ -260,7 +260,7 @@ static int vdpau_frames_init(AVHWFramesContext *ctx)
     }
 
     if (!ctx->pool) {
-        ctx->internal->pool_internal = av_buffer_pool_init2(sizeof(VdpVideoSurface), ctx,
+        ctx->internal->pool_internal = av_buffer_pool_init2_xij(sizeof(VdpVideoSurface), ctx,
                                                             vdpau_pool_alloc, NULL);
         if (!ctx->internal->pool_internal)
             return AVERROR(ENOMEM);
@@ -274,7 +274,7 @@ static int vdpau_frames_init(AVHWFramesContext *ctx)
 
 static int vdpau_get_buffer(AVHWFramesContext *ctx, AVFrame *frame)
 {
-    frame->buf[0] = av_buffer_pool_get(ctx->pool);
+    frame->buf[0] = av_buffer_pool_get_xij(ctx->pool);
     if (!frame->buf[0])
         return AVERROR(ENOMEM);
 

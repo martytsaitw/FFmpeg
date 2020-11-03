@@ -44,7 +44,7 @@ static int yuv4_read_header(AVFormatContext *s)
     AVStream *st;
 
     for (i = 0; i < MAX_YUV4_HEADER; i++) {
-        header[i] = avio_r8(pb);
+        header[i] = avio_r8_xij(pb);
         if (header[i] == '\n') {
             header[i + 1] = 0x20;  // Add a space after last option.
                                    // Makes parsing "444" vs "444alpha" easier.
@@ -269,7 +269,7 @@ static int yuv4_read_header(AVFormatContext *s)
         return s->packet_size;
     s->internal->data_offset = avio_tell(pb);
 
-    st->duration = (avio_size(pb) - avio_tell(pb)) / s->packet_size;
+    st->duration = (avio_size_xij(pb) - avio_tell(pb)) / s->packet_size;
 
     return 0;
 }
@@ -282,7 +282,7 @@ static int yuv4_read_packet(AVFormatContext *s, AVPacket *pkt)
     int64_t off = avio_tell(s->pb);
 
     for (i = 0; i < MAX_FRAME_HEADER; i++) {
-        header[i] = avio_r8(s->pb);
+        header[i] = avio_r8_xij(s->pb);
         if (header[i] == '\n') {
             header[i + 1] = 0;
             break;
@@ -298,7 +298,7 @@ static int yuv4_read_packet(AVFormatContext *s, AVPacket *pkt)
     if (strncmp(header, Y4M_FRAME_MAGIC, strlen(Y4M_FRAME_MAGIC)))
         return AVERROR_INVALIDDATA;
 
-    ret = av_get_packet(s->pb, pkt, s->packet_size - Y4M_FRAME_MAGIC_LEN);
+    ret = av_get_packet_xij(s->pb, pkt, s->packet_size - Y4M_FRAME_MAGIC_LEN);
     if (ret < 0)
         return ret;
     else if (ret != s->packet_size - Y4M_FRAME_MAGIC_LEN) {
@@ -314,7 +314,7 @@ static int yuv4_read_packet(AVFormatContext *s, AVPacket *pkt)
 static int yuv4_read_seek(AVFormatContext *s, int stream_index,
                           int64_t pts, int flags)
 {
-    if (avio_seek(s->pb, pts * s->packet_size + s->internal->data_offset, SEEK_SET) < 0)
+    if (avio_seek_xij(s->pb, pts * s->packet_size + s->internal->data_offset, SEEK_SET) < 0)
         return -1;
     return 0;
 }

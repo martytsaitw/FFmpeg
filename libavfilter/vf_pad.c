@@ -262,7 +262,7 @@ static int buffer_needs_copy(PadContext *s, AVFrame *frame, AVBufferRef *buf)
 
     /* get all planes in this buffer */
     for (i = 0; i < FF_ARRAY_ELEMS(planes) && frame->data[i]; i++) {
-        if (av_frame_get_plane_buffer(frame, i) == buf)
+        if (av_frame_get_plane_buffer_xij(frame, i) == buf)
             *p++ = i;
     }
 
@@ -311,7 +311,7 @@ static int frame_needs_copy(PadContext *s, AVFrame *frame)
 {
     int i;
 
-    if (!av_frame_is_writable(frame))
+    if (!av_frame_is_writable_xij(frame))
         return 1;
 
     for (i = 0; i < 4 && frame->buf[i]; i++)
@@ -359,11 +359,11 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                                   FFMAX(inlink->w, s->w),
                                   FFMAX(inlink->h, s->h));
         if (!out) {
-            av_frame_free(&in);
+            av_frame_free_xij(&in);
             return AVERROR(ENOMEM);
         }
 
-        av_frame_copy_props(out, in);
+        av_frame_copy_props_xij(out, in);
     } else {
         int i;
 
@@ -409,7 +409,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     out->height = s->h;
 
     if (in != out)
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
     return ff_filter_frame(inlink->dst->outputs[0], out);
 }
 

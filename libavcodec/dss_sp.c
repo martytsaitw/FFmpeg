@@ -761,7 +761,7 @@ static int dss_sp_decode_frame(AVCodecContext *avctx, void *data,
     }
 
     frame->nb_samples = DSS_SP_SAMPLE_COUNT;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     out = (int16_t *)frame->data[0];

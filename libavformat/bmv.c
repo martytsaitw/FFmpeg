@@ -76,18 +76,18 @@ static int bmv_read_packet(AVFormatContext *s, AVPacket *pkt)
     while (c->get_next) {
         if (s->pb->eof_reached)
             return AVERROR_EOF;
-        type = avio_r8(s->pb);
+        type = avio_r8_xij(s->pb);
         if (type == BMV_NOP)
             continue;
         if (type == BMV_END)
             return AVERROR_EOF;
-        c->size = avio_rl24(s->pb);
+        c->size = avio_rl24_xij(s->pb);
         if (!c->size)
             return AVERROR_INVALIDDATA;
         if ((err = av_reallocp(&c->packet, c->size + 1)) < 0)
             return err;
         c->packet[0] = type;
-        if (avio_read(s->pb, c->packet + 1, c->size) != c->size)
+        if (avio_read_xij(s->pb, c->packet + 1, c->size) != c->size)
             return AVERROR(EIO);
         if (type & BMV_AUDIO) {
             int audio_size = c->packet[1] * 65 + 1;

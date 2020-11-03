@@ -640,7 +640,7 @@ static int svq1_decode_frame(AVCodecContext *avctx, void *data,
             return AVERROR_INVALIDDATA;
         }
 
-        av_fast_padded_malloc(&s->pkt_swapped,
+        av_fast_padded_malloc_xij(&s->pkt_swapped,
                               &s->pkt_swapped_allocated,
                               buf_size);
         if (!s->pkt_swapped)
@@ -663,7 +663,7 @@ static int svq1_decode_frame(AVCodecContext *avctx, void *data,
         return result;
     }
 
-    result = ff_set_dimensions(avctx, s->width, s->height);
+    result = ff_set_dimensions_xij(avctx, s->width, s->height);
     if (result < 0)
         return result;
 
@@ -673,7 +673,7 @@ static int svq1_decode_frame(AVCodecContext *avctx, void *data,
         avctx->skip_frame >= AVDISCARD_ALL)
         return buf_size;
 
-    result = ff_get_buffer(avctx, cur, s->nonref ? 0 : AV_GET_BUFFER_FLAG_REF);
+    result = ff_get_buffer_xij(avctx, cur, s->nonref ? 0 : AV_GET_BUFFER_FLAG_REF);
     if (result < 0)
         return result;
 
@@ -746,8 +746,8 @@ static int svq1_decode_frame(AVCodecContext *avctx, void *data,
     }
 
     if (!s->nonref) {
-        av_frame_unref(s->prev);
-        result = av_frame_ref(s->prev, cur);
+        av_frame_unref_xij(s->prev);
+        result = av_frame_ref_xij(s->prev, cur);
         if (result < 0)
             goto err;
     }
@@ -819,7 +819,7 @@ static av_cold int svq1_decode_end(AVCodecContext *avctx)
 {
     SVQ1Context *s = avctx->priv_data;
 
-    av_frame_free(&s->prev);
+    av_frame_free_xij(&s->prev);
     av_freep(&s->pkt_swapped);
     s->pkt_swapped_allocated = 0;
 
@@ -830,7 +830,7 @@ static void svq1_flush(AVCodecContext *avctx)
 {
     SVQ1Context *s = avctx->priv_data;
 
-    av_frame_unref(s->prev);
+    av_frame_unref_xij(s->prev);
 }
 
 AVCodec ff_svq1_decoder = {

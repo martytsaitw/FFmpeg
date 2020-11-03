@@ -100,7 +100,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
 
             x = s->map[n];
             if (x >= 0) {
-                out = av_frame_clone(s->frames[x]);
+                out = av_frame_clone_xij(s->frames[x]);
                 if (!out)
                     return AVERROR(ENOMEM);
                 out->pts = s->pts[n];
@@ -110,7 +110,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
         }
 
         for (n = 0; n < s->nb_frames; n++)
-            av_frame_free(&s->frames[n]);
+            av_frame_free_xij(&s->frames[n]);
     }
 
     return ret;
@@ -122,7 +122,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 
     while (s->in_frames > 0) {
         s->in_frames--;
-        av_frame_free(&s->frames[s->in_frames]);
+        av_frame_free_xij(&s->frames[s->in_frames]);
     }
 
     av_freep(&s->frames);

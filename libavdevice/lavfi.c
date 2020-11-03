@@ -90,7 +90,7 @@ av_cold static int lavfi_read_close(AVFormatContext *avctx)
     av_freep(&lavfi->sink_stream_subcc_map);
     av_freep(&lavfi->sinks);
     avfilter_graph_free(&lavfi->graph);
-    av_frame_free(&lavfi->decoded_frame);
+    av_frame_free_xij(&lavfi->decoded_frame);
 
     return 0;
 }
@@ -145,13 +145,13 @@ av_cold static int lavfi_read_header(AVFormatContext *avctx)
         AVDictionary *options = NULL;
         if (avctx->protocol_whitelist && (ret = av_dict_set(&options, "protocol_whitelist", avctx->protocol_whitelist, 0)) < 0)
             goto end;
-        ret = avio_open2(&avio, lavfi->graph_filename, AVIO_FLAG_READ, &avctx->interrupt_callback, &options);
+        ret = avio_open2_xij(&avio, lavfi->graph_filename, AVIO_FLAG_READ, &avctx->interrupt_callback, &options);
         av_dict_set(&options, "protocol_whitelist", NULL, 0);
         if (ret < 0)
             goto end;
         av_bprint_init(&graph_file_pb, 0, AV_BPRINT_SIZE_UNLIMITED);
-        ret = avio_read_to_bprint(avio, &graph_file_pb, INT_MAX);
-        avio_closep(&avio);
+        ret = avio_read_to_bprint_xij(avio, &graph_file_pb, INT_MAX);
+        avio_closep_xij(&avio);
         av_bprint_chars(&graph_file_pb, '\0', 1);
         if (!ret && !av_bprint_is_complete(&graph_file_pb))
             ret = AVERROR(ENOMEM);
@@ -326,7 +326,7 @@ av_cold static int lavfi_read_header(AVFormatContext *avctx)
                                      av_get_padded_bits_per_pixel(av_pix_fmt_desc_get(av_buffersink_get_format(sink))) *
                                      30);
         } else if (av_buffersink_get_type(sink) == AVMEDIA_TYPE_AUDIO) {
-            st->codecpar->codec_id    = av_get_pcm_codec(av_buffersink_get_format(sink), -1);
+            st->codecpar->codec_id    = av_get_pcm_codec_xij(av_buffersink_get_format(sink), -1);
             st->codecpar->channels    = av_buffersink_get_channels(sink);
             st->codecpar->format      = av_buffersink_get_format(sink);
             st->codecpar->sample_rate = av_buffersink_get_sample_rate(sink);
@@ -415,7 +415,7 @@ static int lavfi_read_packet(AVFormatContext *avctx, AVPacket *pkt)
             return ret;
         d = av_rescale_q_rnd(frame->pts, tb, AV_TIME_BASE_Q, AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX);
         ff_dlog(avctx, "sink_idx:%d time:%f\n", i, d);
-        av_frame_unref(frame);
+        av_frame_unref_xij(frame);
 
         if (d < min_pts) {
             min_pts = d;
@@ -459,7 +459,7 @@ static int lavfi_read_packet(AVFormatContext *avctx, AVPacket *pkt)
             av_bprint_chars(&meta_buf, '\0', 1);
         }
         if (!av_bprint_is_complete(&meta_buf) ||
-            !(metadata = av_packet_new_side_data(pkt, AV_PKT_DATA_STRINGS_METADATA,
+            !(metadata = av_packet_new_side_data_xij(pkt, AV_PKT_DATA_STRINGS_METADATA,
                                                  meta_buf.len))) {
             av_bprint_finalize(&meta_buf, NULL);
             return AVERROR(ENOMEM);
@@ -469,7 +469,7 @@ static int lavfi_read_packet(AVFormatContext *avctx, AVPacket *pkt)
     }
 
     if ((ret = create_subcc_packet(avctx, frame, min_pts_sink_idx)) < 0) {
-        av_frame_unref(frame);
+        av_frame_unref_xij(frame);
         av_packet_unref_ijk(pkt);
         return ret;
     }
@@ -478,7 +478,7 @@ static int lavfi_read_packet(AVFormatContext *avctx, AVPacket *pkt)
     pkt->pts = frame->pts;
     pkt->pos = frame->pkt_pos;
     pkt->size = size;
-    av_frame_unref(frame);
+    av_frame_unref_xij(frame);
     return size;
 }
 

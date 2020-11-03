@@ -800,7 +800,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     case AV_CODEC_ID_H263:
         if (!CONFIG_H263_ENCODER)
             return -1;
-        if (ff_match_2uint16(ff_h263_format, FF_ARRAY_ELEMS(ff_h263_format),
+        if (ff_match_2uint16_xij(ff_h263_format, FF_ARRAY_ELEMS(ff_h263_format),
                              s->width, s->height) == 8) {
             av_log(avctx, AV_LOG_ERROR,
                    "The specified picture size of %dx%d is not valid for "
@@ -921,7 +921,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     ff_me_cmp_init(&s->mecc, avctx);
     ff_mpegvideoencdsp_init(&s->mpvencdsp, avctx);
     ff_pixblockdsp_init(&s->pdsp, avctx);
-    ff_qpeldsp_init(&s->qdsp);
+    ff_qpeldsp_init_xij(&s->qdsp);
 
     if (s->msmpeg4_version) {
         FF_ALLOCZ_OR_GOTO(s->avctx, s->ac_stats,
@@ -1056,13 +1056,13 @@ FF_ENABLE_DEPRECATION_WARNINGS
             s->tmp_frames[i]->width  = s->width  >> s->brd_scale;
             s->tmp_frames[i]->height = s->height >> s->brd_scale;
 
-            ret = av_frame_get_buffer(s->tmp_frames[i], 32);
+            ret = av_frame_get_buffer_xij(s->tmp_frames[i], 32);
             if (ret < 0)
                 return ret;
         }
     }
 
-    cpb_props = ff_add_cpb_side_data(avctx);
+    cpb_props = ff_add_cpb_side_data_xij(avctx);
     if (!cpb_props)
         return AVERROR(ENOMEM);
     cpb_props->max_bitrate = avctx->rc_max_rate;
@@ -1095,7 +1095,7 @@ av_cold int ff_mpv_encode_end(AVCodecContext *avctx)
     av_freep(&avctx->extradata);
 
     for (i = 0; i < FF_ARRAY_ELEMS(s->tmp_frames); i++)
-        av_frame_free(&s->tmp_frames[i]);
+        av_frame_free_xij(&s->tmp_frames[i]);
 
     ff_free_picture_tables(&s->new_picture);
     ff_mpeg_unref_picture(s->avctx, &s->new_picture);
@@ -1227,7 +1227,7 @@ static int load_input_picture(MpegEncContext *s, const AVFrame *pic_arg)
         pic->reference = 3;
 
         if (direct) {
-            if ((ret = av_frame_ref(pic->f, pic_arg)) < 0)
+            if ((ret = av_frame_ref_xij(pic->f, pic_arg)) < 0)
                 return ret;
         }
         ret = alloc_picture(s, pic, direct);
@@ -1286,7 +1286,7 @@ static int load_input_picture(MpegEncContext *s, const AVFrame *pic_arg)
                 emms_c();
             }
         }
-        ret = av_frame_copy_props(pic->f, pic_arg);
+        ret = av_frame_copy_props_xij(pic->f, pic_arg);
         if (ret < 0)
             return ret;
 
@@ -1458,7 +1458,7 @@ static int estimate_best_b_count(MpegEncContext *s)
         c->time_base    = s->avctx->time_base;
         c->max_b_frames = s->max_b_frames;
 
-        ret = avcodec_open2(c, codec, NULL);
+        ret = avcodec_open2_xij(c, codec, NULL);
         if (ret < 0)
             goto fail;
 
@@ -1528,7 +1528,7 @@ static int select_input_picture(MpegEncContext *s)
                 s->next_picture_ptr &&
                 skip_check(s, s->input_picture[0], s->next_picture_ptr)) {
                 // FIXME check that the gop check above is +-1 correct
-                av_frame_unref(s->input_picture[0]->f);
+                av_frame_unref_xij(s->input_picture[0]->f);
 
                 ff_vbv_update(s, 0);
 
@@ -1663,12 +1663,12 @@ no_output_pic:
                 return -1;
             }
 
-            ret = av_frame_copy_props(pic->f, s->reordered_input_picture[0]->f);
+            ret = av_frame_copy_props_xij(pic->f, s->reordered_input_picture[0]->f);
             if (ret < 0)
                 return ret;
 
             /* mark us unused / free shared pic */
-            av_frame_unref(s->reordered_input_picture[0]->f);
+            av_frame_unref_xij(s->reordered_input_picture[0]->f);
             s->reordered_input_picture[0]->shared = 0;
 
             s->current_picture_ptr = pic;
@@ -1727,8 +1727,8 @@ static void frame_end(MpegEncContext *s)
 
 #if FF_API_CODED_FRAME
 FF_DISABLE_DEPRECATION_WARNINGS
-    av_frame_unref(s->avctx->coded_frame);
-    av_frame_copy_props(s->avctx->coded_frame, s->current_picture.f);
+    av_frame_unref_xij(s->avctx->coded_frame);
+    av_frame_copy_props_xij(s->avctx->coded_frame, s->current_picture.f);
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
 #if FF_API_ERROR_FRAME
@@ -1859,7 +1859,7 @@ int ff_mpv_encode_picture(AVCodecContext *avctx, AVPacket *pkt,
         if ((ret = ff_alloc_packet2(avctx, pkt, pkt_size, 0)) < 0)
             return ret;
         if (s->mb_info) {
-            s->mb_info_ptr = av_packet_new_side_data(pkt,
+            s->mb_info_ptr = av_packet_new_side_data_xij(pkt,
                                  AV_PKT_DATA_H263_MB_INFO,
                                  s->mb_width*s->mb_height*12);
             s->prev_mb_info = s->last_mb_info = s->mb_info_size = 0;
@@ -1958,7 +1958,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
             s->current_picture_ptr->encoding_error[i] = s->current_picture.encoding_error[i];
             avctx->error[i] += s->current_picture_ptr->encoding_error[i];
         }
-        ff_side_data_set_encoder_stats(pkt, s->current_picture.f->quality,
+        ff_side_data_set_encoder_stats_xij(pkt, s->current_picture.f->quality,
                                        s->current_picture_ptr->encoding_error,
                                        (s->avctx->flags&AV_CODEC_FLAG_PSNR) ? 4 : 0,
                                        s->pict_type);
@@ -2037,7 +2037,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
             s->vbv_delay_ptr[2] &= 0x07;
             s->vbv_delay_ptr[2] |= vbv_delay << 3;
 
-            props = av_cpb_properties_alloc(&props_size);
+            props = av_cpb_properties_alloc_xij(&props_size);
             if (!props)
                 return AVERROR(ENOMEM);
             props->vbv_delay = vbv_delay * 300;
@@ -2075,7 +2075,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
         if (s->current_picture.f->key_frame)
             pkt->flags |= AV_PKT_FLAG_KEY;
         if (s->mb_info)
-            av_packet_shrink_side_data(pkt, AV_PKT_DATA_H263_MB_INFO, s->mb_info_size);
+            av_packet_shrink_side_data_xij(pkt, AV_PKT_DATA_H263_MB_INFO, s->mb_info_size);
     } else {
         s->frame_bits = 0;
     }
@@ -2906,7 +2906,7 @@ int ff_mpv_reallocate_putbitbuffer(MpegEncContext *s, size_t threshold, size_t s
 
         emms_c();
 
-        av_fast_padded_malloc(&new_buffer, &new_buffer_size,
+        av_fast_padded_malloc_xij(&new_buffer, &new_buffer_size,
                               s->avctx->internal->byte_buffer_size + size_increase);
         if (!new_buffer)
             return AVERROR(ENOMEM);

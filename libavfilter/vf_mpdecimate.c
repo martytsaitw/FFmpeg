@@ -158,7 +158,7 @@ static av_cold int init(AVFilterContext *ctx)
 static av_cold void uninit(AVFilterContext *ctx)
 {
     DecimateContext *decimate = ctx->priv;
-    av_frame_free(&decimate->ref);
+    av_frame_free_xij(&decimate->ref);
 }
 
 static int query_formats(AVFilterContext *ctx)
@@ -204,11 +204,11 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *cur)
     if (decimate->ref && decimate_frame(inlink->dst, cur, decimate->ref)) {
         decimate->drop_count = FFMAX(1, decimate->drop_count+1);
     } else {
-        av_frame_free(&decimate->ref);
+        av_frame_free_xij(&decimate->ref);
         decimate->ref = cur;
         decimate->drop_count = FFMIN(-1, decimate->drop_count-1);
 
-        if ((ret = ff_filter_frame(outlink, av_frame_clone(cur))) < 0)
+        if ((ret = ff_filter_frame(outlink, av_frame_clone_xij(cur))) < 0)
             return ret;
     }
 
@@ -219,7 +219,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *cur)
            decimate->drop_count);
 
     if (decimate->drop_count > 0)
-        av_frame_free(&cur);
+        av_frame_free_xij(&cur);
 
     return 0;
 }

@@ -140,7 +140,7 @@ static AVFrame *get_best_frame(AVFilterContext *ctx)
     for (i = 0; i < nb_frames; i++) {
         memset(s->frames[i].histogram, 0, sizeof(s->frames[i].histogram));
         if (i != best_frame_idx)
-            av_frame_free(&s->frames[i].buf);
+            av_frame_free_xij(&s->frames[i].buf);
     }
     s->n = 0;
 
@@ -302,7 +302,7 @@ static av_cold void uninit(AVFilterContext *ctx)
     }
 
     for (i = 0; i < s->n_frames && s->frames[i].buf; i++)
-        av_frame_free(&s->frames[i].buf);
+        av_frame_free_xij(&s->frames[i].buf);
     av_freep(&s->frames);
 }
 

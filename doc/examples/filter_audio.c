@@ -252,7 +252,7 @@ static int get_input(AVFrame *frame, int frame_num)
     frame->nb_samples     = FRAME_SIZE;
     frame->pts            = frame_num * FRAME_SIZE;
 
-    err = av_frame_get_buffer(frame, 0);
+    err = av_frame_get_buffer_xij(frame, 0);
     if (err < 0)
         return err;
 
@@ -321,7 +321,7 @@ int main(int argc, char *argv[])
         /* Send the frame to the input of the filtergraph. */
         err = av_buffersrc_add_frame(src, frame);
         if (err < 0) {
-            av_frame_unref(frame);
+            av_frame_unref_xij(frame);
             fprintf(stderr, "Error submitting the frame to the filtergraph:");
             goto fail;
         }
@@ -334,7 +334,7 @@ int main(int argc, char *argv[])
                 fprintf(stderr, "Error processing the filtered frame:");
                 goto fail;
             }
-            av_frame_unref(frame);
+            av_frame_unref_xij(frame);
         }
 
         if (err == AVERROR(EAGAIN)) {
@@ -351,7 +351,7 @@ int main(int argc, char *argv[])
     }
 
     avfilter_graph_free(&graph);
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
     av_freep(&md5);
 
     return 0;

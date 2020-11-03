@@ -1662,7 +1662,7 @@ static int do_llnw_auth(RTMPContext *rt, const char *user, const char *nonce)
     av_md5_update(md5, ":", 1);
     av_md5_update(md5, rt->password, strlen(rt->password));
     av_md5_final(md5, hash);
-    ff_data_to_hex(hashstr1, hash, 16, 1);
+    ff_data_to_hex_xij(hashstr1, hash, 16, 1);
     hashstr1[32] = '\0';
 
     av_md5_init(md5);
@@ -1672,7 +1672,7 @@ static int do_llnw_auth(RTMPContext *rt, const char *user, const char *nonce)
     if (!strchr(rt->app, '/'))
         av_md5_update(md5, "/_definst_", strlen("/_definst_"));
     av_md5_final(md5, hash);
-    ff_data_to_hex(hashstr2, hash, 16, 1);
+    ff_data_to_hex_xij(hashstr2, hash, 16, 1);
     hashstr2[32] = '\0';
 
     av_md5_init(md5);
@@ -1689,7 +1689,7 @@ static int do_llnw_auth(RTMPContext *rt, const char *user, const char *nonce)
     av_md5_update(md5, ":", 1);
     av_md5_update(md5, hashstr2, strlen(hashstr2));
     av_md5_final(md5, hash);
-    ff_data_to_hex(hashstr1, hash, 16, 1);
+    ff_data_to_hex_xij(hashstr1, hash, 16, 1);
 
     snprintf(rt->auth_params, sizeof(rt->auth_params),
              "?authmod=%s&user=%s&nonce=%s&cnonce=%s&nc=%s&response=%s",
@@ -2603,7 +2603,7 @@ static int rtmp_open(URLContext *s, const char *uri, int flags, AVDictionary **o
 
     rt->is_input = !(flags & AVIO_FLAG_WRITE);
 
-    av_url_split(proto, sizeof(proto), auth, sizeof(auth),
+    av_url_split_xij(proto, sizeof(proto), auth, sizeof(auth),
                  hostname, sizeof(hostname), &port,
                  path, sizeof(path), s->filename);
 

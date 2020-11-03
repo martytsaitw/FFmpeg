@@ -97,40 +97,40 @@ static int read_header(AVFormatContext *s)
     if (!vst)
         return AVERROR(ENOMEM);
 
-    vst->codecpar->codec_tag = avio_rl32(pb);
+    vst->codecpar->codec_tag = avio_rl32_xij(pb);
     if (vst->codecpar->codec_tag == AV_RL32("SMUS")) {
         do {
             bink->smush_size += SMUSH_BLOCK_SIZE;
-            avio_skip(pb, SMUSH_BLOCK_SIZE - 4);
-            vst->codecpar->codec_tag = avio_rl32(pb);
-        } while (!avio_feof(pb) && (vst->codecpar->codec_tag & 0xFFFFFF) != AV_RL32("BIK"));
-        if (avio_feof(pb)) {
+            avio_skip_xij(pb, SMUSH_BLOCK_SIZE - 4);
+            vst->codecpar->codec_tag = avio_rl32_xij(pb);
+        } while (!avio_feof_xij(pb) && (vst->codecpar->codec_tag & 0xFFFFFF) != AV_RL32("BIK"));
+        if (avio_feof_xij(pb)) {
             av_log(s, AV_LOG_ERROR, "invalid SMUSH header: BIK not found\n");
             return AVERROR_INVALIDDATA;
         }
     }
 
-    bink->file_size = avio_rl32(pb) + 8;
-    vst->duration   = avio_rl32(pb);
+    bink->file_size = avio_rl32_xij(pb) + 8;
+    vst->duration   = avio_rl32_xij(pb);
 
     if (vst->duration > 1000000) {
         av_log(s, AV_LOG_ERROR, "invalid header: more than 1000000 frames\n");
         return AVERROR(EIO);
     }
 
-    if (avio_rl32(pb) > bink->file_size) {
+    if (avio_rl32_xij(pb) > bink->file_size) {
         av_log(s, AV_LOG_ERROR,
                "invalid header: largest frame size greater than file size\n");
         return AVERROR(EIO);
     }
 
-    avio_skip(pb, 4);
+    avio_skip_xij(pb, 4);
 
-    vst->codecpar->width  = avio_rl32(pb);
-    vst->codecpar->height = avio_rl32(pb);
+    vst->codecpar->width  = avio_rl32_xij(pb);
+    vst->codecpar->height = avio_rl32_xij(pb);
 
-    fps_num = avio_rl32(pb);
-    fps_den = avio_rl32(pb);
+    fps_num = avio_rl32_xij(pb);
+    fps_den = avio_rl32_xij(pb);
     if (fps_num == 0 || fps_den == 0) {
         av_log(s, AV_LOG_ERROR,
                "invalid header: invalid fps (%"PRIu32"/%"PRIu32")\n",
@@ -148,10 +148,10 @@ static int read_header(AVFormatContext *s)
         vst->codecpar->codec_id = AV_CODEC_ID_NONE;
     }
 
-    if (ff_get_extradata(s, vst->codecpar, pb, 4) < 0)
+    if (ff_get_extradata_xij(s, vst->codecpar, pb, 4) < 0)
         return AVERROR(ENOMEM);
 
-    bink->num_audio_tracks = avio_rl32(pb);
+    bink->num_audio_tracks = avio_rl32_xij(pb);
 
     if (bink->num_audio_tracks > BINK_MAX_AUDIO_TRACKS) {
         av_log(s, AV_LOG_ERROR,
@@ -166,9 +166,9 @@ static int read_header(AVFormatContext *s)
 
         if ((signature == AV_RL32("BIK") && (revision == 0x6b)) || /* k */
             (signature == AV_RL32("KB2") && (revision == 0x69 || revision == 0x6a || revision == 0x6b))) /* i,j,k */
-            avio_skip(pb, 4); /* unknown new field */
+            avio_skip_xij(pb, 4); /* unknown new field */
 
-        avio_skip(pb, 4 * bink->num_audio_tracks); /* max decoded size */
+        avio_skip_xij(pb, 4 * bink->num_audio_tracks); /* max decoded size */
 
         for (i = 0; i < bink->num_audio_tracks; i++) {
             ast = avformat_new_stream_ijk(s, NULL);
@@ -176,9 +176,9 @@ static int read_header(AVFormatContext *s)
                 return AVERROR(ENOMEM);
             ast->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
             ast->codecpar->codec_tag   = 0;
-            ast->codecpar->sample_rate = avio_rl16(pb);
+            ast->codecpar->sample_rate = avio_rl16_xij(pb);
             avpriv_set_pts_info_ijk(ast, 64, 1, ast->codecpar->sample_rate);
-            flags = avio_rl16(pb);
+            flags = avio_rl16_xij(pb);
             ast->codecpar->codec_id = flags & BINK_AUD_USEDCT ?
                                    AV_CODEC_ID_BINKAUDIO_DCT : AV_CODEC_ID_BINKAUDIO_RDFT;
             if (flags & BINK_AUD_STEREO) {
@@ -188,24 +188,24 @@ static int read_header(AVFormatContext *s)
                 ast->codecpar->channels       = 1;
                 ast->codecpar->channel_layout = AV_CH_LAYOUT_MONO;
             }
-            if (ff_alloc_extradata(ast->codecpar, 4))
+            if (ff_alloc_extradata_xij(ast->codecpar, 4))
                 return AVERROR(ENOMEM);
             AV_WL32(ast->codecpar->extradata, vst->codecpar->codec_tag);
         }
 
         for (i = 0; i < bink->num_audio_tracks; i++)
-            s->streams[i + 1]->id = avio_rl32(pb);
+            s->streams[i + 1]->id = avio_rl32_xij(pb);
     }
 
     /* frame index table */
-    next_pos = avio_rl32(pb);
+    next_pos = avio_rl32_xij(pb);
     for (i = 0; i < vst->duration; i++) {
         pos = next_pos;
         if (i == vst->duration - 1) {
             next_pos = bink->file_size;
             keyframe = 0;
         } else {
-            next_pos = avio_rl32(pb);
+            next_pos = avio_rl32_xij(pb);
             keyframe = pos & 1;
         }
         pos &= ~1;
@@ -215,15 +215,15 @@ static int read_header(AVFormatContext *s)
             av_log(s, AV_LOG_ERROR, "invalid frame index table\n");
             return AVERROR(EIO);
         }
-        if ((ret = av_add_index_entry(vst, pos, i, next_pos - pos, 0,
+        if ((ret = av_add_index_entry_xij(vst, pos, i, next_pos - pos, 0,
                                       keyframe ? AVINDEX_KEYFRAME : 0)) < 0)
             return ret;
     }
 
     if (vst->index_entries)
-        avio_seek(pb, vst->index_entries[0].pos + bink->smush_size, SEEK_SET);
+        avio_seek_xij(pb, vst->index_entries[0].pos + bink->smush_size, SEEK_SET);
     else
-        avio_skip(pb, 4);
+        avio_skip_xij(pb, 4);
 
     bink->current_track = -1;
     return 0;
@@ -242,7 +242,7 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
         if (bink->video_pts >= st->duration)
             return AVERROR_EOF;
 
-        index_entry = av_index_search_timestamp(st, bink->video_pts,
+        index_entry = av_index_search_timestamp_xij(st, bink->video_pts,
                                                 AVSEEK_FLAG_ANY);
         if (index_entry < 0) {
             av_log(s, AV_LOG_ERROR,
@@ -256,7 +256,7 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
     }
 
     while (bink->current_track < bink->num_audio_tracks) {
-        uint32_t audio_size = avio_rl32(pb);
+        uint32_t audio_size = avio_rl32_xij(pb);
         if (audio_size > bink->remain_packet_size - 4) {
             av_log(s, AV_LOG_ERROR,
                    "frame %"PRId64": audio size in header (%"PRIu32") > size of packet left (%"PRIu32")\n",
@@ -267,7 +267,7 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
         bink->current_track++;
         if (audio_size >= 4) {
             /* get one audio packet per track */
-            if ((ret = av_get_packet(pb, pkt, audio_size)) < 0)
+            if ((ret = av_get_packet_xij(pb, pkt, audio_size)) < 0)
                 return ret;
             pkt->stream_index = bink->current_track;
             pkt->pts = bink->audio_pts[bink->current_track - 1];
@@ -279,12 +279,12 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
                     AV_RL32(pkt->data) / (2 * s->streams[bink->current_track]->codecpar->channels);
             return 0;
         } else {
-            avio_skip(pb, audio_size);
+            avio_skip_xij(pb, audio_size);
         }
     }
 
     /* get video packet */
-    if ((ret = av_get_packet(pb, pkt, bink->remain_packet_size)) < 0)
+    if ((ret = av_get_packet_xij(pb, pkt, bink->remain_packet_size)) < 0)
         return ret;
     pkt->stream_index = 0;
     pkt->pts = bink->video_pts++;
@@ -305,7 +305,7 @@ static int read_seek(AVFormatContext *s, int stream_index, int64_t timestamp, in
         return -1;
 
     /* seek to the first frame */
-    if (avio_seek(s->pb, vst->index_entries[0].pos + bink->smush_size, SEEK_SET) < 0)
+    if (avio_seek_xij(s->pb, vst->index_entries[0].pos + bink->smush_size, SEEK_SET) < 0)
         return -1;
 
     bink->video_pts = 0;

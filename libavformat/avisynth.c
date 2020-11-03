@@ -774,15 +774,15 @@ static av_cold int avisynth_read_header(AVFormatContext *s)
     int ret;
 
     // Calling library must implement a lock for thread-safe opens.
-    if (ret = ff_lock_avformat())
+    if (ret = ff_lock_avformat_xij())
         return ret;
 
     if (ret = avisynth_open_file(s)) {
-        ff_unlock_avformat();
+        ff_unlock_avformat_xij();
         return ret;
     }
 
-    ff_unlock_avformat();
+    ff_unlock_avformat_xij();
     return 0;
 }
 
@@ -818,11 +818,11 @@ static int avisynth_read_packet(AVFormatContext *s, AVPacket *pkt)
 
 static av_cold int avisynth_read_close(AVFormatContext *s)
 {
-    if (ff_lock_avformat())
+    if (ff_lock_avformat_xij())
         return AVERROR_UNKNOWN;
 
     avisynth_context_destroy(s->priv_data);
-    ff_unlock_avformat();
+    ff_unlock_avformat_xij();
     return 0;
 }
 

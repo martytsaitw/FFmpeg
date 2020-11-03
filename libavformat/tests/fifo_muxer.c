@@ -86,7 +86,7 @@ static int fifo_basic_test(AVFormatContext *oc, AVDictionary **opts,
     av_init_packet_ijk(&pkt);
 
 
-    ret = avformat_write_header(oc, opts);
+    ret = avformat_write_header_xij(oc, opts);
     if (ret) {
         fprintf(stderr, "Unexpected write_header failure: %s\n",
                 av_err2str(ret));
@@ -100,7 +100,7 @@ static int fifo_basic_test(AVFormatContext *oc, AVDictionary **opts,
                     av_err2str(ret));
             goto write_trailer_and_fail;
         }
-        ret = av_write_frame(oc, &pkt);
+        ret = av_write_frame_xij(oc, &pkt);
         av_packet_unref_ijk(&pkt);
         if (ret < 0) {
             fprintf(stderr, "Unexpected write_frame error: %s\n",
@@ -109,14 +109,14 @@ static int fifo_basic_test(AVFormatContext *oc, AVDictionary **opts,
         }
     }
 
-    ret = av_write_frame(oc, NULL);
+    ret = av_write_frame_xij(oc, NULL);
     if (ret < 0) {
         fprintf(stderr, "Unexpected write_frame error during flushing: %s\n",
                 av_err2str(ret));
         goto write_trailer_and_fail;
     }
 
-    ret = av_write_trailer(oc);
+    ret = av_write_trailer_xij(oc);
     if (ret < 0) {
         fprintf(stderr, "Unexpected write_trailer error during flushing: %s\n",
                 av_err2str(ret));
@@ -125,7 +125,7 @@ static int fifo_basic_test(AVFormatContext *oc, AVDictionary **opts,
 
     return ret;
 write_trailer_and_fail:
-    av_write_trailer(oc);
+    av_write_trailer_xij(oc);
 fail:
     return ret;
 }
@@ -139,7 +139,7 @@ static int fifo_overflow_drop_test(AVFormatContext *oc, AVDictionary **opts,
 
     av_init_packet_ijk(&pkt);
 
-    ret = avformat_write_header(oc, opts);
+    ret = avformat_write_header_xij(oc, opts);
     if (ret) {
         fprintf(stderr, "Unexpected write_header failure: %s\n",
                 av_err2str(ret));
@@ -154,7 +154,7 @@ static int fifo_overflow_drop_test(AVFormatContext *oc, AVDictionary **opts,
                     av_err2str(ret));
             goto fail;
         }
-        ret = av_write_frame(oc, &pkt);
+        ret = av_write_frame_xij(oc, &pkt);
         av_packet_unref_ijk(&pkt);
         if (ret < 0) {
             break;
@@ -174,13 +174,13 @@ static int fifo_overflow_drop_test(AVFormatContext *oc, AVDictionary **opts,
         goto fail;
     }
 
-    ret = av_write_trailer(oc);
+    ret = av_write_trailer_xij(oc);
     if (ret < 0)
         fprintf(stderr, "Unexpected write_trailer error: %s\n", av_err2str(ret));
 
     return ret;
 fail:
-    av_write_trailer(oc);
+    av_write_trailer_xij(oc);
     return ret;
 }
 

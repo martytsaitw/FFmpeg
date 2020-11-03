@@ -104,12 +104,12 @@ static int wc3_read_header(AVFormatContext *s)
     wc3->vpkt.data = NULL; wc3->vpkt.size = 0;
 
     /* skip the first 3 32-bit numbers */
-    avio_skip(pb, 12);
+    avio_skip_xij(pb, 12);
 
     /* traverse through the chunks and load the header information before
      * the first BRCH tag */
-    fourcc_tag = avio_rl32(pb);
-    size = (avio_rb32(pb) + 1) & (~1);
+    fourcc_tag = avio_rl32_xij(pb);
+    size = (avio_rb32_xij(pb) + 1) & (~1);
 
     do {
         switch (fourcc_tag) {
@@ -117,12 +117,12 @@ static int wc3_read_header(AVFormatContext *s)
         case SOND_TAG:
         case INDX_TAG:
             /* SOND unknown, INDX unnecessary; ignore both */
-            avio_skip(pb, size);
+            avio_skip_xij(pb, size);
             break;
 
         case PC__TAG:
             /* number of palettes, unneeded */
-            avio_skip(pb, 12);
+            avio_skip_xij(pb, 12);
             break;
 
         case BNAM_TAG:
@@ -130,7 +130,7 @@ static int wc3_read_header(AVFormatContext *s)
             buffer = av_malloc(size+1);
             if (!buffer)
                 return AVERROR(ENOMEM);
-            if ((ret = avio_read(pb, buffer, size)) != size)
+            if ((ret = avio_read_xij(pb, buffer, size)) != size)
                 return AVERROR(EIO);
             buffer[size] = 0;
             av_dict_set(&s->metadata, "title", buffer,
@@ -139,14 +139,14 @@ static int wc3_read_header(AVFormatContext *s)
 
         case SIZE_TAG:
             /* video resolution override */
-            wc3->width  = avio_rl32(pb);
-            wc3->height = avio_rl32(pb);
+            wc3->width  = avio_rl32_xij(pb);
+            wc3->height = avio_rl32_xij(pb);
             break;
 
         case PALT_TAG:
             /* one of several palettes */
-            avio_seek(pb, -8, SEEK_CUR);
-            av_append_packet(pb, &wc3->vpkt, 8 + PALETTE_SIZE);
+            avio_seek_xij(pb, -8, SEEK_CUR);
+            av_append_packet_xij(pb, &wc3->vpkt, 8 + PALETTE_SIZE);
             break;
 
         default:
@@ -155,10 +155,10 @@ static int wc3_read_header(AVFormatContext *s)
             return AVERROR_INVALIDDATA;
         }
 
-        fourcc_tag = avio_rl32(pb);
+        fourcc_tag = avio_rl32_xij(pb);
         /* chunk sizes are 16-bit aligned */
-        size = (avio_rb32(pb) + 1) & (~1);
-        if (avio_feof(pb))
+        size = (avio_rb32_xij(pb) + 1) & (~1);
+        if (avio_feof_xij(pb))
             return AVERROR(EIO);
 
     } while (fourcc_tag != BRCH_TAG);
@@ -207,10 +207,10 @@ static int wc3_read_packet(AVFormatContext *s,
 
     while (!packet_read) {
 
-        fourcc_tag = avio_rl32(pb);
+        fourcc_tag = avio_rl32_xij(pb);
         /* chunk sizes are 16-bit aligned */
-        size = (avio_rb32(pb) + 1) & (~1);
-        if (avio_feof(pb))
+        size = (avio_rb32_xij(pb) + 1) & (~1);
+        if (avio_feof_xij(pb))
             return AVERROR(EIO);
 
         switch (fourcc_tag) {
@@ -221,14 +221,14 @@ static int wc3_read_packet(AVFormatContext *s,
 
         case SHOT_TAG:
             /* load up new palette */
-            avio_seek(pb, -8, SEEK_CUR);
-            av_append_packet(pb, &wc3->vpkt, 8 + 4);
+            avio_seek_xij(pb, -8, SEEK_CUR);
+            av_append_packet_xij(pb, &wc3->vpkt, 8 + 4);
             break;
 
         case VGA__TAG:
             /* send out video chunk */
-            avio_seek(pb, -8, SEEK_CUR);
-            ret= av_append_packet(pb, &wc3->vpkt, 8 + size);
+            avio_seek_xij(pb, -8, SEEK_CUR);
+            ret= av_append_packet_xij(pb, &wc3->vpkt, 8 + size);
             // ignore error if we have some data
             if (wc3->vpkt.size > 0)
                 ret = 0;
@@ -241,7 +241,7 @@ static int wc3_read_packet(AVFormatContext *s,
 
         case TEXT_TAG:
             /* subtitle chunk */
-            if ((unsigned)size > sizeof(text) || (ret = avio_read(pb, text, size)) != size)
+            if ((unsigned)size > sizeof(text) || (ret = avio_read_xij(pb, text, size)) != size)
                 ret = AVERROR(EIO);
             else {
                 int i = 0;
@@ -262,7 +262,7 @@ static int wc3_read_packet(AVFormatContext *s,
 
         case AUDI_TAG:
             /* send out audio chunk */
-            ret= av_get_packet(pb, pkt, size);
+            ret= av_get_packet_xij(pb, pkt, size);
             pkt->stream_index = wc3->audio_stream_index;
             pkt->pts = wc3->pts;
 

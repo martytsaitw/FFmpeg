@@ -68,7 +68,7 @@ static int process_frame(FFFrameSync *fs)
                 if (s->is_audio && s->last_pts[j] == in[j]->pts &&
                     ctx->outputs[i]->frame_count_in > 0)
                     continue;
-                out = av_frame_clone(in[j]);
+                out = av_frame_clone_xij(in[j]);
                 if (!out)
                     return AVERROR(ENOMEM);
 

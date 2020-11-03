@@ -1205,12 +1205,12 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame, AVPac
     int bits_count = pkt->size << 3;
 
     if (c->version > 'b') {
-        if ((ret = ff_get_buffer(avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
+        if ((ret = ff_get_buffer_xij(avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
             return ret;
     } else {
-        if ((ret = ff_reget_buffer(avctx, c->last)) < 0)
+        if ((ret = ff_reget_buffer_xij(avctx, c->last)) < 0)
             return ret;
-        if ((ret = av_frame_ref(frame, c->last)) < 0)
+        if ((ret = av_frame_ref_xij(frame, c->last)) < 0)
             return ret;
     }
 
@@ -1243,8 +1243,8 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame, AVPac
     emms_c();
 
     if (c->version > 'b') {
-        av_frame_unref(c->last);
-        if ((ret = av_frame_ref(c->last, frame)) < 0)
+        av_frame_unref_xij(c->last);
+        if ((ret = av_frame_ref_xij(c->last, frame)) < 0)
             return ret;
     }
 
@@ -1346,7 +1346,7 @@ static av_cold int decode_end(AVCodecContext *avctx)
 {
     BinkContext * const c = avctx->priv_data;
 
-    av_frame_free(&c->last);
+    av_frame_free_xij(&c->last);
 
     free_bundles(c);
     return 0;

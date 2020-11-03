@@ -83,17 +83,17 @@ static int read_header(AVFormatContext *s)
     AVStream *st;
     int i, ret;
 
-    avio_skip(pb, 4); /* magic number */
-    if (avio_rl16(pb) != MAX_PAGES) {
+    avio_skip_xij(pb, 4); /* magic number */
+    if (avio_rl16_xij(pb) != MAX_PAGES) {
         avpriv_request_sample(s, "max_pages != " AV_STRINGIFY(MAX_PAGES));
         return AVERROR_PATCHWELCOME;
     }
 
-    anm->nb_pages   = avio_rl16(pb);
-    anm->nb_records = avio_rl32(pb);
-    avio_skip(pb, 2); /* max records per page */
-    anm->page_table_offset = avio_rl16(pb);
-    if (avio_rl32(pb) != ANIM_TAG)
+    anm->nb_pages   = avio_rl16_xij(pb);
+    anm->nb_records = avio_rl32_xij(pb);
+    avio_skip_xij(pb, 2); /* max records per page */
+    anm->page_table_offset = avio_rl16_xij(pb);
+    if (avio_rl32_xij(pb) != ANIM_TAG)
         return AVERROR_INVALIDDATA;
 
     /* video stream */
@@ -103,33 +103,33 @@ static int read_header(AVFormatContext *s)
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id   = AV_CODEC_ID_ANM;
     st->codecpar->codec_tag  = 0; /* no fourcc */
-    st->codecpar->width      = avio_rl16(pb);
-    st->codecpar->height     = avio_rl16(pb);
-    if (avio_r8(pb) != 0)
+    st->codecpar->width      = avio_rl16_xij(pb);
+    st->codecpar->height     = avio_rl16_xij(pb);
+    if (avio_r8_xij(pb) != 0)
         goto invalid;
-    avio_skip(pb, 1); /* frame rate multiplier info */
+    avio_skip_xij(pb, 1); /* frame rate multiplier info */
 
     /* ignore last delta record (used for looping) */
-    if (avio_r8(pb))  /* has_last_delta */
+    if (avio_r8_xij(pb))  /* has_last_delta */
         anm->nb_records = FFMAX(anm->nb_records - 1, 0);
 
-    avio_skip(pb, 1); /* last_delta_valid */
+    avio_skip_xij(pb, 1); /* last_delta_valid */
 
-    if (avio_r8(pb) != 0)
+    if (avio_r8_xij(pb) != 0)
         goto invalid;
 
-    if (avio_r8(pb) != 1)
+    if (avio_r8_xij(pb) != 1)
         goto invalid;
 
-    avio_skip(pb, 1); /* other recs per frame */
+    avio_skip_xij(pb, 1); /* other recs per frame */
 
-    if (avio_r8(pb) != 1)
+    if (avio_r8_xij(pb) != 1)
         goto invalid;
 
-    avio_skip(pb, 32); /* record_types */
-    st->nb_frames = avio_rl32(pb);
-    avpriv_set_pts_info_ijk(st, 64, 1, avio_rl16(pb));
-    avio_skip(pb, 58);
+    avio_skip_xij(pb, 32); /* record_types */
+    st->nb_frames = avio_rl32_xij(pb);
+    avpriv_set_pts_info_ijk(st, 64, 1, avio_rl16_xij(pb));
+    avio_skip_xij(pb, 58);
 
     /* color cycling and palette data */
     st->codecpar->extradata_size = 16*8 + 4*256;
@@ -137,20 +137,20 @@ static int read_header(AVFormatContext *s)
     if (!st->codecpar->extradata) {
         return AVERROR(ENOMEM);
     }
-    ret = avio_read(pb, st->codecpar->extradata, st->codecpar->extradata_size);
+    ret = avio_read_xij(pb, st->codecpar->extradata, st->codecpar->extradata_size);
     if (ret < 0)
         return ret;
 
     /* read page table */
-    ret = avio_seek(pb, anm->page_table_offset, SEEK_SET);
+    ret = avio_seek_xij(pb, anm->page_table_offset, SEEK_SET);
     if (ret < 0)
         return ret;
 
     for (i = 0; i < MAX_PAGES; i++) {
         Page *p = &anm->pt[i];
-        p->base_record = avio_rl16(pb);
-        p->nb_records  = avio_rl16(pb);
-        p->size        = avio_rl16(pb);
+        p->base_record = avio_rl16_xij(pb);
+        p->nb_records  = avio_rl16_xij(pb);
+        p->size        = avio_rl16_xij(pb);
     }
 
     /* find page of first frame */
@@ -175,7 +175,7 @@ static int read_packet(AVFormatContext *s,
     Page *p;
     int tmp, record_size;
 
-    if (avio_feof(s->pb))
+    if (avio_feof_xij(s->pb))
         return AVERROR(EIO);
 
     if (anm->page < 0)
@@ -186,8 +186,8 @@ repeat:
 
     /* parse page header */
     if (anm->record < 0) {
-        avio_seek(pb, anm->page_table_offset + MAX_PAGES*6 + (anm->page<<16), SEEK_SET);
-        avio_skip(pb, 8 + 2*p->nb_records);
+        avio_seek_xij(pb, anm->page_table_offset + MAX_PAGES*6 + (anm->page<<16), SEEK_SET);
+        avio_skip_xij(pb, 8 + 2*p->nb_records);
         anm->record = 0;
     }
 
@@ -203,13 +203,13 @@ repeat:
 
     /* fetch record size */
     tmp = avio_tell(pb);
-    avio_seek(pb, anm->page_table_offset + MAX_PAGES*6 + (anm->page<<16) +
+    avio_seek_xij(pb, anm->page_table_offset + MAX_PAGES*6 + (anm->page<<16) +
               8 + anm->record * 2, SEEK_SET);
-    record_size = avio_rl16(pb);
-    avio_seek(pb, tmp, SEEK_SET);
+    record_size = avio_rl16_xij(pb);
+    avio_seek_xij(pb, tmp, SEEK_SET);
 
     /* fetch record */
-    pkt->size = av_get_packet(s->pb, pkt, record_size);
+    pkt->size = av_get_packet_xij(s->pb, pkt, record_size);
     if (pkt->size < 0)
         return pkt->size;
     if (p->base_record + anm->record == 0)

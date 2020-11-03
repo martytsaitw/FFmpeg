@@ -102,7 +102,7 @@ static int rtp_write_header(AVFormatContext *s1)
     }
     st = s1->streams[0];
     if (!is_supported(st->codecpar->codec_id)) {
-        av_log(s1, AV_LOG_ERROR, "Unsupported codec %s\n", avcodec_get_name(st->codecpar->codec_id));
+        av_log(s1, AV_LOG_ERROR, "Unsupported codec %s\n", avcodec_get_name_xij(st->codecpar->codec_id));
 
         return -1;
     }
@@ -124,7 +124,7 @@ static int rtp_write_header(AVFormatContext *s1)
     if (!s->ssrc)
         s->ssrc = av_get_random_seed();
     s->first_packet = 1;
-    s->first_rtcp_ntp_time = ff_ntp_time();
+    s->first_rtcp_ntp_time = ff_ntp_time_xij();
     if (s1->start_time_realtime != 0  &&  s1->start_time_realtime != AV_NOPTS_VALUE)
         /* Round the NTP time to whole milliseconds. */
         s->first_rtcp_ntp_time = (s1->start_time_realtime / 1000) * 1000 +
@@ -292,39 +292,39 @@ static void rtcp_send_sr(AVFormatContext *s1, int64_t ntp_time, int bye)
     s->last_rtcp_ntp_time = ntp_time;
     rtp_ts = av_rescale_q(ntp_time - s->first_rtcp_ntp_time, (AVRational){1, 1000000},
                           s1->streams[0]->time_base) + s->base_timestamp;
-    avio_w8(s1->pb, RTP_VERSION << 6);
-    avio_w8(s1->pb, RTCP_SR);
-    avio_wb16(s1->pb, 6); /* length in words - 1 */
-    avio_wb32(s1->pb, s->ssrc);
-    avio_wb32(s1->pb, ntp_time / 1000000);
-    avio_wb32(s1->pb, ((ntp_time % 1000000) << 32) / 1000000);
-    avio_wb32(s1->pb, rtp_ts);
-    avio_wb32(s1->pb, s->packet_count);
-    avio_wb32(s1->pb, s->octet_count);
+    avio_w8_xij(s1->pb, RTP_VERSION << 6);
+    avio_w8_xij(s1->pb, RTCP_SR);
+    avio_wb16_xij(s1->pb, 6); /* length in words - 1 */
+    avio_wb32_xij(s1->pb, s->ssrc);
+    avio_wb32_xij(s1->pb, ntp_time / 1000000);
+    avio_wb32_xij(s1->pb, ((ntp_time % 1000000) << 32) / 1000000);
+    avio_wb32_xij(s1->pb, rtp_ts);
+    avio_wb32_xij(s1->pb, s->packet_count);
+    avio_wb32_xij(s1->pb, s->octet_count);
 
     if (s->cname) {
         int len = FFMIN(strlen(s->cname), 255);
-        avio_w8(s1->pb, (RTP_VERSION << 6) + 1);
-        avio_w8(s1->pb, RTCP_SDES);
-        avio_wb16(s1->pb, (7 + len + 3) / 4); /* length in words - 1 */
+        avio_w8_xij(s1->pb, (RTP_VERSION << 6) + 1);
+        avio_w8_xij(s1->pb, RTCP_SDES);
+        avio_wb16_xij(s1->pb, (7 + len + 3) / 4); /* length in words - 1 */
 
-        avio_wb32(s1->pb, s->ssrc);
-        avio_w8(s1->pb, 0x01); /* CNAME */
-        avio_w8(s1->pb, len);
-        avio_write(s1->pb, s->cname, len);
-        avio_w8(s1->pb, 0); /* END */
+        avio_wb32_xij(s1->pb, s->ssrc);
+        avio_w8_xij(s1->pb, 0x01); /* CNAME */
+        avio_w8_xij(s1->pb, len);
+        avio_write_xij(s1->pb, s->cname, len);
+        avio_w8_xij(s1->pb, 0); /* END */
         for (len = (7 + len) % 4; len % 4; len++)
-            avio_w8(s1->pb, 0);
+            avio_w8_xij(s1->pb, 0);
     }
 
     if (bye) {
-        avio_w8(s1->pb, (RTP_VERSION << 6) | 1);
-        avio_w8(s1->pb, RTCP_BYE);
-        avio_wb16(s1->pb, 1); /* length in words - 1 */
-        avio_wb32(s1->pb, s->ssrc);
+        avio_w8_xij(s1->pb, (RTP_VERSION << 6) | 1);
+        avio_w8_xij(s1->pb, RTCP_BYE);
+        avio_wb16_xij(s1->pb, 1); /* length in words - 1 */
+        avio_wb32_xij(s1->pb, s->ssrc);
     }
 
-    avio_flush(s1->pb);
+    avio_flush_xij(s1->pb);
 }
 
 /* send an rtp packet. sequence number is incremented, but the caller
@@ -336,14 +336,14 @@ void ff_rtp_send_data(AVFormatContext *s1, const uint8_t *buf1, int len, int m)
     av_log(s1, AV_LOG_TRACE, "rtp_send_data size=%d\n", len);
 
     /* build the RTP header */
-    avio_w8(s1->pb, RTP_VERSION << 6);
-    avio_w8(s1->pb, (s->payload_type & 0x7f) | ((m & 0x01) << 7));
-    avio_wb16(s1->pb, s->seq);
-    avio_wb32(s1->pb, s->timestamp);
-    avio_wb32(s1->pb, s->ssrc);
+    avio_w8_xij(s1->pb, RTP_VERSION << 6);
+    avio_w8_xij(s1->pb, (s->payload_type & 0x7f) | ((m & 0x01) << 7));
+    avio_wb16_xij(s1->pb, s->seq);
+    avio_wb32_xij(s1->pb, s->timestamp);
+    avio_wb32_xij(s1->pb, s->ssrc);
 
-    avio_write(s1->pb, buf1, len);
-    avio_flush(s1->pb);
+    avio_write_xij(s1->pb, buf1, len);
+    avio_flush_xij(s1->pb);
 
     s->seq = (s->seq + 1) & 0xffff;
     s->octet_count += len;
@@ -526,9 +526,9 @@ static int rtp_write_packet(AVFormatContext *s1, AVPacket *pkt)
     rtcp_bytes = ((s->octet_count - s->last_octet_count) * RTCP_TX_RATIO_NUM) /
         RTCP_TX_RATIO_DEN;
     if ((s->first_packet || ((rtcp_bytes >= RTCP_SR_SIZE) &&
-                            (ff_ntp_time() - s->last_rtcp_ntp_time > 5000000))) &&
+                            (ff_ntp_time_xij() - s->last_rtcp_ntp_time > 5000000))) &&
         !(s->flags & FF_RTP_FLAG_SKIP_RTCP)) {
-        rtcp_send_sr(s1, ff_ntp_time(), 0);
+        rtcp_send_sr(s1, ff_ntp_time_xij(), 0);
         s->last_octet_count = s->octet_count;
         s->first_packet = 0;
     }
@@ -591,7 +591,7 @@ static int rtp_write_packet(AVFormatContext *s1, AVPacket *pkt)
         if (s->flags & FF_RTP_FLAG_RFC2190) {
             int mb_info_size = 0;
             const uint8_t *mb_info =
-                av_packet_get_side_data(pkt, AV_PKT_DATA_H263_MB_INFO,
+                av_packet_get_side_data_xij(pkt, AV_PKT_DATA_H263_MB_INFO,
                                         &mb_info_size);
             ff_rtp_send_h263_rfc2190(s1, pkt->data, size, mb_info, mb_info_size);
             break;
@@ -642,7 +642,7 @@ static int rtp_write_trailer(AVFormatContext *s1)
     /* If the caller closes and recreates ->pb, this might actually
      * be NULL here even if it was successfully allocated at the start. */
     if (s1->pb && (s->flags & FF_RTP_FLAG_SEND_BYE))
-        rtcp_send_sr(s1, ff_ntp_time(), 1);
+        rtcp_send_sr(s1, ff_ntp_time_xij(), 1);
     av_freep(&s->buf);
 
     return 0;

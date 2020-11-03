@@ -241,7 +241,7 @@ static void flush(SilenceRemoveContext *s,
         *ret = ff_filter_frame(outlink, out);
         *nb_samples_written = 0;
     } else {
-        av_frame_free(&out);
+        av_frame_free_xij(&out);
     }
 }
 
@@ -307,7 +307,7 @@ silence_trim_flush:
 
         out = ff_get_audio_buffer(inlink, nbs / inlink->channels);
         if (!out) {
-            av_frame_free(&in);
+            av_frame_free_xij(&in);
             return AVERROR(ENOMEM);
         }
 
@@ -339,7 +339,7 @@ silence_copy:
 
         out = ff_get_audio_buffer(inlink, nbs);
         if (!out) {
-            av_frame_free(&in);
+            av_frame_free_xij(&in);
             return AVERROR(ENOMEM);
         }
         obuf = (double *)out->data[0];
@@ -421,7 +421,7 @@ silence_copy_flush:
 
         out = ff_get_audio_buffer(inlink, nbs / inlink->channels);
         if (!out) {
-            av_frame_free(&in);
+            av_frame_free_xij(&in);
             return AVERROR(ENOMEM);
         }
 
@@ -448,7 +448,7 @@ silence_stop:
         break;
     }
 
-    av_frame_free(&in);
+    av_frame_free_xij(&in);
 
     return ret;
 }

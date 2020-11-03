@@ -65,7 +65,7 @@ static av_cold int ulti_decode_init(AVCodecContext *avctx)
 static av_cold int ulti_decode_end(AVCodecContext *avctx){
     UltimotionDecodeContext *s = avctx->priv_data;
 
-    av_frame_free(&s->frame);
+    av_frame_free_xij(&s->frame);
 
     return 0;
 }
@@ -229,7 +229,7 @@ static int ulti_decode_frame(AVCodecContext *avctx,
     int skip;
     int tmp;
 
-    if ((ret = ff_reget_buffer(avctx, s->frame)) < 0)
+    if ((ret = ff_reget_buffer_xij(avctx, s->frame)) < 0)
         return ret;
 
     bytestream2_init(&s->gb, buf, buf_size);
@@ -406,7 +406,7 @@ static int ulti_decode_frame(AVCodecContext *avctx,
     }
 
     *got_frame = 1;
-    if ((ret = av_frame_ref(data, s->frame)) < 0)
+    if ((ret = av_frame_ref_xij(data, s->frame)) < 0)
         return ret;
 
     return buf_size;

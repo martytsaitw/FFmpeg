@@ -528,7 +528,7 @@ int avresample_read(AVAudioResampleContext *avr, uint8_t **output, int nb_sample
  * avresample_get_out_samples().
  *
  * If the output AVFrame does not have the data pointers allocated the nb_samples
- * field will be set using avresample_get_out_samples() and av_frame_get_buffer()
+ * field will be set using avresample_get_out_samples() and av_frame_get_buffer_xij()
  * is called to allocate the frame.
  *
  * The output AVFrame can be NULL or have fewer allocated samples than required.

@@ -103,6 +103,6 @@
 #define FUNC2(a, b, c)  FUNC3(a, b, c)
 #define FUNC(a)  FUNC2(a, BIT_DEPTH,)
 #define FUNCC(a) FUNC2(a, BIT_DEPTH, _c)
-#define FUNC4(a, b, c)  a ## _int ## b ## _ ## c ## bit
+#define FUNC4(a, b, c)  a ## _int ## b ## _ ## c ## bit ##_xij
 #define FUNC5(a, b, c)  FUNC4(a, b, c)
 #define FUNC6(a)  FUNC5(a, IN_IDCT_DEPTH, BIT_DEPTH)

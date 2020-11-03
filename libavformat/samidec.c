@@ -101,7 +101,7 @@ static int sami_read_header(AVFormatContext *s)
         av_bprint_clear(&buf);
     }
 
-    res = ff_bprint_to_codecpar_extradata(st->codecpar, &hdr_buf);
+    res = ff_bprint_to_codecpar_extradata_xij(st->codecpar, &hdr_buf);
     if (res < 0)
         goto end;
 

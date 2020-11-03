@@ -151,7 +151,7 @@ fail:
 
 int main(void)
 {
-    avformat_network_init();
+    avformat_network_init_xij();
     if (test_random_shared_secret() < 0)
         return 1;
     if (test_ref_data() < 0)

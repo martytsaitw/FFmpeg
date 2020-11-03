@@ -89,8 +89,8 @@
 #define FF_MEMORY_POISON 0x2a
 
 #define MAKE_ACCESSORS(str, name, type, field) \
-    type av_##name##_get_##field(const str *s) { return s->field; } \
-    void av_##name##_set_##field(str *s, type v) { s->field = v; }
+    type av_##name##_get_##field##_xij(const str *s) { return s->field; } \
+    void av_##name##_set_##field##_xij(str *s, type v) { s->field = v; }
 
 // Some broken preprocessors need a second expansion
 // to be forced to tokenize __VA_ARGS__

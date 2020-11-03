@@ -63,41 +63,41 @@ static int gif_image_write_header(AVIOContext *pb, AVStream *st,
             aspect = 0;
     }
 
-    avio_write(pb, "GIF", 3);
-    avio_write(pb, "89a", 3);
-    avio_wl16(pb, st->codecpar->width);
-    avio_wl16(pb, st->codecpar->height);
+    avio_write_xij(pb, "GIF", 3);
+    avio_write_xij(pb, "89a", 3);
+    avio_wl16_xij(pb, st->codecpar->width);
+    avio_wl16_xij(pb, st->codecpar->height);
 
     if (palette) {
         const int bcid = get_palette_transparency_index(palette);
 
-        avio_w8(pb, 0xf7); /* flags: global clut, 256 entries */
-        avio_w8(pb, bcid < 0 ? DEFAULT_TRANSPARENCY_INDEX : bcid); /* background color index */
-        avio_w8(pb, aspect);
+        avio_w8_xij(pb, 0xf7); /* flags: global clut, 256 entries */
+        avio_w8_xij(pb, bcid < 0 ? DEFAULT_TRANSPARENCY_INDEX : bcid); /* background color index */
+        avio_w8_xij(pb, aspect);
         for (i = 0; i < 256; i++) {
             const uint32_t v = palette[i] & 0xffffff;
-            avio_wb24(pb, v);
+            avio_wb24_xij(pb, v);
         }
     } else {
-        avio_w8(pb, 0); /* flags */
-        avio_w8(pb, 0); /* background color index */
-        avio_w8(pb, aspect);
+        avio_w8_xij(pb, 0); /* flags */
+        avio_w8_xij(pb, 0); /* background color index */
+        avio_w8_xij(pb, aspect);
     }
 
 
     if (loop_count >= 0 ) {
         /* "NETSCAPE EXTENSION" for looped animation GIF */
-        avio_w8(pb, 0x21); /* GIF Extension code */
-        avio_w8(pb, 0xff); /* Application Extension Label */
-        avio_w8(pb, 0x0b); /* Length of Application Block */
-        avio_write(pb, "NETSCAPE2.0", sizeof("NETSCAPE2.0") - 1);
-        avio_w8(pb, 0x03); /* Length of Data Sub-Block */
-        avio_w8(pb, 0x01);
-        avio_wl16(pb, (uint16_t)loop_count);
-        avio_w8(pb, 0x00); /* Data Sub-block Terminator */
+        avio_w8_xij(pb, 0x21); /* GIF Extension code */
+        avio_w8_xij(pb, 0xff); /* Application Extension Label */
+        avio_w8_xij(pb, 0x0b); /* Length of Application Block */
+        avio_write_xij(pb, "NETSCAPE2.0", sizeof("NETSCAPE2.0") - 1);
+        avio_w8_xij(pb, 0x03); /* Length of Data Sub-Block */
+        avio_w8_xij(pb, 0x01);
+        avio_wl16_xij(pb, (uint16_t)loop_count);
+        avio_w8_xij(pb, 0x00); /* Data Sub-block Terminator */
     }
 
-    avio_flush(pb);
+    avio_flush_xij(pb);
     return 0;
 }
 
@@ -150,7 +150,7 @@ static int flush_packet(AVFormatContext *s, AVPacket *new)
 
     /* Mark one colour as transparent if the input palette contains at least
      * one colour that is more than 50% transparent. */
-    palette = (uint32_t*)av_packet_get_side_data(pkt, AV_PKT_DATA_PALETTE, &size);
+    palette = (uint32_t*)av_packet_get_side_data_xij(pkt, AV_PKT_DATA_PALETTE, &size);
     if (palette && size != AVPALETTE_SIZE) {
         av_log(s, AV_LOG_ERROR, "Invalid palette extradata\n");
         return AVERROR_INVALIDDATA;
@@ -163,15 +163,15 @@ static int flush_packet(AVFormatContext *s, AVPacket *new)
         gif->duration = gif->last_delay;
 
     /* graphic control extension block */
-    avio_w8(pb, 0x21);
-    avio_w8(pb, 0xf9);
-    avio_w8(pb, 0x04); /* block size */
-    avio_w8(pb, 1<<2 | (bcid >= 0));
-    avio_wl16(pb, gif->duration);
-    avio_w8(pb, bcid < 0 ? DEFAULT_TRANSPARENCY_INDEX : bcid);
-    avio_w8(pb, 0x00);
+    avio_w8_xij(pb, 0x21);
+    avio_w8_xij(pb, 0xf9);
+    avio_w8_xij(pb, 0x04); /* block size */
+    avio_w8_xij(pb, 1<<2 | (bcid >= 0));
+    avio_wl16_xij(pb, gif->duration);
+    avio_w8_xij(pb, bcid < 0 ? DEFAULT_TRANSPARENCY_INDEX : bcid);
+    avio_w8_xij(pb, 0x00);
 
-    avio_write(pb, pkt->data, pkt->size);
+    avio_write_xij(pb, pkt->data, pkt->size);
 
     av_packet_unref_ijk(gif->prev_pkt);
     if (new)
@@ -193,7 +193,7 @@ static int gif_write_packet(AVFormatContext *s, AVPacket *pkt)
         /* Write the first palette as global palette */
         if (video_st->codecpar->format == AV_PIX_FMT_PAL8) {
             int size;
-            void *palette = av_packet_get_side_data(pkt, AV_PKT_DATA_PALETTE, &size);
+            void *palette = av_packet_get_side_data_xij(pkt, AV_PKT_DATA_PALETTE, &size);
 
             if (!palette) {
                 av_log(s, AV_LOG_ERROR, "PAL8 packet is missing palette in extradata\n");
@@ -218,7 +218,7 @@ static int gif_write_trailer(AVFormatContext *s)
 
     flush_packet(s, NULL);
     av_freep(&gif->prev_pkt);
-    avio_w8(pb, 0x3b);
+    avio_w8_xij(pb, 0x3b);
 
     return 0;
 }

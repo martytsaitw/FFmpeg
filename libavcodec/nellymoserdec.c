@@ -143,7 +143,7 @@ static int decode_tag(AVCodecContext *avctx, void *data,
 {
     AVFrame *frame     = data;
     const uint8_t *buf = avpkt->data;
-    const uint8_t *side=av_packet_get_side_data(avpkt, 'F', NULL);
+    const uint8_t *side=av_packet_get_side_data_xij(avpkt, 'F', NULL);
     int buf_size = avpkt->size;
     NellyMoserDecodeContext *s = avctx->priv_data;
     int blocks, i, ret;
@@ -172,7 +172,7 @@ static int decode_tag(AVCodecContext *avctx, void *data,
 
     /* get output buffer */
     frame->nb_samples = NELLY_SAMPLES * blocks;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
     samples_flt = (float *)frame->data[0];
 

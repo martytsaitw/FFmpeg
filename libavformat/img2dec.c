@@ -113,7 +113,7 @@ static int find_image_range(AVIOContext *pb, int *pfirst_index, int *plast_index
 
     /* find the first image */
     for (first_index = start_index; first_index < start_index + start_index_range; first_index++) {
-        if (av_get_frame_filename(buf, sizeof(buf), path, first_index) < 0) {
+        if (av_get_frame_filename_xij(buf, sizeof(buf), path, first_index) < 0) {
             *pfirst_index =
             *plast_index  = 1;
             if (pb || avio_check(buf, AVIO_FLAG_READ) > 0)
@@ -135,7 +135,7 @@ static int find_image_range(AVIOContext *pb, int *pfirst_index, int *plast_index
                 range1 = 1;
             else
                 range1 = 2 * range;
-            if (av_get_frame_filename(buf, sizeof(buf), path,
+            if (av_get_frame_filename_xij(buf, sizeof(buf), path,
                                       last_index + range1) < 0)
                 goto fail;
             if (avio_check(buf, AVIO_FLAG_READ) <= 0)
@@ -161,7 +161,7 @@ fail:
 static int img_read_probe(AVProbeData *p)
 {
     if (p->filename && ff_guess_image2_codec(p->filename)) {
-        if (av_filename_number_test(p->filename))
+        if (av_filename_number_test_xij(p->filename))
             return AVPROBE_SCORE_MAX;
         else if (is_glob(p->filename))
             return AVPROBE_SCORE_MAX;
@@ -169,7 +169,7 @@ static int img_read_probe(AVProbeData *p)
             return AVPROBE_SCORE_EXTENSION + 2; // score chosen to be a tad above the image pipes
         else if (p->buf_size == 0)
             return 0;
-        else if (av_match_ext(p->filename, "raw") || av_match_ext(p->filename, "gif"))
+        else if (av_match_ext_xij(p->filename, "raw") || av_match_ext_xij(p->filename, "gif"))
             return 5;
         else
             return AVPROBE_SCORE_EXTENSION;
@@ -330,7 +330,7 @@ int ff_img_read_header(AVFormatContext *s1)
             if (!probe_buffer)
                 return AVERROR(ENOMEM);
 
-            probe_buffer_size = avio_read(s1->pb, probe_buffer, probe_buffer_size);
+            probe_buffer_size = avio_read_xij(s1->pb, probe_buffer, probe_buffer_size);
             if (probe_buffer_size < 0) {
                 av_free(probe_buffer);
                 return probe_buffer_size;
@@ -353,9 +353,9 @@ int ff_img_read_header(AVFormatContext *s1)
                 }
             }
             if (s1->flags & AVFMT_FLAG_CUSTOM_IO) {
-                avio_seek(s1->pb, 0, SEEK_SET);
+                avio_seek_xij(s1->pb, 0, SEEK_SET);
             } else
-                ffio_rewind_with_probe_data(s1->pb, &probe_buffer, probe_buffer_size);
+                ffio_rewind_with_probe_data_xij(s1->pb, &probe_buffer, probe_buffer_size);
         }
         if (st->codecpar->codec_id == AV_CODEC_ID_NONE)
             st->codecpar->codec_id = ff_guess_image2_codec(s->path);
@@ -395,7 +395,7 @@ int ff_img_read_packet(AVFormatContext *s1, AVPacket *pkt)
             filename = s->globstate.gl_pathv[s->img_number];
 #endif
         } else {
-        if (av_get_frame_filename(filename_bytes, sizeof(filename_bytes),
+        if (av_get_frame_filename_xij(filename_bytes, sizeof(filename_bytes),
                                   s->path,
                                   s->img_number) < 0 && s->img_number > 1)
             return AVERROR(EIO);
@@ -413,7 +413,7 @@ int ff_img_read_packet(AVFormatContext *s1, AVPacket *pkt)
                        filename);
                 return AVERROR(EIO);
             }
-            size[i] = avio_size(f[i]);
+            size[i] = avio_size_xij(f[i]);
 
             if (!s->split_planes)
                 break;
@@ -427,11 +427,11 @@ int ff_img_read_packet(AVFormatContext *s1, AVPacket *pkt)
             int ret;
             int score = 0;
 
-            ret = avio_read(f[0], header, PROBE_BUF_MIN);
+            ret = avio_read_xij(f[0], header, PROBE_BUF_MIN);
             if (ret < 0)
                 return ret;
             memset(header + ret, 0, sizeof(header) - ret);
-            avio_skip(f[0], -ret);
+            avio_skip_xij(f[0], -ret);
             pd.buf = header;
             pd.buf_size = ret;
             pd.filename = filename;
@@ -445,14 +445,14 @@ int ff_img_read_packet(AVFormatContext *s1, AVPacket *pkt)
             infer_size(&par->width, &par->height, size[0]);
     } else {
         f[0] = s1->pb;
-        if (avio_feof(f[0]) && s->loop && s->is_pipe)
-            avio_seek(f[0], 0, SEEK_SET);
-        if (avio_feof(f[0]))
+        if (avio_feof_xij(f[0]) && s->loop && s->is_pipe)
+            avio_seek_xij(f[0], 0, SEEK_SET);
+        if (avio_feof_xij(f[0]))
             return AVERROR_EOF;
         if (s->frame_size > 0) {
             size[0] = s->frame_size;
         } else if (!s1->streams[0]->parser) {
-            size[0] = avio_size(s1->pb);
+            size[0] = avio_size_xij(s1->pb);
         } else {
             size[0] = 4096;
         }
@@ -475,7 +475,7 @@ int ff_img_read_packet(AVFormatContext *s1, AVPacket *pkt)
         if (s->ts_from_file == 2)
             pkt->pts = 1000000000*pkt->pts + img_stat.st_mtim.tv_nsec;
 #endif
-        av_add_index_entry(s1->streams[0], s->img_number, pkt->pts, 0, 0, AVINDEX_KEYFRAME);
+        av_add_index_entry_xij(s1->streams[0], s->img_number, pkt->pts, 0, 0, AVINDEX_KEYFRAME);
     } else if (!s->is_pipe) {
         pkt->pts      = s->pts;
     }
@@ -486,15 +486,15 @@ int ff_img_read_packet(AVFormatContext *s1, AVPacket *pkt)
     pkt->size = 0;
     for (i = 0; i < 3; i++) {
         if (f[i]) {
-            ret[i] = avio_read(f[i], pkt->data + pkt->size, size[i]);
+            ret[i] = avio_read_xij(f[i], pkt->data + pkt->size, size[i]);
             if (s->loop && s->is_pipe && ret[i] == AVERROR_EOF) {
-                if (avio_seek(f[i], 0, SEEK_SET) >= 0) {
+                if (avio_seek_xij(f[i], 0, SEEK_SET) >= 0) {
                     pkt->pos = 0;
-                    ret[i] = avio_read(f[i], pkt->data + pkt->size, size[i]);
+                    ret[i] = avio_read_xij(f[i], pkt->data + pkt->size, size[i]);
                 }
             }
             if (!s->is_pipe && f[i] != s1->pb)
-                ff_format_io_close(s1, &f[i]);
+                ff_format_io_close_xij(s1, &f[i]);
             if (ret[i] > 0)
                 pkt->size += ret[i];
         }
@@ -523,7 +523,7 @@ fail:
     if (!s->is_pipe) {
         for (i = 0; i < 3; i++) {
             if (f[i] != s1->pb)
-                ff_format_io_close(s1, &f[i]);
+                ff_format_io_close_xij(s1, &f[i]);
         }
     }
     return res;
@@ -546,7 +546,7 @@ static int img_read_seek(AVFormatContext *s, int stream_index, int64_t timestamp
     AVStream *st = s->streams[0];
 
     if (s1->ts_from_file) {
-        int index = av_index_search_timestamp(st, timestamp, flags);
+        int index = av_index_search_timestamp_xij(st, timestamp, flags);
         if(index < 0)
             return -1;
         s1->img_number = st->index_entries[index].pos;
@@ -946,13 +946,13 @@ static inline int pgmx_probe(AVProbeData *p)
 static int pgm_probe(AVProbeData *p)
 {
     int ret = pgmx_probe(p);
-    return ret && !av_match_ext(p->filename, "pgmyuv") ? ret : 0;
+    return ret && !av_match_ext_xij(p->filename, "pgmyuv") ? ret : 0;
 }
 
 static int pgmyuv_probe(AVProbeData *p) // custom FFmpeg format recognized by file extension
 {
     int ret = pgmx_probe(p);
-    return ret && av_match_ext(p->filename, "pgmyuv") ? ret : 0;
+    return ret && av_match_ext_xij(p->filename, "pgmyuv") ? ret : 0;
 }
 
 static int ppm_probe(AVProbeData *p)

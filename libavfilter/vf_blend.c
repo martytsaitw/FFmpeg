@@ -384,7 +384,7 @@ static AVFrame *blend_frame(AVFilterContext *ctx, AVFrame *top_buf,
     dst_buf = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!dst_buf)
         return top_buf;
-    av_frame_copy_props(dst_buf, top_buf);
+    av_frame_copy_props_xij(dst_buf, top_buf);
 
     for (plane = 0; plane < s->nb_planes; plane++) {
         int hsub = plane == 1 || plane == 2 ? s->hsub : 0;
@@ -400,7 +400,7 @@ static AVFrame *blend_frame(AVFilterContext *ctx, AVFrame *top_buf,
     }
 
     if (!s->tblend)
-        av_frame_free(&top_buf);
+        av_frame_free_xij(&top_buf);
 
     return dst_buf;
 }
@@ -455,7 +455,7 @@ static av_cold void uninit(AVFilterContext *ctx)
     int i;
 
     ff_framesync_uninit(&s->fs);
-    av_frame_free(&s->prev_frame);
+    av_frame_free_xij(&s->prev_frame);
 
     for (i = 0; i < FF_ARRAY_ELEMS(s->params); i++)
         av_expr_free(s->params[i].e);
@@ -631,7 +631,7 @@ static int tblend_filter_frame(AVFilterLink *inlink, AVFrame *frame)
 
     if (s->prev_frame) {
         AVFrame *out = blend_frame(inlink->dst, frame, s->prev_frame);
-        av_frame_free(&s->prev_frame);
+        av_frame_free_xij(&s->prev_frame);
         s->prev_frame = frame;
         return ff_filter_frame(outlink, out);
     }

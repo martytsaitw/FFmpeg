@@ -75,10 +75,10 @@ static int xbm_decode_frame(AVCodecContext *avctx, void *data,
     width  = parse_str_int(avpkt->data, avpkt->size, "_width");
     height = parse_str_int(avpkt->data, avpkt->size, "_height");
 
-    if ((ret = ff_set_dimensions(avctx, width, height)) < 0)
+    if ((ret = ff_set_dimensions_xij(avctx, width, height)) < 0)
         return ret;
 
-    if ((ret = ff_get_buffer(avctx, p, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, p, 0)) < 0)
         return ret;
 
     // goto start of image data

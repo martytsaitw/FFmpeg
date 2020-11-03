@@ -36,13 +36,13 @@
 #include "dv.h"
 
 /* isom.c */
-extern const AVCodecTag ff_mp4_obj_type[];
-extern const AVCodecTag ff_codec_movvideo_tags[];
-extern const AVCodecTag ff_codec_movaudio_tags[];
-extern const AVCodecTag ff_codec_movsubtitle_tags[];
+extern const AVCodecTag ff_mp4_obj_type_xij[];
+extern const AVCodecTag ff_codec_movvideo_tags_xij[];
+extern const AVCodecTag ff_codec_movaudio_tags_xij[];
+extern const AVCodecTag ff_codec_movsubtitle_tags_xij[];
 
-int ff_mov_iso639_to_lang(const char lang[4], int mp4);
-int ff_mov_lang_to_iso639(unsigned code, char to[4]);
+int ff_mov_iso639_to_lang_xij(const char lang[4], int mp4);
+int ff_mov_lang_to_iso639_xij(unsigned code, char to[4]);
 
 struct AVAESCTR;
 
@@ -283,10 +283,10 @@ typedef struct MOVContext {
     int32_t movie_display_matrix[3][3]; ///< display matrix from mvhd
 } MOVContext;
 
-int ff_mp4_read_descr_len(AVIOContext *pb);
-int ff_mp4_read_descr(AVFormatContext *fc, AVIOContext *pb, int *tag);
-int ff_mp4_read_dec_config_descr(AVFormatContext *fc, AVStream *st, AVIOContext *pb);
-void ff_mp4_parse_es_descr(AVIOContext *pb, int *es_id);
+int ff_mp4_read_descr_len_xij(AVIOContext *pb);
+int ff_mp4_read_descr_xij(AVFormatContext *fc, AVIOContext *pb, int *tag);
+int ff_mp4_read_dec_config_descr_xij(AVFormatContext *fc, AVStream *st, AVIOContext *pb);
+void ff_mp4_parse_es_descr_xij(AVIOContext *pb, int *es_id);
 
 #define MP4ODescrTag                    0x01
 #define MP4IODescrTag                   0x02
@@ -349,8 +349,8 @@ void ff_mp4_parse_es_descr(AVIOContext *pb, int *es_id);
 
 int ff_mov_read_esds(AVFormatContext *fc, AVIOContext *pb);
 
-int ff_mov_read_stsd_entries(MOVContext *c, AVIOContext *pb, int entries);
-void ff_mov_write_chan(AVIOContext *pb, int64_t channel_layout);
+int ff_mov_read_stsd_entries_xij(MOVContext *c, AVIOContext *pb, int entries);
+void ff_mov_write_chan_xij(AVIOContext *pb, int64_t channel_layout);
 
 #define FF_MOV_FLAG_MFRA_AUTO -1
 #define FF_MOV_FLAG_MFRA_DTS 1
@@ -367,7 +367,7 @@ static inline enum AVCodecID ff_mov_get_lpcm_codec_id(int bps, int flags)
      * 0x2 = big-endian
      * 0x4 = signed
      */
-    return ff_get_pcm_codec_id(bps, flags & 1, flags & 2, flags & 4 ? -1 : 0);
+    return ff_get_pcm_codec_id_xij(bps, flags & 1, flags & 2, flags & 4 ? -1 : 0);
 }
 
 #endif /* AVFORMAT_ISOM_H */

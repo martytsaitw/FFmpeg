@@ -31,10 +31,10 @@
 
 static void id3v2_put_size(AVIOContext *pb, int size)
 {
-    avio_w8(pb, size >> 21 & 0x7f);
-    avio_w8(pb, size >> 14 & 0x7f);
-    avio_w8(pb, size >> 7  & 0x7f);
-    avio_w8(pb, size       & 0x7f);
+    avio_w8_xij(pb, size >> 21 & 0x7f);
+    avio_w8_xij(pb, size >> 14 & 0x7f);
+    avio_w8_xij(pb, size >> 7  & 0x7f);
+    avio_w8_xij(pb, size       & 0x7f);
 }
 
 static int string_is_ascii(const uint8_t *str)
@@ -49,10 +49,10 @@ static void id3v2_encode_string(AVIOContext *pb, const uint8_t *str,
     int (*put)(AVIOContext*, const char*);
 
     if (enc == ID3v2_ENCODING_UTF16BOM) {
-        avio_wl16(pb, 0xFEFF);      /* BOM */
-        put = avio_put_str16le;
+        avio_wl16_xij(pb, 0xFEFF);      /* BOM */
+        put = avio_put_str16le_xij;
     } else
-        put = avio_put_str;
+        put = avio_put_str_xij;
 
     put(pb, str);
 }
@@ -68,7 +68,7 @@ static int id3v2_put_ttag(ID3v2EncContext *id3, AVIOContext *avioc, const char *
     int len;
     uint8_t *pb;
     AVIOContext *dyn_buf;
-    if (avio_open_dyn_buf(&dyn_buf) < 0)
+    if (avio_open_dyn_buf_xij(&dyn_buf) < 0)
         return AVERROR(ENOMEM);
 
     /* check if the strings are ASCII-only and use UTF16 only if
@@ -77,20 +77,20 @@ static int id3v2_put_ttag(ID3v2EncContext *id3, AVIOContext *avioc, const char *
         (!str2 || string_is_ascii(str2)))
         enc = ID3v2_ENCODING_ISO8859;
 
-    avio_w8(dyn_buf, enc);
+    avio_w8_xij(dyn_buf, enc);
     id3v2_encode_string(dyn_buf, str1, enc);
     if (str2)
         id3v2_encode_string(dyn_buf, str2, enc);
-    len = avio_close_dyn_buf(dyn_buf, &pb);
+    len = avio_close_dyn_buf_xij(dyn_buf, &pb);
 
-    avio_wb32(avioc, tag);
+    avio_wb32_xij(avioc, tag);
     /* ID3v2.3 frame size is not sync-safe */
     if (id3->version == 3)
-        avio_wb32(avioc, len);
+        avio_wb32_xij(avioc, len);
     else
         id3v2_put_size(avioc, len);
-    avio_wb16(avioc, 0);
-    avio_write(avioc, pb, len);
+    avio_wb16_xij(avioc, 0);
+    avio_write_xij(avioc, pb, len);
 
     av_freep(&pb);
     return len + ID3v2_HEADER_SIZE;
@@ -111,38 +111,38 @@ static int id3v2_put_priv(ID3v2EncContext *id3, AVIOContext *avioc, const char *
         return 0;
     }
 
-    if (avio_open_dyn_buf(&dyn_buf) < 0)
+    if (avio_open_dyn_buf_xij(&dyn_buf) < 0)
         return AVERROR(ENOMEM);
 
     // owner + null byte.
-    avio_write(dyn_buf, key, strlen(key) + 1);
+    avio_write_xij(dyn_buf, key, strlen(key) + 1);
 
     while (*data) {
         if (av_strstart(data, "\\x", &data)) {
             if (data[0] && data[1] && av_isxdigit(data[0]) && av_isxdigit(data[1])) {
                 char digits[] = {data[0], data[1], 0};
-                avio_w8(dyn_buf, strtol(digits, NULL, 16));
+                avio_w8_xij(dyn_buf, strtol(digits, NULL, 16));
                 data += 2;
             } else {
-                ffio_free_dyn_buf(&dyn_buf);
+                ffio_free_dyn_buf_xij(&dyn_buf);
                 av_log(avioc, AV_LOG_ERROR, "Invalid escape '\\x%.2s' in metadata tag '"
                        ID3v2_PRIV_METADATA_PREFIX "%s'.\n", data, key);
                 return AVERROR(EINVAL);
             }
         } else {
-            avio_write(dyn_buf, data++, 1);
+            avio_write_xij(dyn_buf, data++, 1);
         }
     }
 
-    len = avio_close_dyn_buf(dyn_buf, &pb);
+    len = avio_close_dyn_buf_xij(dyn_buf, &pb);
 
-    avio_wb32(avioc, MKBETAG('P', 'R', 'I', 'V'));
+    avio_wb32_xij(avioc, MKBETAG('P', 'R', 'I', 'V'));
     if (id3->version == 3)
-        avio_wb32(avioc, len);
+        avio_wb32_xij(avioc, len);
     else
         id3v2_put_size(avioc, len);
-    avio_wb16(avioc, 0);
-    avio_write(avioc, pb, len);
+    avio_wb16_xij(avioc, 0);
+    avio_write_xij(avioc, pb, len);
 
     av_free(pb);
 
@@ -207,13 +207,13 @@ void ff_id3v2_start(ID3v2EncContext *id3, AVIOContext *pb, int id3v2_version,
 {
     id3->version = id3v2_version;
 
-    avio_wb32(pb, MKBETAG(magic[0], magic[1], magic[2], id3v2_version));
-    avio_w8(pb, 0);
-    avio_w8(pb, 0); /* flags */
+    avio_wb32_xij(pb, MKBETAG(magic[0], magic[1], magic[2], id3v2_version));
+    avio_w8_xij(pb, 0);
+    avio_w8_xij(pb, 0); /* flags */
 
     /* reserve space for size */
     id3->size_pos = avio_tell(pb);
-    avio_wb32(pb, 0);
+    avio_wb32_xij(pb, 0);
 }
 
 static int write_metadata(AVIOContext *pb, AVDictionary **metadata,
@@ -264,33 +264,33 @@ static int write_chapter(AVFormatContext *s, ID3v2EncContext *id3, int id, int e
     char name[123];
     int len, start, end, ret;
 
-    if ((ret = avio_open_dyn_buf(&dyn_bc)) < 0)
+    if ((ret = avio_open_dyn_buf_xij(&dyn_bc)) < 0)
         goto fail;
 
     start = av_rescale_q(ch->start, ch->time_base, time_base);
     end   = av_rescale_q(ch->end,   ch->time_base, time_base);
 
     snprintf(name, 122, "ch%d", id);
-    id3->len += avio_put_str(dyn_bc, name);
-    avio_wb32(dyn_bc, start);
-    avio_wb32(dyn_bc, end);
-    avio_wb32(dyn_bc, 0xFFFFFFFFu);
-    avio_wb32(dyn_bc, 0xFFFFFFFFu);
+    id3->len += avio_put_str_xij(dyn_bc, name);
+    avio_wb32_xij(dyn_bc, start);
+    avio_wb32_xij(dyn_bc, end);
+    avio_wb32_xij(dyn_bc, 0xFFFFFFFFu);
+    avio_wb32_xij(dyn_bc, 0xFFFFFFFFu);
 
     if ((ret = write_metadata(dyn_bc, &ch->metadata, id3, enc)) < 0)
         goto fail;
 
-    len = avio_close_dyn_buf(dyn_bc, &dyn_buf);
+    len = avio_close_dyn_buf_xij(dyn_bc, &dyn_buf);
     id3->len += 16 + ID3v2_HEADER_SIZE;
 
-    avio_wb32(s->pb, MKBETAG('C', 'H', 'A', 'P'));
-    avio_wb32(s->pb, len);
-    avio_wb16(s->pb, 0);
-    avio_write(s->pb, dyn_buf, len);
+    avio_wb32_xij(s->pb, MKBETAG('C', 'H', 'A', 'P'));
+    avio_wb32_xij(s->pb, len);
+    avio_wb16_xij(s->pb, 0);
+    avio_write_xij(s->pb, dyn_buf, len);
 
 fail:
     if (dyn_bc && !dyn_buf)
-        avio_close_dyn_buf(dyn_bc, &dyn_buf);
+        avio_close_dyn_buf_xij(dyn_bc, &dyn_buf);
     av_freep(&dyn_buf);
 
     return ret;
@@ -302,7 +302,7 @@ int ff_id3v2_write_metadata(AVFormatContext *s, ID3v2EncContext *id3)
                                   ID3v2_ENCODING_UTF8;
     int i, ret;
 
-    ff_standardize_creation_time(s);
+    ff_standardize_creation_time_xij(s);
     if ((ret = write_metadata(s->pb, &s->metadata, id3, enc)) < 0)
         return ret;
 
@@ -359,23 +359,23 @@ int ff_id3v2_write_apic(AVFormatContext *s, ID3v2EncContext *id3, AVPacket *pkt)
         enc = ID3v2_ENCODING_ISO8859;
 
     /* start writing */
-    if (avio_open_dyn_buf(&dyn_buf) < 0)
+    if (avio_open_dyn_buf_xij(&dyn_buf) < 0)
         return AVERROR(ENOMEM);
 
-    avio_w8(dyn_buf, enc);
-    avio_put_str(dyn_buf, mimetype);
-    avio_w8(dyn_buf, type);
+    avio_w8_xij(dyn_buf, enc);
+    avio_put_str_xij(dyn_buf, mimetype);
+    avio_w8_xij(dyn_buf, type);
     id3v2_encode_string(dyn_buf, desc, enc);
-    avio_write(dyn_buf, pkt->data, pkt->size);
-    len = avio_close_dyn_buf(dyn_buf, &buf);
+    avio_write_xij(dyn_buf, pkt->data, pkt->size);
+    len = avio_close_dyn_buf_xij(dyn_buf, &buf);
 
-    avio_wb32(s->pb, MKBETAG('A', 'P', 'I', 'C'));
+    avio_wb32_xij(s->pb, MKBETAG('A', 'P', 'I', 'C'));
     if (id3->version == 3)
-        avio_wb32(s->pb, len);
+        avio_wb32_xij(s->pb, len);
     else
         id3v2_put_size(s->pb, len);
-    avio_wb16(s->pb, 0);
-    avio_write(s->pb, buf, len);
+    avio_wb16_xij(s->pb, 0);
+    avio_write_xij(s->pb, buf, len);
     av_freep(&buf);
 
     id3->len += len + ID3v2_HEADER_SIZE;
@@ -398,13 +398,13 @@ void ff_id3v2_finish(ID3v2EncContext *id3, AVIOContext *pb,
      * to fix cover art display with some software such as iTunes, Traktor,
      * Serato, Torq. */
     padding_bytes = av_clip(padding_bytes, 10, 268435455 - id3->len);
-    ffio_fill(pb, 0, padding_bytes);
+    ffio_fill_xij(pb, 0, padding_bytes);
     id3->len += padding_bytes;
 
     cur_pos = avio_tell(pb);
-    avio_seek(pb, id3->size_pos, SEEK_SET);
+    avio_seek_xij(pb, id3->size_pos, SEEK_SET);
     id3v2_put_size(pb, id3->len);
-    avio_seek(pb, cur_pos, SEEK_SET);
+    avio_seek_xij(pb, cur_pos, SEEK_SET);
 }
 
 int ff_id3v2_write_simple(struct AVFormatContext *s, int id3v2_version,

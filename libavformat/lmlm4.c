@@ -86,9 +86,9 @@ static int lmlm4_read_packet(AVFormatContext *s, AVPacket *pkt)
     int ret;
     unsigned int frame_type, packet_size, padding, frame_size;
 
-    avio_rb16(pb);                       /* channel number */
-    frame_type  = avio_rb16(pb);
-    packet_size = avio_rb32(pb);
+    avio_rb16_xij(pb);                       /* channel number */
+    frame_type  = avio_rb16_xij(pb);
+    packet_size = avio_rb32_xij(pb);
     padding     = -packet_size & 511;
     frame_size  = packet_size - 8;
 
@@ -101,10 +101,10 @@ static int lmlm4_read_packet(AVFormatContext *s, AVPacket *pkt)
         return AVERROR(EIO);
     }
 
-    if ((ret = av_get_packet(pb, pkt, frame_size)) <= 0)
+    if ((ret = av_get_packet_xij(pb, pkt, frame_size)) <= 0)
         return AVERROR(EIO);
 
-    avio_skip(pb, padding);
+    avio_skip_xij(pb, padding);
 
     switch (frame_type) {
     case LMLM4_I_FRAME:

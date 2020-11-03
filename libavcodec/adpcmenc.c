@@ -90,7 +90,7 @@ static av_cold int adpcm_encode_init(AVCodecContext *avctx)
                          65536 * sizeof(*s->trellis_hash), error);
     }
 
-    avctx->bits_per_coded_sample = av_get_bits_per_sample(avctx->codec->id);
+    avctx->bits_per_coded_sample = av_get_bits_per_sample_xij(avctx->codec->id);
 
     switch (avctx->codec->id) {
     case AV_CODEC_ID_ADPCM_IMA_WAV:

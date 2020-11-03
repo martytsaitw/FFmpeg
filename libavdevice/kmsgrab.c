@@ -78,7 +78,7 @@ static void kmsgrab_free_frame(void *opaque, uint8_t *data)
 {
     AVFrame *frame = (AVFrame*)data;
 
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
 }
 
 static int kmsgrab_read_packet(AVFormatContext *avctx, AVPacket *pkt)
@@ -416,8 +416,8 @@ static av_cold int kmsgrab_read_close(AVFormatContext *avctx)
 {
     KMSGrabContext *ctx = avctx->priv_data;
 
-    av_buffer_unref(&ctx->frames_ref);
-    av_buffer_unref(&ctx->device_ref);
+    av_buffer_unref_xij(&ctx->frames_ref);
+    av_buffer_unref_xij(&ctx->device_ref);
 
     return 0;
 }

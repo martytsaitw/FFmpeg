@@ -75,14 +75,14 @@ static int xa_read_header(AVFormatContext *s)
 
     st->codecpar->codec_type   = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id     = AV_CODEC_ID_ADPCM_EA_MAXIS_XA;
-    avio_skip(pb, 4);       /* Skip the XA ID */
-    xa->out_size            =  avio_rl32(pb);
-    avio_skip(pb, 2);       /* Skip the tag */
-    st->codecpar->channels     = avio_rl16(pb);
-    st->codecpar->sample_rate  = avio_rl32(pb);
-    avio_skip(pb, 4);       /* Skip average byte rate */
-    avio_skip(pb, 2);       /* Skip block align */
-    avio_skip(pb, 2);       /* Skip bits-per-sample */
+    avio_skip_xij(pb, 4);       /* Skip the XA ID */
+    xa->out_size            =  avio_rl32_xij(pb);
+    avio_skip_xij(pb, 2);       /* Skip the tag */
+    st->codecpar->channels     = avio_rl16_xij(pb);
+    st->codecpar->sample_rate  = avio_rl32_xij(pb);
+    avio_skip_xij(pb, 4);       /* Skip average byte rate */
+    avio_skip_xij(pb, 2);       /* Skip block align */
+    avio_skip_xij(pb, 2);       /* Skip bits-per-sample */
 
     if (!st->codecpar->channels || !st->codecpar->sample_rate)
         return AVERROR_INVALIDDATA;
@@ -110,7 +110,7 @@ static int xa_read_packet(AVFormatContext *s,
     /* 1 byte header and 14 bytes worth of samples * number channels per block */
     packet_size = 15*st->codecpar->channels;
 
-    ret = av_get_packet(pb, pkt, packet_size);
+    ret = av_get_packet_xij(pb, pkt, packet_size);
     if(ret < 0)
         return ret;
 

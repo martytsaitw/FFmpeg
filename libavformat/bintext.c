@@ -90,23 +90,23 @@ static int next_tag_read(AVFormatContext *avctx, uint64_t *fsize)
     AVIOContext *pb = avctx->pb;
     char buf[36];
     int len;
-    uint64_t start_pos = avio_size(pb) - 256;
+    uint64_t start_pos = avio_size_xij(pb) - 256;
 
-    avio_seek(pb, start_pos, SEEK_SET);
-    if (avio_read(pb, buf, sizeof(next_magic)) != sizeof(next_magic))
+    avio_seek_xij(pb, start_pos, SEEK_SET);
+    if (avio_read_xij(pb, buf, sizeof(next_magic)) != sizeof(next_magic))
         return -1;
     if (memcmp(buf, next_magic, sizeof(next_magic)))
         return -1;
-    if (avio_r8(pb) != 0x01)
+    if (avio_r8_xij(pb) != 0x01)
         return -1;
 
     *fsize -= 256;
 
 #define GET_EFI2_META(name,size) \
-    len = avio_r8(pb); \
+    len = avio_r8_xij(pb); \
     if (len < 1 || len > size) \
         return -1; \
-    if (avio_read(pb, buf, size) == size && *buf) { \
+    if (avio_read_xij(pb, buf, size) == size && *buf) { \
         buf[len] = 0; \
         av_dict_set(&avctx->metadata, name, buf, 0); \
     }
@@ -141,7 +141,7 @@ static int bin_probe(AVProbeData *p)
     if (magic)
         return AVPROBE_SCORE_EXTENSION + 1;
 
-    if (av_match_ext(p->filename, "bin")) {
+    if (av_match_ext_xij(p->filename, "bin")) {
         AVCodecParameters par;
         int got_width = 0;
         par.width = par.height = 0;
@@ -183,21 +183,21 @@ static int bintext_read_header(AVFormatContext *s)
         return AVERROR(ENOMEM);
     st->codecpar->codec_id    = AV_CODEC_ID_BINTEXT;
 
-    if (ff_alloc_extradata(st->codecpar, 2))
+    if (ff_alloc_extradata_xij(st->codecpar, 2))
         return AVERROR(ENOMEM);
     st->codecpar->extradata[0] = 16;
     st->codecpar->extradata[1] = 0;
 
     if (pb->seekable & AVIO_SEEKABLE_NORMAL) {
         int got_width = 0;
-        bin->fsize = avio_size(pb);
+        bin->fsize = avio_size_xij(pb);
         if (ff_sauce_read(s, &bin->fsize, &got_width, 0) < 0)
             next_tag_read(s, &bin->fsize);
         if (!bin->width) {
             predict_width(st->codecpar, bin->fsize, got_width);
             calculate_height(st->codecpar, bin->fsize);
         }
-        avio_seek(pb, 0, SEEK_SET);
+        avio_seek_xij(pb, 0, SEEK_SET);
     }
     return 0;
 }
@@ -225,12 +225,12 @@ static int xbin_read_header(AVFormatContext *s)
     if (!st)
         return AVERROR(ENOMEM);
 
-    avio_skip(pb, 5);
-    st->codecpar->width   = avio_rl16(pb)<<3;
-    st->codecpar->height  = avio_rl16(pb);
-    fontheight         = avio_r8(pb);
+    avio_skip_xij(pb, 5);
+    st->codecpar->width   = avio_rl16_xij(pb)<<3;
+    st->codecpar->height  = avio_rl16_xij(pb);
+    fontheight         = avio_r8_xij(pb);
     st->codecpar->height *= fontheight;
-    flags              = avio_r8(pb);
+    flags              = avio_r8_xij(pb);
 
     st->codecpar->extradata_size = 2;
     if ((flags & BINTEXT_PALETTE))
@@ -239,17 +239,17 @@ static int xbin_read_header(AVFormatContext *s)
         st->codecpar->extradata_size += fontheight * (flags & 0x10 ? 512 : 256);
     st->codecpar->codec_id    = flags & 4 ? AV_CODEC_ID_XBIN : AV_CODEC_ID_BINTEXT;
 
-    if (ff_alloc_extradata(st->codecpar, st->codecpar->extradata_size))
+    if (ff_alloc_extradata_xij(st->codecpar, st->codecpar->extradata_size))
         return AVERROR(ENOMEM);
     st->codecpar->extradata[0] = fontheight;
     st->codecpar->extradata[1] = flags;
-    if (avio_read(pb, st->codecpar->extradata + 2, st->codecpar->extradata_size - 2) < 0)
+    if (avio_read_xij(pb, st->codecpar->extradata + 2, st->codecpar->extradata_size - 2) < 0)
         return AVERROR(EIO);
 
     if (pb->seekable & AVIO_SEEKABLE_NORMAL) {
-        bin->fsize = avio_size(pb) - 9 - st->codecpar->extradata_size;
+        bin->fsize = avio_size_xij(pb) - 9 - st->codecpar->extradata_size;
         ff_sauce_read(s, &bin->fsize, NULL, 0);
-        avio_seek(pb, 9 + st->codecpar->extradata_size, SEEK_SET);
+        avio_seek_xij(pb, 9 + st->codecpar->extradata_size, SEEK_SET);
     }
 
     return 0;
@@ -263,7 +263,7 @@ static int adf_read_header(AVFormatContext *s)
     AVIOContext *pb = s->pb;
     AVStream *st;
 
-    if (avio_r8(pb) != 1)
+    if (avio_r8_xij(pb) != 1)
         return AVERROR_INVALIDDATA;
 
     st = init_stream(s);
@@ -271,27 +271,27 @@ static int adf_read_header(AVFormatContext *s)
         return AVERROR(ENOMEM);
     st->codecpar->codec_id    = AV_CODEC_ID_BINTEXT;
 
-    if (ff_alloc_extradata(st->codecpar, 2 + 48 + 4096))
+    if (ff_alloc_extradata_xij(st->codecpar, 2 + 48 + 4096))
         return AVERROR(ENOMEM);
     st->codecpar->extradata[0] = 16;
     st->codecpar->extradata[1] = BINTEXT_PALETTE|BINTEXT_FONT;
 
-    if (avio_read(pb, st->codecpar->extradata + 2, 24) < 0)
+    if (avio_read_xij(pb, st->codecpar->extradata + 2, 24) < 0)
         return AVERROR(EIO);
-    avio_skip(pb, 144);
-    if (avio_read(pb, st->codecpar->extradata + 2 + 24, 24) < 0)
+    avio_skip_xij(pb, 144);
+    if (avio_read_xij(pb, st->codecpar->extradata + 2 + 24, 24) < 0)
         return AVERROR(EIO);
-    if (avio_read(pb, st->codecpar->extradata + 2 + 48, 4096) < 0)
+    if (avio_read_xij(pb, st->codecpar->extradata + 2 + 48, 4096) < 0)
         return AVERROR(EIO);
 
     if (pb->seekable & AVIO_SEEKABLE_NORMAL) {
         int got_width = 0;
-        bin->fsize = avio_size(pb) - 1 - 192 - 4096;
+        bin->fsize = avio_size_xij(pb) - 1 - 192 - 4096;
         st->codecpar->width = 80<<3;
         ff_sauce_read(s, &bin->fsize, &got_width, 0);
         if (!bin->width)
             calculate_height(st->codecpar, bin->fsize);
-        avio_seek(pb, 1 + 192 + 4096, SEEK_SET);
+        avio_seek_xij(pb, 1 + 192 + 4096, SEEK_SET);
     }
     return 0;
 }
@@ -326,23 +326,23 @@ static int idf_read_header(AVFormatContext *s)
         return AVERROR(ENOMEM);
     st->codecpar->codec_id    = AV_CODEC_ID_IDF;
 
-    if (ff_alloc_extradata(st->codecpar, 2 + 48 + 4096))
+    if (ff_alloc_extradata_xij(st->codecpar, 2 + 48 + 4096))
         return AVERROR(ENOMEM);
     st->codecpar->extradata[0] = 16;
     st->codecpar->extradata[1] = BINTEXT_PALETTE|BINTEXT_FONT;
 
-    avio_seek(pb, avio_size(pb) - 4096 - 48, SEEK_SET);
+    avio_seek_xij(pb, avio_size_xij(pb) - 4096 - 48, SEEK_SET);
 
-    if (avio_read(pb, st->codecpar->extradata + 2 + 48, 4096) < 0)
+    if (avio_read_xij(pb, st->codecpar->extradata + 2 + 48, 4096) < 0)
         return AVERROR(EIO);
-    if (avio_read(pb, st->codecpar->extradata + 2, 48) < 0)
+    if (avio_read_xij(pb, st->codecpar->extradata + 2, 48) < 0)
         return AVERROR(EIO);
 
-    bin->fsize = avio_size(pb) - 12 - 4096 - 48;
+    bin->fsize = avio_size_xij(pb) - 12 - 4096 - 48;
     ff_sauce_read(s, &bin->fsize, &got_width, 0);
     if (!bin->width)
         calculate_height(st->codecpar, bin->fsize);
-    avio_seek(pb, 12, SEEK_SET);
+    avio_seek_xij(pb, 12, SEEK_SET);
     return 0;
 }
 #endif /* CONFIG_IDF_DEMUXER */
@@ -353,13 +353,13 @@ static int read_packet(AVFormatContext *s,
     BinDemuxContext *bin = s->priv_data;
 
     if (bin->fsize > 0) {
-        if (av_get_packet(s->pb, pkt, bin->fsize) < 0)
+        if (av_get_packet_xij(s->pb, pkt, bin->fsize) < 0)
             return AVERROR(EIO);
         bin->fsize = -1; /* done */
     } else if (!bin->fsize) {
-        if (avio_feof(s->pb))
+        if (avio_feof_xij(s->pb))
             return AVERROR(EIO);
-        if (av_get_packet(s->pb, pkt, bin->chars_per_frame) < 0)
+        if (av_get_packet_xij(s->pb, pkt, bin->chars_per_frame) < 0)
             return AVERROR(EIO);
     } else {
         return AVERROR(EIO);

@@ -282,7 +282,7 @@ static int prompeg_open(URLContext *h, const char *uri, int flags) {
         return AVERROR(EINVAL);
     }
 
-    av_url_split(NULL, 0, NULL, 0, hostname, sizeof (hostname), &rtp_port,
+    av_url_split_xij(NULL, 0, NULL, 0, hostname, sizeof (hostname), &rtp_port,
             NULL, 0, uri);
 
     if (rtp_port < 1 || rtp_port > UINT16_MAX - 4) {

@@ -85,7 +85,7 @@ static int mjpeg2jpeg_filter(AVBSFContext *ctx, AVPacket *out)
     int input_skip, output_size;
     uint8_t *output;
 
-    ret = ff_bsf_get_packet(ctx, &in);
+    ret = ff_bsf_get_packet_xij(ctx, &in);
     if (ret < 0)
         return ret;
 
@@ -128,7 +128,7 @@ static int mjpeg2jpeg_filter(AVBSFContext *ctx, AVPacket *out)
 fail:
     if (ret < 0)
         av_packet_unref_ijk(out);
-    av_packet_free(&in);
+    av_packet_free_xij(&in);
     return ret;
 }
 

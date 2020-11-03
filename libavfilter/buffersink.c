@@ -73,12 +73,12 @@ static int return_or_keep_frame(BufferSinkContext *buf, AVFrame *out, AVFrame *i
 {
     if ((flags & AV_BUFFERSINK_FLAG_PEEK)) {
         buf->peeked_frame = in;
-        return out ? av_frame_ref(out, in) : 0;
+        return out ? av_frame_ref_xij(out, in) : 0;
     } else {
         av_assert1(out);
         buf->peeked_frame = NULL;
-        av_frame_move_ref(out, in);
-        av_frame_free(&in);
+        av_frame_move_ref_xij(out, in);
+        av_frame_free_xij(&in);
         return 0;
     }
 }

@@ -210,7 +210,7 @@ static av_cold void join_uninit(AVFilterContext *ctx)
 
     for (i = 0; i < ctx->nb_inputs; i++) {
         av_freep(&ctx->input_pads[i].name);
-        av_frame_free(&s->input_frames[i]);
+        av_frame_free_xij(&s->input_frames[i]);
     }
 
     av_freep(&s->channels);
@@ -402,7 +402,7 @@ static int try_push_frame(AVFilterContext *ctx)
 
         /* add the buffer where this plan is stored to the list if it's
          * not already there */
-        buf = av_frame_get_plane_buffer(cur, ch->in_channel_idx);
+        buf = av_frame_get_plane_buffer_xij(cur, ch->in_channel_idx);
         if (!buf) {
             ret = AVERROR(EINVAL);
             goto fail;
@@ -456,12 +456,12 @@ static int try_push_frame(AVFilterContext *ctx)
     ret = ff_filter_frame(outlink, frame);
 
     for (i = 0; i < ctx->nb_inputs; i++)
-        av_frame_free(&s->input_frames[i]);
+        av_frame_free_xij(&s->input_frames[i]);
 
     return ret;
 
 fail:
-    av_frame_free(&frame);
+    av_frame_free_xij(&frame);
     return ret;
 }
 

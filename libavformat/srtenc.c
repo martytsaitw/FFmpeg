@@ -48,7 +48,7 @@ static int srt_write_header(AVFormatContext *avf)
         avf->streams[0]->codecpar->codec_id != AV_CODEC_ID_SUBRIP) {
         av_log(avf, AV_LOG_ERROR,
                "Unsupported subtitles codec: %s\n",
-               avcodec_get_name(avf->streams[0]->codecpar->codec_id));
+               avcodec_get_name_xij(avf->streams[0]->codecpar->codec_id));
         return AVERROR(EINVAL);
     }
     avpriv_set_pts_info_ijk(avf->streams[0], 64, 1, 1000);
@@ -64,7 +64,7 @@ static int srt_write_packet(AVFormatContext *avf, AVPacket *pkt)
     int size, x1 = -1, y1 = -1, x2 = -1, y2 = -1;
     const uint8_t *p;
 
-    p = av_packet_get_side_data(pkt, AV_PKT_DATA_SUBTITLE_POSITION, &size);
+    p = av_packet_get_side_data_xij(pkt, AV_PKT_DATA_SUBTITLE_POSITION, &size);
     if (p && size == 16) {
         x1 = AV_RL32(p     );
         y1 = AV_RL32(p +  4);
@@ -85,19 +85,19 @@ FF_ENABLE_DEPRECATION_WARNINGS
         return 0;
     }
     e = s + d;
-    avio_printf(avf->pb, "%d\n%02d:%02d:%02d,%03d --> %02d:%02d:%02d,%03d",
+    avio_printf_xij(avf->pb, "%d\n%02d:%02d:%02d,%03d --> %02d:%02d:%02d,%03d",
                    srt->index,
                    (int)(s / 3600000),      (int)(s / 60000) % 60,
                    (int)(s /    1000) % 60, (int)(s %  1000),
                    (int)(e / 3600000),      (int)(e / 60000) % 60,
                    (int)(e /    1000) % 60, (int)(e %  1000));
     if (p)
-        avio_printf(avf->pb, "  X1:%03d X2:%03d Y1:%03d Y2:%03d",
+        avio_printf_xij(avf->pb, "  X1:%03d X2:%03d Y1:%03d Y2:%03d",
                     x1, x2, y1, y2);
-    avio_printf(avf->pb, "\n");
+    avio_printf_xij(avf->pb, "\n");
 
-    avio_write(avf->pb, pkt->data, pkt->size);
-    avio_write(avf->pb, "\n\n", 2);
+    avio_write_xij(avf->pb, pkt->data, pkt->size);
+    avio_write_xij(avf->pb, "\n\n", 2);
     srt->index++;
     return 0;
 }

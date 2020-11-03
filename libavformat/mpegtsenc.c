@@ -749,7 +749,7 @@ static void mpegts_prefix_m2ts_header(AVFormatContext *s)
         int64_t pcr = get_pcr(s->priv_data, s->pb);
         uint32_t tp_extra_header = pcr % 0x3fffffff;
         tp_extra_header = AV_RB32(&tp_extra_header);
-        avio_write(s->pb, (unsigned char *) &tp_extra_header,
+        avio_write_xij(s->pb, (unsigned char *) &tp_extra_header,
                    sizeof(tp_extra_header));
     }
 }
@@ -758,7 +758,7 @@ static void section_write_packet(MpegTSSection *s, const uint8_t *packet)
 {
     AVFormatContext *ctx = s->opaque;
     mpegts_prefix_m2ts_header(ctx);
-    avio_write(ctx->pb, packet, TS_PACKET_SIZE);
+    avio_write_xij(ctx->pb, packet, TS_PACKET_SIZE);
 }
 
 static int mpegts_init(AVFormatContext *s)
@@ -864,7 +864,7 @@ static int mpegts_init(AVFormatContext *s)
             goto fail;
         }
 
-        program = av_find_program_from_stream(s, NULL, i);
+        program = av_find_program_from_stream_xij(s, NULL, i);
         if (program) {
             for (j = 0; j < ts->nb_services; j++) {
                 if (ts->services[j]->program == program) {
@@ -920,7 +920,7 @@ static int mpegts_init(AVFormatContext *s)
                 goto fail;
             }
             ts_st->amux->oformat =
-                av_guess_format((ts->flags & MPEGTS_FLAG_AAC_LATM) ? "latm" : "adts",
+                av_guess_format_xij((ts->flags & MPEGTS_FLAG_AAC_LATM) ? "latm" : "adts",
                                 NULL, NULL);
             if (!ts_st->amux->oformat) {
                 ret = AVERROR(EINVAL);
@@ -934,7 +934,7 @@ static int mpegts_init(AVFormatContext *s)
             if (ret != 0)
                 goto fail;
             ast->time_base = st->time_base;
-            ret = avformat_write_header(ts_st->amux, NULL);
+            ret = avformat_write_header_xij(ts_st->amux, NULL);
             if (ret < 0)
                 goto fail;
         }
@@ -1012,7 +1012,7 @@ static int mpegts_init(AVFormatContext *s)
            ts->sdt_packet_period, ts->pat_packet_period);
 
     if (ts->m2ts_mode == -1) {
-        if (av_match_ext(s->url, "m2ts")) {
+        if (av_match_ext_xij(s->url, "m2ts")) {
             ts->m2ts_mode = 1;
         } else {
             ts->m2ts_mode = 0;
@@ -1081,7 +1081,7 @@ static void mpegts_insert_null_packet(AVFormatContext *s)
     *q++ = 0x10;
     memset(q, 0x0FF, TS_PACKET_SIZE - (q - buf));
     mpegts_prefix_m2ts_header(s);
-    avio_write(s->pb, buf, TS_PACKET_SIZE);
+    avio_write_xij(s->pb, buf, TS_PACKET_SIZE);
 }
 
 /* Write a single transport stream packet with a PCR and no payload */
@@ -1111,7 +1111,7 @@ static void mpegts_insert_pcr_only(AVFormatContext *s, AVStream *st)
     /* stuffing bytes */
     memset(q, 0xFF, TS_PACKET_SIZE - (q - buf));
     mpegts_prefix_m2ts_header(s);
-    avio_write(s->pb, buf, TS_PACKET_SIZE);
+    avio_write_xij(s->pb, buf, TS_PACKET_SIZE);
 }
 
 static void write_pts(uint8_t *q, int fourbits, int64_t pts)
@@ -1422,7 +1422,7 @@ static void mpegts_write_pes(AVFormatContext *s, AVStream *st,
         payload      += len;
         payload_size -= len;
         mpegts_prefix_m2ts_header(s);
-        avio_write(s->pb, buf, TS_PACKET_SIZE);
+        avio_write_xij(s->pb, buf, TS_PACKET_SIZE);
     }
     ts_st->prev_payload_key = key;
 }
@@ -1526,7 +1526,7 @@ static int mpegts_write_packet_internal(AVFormatContext *s, AVPacket *pkt)
     char *side_data = NULL;
     int stream_id = -1;
 
-    side_data = av_packet_get_side_data(pkt,
+    side_data = av_packet_get_side_data_xij(pkt,
                                         AV_PKT_DATA_MPEGTS_STREAM_ID,
                                         &side_data_size);
     if (side_data)
@@ -1570,7 +1570,7 @@ static int mpegts_write_packet_internal(AVFormatContext *s, AVPacket *pkt)
             extradd = 0;
 
         do {
-            p = avpriv_find_start_code(p, buf_end, &state);
+            p = avpriv_find_start_code_xij(p, buf_end, &state);
             av_log(s, AV_LOG_TRACE, "nal %"PRId32"\n", state & 0x1f);
             if ((state & 0x1f) == 7)
                 extradd = 0;
@@ -1610,16 +1610,16 @@ static int mpegts_write_packet_internal(AVFormatContext *s, AVPacket *pkt)
             av_assert0(pkt->dts != AV_NOPTS_VALUE);
             pkt2.dts = av_rescale_q(pkt->dts, st->time_base, ts_st->amux->streams[0]->time_base);
 
-            ret = avio_open_dyn_buf(&ts_st->amux->pb);
+            ret = avio_open_dyn_buf_xij(&ts_st->amux->pb);
             if (ret < 0)
                 return AVERROR(ENOMEM);
 
-            ret = av_write_frame(ts_st->amux, &pkt2);
+            ret = av_write_frame_xij(ts_st->amux, &pkt2);
             if (ret < 0) {
-                ffio_free_dyn_buf(&ts_st->amux->pb);
+                ffio_free_dyn_buf_xij(&ts_st->amux->pb);
                 return ret;
             }
-            size            = avio_close_dyn_buf(ts_st->amux->pb, &data);
+            size            = avio_close_dyn_buf_xij(ts_st->amux->pb, &data);
             ts_st->amux->pb = NULL;
             buf             = data;
             }
@@ -1636,7 +1636,7 @@ static int mpegts_write_packet_internal(AVFormatContext *s, AVPacket *pkt)
             extradd = 0;
 
         do {
-            p = avpriv_find_start_code(p, buf_end, &state);
+            p = avpriv_find_start_code_xij(p, buf_end, &state);
             av_log(s, AV_LOG_TRACE, "nal %"PRId32"\n", (state & 0x7e)>>1);
             if ((state & 0x7e) == 2*32)
                 extradd = 0;
@@ -1674,7 +1674,7 @@ static int mpegts_write_packet_internal(AVFormatContext *s, AVPacket *pkt)
 
             opus_samples = opus_get_packet_samples(s, pkt);
 
-            side_data = av_packet_get_side_data(pkt,
+            side_data = av_packet_get_side_data_xij(pkt,
                                                 AV_PKT_DATA_SKIP_SAMPLES,
                                                 &side_data_size);
 
@@ -1856,13 +1856,13 @@ static int mpegts_check_bitstream(struct AVFormatContext *s, const AVPacket *pkt
                              (AV_RB24(pkt->data) != 0x000001 ||
                               (st->codecpar->extradata_size > 0 &&
                                st->codecpar->extradata[0] == 1)))
-            ret = ff_stream_add_bitstream_filter(st, "h264_mp4toannexb", NULL);
+            ret = ff_stream_add_bitstream_filter_xij(st, "h264_mp4toannexb", NULL);
     } else if (st->codecpar->codec_id == AV_CODEC_ID_HEVC) {
         if (pkt->size >= 5 && AV_RB32(pkt->data) != 0x0000001 &&
                              (AV_RB24(pkt->data) != 0x000001 ||
                               (st->codecpar->extradata_size > 0 &&
                                st->codecpar->extradata[0] == 1)))
-            ret = ff_stream_add_bitstream_filter(st, "hevc_mp4toannexb", NULL);
+            ret = ff_stream_add_bitstream_filter_xij(st, "hevc_mp4toannexb", NULL);
     }
 
     return ret;

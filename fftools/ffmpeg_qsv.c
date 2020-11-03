@@ -40,7 +40,7 @@ static int qsv_get_buffer(AVCodecContext *s, AVFrame *frame, int flags)
 static void qsv_uninit(AVCodecContext *s)
 {
     InputStream *ist = s->opaque;
-    av_buffer_unref(&ist->hw_frames_ctx);
+    av_buffer_unref_xij(&ist->hw_frames_ctx);
 }
 
 static int qsv_device_init(InputStream *ist)
@@ -81,7 +81,7 @@ int qsv_init(AVCodecContext *s)
             return ret;
     }
 
-    av_buffer_unref(&ist->hw_frames_ctx);
+    av_buffer_unref_xij(&ist->hw_frames_ctx);
     ist->hw_frames_ctx = av_hwframe_ctx_alloc(hw_device_ctx);
     if (!ist->hw_frames_ctx)
         return AVERROR(ENOMEM);

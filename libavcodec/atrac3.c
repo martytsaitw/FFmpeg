@@ -805,7 +805,7 @@ static int atrac3_decode_frame(AVCodecContext *avctx, void *data,
 
     /* get output buffer */
     frame->nb_samples = SAMPLES_PER_FRAME;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     /* Check if we need to descramble and what buffer to pass on. */
@@ -834,7 +834,7 @@ static int atrac3al_decode_frame(AVCodecContext *avctx, void *data,
     int ret;
 
     frame->nb_samples = SAMPLES_PER_FRAME;
-    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_get_buffer_xij(avctx, frame, 0)) < 0)
         return ret;
 
     ret = al_decode_frame(avctx, avpkt->data, avpkt->size,

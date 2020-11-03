@@ -36,7 +36,7 @@ ff_voc_get_packet(AVFormatContext *s, AVPacket *pkt, AVStream *st, int max_size)
     int64_t duration;
     int ret;
 
-    av_add_index_entry(st,
+    av_add_index_entry_xij(st,
                        avio_tell(pb),
                        voc->pts,
                        voc->remaining_size,
@@ -44,29 +44,29 @@ ff_voc_get_packet(AVFormatContext *s, AVPacket *pkt, AVStream *st, int max_size)
                        AVINDEX_KEYFRAME);
 
     while (!voc->remaining_size) {
-        type = avio_r8(pb);
+        type = avio_r8_xij(pb);
         if (type == VOC_TYPE_EOF)
             return AVERROR_EOF;
-        voc->remaining_size = avio_rl24(pb);
+        voc->remaining_size = avio_rl24_xij(pb);
         if (!voc->remaining_size) {
             if (!(s->pb->seekable & AVIO_SEEKABLE_NORMAL))
                 return AVERROR(EIO);
-            voc->remaining_size = avio_size(pb) - avio_tell(pb);
+            voc->remaining_size = avio_size_xij(pb) - avio_tell(pb);
         }
         max_size -= 4;
 
         switch (type) {
         case VOC_TYPE_VOICE_DATA:
             if (!par->sample_rate) {
-                par->sample_rate = 1000000 / (256 - avio_r8(pb));
+                par->sample_rate = 1000000 / (256 - avio_r8_xij(pb));
                 if (sample_rate)
                     par->sample_rate = sample_rate;
                 avpriv_set_pts_info_ijk(st, 64, 1, par->sample_rate);
                 par->channels = channels;
-                par->bits_per_coded_sample = av_get_bits_per_sample(par->codec_id);
+                par->bits_per_coded_sample = av_get_bits_per_sample_xij(par->codec_id);
             } else
-                avio_skip(pb, 1);
-            tmp_codec = avio_r8(pb);
+                avio_skip_xij(pb, 1);
+            tmp_codec = avio_r8_xij(pb);
             voc->remaining_size -= 2;
             max_size -= 2;
             channels = 1;
@@ -76,9 +76,9 @@ ff_voc_get_packet(AVFormatContext *s, AVPacket *pkt, AVStream *st, int max_size)
             break;
 
         case VOC_TYPE_EXTENDED:
-            sample_rate = avio_rl16(pb);
-            avio_r8(pb);
-            channels = avio_r8(pb) + 1;
+            sample_rate = avio_rl16_xij(pb);
+            avio_r8_xij(pb);
+            channels = avio_r8_xij(pb) + 1;
             sample_rate = 256000000 / (channels * (65536 - sample_rate));
             voc->remaining_size = 0;
             max_size -= 4;
@@ -86,20 +86,20 @@ ff_voc_get_packet(AVFormatContext *s, AVPacket *pkt, AVStream *st, int max_size)
 
         case VOC_TYPE_NEW_VOICE_DATA:
             if (!par->sample_rate) {
-                par->sample_rate = avio_rl32(pb);
+                par->sample_rate = avio_rl32_xij(pb);
                 avpriv_set_pts_info_ijk(st, 64, 1, par->sample_rate);
-                par->bits_per_coded_sample = avio_r8(pb);
-                par->channels = avio_r8(pb);
+                par->bits_per_coded_sample = avio_r8_xij(pb);
+                par->channels = avio_r8_xij(pb);
             } else
-                avio_skip(pb, 6);
-            tmp_codec = avio_rl16(pb);
-            avio_skip(pb, 4);
+                avio_skip_xij(pb, 6);
+            tmp_codec = avio_rl16_xij(pb);
+            avio_skip_xij(pb, 4);
             voc->remaining_size -= 12;
             max_size -= 12;
             break;
 
         default:
-            avio_skip(pb, voc->remaining_size);
+            avio_skip_xij(pb, voc->remaining_size);
             max_size -= voc->remaining_size;
             voc->remaining_size = 0;
             break;
@@ -112,7 +112,7 @@ ff_voc_get_packet(AVFormatContext *s, AVPacket *pkt, AVStream *st, int max_size)
     }
 
     if (tmp_codec >= 0) {
-        tmp_codec = ff_codec_get_id(ff_voc_codec_tags, tmp_codec);
+        tmp_codec = ff_codec_get_id_xij(ff_voc_codec_tags, tmp_codec);
         if (par->codec_id == AV_CODEC_ID_NONE)
             par->codec_id = tmp_codec;
         else if (par->codec_id != tmp_codec)
@@ -133,7 +133,7 @@ ff_voc_get_packet(AVFormatContext *s, AVPacket *pkt, AVStream *st, int max_size)
     size = FFMIN(voc->remaining_size, max_size);
     voc->remaining_size -= size;
 
-    ret = av_get_packet(pb, pkt, size);
+    ret = av_get_packet_xij(pb, pkt, size);
     pkt->dts = pkt->pts = voc->pts;
 
     duration = av_get_audio_frame_duration2_ijk(st->codecpar, size);

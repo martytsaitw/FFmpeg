@@ -63,7 +63,7 @@ static int ast_write_header(AVFormatContext *s)
         return AVERROR_PATCHWELCOME;
     }
 
-    codec_tag = ff_codec_get_tag(ff_codec_ast_tags, par->codec_id);
+    codec_tag = ff_codec_get_tag_xij(ff_codec_ast_tags, par->codec_id);
     if (!codec_tag) {
         av_log(s, AV_LOG_ERROR, "unsupported codec\n");
         return AVERROR(EINVAL);
@@ -81,27 +81,27 @@ static int ast_write_header(AVFormatContext *s)
     ffio_wfourcc(pb, "STRM");
 
     ast->size = avio_tell(pb);
-    avio_wb32(pb, 0); /* File size minus header */
-    avio_wb16(pb, codec_tag);
-    avio_wb16(pb, 16); /* Bit depth */
-    avio_wb16(pb, par->channels);
-    avio_wb16(pb, 0); /* Loop flag */
-    avio_wb32(pb, par->sample_rate);
+    avio_wb32_xij(pb, 0); /* File size minus header */
+    avio_wb16_xij(pb, codec_tag);
+    avio_wb16_xij(pb, 16); /* Bit depth */
+    avio_wb16_xij(pb, par->channels);
+    avio_wb16_xij(pb, 0); /* Loop flag */
+    avio_wb32_xij(pb, par->sample_rate);
 
     ast->samples = avio_tell(pb);
-    avio_wb32(pb, 0); /* Number of samples */
-    avio_wb32(pb, 0); /* Loopstart */
-    avio_wb32(pb, 0); /* Loopend */
-    avio_wb32(pb, 0); /* Size of first block */
+    avio_wb32_xij(pb, 0); /* Number of samples */
+    avio_wb32_xij(pb, 0); /* Loopstart */
+    avio_wb32_xij(pb, 0); /* Loopend */
+    avio_wb32_xij(pb, 0); /* Size of first block */
 
     /* Unknown */
-    avio_wb32(pb, 0);
-    avio_wl32(pb, 0x7F);
-    avio_wb64(pb, 0);
-    avio_wb64(pb, 0);
-    avio_wb32(pb, 0);
+    avio_wb32_xij(pb, 0);
+    avio_wl32_xij(pb, 0x7F);
+    avio_wb64_xij(pb, 0);
+    avio_wb64_xij(pb, 0);
+    avio_wb32_xij(pb, 0);
 
-    avio_flush(pb);
+    avio_flush_xij(pb);
 
     return 0;
 }
@@ -117,14 +117,14 @@ static int ast_write_packet(AVFormatContext *s, AVPacket *pkt)
         ast->fbs = size;
 
     ffio_wfourcc(pb, "BLCK");
-    avio_wb32(pb, size); /* Block size */
+    avio_wb32_xij(pb, size); /* Block size */
 
     /* padding */
-    avio_wb64(pb, 0);
-    avio_wb64(pb, 0);
-    avio_wb64(pb, 0);
+    avio_wb64_xij(pb, 0);
+    avio_wb64_xij(pb, 0);
+    avio_wb64_xij(pb, 0);
 
-    avio_write(pb, pkt->data, pkt->size);
+    avio_write_xij(pb, pkt->data, pkt->size);
 
     return 0;
 }
@@ -141,19 +141,19 @@ static int ast_write_trailer(AVFormatContext *s)
 
     if (s->pb->seekable & AVIO_SEEKABLE_NORMAL) {
         /* Number of samples */
-        avio_seek(pb, ast->samples, SEEK_SET);
-        avio_wb32(pb, samples);
+        avio_seek_xij(pb, ast->samples, SEEK_SET);
+        avio_wb32_xij(pb, samples);
 
         /* Loopstart if provided */
         if (ast->loopstart > 0) {
         if (ast->loopstart >= samples) {
             av_log(s, AV_LOG_WARNING, "Loopstart value is out of range and will be ignored\n");
             ast->loopstart = -1;
-            avio_skip(pb, 4);
+            avio_skip_xij(pb, 4);
         } else
-        avio_wb32(pb, ast->loopstart);
+        avio_wb32_xij(pb, ast->loopstart);
         } else
-            avio_skip(pb, 4);
+            avio_skip_xij(pb, 4);
 
         /* Loopend if provided. Otherwise number of samples again */
         if (ast->loopend && ast->loopstart >= 0) {
@@ -161,26 +161,26 @@ static int ast_write_trailer(AVFormatContext *s)
                 av_log(s, AV_LOG_WARNING, "Loopend value is out of range and will be ignored\n");
                 ast->loopend = samples;
             }
-            avio_wb32(pb, ast->loopend);
+            avio_wb32_xij(pb, ast->loopend);
         } else {
-            avio_wb32(pb, samples);
+            avio_wb32_xij(pb, samples);
         }
 
         /* Size of first block */
-        avio_wb32(pb, ast->fbs);
+        avio_wb32_xij(pb, ast->fbs);
 
         /* File size minus header */
-        avio_seek(pb, ast->size, SEEK_SET);
-        avio_wb32(pb, file_size - 64);
+        avio_seek_xij(pb, ast->size, SEEK_SET);
+        avio_wb32_xij(pb, file_size - 64);
 
         /* Loop flag */
         if (ast->loopstart >= 0) {
-            avio_skip(pb, 6);
-            avio_wb16(pb, 0xFFFF);
+            avio_skip_xij(pb, 6);
+            avio_wb16_xij(pb, 0xFFFF);
         }
 
-        avio_seek(pb, file_size, SEEK_SET);
-        avio_flush(pb);
+        avio_seek_xij(pb, file_size, SEEK_SET);
+        avio_flush_xij(pb);
     }
     return 0;
 }

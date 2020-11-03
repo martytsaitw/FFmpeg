@@ -556,7 +556,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
     out = ff_get_audio_buffer(outlink, in->nb_samples);
     if (!out) {
-        av_frame_free(&in);
+        av_frame_free_xij(&in);
         return AVERROR(ENOMEM);
     }
 
@@ -573,7 +573,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
     s->histogram[level]++;
 
-    av_frame_free(&out);
+    av_frame_free_xij(&out);
     return ff_filter_frame(outlink, in);
 }
 

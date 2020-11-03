@@ -71,7 +71,7 @@ static int redspark_read_header(AVFormatContext *s)
     par = st->codecpar;
 
     /* Decrypt header */
-    data = avio_rb32(pb);
+    data = avio_rb32_xij(pb);
     key  = data ^ 0x52656453;
     data ^= key;
     AV_WB32(header, data);
@@ -79,7 +79,7 @@ static int redspark_read_header(AVFormatContext *s)
 
     for (i = 4; i < HEADER_SIZE; i += 4) {
         key += rol(key, 3);
-        data = avio_rb32(pb) ^ key;
+        data = avio_rb32_xij(pb) ^ key;
         AV_WB32(header + i, data);
     }
 
@@ -110,7 +110,7 @@ static int redspark_read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
     }
 
-    if (ff_alloc_extradata(par, 32 * par->channels)) {
+    if (ff_alloc_extradata_xij(par, 32 * par->channels)) {
         return AVERROR_INVALIDDATA;
     }
 
@@ -135,10 +135,10 @@ static int redspark_read_packet(AVFormatContext *s, AVPacket *pkt)
     uint32_t size = 8 * par->channels;
     int ret;
 
-    if (avio_feof(s->pb) || redspark->samples_count == s->streams[0]->duration)
+    if (avio_feof_xij(s->pb) || redspark->samples_count == s->streams[0]->duration)
         return AVERROR_EOF;
 
-    ret = av_get_packet(s->pb, pkt, size);
+    ret = av_get_packet_xij(s->pb, pkt, size);
     if (ret != size) {
         av_packet_unref_ijk(pkt);
         return AVERROR(EIO);

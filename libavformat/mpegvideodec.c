@@ -43,7 +43,7 @@ static int mpegvideo_probe(AVProbeData *p)
     int j;
 
     while (ptr < end) {
-        ptr = avpriv_find_start_code(ptr, end, &code);
+        ptr = avpriv_find_start_code_xij(ptr, end, &code);
         if ((code & 0xffffff00) == 0x100) {
             switch(code){
             case     SEQ_START_CODE:

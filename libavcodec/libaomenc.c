@@ -459,7 +459,7 @@ static av_cold int aom_init(AVCodecContext *avctx,
     if (codec_caps & AOM_CODEC_CAP_HIGHBITDEPTH)
         ctx->rawimg.bit_depth = enccfg.g_bit_depth;
 
-    cpb_props = ff_add_cpb_side_data(avctx);
+    cpb_props = ff_add_cpb_side_data_xij(avctx);
     if (!cpb_props)
         return AVERROR(ENOMEM);
 

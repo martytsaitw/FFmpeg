@@ -48,7 +48,7 @@ static int celt_header(AVFormatContext *s, int idx)
         priv = av_malloc(sizeof(struct oggcelt_private));
         if (!priv)
             return AVERROR(ENOMEM);
-        if (ff_alloc_extradata(st->codecpar, 2 * sizeof(uint32_t)) < 0) {
+        if (ff_alloc_extradata_xij(st->codecpar, 2 * sizeof(uint32_t)) < 0) {
             av_free(priv);
             return AVERROR(ENOMEM);
         }

@@ -1180,8 +1180,8 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     ff_init_range_encoder(c, pkt->data, pkt->size);
     ff_build_rac_states(c, 0.05 * (1LL << 32), 256 - 8);
 
-    av_frame_unref(p);
-    if ((ret = av_frame_ref(p, pict)) < 0)
+    av_frame_unref_xij(p);
+    if ((ret = av_frame_ref_xij(p, pict)) < 0)
         return ret;
 #if FF_API_CODED_FRAME
 FF_DISABLE_DEPRECATION_WARNINGS

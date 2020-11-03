@@ -52,11 +52,11 @@ static int sup_write_packet(AVFormatContext *s, AVPacket *pkt)
         }
 
         /* header */
-        avio_wb16(s->pb, SUP_PGS_MAGIC);
-        avio_wb32(s->pb, pts);
-        avio_wb32(s->pb, dts);
+        avio_wb16_xij(s->pb, SUP_PGS_MAGIC);
+        avio_wb32_xij(s->pb, pts);
+        avio_wb32_xij(s->pb, dts);
 
-        avio_write(s->pb, data, len);
+        avio_write_xij(s->pb, data, len);
 
         data += len;
         size -= len;

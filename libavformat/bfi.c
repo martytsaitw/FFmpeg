@@ -67,27 +67,27 @@ static int bfi_read_header(AVFormatContext * s)
         return AVERROR(ENOMEM);
 
     /* Set the total number of frames. */
-    avio_skip(pb, 8);
-    chunk_header           = avio_rl32(pb);
-    bfi->nframes           = avio_rl32(pb);
-    avio_rl32(pb);
-    avio_rl32(pb);
-    avio_rl32(pb);
-    fps                    = avio_rl32(pb);
-    avio_skip(pb, 12);
-    vstream->codecpar->width  = avio_rl32(pb);
-    vstream->codecpar->height = avio_rl32(pb);
+    avio_skip_xij(pb, 8);
+    chunk_header           = avio_rl32_xij(pb);
+    bfi->nframes           = avio_rl32_xij(pb);
+    avio_rl32_xij(pb);
+    avio_rl32_xij(pb);
+    avio_rl32_xij(pb);
+    fps                    = avio_rl32_xij(pb);
+    avio_skip_xij(pb, 12);
+    vstream->codecpar->width  = avio_rl32_xij(pb);
+    vstream->codecpar->height = avio_rl32_xij(pb);
 
     /*Load the palette to extradata */
-    avio_skip(pb, 8);
+    avio_skip_xij(pb, 8);
     vstream->codecpar->extradata      = av_malloc(768);
     if (!vstream->codecpar->extradata)
         return AVERROR(ENOMEM);
     vstream->codecpar->extradata_size = 768;
-    avio_read(pb, vstream->codecpar->extradata,
+    avio_read_xij(pb, vstream->codecpar->extradata,
                vstream->codecpar->extradata_size);
 
-    astream->codecpar->sample_rate = avio_rl32(pb);
+    astream->codecpar->sample_rate = avio_rl32_xij(pb);
     if (astream->codecpar->sample_rate <= 0) {
         av_log(s, AV_LOG_ERROR, "Invalid sample rate %d\n", astream->codecpar->sample_rate);
         return AVERROR_INVALIDDATA;
@@ -109,7 +109,7 @@ static int bfi_read_header(AVFormatContext * s)
     astream->codecpar->bits_per_coded_sample = 8;
     astream->codecpar->bit_rate        =
         (int64_t)astream->codecpar->sample_rate * astream->codecpar->bits_per_coded_sample;
-    avio_seek(pb, chunk_header - 3, SEEK_SET);
+    avio_seek_xij(pb, chunk_header - 3, SEEK_SET);
     avpriv_set_pts_info_ijk(astream, 64, 1, astream->codecpar->sample_rate);
     return 0;
 }
@@ -120,7 +120,7 @@ static int bfi_read_packet(AVFormatContext * s, AVPacket * pkt)
     BFIContext *bfi = s->priv_data;
     AVIOContext *pb = s->pb;
     int ret, audio_offset, video_offset, chunk_size, audio_size = 0;
-    if (bfi->nframes == 0 || avio_feof(pb)) {
+    if (bfi->nframes == 0 || avio_feof_xij(pb)) {
         return AVERROR_EOF;
     }
 
@@ -128,16 +128,16 @@ static int bfi_read_packet(AVFormatContext * s, AVPacket * pkt)
     if (!bfi->avflag) {
         uint32_t state = 0;
         while(state != MKTAG('S','A','V','I')){
-            if (avio_feof(pb))
+            if (avio_feof_xij(pb))
                 return AVERROR(EIO);
-            state = 256*state + avio_r8(pb);
+            state = 256*state + avio_r8_xij(pb);
         }
         /* Now that the chunk's location is confirmed, we proceed... */
-        chunk_size      = avio_rl32(pb);
-        avio_rl32(pb);
-        audio_offset    = avio_rl32(pb);
-        avio_rl32(pb);
-        video_offset    = avio_rl32(pb);
+        chunk_size      = avio_rl32_xij(pb);
+        avio_rl32_xij(pb);
+        audio_offset    = avio_rl32_xij(pb);
+        avio_rl32_xij(pb);
+        video_offset    = avio_rl32_xij(pb);
         audio_size      = video_offset - audio_offset;
         bfi->video_size = chunk_size - video_offset;
         if (audio_size < 0 || bfi->video_size < 0) {
@@ -146,7 +146,7 @@ static int bfi_read_packet(AVFormatContext * s, AVPacket * pkt)
         }
 
         //Tossing an audio packet at the audio decoder.
-        ret = av_get_packet(pb, pkt, audio_size);
+        ret = av_get_packet_xij(pb, pkt, audio_size);
         if (ret < 0)
             return ret;
 
@@ -155,7 +155,7 @@ static int bfi_read_packet(AVFormatContext * s, AVPacket * pkt)
     } else if (bfi->video_size > 0) {
 
         //Tossing a video packet at the video decoder.
-        ret = av_get_packet(pb, pkt, bfi->video_size);
+        ret = av_get_packet_xij(pb, pkt, bfi->video_size);
         if (ret < 0)
             return ret;
 

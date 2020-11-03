@@ -98,7 +98,7 @@ static int flush(AVFormatContext *s, int trailer, int64_t pts)
         }
 
         if (!w->wrote_webp_header) {
-            avio_write(s->pb, "RIFF\0\0\0\0WEBP", 12);
+            avio_write_xij(s->pb, "RIFF\0\0\0\0WEBP", 12);
             w->wrote_webp_header = 1;
             if (w->frame_count > 1)  // first non-empty packet
                 w->frame_count = 1;  // so we don't count previous empty packets.
@@ -111,35 +111,35 @@ static int flush(AVFormatContext *s, int trailer, int64_t pts)
             }
 
             if (vp8x) {
-                avio_write(s->pb, "VP8X", 4);
-                avio_wl32(s->pb, 10);
-                avio_w8(s->pb, flags);
-                avio_wl24(s->pb, 0);
-                avio_wl24(s->pb, st->codecpar->width - 1);
-                avio_wl24(s->pb, st->codecpar->height - 1);
+                avio_write_xij(s->pb, "VP8X", 4);
+                avio_wl32_xij(s->pb, 10);
+                avio_w8_xij(s->pb, flags);
+                avio_wl24_xij(s->pb, 0);
+                avio_wl24_xij(s->pb, st->codecpar->width - 1);
+                avio_wl24_xij(s->pb, st->codecpar->height - 1);
             }
             if (!trailer) {
-                avio_write(s->pb, "ANIM", 4);
-                avio_wl32(s->pb, 6);
-                avio_wl32(s->pb, 0xFFFFFFFF);
-                avio_wl16(s->pb, w->loop);
+                avio_write_xij(s->pb, "ANIM", 4);
+                avio_wl32_xij(s->pb, 6);
+                avio_wl32_xij(s->pb, 0xFFFFFFFF);
+                avio_wl16_xij(s->pb, w->loop);
             }
         }
 
         if (w->frame_count > trailer) {
-            avio_write(s->pb, "ANMF", 4);
-            avio_wl32(s->pb, 16 + w->last_pkt.size - skip);
-            avio_wl24(s->pb, 0);
-            avio_wl24(s->pb, 0);
-            avio_wl24(s->pb, st->codecpar->width - 1);
-            avio_wl24(s->pb, st->codecpar->height - 1);
+            avio_write_xij(s->pb, "ANMF", 4);
+            avio_wl32_xij(s->pb, 16 + w->last_pkt.size - skip);
+            avio_wl24_xij(s->pb, 0);
+            avio_wl24_xij(s->pb, 0);
+            avio_wl24_xij(s->pb, st->codecpar->width - 1);
+            avio_wl24_xij(s->pb, st->codecpar->height - 1);
             if (w->last_pkt.pts != AV_NOPTS_VALUE && pts != AV_NOPTS_VALUE) {
-                avio_wl24(s->pb, pts - w->last_pkt.pts);
+                avio_wl24_xij(s->pb, pts - w->last_pkt.pts);
             } else
-                avio_wl24(s->pb, w->last_pkt.duration);
-            avio_w8(s->pb, 0);
+                avio_wl24_xij(s->pb, w->last_pkt.duration);
+            avio_w8_xij(s->pb, 0);
         }
-        avio_write(s->pb, w->last_pkt.data + skip, w->last_pkt.size - skip);
+        avio_write_xij(s->pb, w->last_pkt.data + skip, w->last_pkt.size - skip);
         av_packet_unref_ijk(&w->last_pkt);
     }
 
@@ -152,7 +152,7 @@ static int webp_write_packet(AVFormatContext *s, AVPacket *pkt)
     w->using_webp_anim_encoder |= is_animated_webp_packet(pkt);
 
     if (w->using_webp_anim_encoder) {
-        avio_write(s->pb, pkt->data, pkt->size);
+        avio_write_xij(s->pb, pkt->data, pkt->size);
         w->wrote_webp_header = 1;  // for good measure
     } else {
         int ret;
@@ -172,8 +172,8 @@ static int webp_write_trailer(AVFormatContext *s)
 
     if (w->using_webp_anim_encoder) {
         if ((w->frame_count > 1) && w->loop) {  // Write loop count.
-            avio_seek(s->pb, 42, SEEK_SET);
-            avio_wl16(s->pb, w->loop);
+            avio_seek_xij(s->pb, 42, SEEK_SET);
+            avio_wl16_xij(s->pb, w->loop);
         }
     } else {
         int ret;
@@ -181,10 +181,10 @@ static int webp_write_trailer(AVFormatContext *s)
             return ret;
 
         filesize = avio_tell(s->pb);
-        avio_seek(s->pb, 4, SEEK_SET);
-        avio_wl32(s->pb, filesize - 8);
+        avio_seek_xij(s->pb, 4, SEEK_SET);
+        avio_wl32_xij(s->pb, filesize - 8);
         // Note: without the following, avio only writes 8 bytes to the file.
-        avio_seek(s->pb, filesize, SEEK_SET);
+        avio_seek_xij(s->pb, filesize, SEEK_SET);
     }
 
     return 0;

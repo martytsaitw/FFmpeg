@@ -94,7 +94,7 @@ static int vp6_parse_header(VP56Context *s, const uint8_t *buf, int buf_size)
                 s->avctx->coded_width  = 16 * cols;
                 s->avctx->coded_height = 16 * rows;
             } else {
-                ret = ff_set_dimensions(s->avctx, 16 * cols, 16 * rows);
+                ret = ff_set_dimensions_xij(s->avctx, 16 * cols, 16 * rows);
                 if (ret < 0)
                     return ret;
 
@@ -181,7 +181,7 @@ static int vp6_parse_header(VP56Context *s, const uint8_t *buf, int buf_size)
     return res;
 fail:
     if (res == VP56_SIZE_CHANGE)
-        ff_set_dimensions(s->avctx, 0, 0);
+        ff_set_dimensions_xij(s->avctx, 0, 0);
     return ret;
 }
 

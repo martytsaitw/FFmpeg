@@ -922,7 +922,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     if (buf_size < (width * height + 7)/8)
         return AVERROR_INVALIDDATA;
 
-    av_fast_padded_malloc(&s->bitstream_buffer,
+    av_fast_padded_malloc_xij(&s->bitstream_buffer,
                    &s->bitstream_buffer_size,
                    buf_size);
     if (!s->bitstream_buffer)

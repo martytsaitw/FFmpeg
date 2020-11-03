@@ -43,13 +43,13 @@ static int voc_read_header(AVFormatContext *s)
     AVIOContext *pb = s->pb;
     int header_size;
 
-    avio_skip(pb, 20);
-    header_size = avio_rl16(pb) - 22;
+    avio_skip_xij(pb, 20);
+    header_size = avio_rl16_xij(pb) - 22;
     if (header_size != 4) {
         av_log(s, AV_LOG_ERROR, "unknown header size: %d\n", header_size);
         return AVERROR(ENOSYS);
     }
-    avio_skip(pb, header_size);
+    avio_skip_xij(pb, header_size);
 
     s->ctx_flags |= AVFMTCTX_NOHEADER;
 
@@ -81,11 +81,11 @@ static int voc_read_seek(AVFormatContext *s, int stream_index,
     }
 
     st = s->streams[stream_index];
-    index = av_index_search_timestamp(st, timestamp, flags);
+    index = av_index_search_timestamp_xij(st, timestamp, flags);
 
     if (index >= 0 && index < st->nb_index_entries - 1) {
         AVIndexEntry *e = &st->index_entries[index];
-        avio_seek(s->pb, e->pos, SEEK_SET);
+        avio_seek_xij(s->pb, e->pos, SEEK_SET);
         voc->pts = e->timestamp;
         voc->remaining_size = e->size;
         return 0;
