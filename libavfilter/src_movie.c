@@ -109,7 +109,7 @@ static AVStream *find_stream(void *log, AVFormatContext *avf, const char *spec)
     ret = sscanf(spec, "d%1[av]%d%c", type_char, &stream_id, &dummy);
     if (ret >= 1 && ret <= 2) {
         type = type_char[0] == 'v' ? AVMEDIA_TYPE_VIDEO : AVMEDIA_TYPE_AUDIO;
-        ret = av_find_best_stream(avf, type, stream_id, -1, NULL, 0);
+        ret = av_find_best_stream_ijk(avf, type, stream_id, -1, NULL, 0);
         if (ret < 0) {
             av_log(log, AV_LOG_ERROR, "No %s stream with index '%d' found\n",
                    av_get_media_type_string(type), stream_id);
@@ -494,7 +494,7 @@ static int movie_push_frame(AVFilterContext *ctx, unsigned out_id)
             pkt->stream_index = movie->st[out_id].st->index;
             /* packet is already ready for flushing */
         } else {
-            ret = av_read_frame(movie->format_ctx, &movie->pkt0);
+            ret = av_read_frame_ijk(movie->format_ctx, &movie->pkt0);
             if (ret < 0) {
                 av_init_packet_ijk(&movie->pkt0); /* ready for flushing */
                 *pkt = movie->pkt0;

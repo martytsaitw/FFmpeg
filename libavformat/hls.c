@@ -2138,7 +2138,7 @@ static int hls_read_packet(AVFormatContext *s, AVPacket *pkt)
                 int64_t pkt_ts;
                 int64_t ts_diff;
                 AVRational tb;
-                ret = av_read_frame(pls->ctx, &pls->pkt);
+                ret = av_read_frame_ijk(pls->ctx, &pls->pkt);
                 if (ret < 0) {
                     //when error occur try to renew m3u8
                     if (c->hls_io_protocol_enable && (parse_playlist(c, pls->url, pls, NULL)) < 0) {

@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
     }
 
     /* find the video stream information */
-    ret = av_find_best_stream(input_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, &decoder, 0);
+    ret = av_find_best_stream_ijk(input_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, &decoder, 0);
     if (ret < 0) {
         fprintf(stderr, "Cannot find a video stream in the input file\n");
         return -1;
@@ -226,7 +226,7 @@ int main(int argc, char *argv[])
 
     /* actual decoding and dump the raw data */
     while (ret >= 0) {
-        if ((ret = av_read_frame(input_ctx, &packet)) < 0)
+        if ((ret = av_read_frame_ijk(input_ctx, &packet)) < 0)
             break;
 
         if (video_stream == packet.stream_index)

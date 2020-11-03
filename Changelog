@@ -1407,7 +1407,7 @@ version 0.4.9-pre1:
 - RGB ffv1 support
 - new audio/video parser API
 - av_log() system
-- av_read_frame() and av_seek_frame() support
+- av_read_frame_ijk() and av_seek_frame() support
 - missing last frame fixes
 - seek by mouse in ffplay
 - noise reduction of DCT coefficients

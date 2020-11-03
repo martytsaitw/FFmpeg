@@ -212,7 +212,7 @@ static int mpc_read_seek(AVFormatContext *s, int stream_index, int64_t timestamp
     lastframe = c->curframe;
     if(c->frames_noted) c->curframe = c->frames_noted - 1;
     while(c->curframe < timestamp){
-        ret = av_read_frame(s, pkt);
+        ret = av_read_frame_ijk(s, pkt);
         if (ret < 0){
             c->curframe = lastframe;
             return ret;

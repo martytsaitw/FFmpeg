@@ -1113,7 +1113,7 @@ static int read_gab2_sub(AVFormatContext *s, AVStream *st, AVPacket *pkt)
         if (!avformat_open_input_ijk(&ast->sub_ctx, "", sub_demuxer, NULL)) {
             if (ast->sub_ctx->nb_streams != 1)
                 goto error;
-            ff_read_packet(ast->sub_ctx, &ast->sub_pkt);
+            ff_read_packet_ijk(ast->sub_ctx, &ast->sub_pkt);
             avcodec_parameters_copy_ijk(st->codecpar, ast->sub_ctx->streams[0]->codecpar);
             time_base = ast->sub_ctx->streams[0]->time_base;
             avpriv_set_pts_info_ijk(st, 64, time_base.num, time_base.den);
@@ -1157,7 +1157,7 @@ static AVStream *get_subtitle_pkt(AVFormatContext *s, AVStream *next_st,
         *pkt              = ast->sub_pkt;
         pkt->stream_index = sub_st->index;
 
-        if (ff_read_packet(ast->sub_ctx, &ast->sub_pkt) < 0)
+        if (ff_read_packet_ijk(ast->sub_ctx, &ast->sub_pkt) < 0)
             ast->sub_pkt.data = NULL;
     }
     return sub_st;
@@ -1772,7 +1772,7 @@ static void seek_subtitle(AVStream *st, AVStream *st2, int64_t timestamp)
     av_packet_unref_ijk(&ast2->sub_pkt);
     if (avformat_seek_file_ijk(ast2->sub_ctx, 0, INT64_MIN, ts2, ts2, 0) >= 0 ||
         avformat_seek_file_ijk(ast2->sub_ctx, 0, ts2, ts2, INT64_MAX, 0) >= 0)
-        ff_read_packet(ast2->sub_ctx, &ast2->sub_pkt);
+        ff_read_packet_ijk(ast2->sub_ctx, &ast2->sub_pkt);
 }
 
 static int avi_read_seek(AVFormatContext *s, int stream_index,

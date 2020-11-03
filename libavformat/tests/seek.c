@@ -123,7 +123,7 @@ int main(int argc, char **argv)
 
         if(ret>=0){
             for(j=0; j<frame_count; j++) {
-            ret= av_read_frame(ic, &pkt);
+            ret= av_read_frame_ijk(ic, &pkt);
             if(ret>=0){
                 char dts_buf[60];
                 st= ic->streams[pkt.stream_index];

@@ -82,7 +82,7 @@ int ff_load_image(uint8_t *data[4], int linesize[4],
         goto end;
     }
 
-    ret = av_read_frame(format_ctx, &pkt);
+    ret = av_read_frame_ijk(format_ctx, &pkt);
     if (ret < 0) {
         av_log(log_ctx, AV_LOG_ERROR, "Failed to read frame from file\n");
         goto end;

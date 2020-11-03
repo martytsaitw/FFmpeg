@@ -407,7 +407,7 @@ typedef struct InputFile {
     int seek_timestamp;
     int64_t recording_time;
     int nb_streams;       /* number of stream that ffmpeg is aware of; may be different
-                             from ctx.nb_streams if new streams appear during av_read_frame() */
+                             from ctx.nb_streams if new streams appear during av_read_frame_ijk() */
     int nb_streams_warn;  /* number of streams that the user was warned of */
     int rate_emu;
     int accurate_seek;

@@ -68,7 +68,7 @@ int ff_put_wav_header(AVFormatContext *s, AVIOContext *pb,
     /* We use the known constant frame size for the codec if known, otherwise
      * fall back on using AVCodecContext.frame_size, which is not as reliable
      * for indicating packet duration. */
-    frame_size = av_get_audio_frame_duration2(par, par->block_align);
+    frame_size = av_get_audio_frame_duration2_ijk(par, par->block_align);
 
     waveformatextensible = (par->channels > 2 && par->channel_layout) ||
                            par->channels == 1 && par->channel_layout && par->channel_layout != AV_CH_LAYOUT_MONO ||
@@ -269,7 +269,7 @@ void ff_parse_specific_params(AVStream *st, int *au_rate,
     int gcd;
     int audio_frame_size;
 
-    audio_frame_size = av_get_audio_frame_duration2(par, 0);
+    audio_frame_size = av_get_audio_frame_duration2_ijk(par, 0);
     if (!audio_frame_size)
         audio_frame_size = par->frame_size;
 

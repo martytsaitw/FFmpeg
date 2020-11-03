@@ -75,7 +75,7 @@ static int open_input_file(const char *filename)
         return ret;
     }
 
-    ret = av_find_best_stream(ifmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, &decoder, 0);
+    ret = av_find_best_stream_ijk(ifmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, &decoder, 0);
     if (ret < 0) {
         fprintf(stderr, "Cannot find a video stream in the input file. "
                 "Error code: %s\n", av_err2str(ret));
@@ -273,7 +273,7 @@ int main(int argc, char **argv)
 
     /* read all packets and only transcoding video */
     while (ret >= 0) {
-        if ((ret = av_read_frame(ifmt_ctx, &dec_pkt)) < 0)
+        if ((ret = av_read_frame_ijk(ifmt_ctx, &dec_pkt)) < 0)
             break;
 
         if (video_stream == dec_pkt.stream_index)

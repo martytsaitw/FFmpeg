@@ -97,7 +97,7 @@
  * Demuxers read a media file and split it into chunks of data (@em packets). A
  * @ref AVPacket "packet" contains one or more encoded frames which belongs to a
  * single elementary stream. In the lavf API this process is represented by the
- * avformat_open_input_ijk() function for opening a file, av_read_frame() for
+ * avformat_open_input_ijk() function for opening a file, av_read_frame_ijk() for
  * reading a single packet and finally avformat_close_input(), which does the
  * cleanup.
  *
@@ -160,7 +160,7 @@
  *
  * @section lavf_decoding_read Reading from an opened file
  * Reading data from an opened AVFormatContext is done by repeatedly calling
- * av_read_frame() on it. Each call, if successful, will return an AVPacket
+ * av_read_frame_ijk() on it. Each call, if successful, will return an AVPacket
  * containing encoded data for one AVStream, identified by
  * AVPacket.stream_index. This packet may be passed straight into the libavcodec
  * decoding functions avcodec_send_packet() or avcodec_decode_subtitle2() if the
@@ -176,7 +176,7 @@
  * allocated dynamically and the user may keep it indefinitely.
  * Otherwise, if AVPacket.buf is NULL, the packet data is backed by a
  * static storage somewhere inside the demuxer and the packet is only valid
- * until the next av_read_frame() call or closing the file. If the caller
+ * until the next av_read_frame_ijk() call or closing the file. If the caller
  * requires a longer lifetime, av_dup_packet_ijk() will make an av_malloc()ed copy
  * of it.
  * In both cases, the packet must be freed with av_packet_unref_ijk() when it is no
@@ -1085,7 +1085,7 @@ typedef struct AVStream {
      */
     int codec_info_nb_frames;
 
-    /* av_read_frame() support */
+    /* av_read_frame_ijk() support */
     enum AVStreamParseType need_parsing;
     struct AVCodecParserContext *parser;
 
@@ -1401,7 +1401,7 @@ typedef struct AVFormatContext {
      *
      * - demuxing: streams are created by libavformat in avformat_open_input_ijk().
      *             If AVFMTCTX_NOHEADER is set in ctx_flags, then new streams may also
-     *             appear in av_read_frame().
+     *             appear in av_read_frame_ijk().
      * - muxing: streams are created by the user before avformat_write_header().
      *
      * Freed by libavformat in avformat_free_context_ijk().
@@ -2357,7 +2357,7 @@ void av_program_add_stream_index(AVFormatContext *ac, int progid, unsigned int i
  * Find the "best" stream in the file.
  * The best stream is determined according to various heuristics as the most
  * likely to be what the user expects.
- * If the decoder parameter is non-NULL, av_find_best_stream will find the
+ * If the decoder parameter is non-NULL, av_find_best_stream_ijk will find the
  * default decoder for the stream's codec; streams for which no decoder can
  * be found are ignored.
  *
@@ -2374,10 +2374,10 @@ void av_program_add_stream_index(AVFormatContext *ac, int progid, unsigned int i
  *          AVERROR_STREAM_NOT_FOUND if no stream with the requested type
  *          could be found,
  *          AVERROR_DECODER_NOT_FOUND if streams were found but no decoder
- * @note  If av_find_best_stream returns successfully and decoder_ret is not
+ * @note  If av_find_best_stream_ijk returns successfully and decoder_ret is not
  *        NULL, then *decoder_ret is guaranteed to be set to a valid AVCodec.
  */
-int av_find_best_stream(AVFormatContext *ic,
+int av_find_best_stream_ijk(AVFormatContext *ic,
                         enum AVMediaType type,
                         int wanted_stream_nb,
                         int related_stream,
@@ -2393,7 +2393,7 @@ int av_find_best_stream(AVFormatContext *ic,
  * information possible for decoding.
  *
  * If pkt->buf is NULL, then the packet is valid until the next
- * av_read_frame() or until avformat_close_input(). Otherwise the packet
+ * av_read_frame_ijk() or until avformat_close_input(). Otherwise the packet
  * is valid indefinitely. In both cases the packet must be freed with
  * av_packet_unref_ijk when it is no longer needed. For video, the packet contains
  * exactly one frame. For audio, it contains an integer number of frames if each
@@ -2408,7 +2408,7 @@ int av_find_best_stream(AVFormatContext *ic,
  *
  * @return 0 if OK, < 0 on error or end of file
  */
-int av_read_frame(AVFormatContext *s, AVPacket *pkt);
+int av_read_frame_ijk(AVFormatContext *s, AVPacket *pkt);
 
 /**
  * Seek to the keyframe at timestamp.
@@ -3020,7 +3020,7 @@ AVRational av_guess_sample_aspect_ratio(AVFormatContext *format, AVStream *strea
  * @param frame the frame for which the frame rate should be determined, may be NULL
  * @return the guessed (valid) frame rate, 0/1 if no idea
  */
-AVRational av_guess_frame_rate(AVFormatContext *ctx, AVStream *stream, AVFrame *frame);
+AVRational av_guess_frame_rate_ijk(AVFormatContext *ctx, AVStream *stream, AVFrame *frame);
 
 /**
  * Check if the stream st contained in s is matched by the stream specifier

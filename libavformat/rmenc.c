@@ -183,7 +183,7 @@ static int rv10_write_header(AVFormatContext *ctx,
 
         if (stream->par->codec_type == AVMEDIA_TYPE_AUDIO) {
             int coded_frame_size, fscode, sample_rate;
-            int frame_size = av_get_audio_frame_duration2(stream->par, 0);
+            int frame_size = av_get_audio_frame_duration2_ijk(stream->par, 0);
             sample_rate = stream->par->sample_rate;
             coded_frame_size = (stream->par->bit_rate *
                                 frame_size) / (8 * sample_rate);
@@ -337,7 +337,7 @@ static int rm_write_header(AVFormatContext *s)
         switch (par->codec_type) {
         case AVMEDIA_TYPE_AUDIO:
             rm->audio_stream = stream;
-            frame_size = av_get_audio_frame_duration2(par, 0);
+            frame_size = av_get_audio_frame_duration2_ijk(par, 0);
             stream->frame_rate = (AVRational){par->sample_rate, frame_size};
             /* XXX: dummy values */
             stream->packet_max_size = 1024;

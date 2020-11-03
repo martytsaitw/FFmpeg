@@ -81,7 +81,7 @@ static int open_codec_context(AVFormatContext *fmt_ctx, enum AVMediaType type)
     AVCodec *dec = NULL;
     AVDictionary *opts = NULL;
 
-    ret = av_find_best_stream(fmt_ctx, type, -1, -1, &dec, 0);
+    ret = av_find_best_stream_ijk(fmt_ctx, type, -1, -1, &dec, 0);
     if (ret < 0) {
         fprintf(stderr, "Could not find %s stream in input file '%s'\n",
                 av_get_media_type_string(type), src_filename);
@@ -159,7 +159,7 @@ int main(int argc, char **argv)
     printf("framenum,source,blockw,blockh,srcx,srcy,dstx,dsty,flags\n");
 
     /* read frames from the file */
-    while (av_read_frame(fmt_ctx, &pkt) >= 0) {
+    while (av_read_frame_ijk(fmt_ctx, &pkt) >= 0) {
         if (pkt.stream_index == video_stream_idx)
             ret = decode_packet(&pkt);
         av_packet_unref_ijk(&pkt);

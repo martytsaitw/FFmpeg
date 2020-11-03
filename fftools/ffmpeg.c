@@ -2041,7 +2041,7 @@ static void do_streamcopy(InputStream *ist, OutputStream *ost, const AVPacket *p
     opkt.dts -= ost_tb_start_time;
 
     if (ost->st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO && pkt->dts != AV_NOPTS_VALUE) {
-        int duration = av_get_audio_frame_duration(ist->dec_ctx, pkt->size);
+        int duration = av_get_audio_frame_duration_ijk(ist->dec_ctx, pkt->size);
         if(!duration)
             duration = ist->dec_ctx->frame_size;
         opkt.dts = opkt.pts = av_rescale_delta(ist->st->time_base, pkt->dts,
@@ -3978,7 +3978,7 @@ static void *input_thread(void *arg)
 
     while (1) {
         AVPacket pkt;
-        ret = av_read_frame(f->ctx, &pkt);
+        ret = av_read_frame_ijk(f->ctx, &pkt);
 
         if (ret == AVERROR(EAGAIN)) {
             av_usleep(10000);
@@ -4083,7 +4083,7 @@ static int get_input_packet(InputFile *f, AVPacket *pkt)
     if (nb_input_files > 1)
         return get_input_packet_mt(f, pkt);
 #endif
-    return av_read_frame(f->ctx, pkt);
+    return av_read_frame_ijk(f->ctx, pkt);
 }
 
 static int got_eagain(void)

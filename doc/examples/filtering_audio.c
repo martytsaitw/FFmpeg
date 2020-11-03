@@ -62,7 +62,7 @@ static int open_input_file(const char *filename)
     }
 
     /* select the audio stream */
-    ret = av_find_best_stream(fmt_ctx, AVMEDIA_TYPE_AUDIO, -1, -1, &dec, 0);
+    ret = av_find_best_stream_ijk(fmt_ctx, AVMEDIA_TYPE_AUDIO, -1, -1, &dec, 0);
     if (ret < 0) {
         av_log(NULL, AV_LOG_ERROR, "Cannot find an audio stream in the input file\n");
         return ret;
@@ -235,7 +235,7 @@ int main(int argc, char **argv)
 
     /* read all packets */
     while (1) {
-        if ((ret = av_read_frame(fmt_ctx, &packet)) < 0)
+        if ((ret = av_read_frame_ijk(fmt_ctx, &packet)) < 0)
             break;
 
         if (packet.stream_index == audio_stream_index) {

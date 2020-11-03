@@ -168,7 +168,7 @@ static int get_aiff_header(AVFormatContext *s, int size,
             break;
         }
         if (par->block_align > 0)
-            aiff->block_duration = av_get_audio_frame_duration2(par,
+            aiff->block_duration = av_get_audio_frame_duration2_ijk(par,
                                                                 par->block_align);
     }
 

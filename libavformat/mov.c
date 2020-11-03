@@ -3867,7 +3867,7 @@ static void mov_build_index(MOVContext *mov, AVStream *st)
                             "size %u, distance %u, keyframe %d\n", st->index, current_sample,
                             current_offset, current_dts, sample_size, distance, keyframe);
                     if (st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO && st->nb_index_entries < 100)
-                        ff_rfps_add_frame(mov->fc, st, current_dts);
+                        ff_rfps_add_frame_ijk(mov->fc, st, current_dts);
                 }
 
                 current_offset += sample_size;
@@ -6897,7 +6897,7 @@ static int mov_read_header(AVFormatContext *s)
         }
     }
 
-    ff_rfps_calculate(s);
+    ff_rfps_calculate_ijk(s);
 
     for (i = 0; i < s->nb_streams; i++) {
         AVStream *st = s->streams[i];

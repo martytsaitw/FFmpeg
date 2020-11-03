@@ -213,7 +213,7 @@ static int sap_fetch_packet(AVFormatContext *s, AVPacket *pkt)
             }
         }
     }
-    ret = av_read_frame(sap->sdp_ctx, pkt);
+    ret = av_read_frame_ijk(sap->sdp_ctx, pkt);
     if (ret < 0)
         return ret;
     if (s->ctx_flags & AVFMTCTX_NOHEADER) {

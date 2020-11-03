@@ -175,7 +175,7 @@ static void build_frame_code(AVFormatContext *s)
         int frame_size = 0;
 
         if (par->codec_type == AVMEDIA_TYPE_AUDIO) {
-            frame_size = av_get_audio_frame_duration2(par, 0);
+            frame_size = av_get_audio_frame_duration2_ijk(par, 0);
             if (par->codec_id == AV_CODEC_ID_VORBIS && !frame_size)
                 frame_size = 64;
         } else {
@@ -208,7 +208,7 @@ static void build_frame_code(AVFormatContext *s)
             if (par->block_align > 0) {
                 frame_bytes = par->block_align;
             } else {
-                int frame_size = av_get_audio_frame_duration2(par, 0);
+                int frame_size = av_get_audio_frame_duration2_ijk(par, 0);
                 frame_bytes = frame_size * (int64_t)par->bit_rate / (8 * par->sample_rate);
             }
 

@@ -483,7 +483,7 @@ static int rtp_send_ilbc(AVFormatContext *s1, const uint8_t *buf, int size)
 {
     RTPMuxContext *s = s1->priv_data;
     AVStream *st = s1->streams[0];
-    int frame_duration = av_get_audio_frame_duration2(st->codecpar, 0);
+    int frame_duration = av_get_audio_frame_duration2_ijk(st->codecpar, 0);
     int frame_size = st->codecpar->block_align;
     int frames = size / frame_size;
 

@@ -968,7 +968,7 @@ static int mpegts_init(AVFormatContext *s)
         ts->sdt_packet_period = 200;
         ts->pat_packet_period = 40;
         if (pcr_st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
-            int frame_size = av_get_audio_frame_duration2(pcr_st->codecpar, 0);
+            int frame_size = av_get_audio_frame_duration2_ijk(pcr_st->codecpar, 0);
             if (!frame_size) {
                 av_log(s, AV_LOG_WARNING, "frame size not set\n");
                 service->pcr_packet_period =

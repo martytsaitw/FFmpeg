@@ -77,7 +77,7 @@ int main(int argc, char **argv)
 
     for (; argc; argc--, argv++) {
         if (!strcmp(*argv, "read")) {
-            ret = av_read_frame(avf, &packet);
+            ret = av_read_frame_ijk(avf, &packet);
             if (ret < 0) {
                 printf("read: %d (%s)\n", ret, av_err2str(ret));
             } else {

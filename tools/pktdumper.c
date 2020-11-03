@@ -103,7 +103,7 @@ int main(int argc, char **argv)
 
     av_init_packet_ijk(&pkt);
 
-    while ((err = av_read_frame(fctx, &pkt)) >= 0) {
+    while ((err = av_read_frame_ijk(fctx, &pkt)) >= 0) {
         int fd;
         snprintf(pktfilename, sizeof(pktfilename), fntemplate, pktnum,
                  pkt.stream_index, pkt.pts, pkt.size,

@@ -2317,7 +2317,7 @@ static int dash_read_packet(AVFormatContext *s, AVPacket *pkt)
         return AVERROR_INVALIDDATA;
     }
     while (!ff_check_interrupt(c->interrupt_callback) && !ret) {
-        ret = av_read_frame(cur->ctx, pkt);
+        ret = av_read_frame_ijk(cur->ctx, pkt);
         if (ret >= 0) {
             /* If we got a packet, return it */
             cur->cur_timestamp = av_rescale(pkt->pts, (int64_t)cur->ctx->streams[0]->time_base.num * 90000, cur->ctx->streams[0]->time_base.den);

@@ -87,7 +87,7 @@ static void pkt_dump_internal(void *avcl, FILE *f, int level, const AVPacket *pk
     HEXDUMP_PRINT("stream #%d:\n", pkt->stream_index);
     HEXDUMP_PRINT("  keyframe=%d\n", (pkt->flags & AV_PKT_FLAG_KEY) != 0);
     HEXDUMP_PRINT("  duration=%0.3f\n", pkt->duration * av_q2d(time_base));
-    /* DTS is _always_ valid after av_read_frame() */
+    /* DTS is _always_ valid after av_read_frame_ijk() */
     HEXDUMP_PRINT("  dts=");
     if (pkt->dts == AV_NOPTS_VALUE)
         HEXDUMP_PRINT("N/A");

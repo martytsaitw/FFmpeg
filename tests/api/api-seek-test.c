@@ -104,7 +104,7 @@ static int compute_crc_of_packets(AVFormatContext *fmt_ctx, int video_stream,
     av_init_packet_ijk(&pkt);
     do {
         if (!end_of_stream)
-            if (av_read_frame(fmt_ctx, &pkt) < 0)
+            if (av_read_frame_ijk(fmt_ctx, &pkt) < 0)
                 end_of_stream = 1;
         if (end_of_stream) {
             pkt.data = NULL;
@@ -208,7 +208,7 @@ static int seek_test(const char *input_filename, const char *start, const char *
     }
 
     //TODO: add ability to work with audio format
-    video_stream = av_find_best_stream(fmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+    video_stream = av_find_best_stream_ijk(fmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
     if (video_stream < 0) {
       av_log(NULL, AV_LOG_ERROR, "Can't find video stream in input file\n");
       result = video_stream;

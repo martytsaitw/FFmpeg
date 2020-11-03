@@ -330,7 +330,7 @@ static av_cold int init_subtitles(AVFilterContext *ctx)
 
     /* Locate subtitles stream */
     if (ass->stream_index < 0)
-        ret = av_find_best_stream(fmt, AVMEDIA_TYPE_SUBTITLE, -1, -1, NULL, 0);
+        ret = av_find_best_stream_ijk(fmt, AVMEDIA_TYPE_SUBTITLE, -1, -1, NULL, 0);
     else {
         ret = -1;
         if (ass->stream_index < fmt->nb_streams) {
@@ -448,7 +448,7 @@ static av_cold int init_subtitles(AVFilterContext *ctx)
     av_init_packet_ijk(&pkt);
     pkt.data = NULL;
     pkt.size = 0;
-    while (av_read_frame(fmt, &pkt) >= 0) {
+    while (av_read_frame_ijk(fmt, &pkt) >= 0) {
         int i, got_subtitle;
         AVSubtitle sub = {0};
 

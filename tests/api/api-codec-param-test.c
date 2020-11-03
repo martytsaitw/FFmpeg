@@ -86,7 +86,7 @@ static int find_video_stream_info(AVFormatContext *fmt_ctx, int decode)
         AVCodecContext *codec_ctx = NULL;
         AVStream *st;
 
-        if ((ret = av_read_frame(fmt_ctx, &pkt)) < 0) {
+        if ((ret = av_read_frame_ijk(fmt_ctx, &pkt)) < 0) {
             av_log(fmt_ctx, AV_LOG_ERROR, "Failed to read frame\n");
             goto end;
         }

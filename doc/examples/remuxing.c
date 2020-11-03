@@ -140,7 +140,7 @@ int main(int argc, char **argv)
     while (1) {
         AVStream *in_stream, *out_stream;
 
-        ret = av_read_frame(ifmt_ctx, &pkt);
+        ret = av_read_frame_ijk(ifmt_ctx, &pkt);
         if (ret < 0)
             break;
 

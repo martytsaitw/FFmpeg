@@ -461,7 +461,7 @@ static int swf_write_audio(AVFormatContext *s,
     }
 
     av_fifo_generic_write(swf->audio_fifo, buf, size, NULL);
-    swf->sound_samples += av_get_audio_frame_duration2(par, size);
+    swf->sound_samples += av_get_audio_frame_duration2_ijk(par, size);
 
     /* if audio only stream make sure we add swf frames */
     if (!swf->video_par)

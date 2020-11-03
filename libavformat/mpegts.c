@@ -2907,7 +2907,7 @@ static int64_t mpegts_get_dts(AVFormatContext *s, int stream_index,
         int ret;
         AVPacket pkt;
         av_init_packet_ijk(&pkt);
-        ret = av_read_frame(s, &pkt);
+        ret = av_read_frame_ijk(s, &pkt);
         if (ret < 0)
             return AV_NOPTS_VALUE;
         if (pkt.dts != AV_NOPTS_VALUE && pkt.pos >= 0) {

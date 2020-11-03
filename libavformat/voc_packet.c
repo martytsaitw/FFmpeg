@@ -136,7 +136,7 @@ ff_voc_get_packet(AVFormatContext *s, AVPacket *pkt, AVStream *st, int max_size)
     ret = av_get_packet(pb, pkt, size);
     pkt->dts = pkt->pts = voc->pts;
 
-    duration = av_get_audio_frame_duration2(st->codecpar, size);
+    duration = av_get_audio_frame_duration2_ijk(st->codecpar, size);
     if (duration > 0 && voc->pts != AV_NOPTS_VALUE)
         voc->pts += duration;
     else

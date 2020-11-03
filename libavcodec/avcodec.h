@@ -5673,13 +5673,13 @@ int av_get_exact_bits_per_sample(enum AVCodecID codec_id);
  * @return             frame duration, in samples, if known. 0 if not able to
  *                     determine.
  */
-int av_get_audio_frame_duration(AVCodecContext *avctx, int frame_bytes);
+int av_get_audio_frame_duration_ijk(AVCodecContext *avctx, int frame_bytes);
 
 /**
- * This function is the same as av_get_audio_frame_duration(), except it works
+ * This function is the same as av_get_audio_frame_duration_ijk(), except it works
  * with AVCodecParameters instead of an AVCodecContext.
  */
-int av_get_audio_frame_duration2(AVCodecParameters *par, int frame_bytes);
+int av_get_audio_frame_duration2_ijk(AVCodecParameters *par, int frame_bytes);
 
 #if FF_API_OLD_BSF
 typedef struct AVBitStreamFilterContext {

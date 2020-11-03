@@ -86,7 +86,7 @@ static int msf_read_header(AVFormatContext *s)
             avpriv_request_sample(s, "Codec %d", codec);
             return AVERROR_PATCHWELCOME;
     }
-    st->duration = av_get_audio_frame_duration2(st->codecpar, size);
+    st->duration = av_get_audio_frame_duration2_ijk(st->codecpar, size);
     avio_skip(s->pb, 0x40 - avio_tell(s->pb));
     avpriv_set_pts_info_ijk(st, 64, 1, st->codecpar->sample_rate);
 

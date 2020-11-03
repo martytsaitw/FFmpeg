@@ -1510,7 +1510,7 @@ int av_get_bits_per_sample(enum AVCodecID codec_id)
     }
 }
 
-static int get_audio_frame_duration(enum AVCodecID id, int sr, int ch, int ba,
+static int get_audio_frame_duration_ijk(enum AVCodecID id, int sr, int ch, int ba,
                                     uint32_t tag, int bits_per_coded_sample, int64_t bitrate,
                                     uint8_t * extradata, int frame_size, int frame_bytes)
 {
@@ -1697,18 +1697,18 @@ static int get_audio_frame_duration(enum AVCodecID id, int sr, int ch, int ba,
     return 0;
 }
 
-int av_get_audio_frame_duration(AVCodecContext *avctx, int frame_bytes)
+int av_get_audio_frame_duration_ijk(AVCodecContext *avctx, int frame_bytes)
 {
-    return get_audio_frame_duration(avctx->codec_id, avctx->sample_rate,
+    return get_audio_frame_duration_ijk(avctx->codec_id, avctx->sample_rate,
                                     avctx->channels, avctx->block_align,
                                     avctx->codec_tag, avctx->bits_per_coded_sample,
                                     avctx->bit_rate, avctx->extradata, avctx->frame_size,
                                     frame_bytes);
 }
 
-int av_get_audio_frame_duration2(AVCodecParameters *par, int frame_bytes)
+int av_get_audio_frame_duration2_ijk(AVCodecParameters *par, int frame_bytes)
 {
-    return get_audio_frame_duration(par->codec_id, par->sample_rate,
+    return get_audio_frame_duration_ijk(par->codec_id, par->sample_rate,
                                     par->channels, par->block_align,
                                     par->codec_tag, par->bits_per_coded_sample,
                                     par->bit_rate, par->extradata, par->frame_size,

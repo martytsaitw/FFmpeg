@@ -478,7 +478,7 @@ int ff_framehash_write_header(AVFormatContext *s);
  * @param pkt is filled
  * @return 0 if OK, AVERROR_xxx on error
  */
-int ff_read_packet(AVFormatContext *s, AVPacket *pkt);
+int ff_read_packet_ijk(AVFormatContext *s, AVPacket *pkt);
 
 /**
  * Interleave a packet per dts in an output media file.
@@ -503,7 +503,7 @@ void ff_free_stream_ijk(AVFormatContext *s, AVStream *st);
 /**
  * Return the frame duration in seconds. Return 0 if not available.
  */
-void ff_compute_frame_duration(AVFormatContext *s, int *pnum, int *pden, AVStream *st,
+void ff_compute_frame_duration_ijk(AVFormatContext *s, int *pnum, int *pden, AVStream *st,
                                AVCodecParserContext *pc, AVPacket *pkt);
 
 unsigned int ff_codec_get_tag(const AVCodecTag *tags, enum AVCodecID id);
@@ -612,9 +612,9 @@ int ff_get_extradata(AVFormatContext *s, AVCodecParameters *par, AVIOContext *pb
  * @param dts timestamp of the i-th frame
  * @return 0 if OK, AVERROR_xxx on error
  */
-int ff_rfps_add_frame(AVFormatContext *ic, AVStream *st, int64_t dts);
+int ff_rfps_add_frame_ijk(AVFormatContext *ic, AVStream *st, int64_t dts);
 
-void ff_rfps_calculate(AVFormatContext *ic);
+void ff_rfps_calculate_ijk(AVFormatContext *ic);
 
 /**
  * Flags for AVFormatContext.write_uncoded_frame()

@@ -234,7 +234,7 @@ int main(int argc, char **argv)
 
     /* actual decoding */
     while (ret >= 0) {
-        ret = av_read_frame(input_ctx, &pkt);
+        ret = av_read_frame_ijk(input_ctx, &pkt);
         if (ret < 0)
             break;
 

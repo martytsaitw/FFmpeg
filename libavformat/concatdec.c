@@ -639,7 +639,7 @@ static int concat_read_packet(AVFormatContext *avf, AVPacket *pkt)
         return AVERROR(EIO);
 
     while (1) {
-        ret = av_read_frame(cat->avf, pkt);
+        ret = av_read_frame_ijk(cat->avf, pkt);
         if (ret == AVERROR_EOF) {
             is_new_st = 1;
             if ((ret = open_next_file(avf)) < 0)

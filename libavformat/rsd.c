@@ -105,12 +105,12 @@ static int rsd_read_header(AVFormatContext *s)
     case AV_CODEC_ID_ADPCM_PSX:
         par->block_align = 16 * par->channels;
         if (pb->seekable & AVIO_SEEKABLE_NORMAL)
-            st->duration = av_get_audio_frame_duration2(par, avio_size(pb) - start);
+            st->duration = av_get_audio_frame_duration2_ijk(par, avio_size(pb) - start);
         break;
     case AV_CODEC_ID_ADPCM_IMA_RAD:
         par->block_align = 20 * par->channels;
         if (pb->seekable & AVIO_SEEKABLE_NORMAL)
-            st->duration = av_get_audio_frame_duration2(par, avio_size(pb) - start);
+            st->duration = av_get_audio_frame_duration2_ijk(par, avio_size(pb) - start);
         break;
     case AV_CODEC_ID_ADPCM_IMA_WAV:
         if (version == 2)
@@ -119,7 +119,7 @@ static int rsd_read_header(AVFormatContext *s)
         par->bits_per_coded_sample = 4;
         par->block_align = 36 * par->channels;
         if (pb->seekable & AVIO_SEEKABLE_NORMAL)
-            st->duration = av_get_audio_frame_duration2(par, avio_size(pb) - start);
+            st->duration = av_get_audio_frame_duration2_ijk(par, avio_size(pb) - start);
         break;
     case AV_CODEC_ID_ADPCM_THP_LE:
         /* RSD3GADP is mono, so only alloc enough memory
@@ -130,7 +130,7 @@ static int rsd_read_header(AVFormatContext *s)
         if ((ret = ff_get_extradata(s, par, s->pb, 32)) < 0)
             return ret;
         if (pb->seekable & AVIO_SEEKABLE_NORMAL)
-            st->duration = av_get_audio_frame_duration2(par, avio_size(pb) - start);
+            st->duration = av_get_audio_frame_duration2_ijk(par, avio_size(pb) - start);
         break;
     case AV_CODEC_ID_ADPCM_THP:
         par->block_align = 8 * par->channels;
