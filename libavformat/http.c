@@ -1776,7 +1776,7 @@ static const AVClass flavor ## _context_class = {   \
     .version    = LIBAVUTIL_VERSION_INT,            \
 }
 
-#if CONFIG_HTTP_PROTOCOL
+#if CONFIG_HTTP_XIJ_PROTOCOL
 HTTP_CLASS(http);
 
 const URLProtocol ff_http_xij_protocol = {
@@ -1796,7 +1796,7 @@ const URLProtocol ff_http_xij_protocol = {
     .flags               = URL_PROTOCOL_FLAG_NETWORK,
     .default_whitelist   = "http,https,tls,rtp,tcp,udp,crypto,httpproxy"
 };
-#endif /* CONFIG_HTTP_PROTOCOL */
+#endif /* CONFIG_HTTP_XIJ_PROTOCOL */
 
 #if CONFIG_HTTPS_PROTOCOL
 HTTP_CLASS(https);

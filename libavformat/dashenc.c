@@ -38,7 +38,7 @@
 #include "avformat.h"
 #include "avio_internal.h"
 #include "hlsplaylist.h"
-#if CONFIG_HTTP_PROTOCOL
+#if CONFIG_HTTP_XIJ_PROTOCOL
 #include "http.h"
 #endif
 #include "internal.h"
@@ -138,7 +138,7 @@ static int dashenc_io_open(AVFormatContext *s, AVIOContext **pb, char *filename,
     int err = AVERROR_MUXER_NOT_FOUND;
     if (!*pb || !http_base_proto || !c->http_persistent) {
         err = s->io_open(s, pb, filename, AVIO_FLAG_WRITE, options);
-#if CONFIG_HTTP_PROTOCOL
+#if CONFIG_HTTP_XIJ_PROTOCOL
     } else {
         URLContext *http_url_context = ffio_geturlcontext_xij(*pb);
         av_assert0(http_url_context);
@@ -154,7 +154,7 @@ static void dashenc_io_close(AVFormatContext *s, AVIOContext **pb, char *filenam
 
     if (!http_base_proto || !c->http_persistent) {
         ff_format_io_close_xij(s, pb);
-#if CONFIG_HTTP_PROTOCOL
+#if CONFIG_HTTP_XIJ_PROTOCOL
     } else {
         URLContext *http_url_context = ffio_geturlcontext_xij(*pb);
         av_assert0(http_url_context);

@@ -609,7 +609,7 @@ static void update_options(char **dest, const char *name, void *src)
 static int open_url_keepalive(AVFormatContext *s, AVIOContext **pb,
                               const char *url)
 {
-#if !CONFIG_HTTP_PROTOCOL
+#if !CONFIG_HTTP_XIJ_PROTOCOL
     return AVERROR_PROTOCOL_NOT_FOUND;
 #else
     int ret;
